@@ -1,0 +1,4 @@
+
+public group Student {
+    string Name;
+}

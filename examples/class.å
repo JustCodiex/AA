@@ -1,0 +1,8 @@
+
+public light class E1(string x, string y); // the 'light' keyword means create a new class type with properties supplied to the constructor
+
+public class E2 {
+    public property String x; // Public getter and setter
+    public property String y; // Public getter and setter
+    public property String z => x + y; // Public getter
+}
