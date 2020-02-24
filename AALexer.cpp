@@ -4,6 +4,8 @@
 
 std::map<wchar_t, AAToken> singleTokens = {
 	{ ' ', AAToken::whitespace },
+	{ '\t', AAToken::whitespace },
+	{ '\n', AAToken::whitespace },
 	{ ';', AAToken::seperator },
 	{ '+', AAToken::OP },
 	{ '-', AAToken::OP },

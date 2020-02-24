@@ -30,6 +30,9 @@
     <ClCompile Include="AALexer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="AA_AST.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AAVM.h">
@@ -42,6 +45,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AALexer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AA_AST.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
