@@ -42,7 +42,7 @@ std::vector<AALexicalResult> AALexer::Analyse(std::wstring input) {
 
 		} else if (IsDigit(character)) {
 			ws << character;
-			current = AAToken::lit;
+			current = AAToken::intlit;
 		}
 
 		index++;

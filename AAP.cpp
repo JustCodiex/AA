@@ -1,4 +1,5 @@
 #include "AAP.h"
+#include "AA_PT.h"
 
 AAP::AAP() {
 
@@ -17,5 +18,7 @@ void AAP::Release() {
 void AAP::Parse(std::wstring input) {
 
 	std::vector< AALexicalResult> lexed = m_lexer->Analyse(input);
+
+	AA_PT parseTree = AA_PT(lexed);
 
 }

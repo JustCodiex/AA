@@ -9,7 +9,7 @@ enum class AAToken {
 	keyword,
 	seperator,
 	OP, // operator
-	lit, // literal
+	intlit, // literal
 	comment,
 };
 

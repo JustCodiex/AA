@@ -154,6 +154,7 @@
     <ClCompile Include="AAP.cpp" />
     <ClCompile Include="AAVM.cpp" />
     <ClCompile Include="AA_AST.cpp" />
+    <ClCompile Include="AA_PT.cpp" />
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -162,6 +163,7 @@
     <ClInclude Include="AAP.h" />
     <ClInclude Include="AAVM.h" />
     <ClInclude Include="AA_AST.h" />
+    <ClInclude Include="AA_PT.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
