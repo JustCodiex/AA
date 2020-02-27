@@ -10,7 +10,8 @@ int main() {
     AAC* compiler = VM->GetCompiler();
     AAP* parser = VM->GetParser();
 
-    parser->Parse(L"15+5+7;");
+    AA_AST* tree = parser->Parse(L"15+5+7;");
+    AAC_Out bytecode = compiler->CompileFromAST(tree);
 
     VM->Release();
 

@@ -5,7 +5,7 @@ AA_PT::AA_PT(std::vector<AALexicalResult> lexResult) {
 
 	std::vector<AA_PT_NODE*> aa_pt_nodes = ToNodes(lexResult);
 
-	this->CreateTree(aa_pt_nodes);
+	m_root = this->CreateTree(aa_pt_nodes, 0);
 
 }
 
@@ -23,7 +23,7 @@ std::vector<AA_PT_NODE*> AA_PT::ToNodes(std::vector<AALexicalResult> lexResult) 
 			break;
 		case AAToken::OP:
 			if (!IsUnaryOperator(aa_pt_nodes)) {
-				node->nodeType = AA_PT_NODE_TYPE::binary_operator;
+				node->nodeType = AA_PT_NODE_TYPE::binary_operation;
 			} else {
 				node->nodeType = AA_PT_NODE_TYPE::unary_operator;
 			}
@@ -59,14 +59,17 @@ bool AA_PT::IsUnaryOperator(std::vector<AA_PT_NODE*> nodes) {
 
 }
 
-void AA_PT::CreateTree(std::vector<AA_PT_NODE*> nodes) {
+AA_PT_NODE* AA_PT::CreateTree(std::vector<AA_PT_NODE*>& nodes, int from) {
 
-	size_t nodeIndex = 0;
+	size_t nodeIndex = from;
 	AA_PT_NODE* root = 0;
 
 	while (nodes.size() > 1 && nodeIndex < nodes.size()) {
 		switch (nodes[nodeIndex]->nodeType) {
-		case AA_PT_NODE_TYPE::binary_operator:
+		case AA_PT_NODE_TYPE::binary_operation:
+
+			nodes[nodeIndex - 1]->parent = nodes[nodeIndex];
+			nodes[nodeIndex + 1]->parent = nodes[nodeIndex];
 
 			nodes[nodeIndex]->childNodes.push_back(nodes[nodeIndex - 1]);
 			nodes[nodeIndex]->childNodes.push_back(nodes[nodeIndex + 1]);
@@ -79,6 +82,10 @@ void AA_PT::CreateTree(std::vector<AA_PT_NODE*> nodes) {
 			if (nodes[nodeIndex]->content == L";") {
 				delete nodes[nodeIndex];
 				nodes.erase(nodes.begin() + nodeIndex);
+			} else if (nodes[nodeIndex]->content == L"(") {
+
+			} else if (nodes[nodeIndex]->content == L")") {
+
 			}
 			break;
 		case AA_PT_NODE_TYPE::intliteral:
@@ -86,11 +93,12 @@ void AA_PT::CreateTree(std::vector<AA_PT_NODE*> nodes) {
 			break;
 		default:
 			break;
-
 		}
 
 	}
 
 	root = nodes.at(0);
+
+	return root;
 
 }

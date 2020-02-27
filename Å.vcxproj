@@ -158,6 +158,7 @@
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AAByteCode.h" />
     <ClInclude Include="AAC.h" />
     <ClInclude Include="AALexer.h" />
     <ClInclude Include="AAP.h" />

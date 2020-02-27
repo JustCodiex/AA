@@ -15,10 +15,18 @@ void AAP::Release() {
 
 }
 
-void AAP::Parse(std::wstring input) {
+AA_AST* AAP::Parse(std::wstring input) {
 
+	// Tokenise the input with the lexer
 	std::vector< AALexicalResult> lexed = m_lexer->Analyse(input);
 
+	// Build a parse tree
 	AA_PT parseTree = AA_PT(lexed);
+
+	// Build AST
+	AA_AST* asTree = new AA_AST(&parseTree);
+
+	// Return AST
+	return asTree;
 
 }

@@ -56,5 +56,8 @@
     <ClInclude Include="AA_PT.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="AAByteCode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

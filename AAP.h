@@ -1,5 +1,6 @@
 #pragma once
 #include "AALexer.h"
+#include "AA_AST.h"
 
 // Parser Class
 class AAP {
@@ -10,7 +11,7 @@ public:
 
 	void Release();
 
-	void Parse(std::wstring input);
+	AA_AST* Parse(std::wstring input);
 
 private:
 

@@ -12,6 +12,8 @@ std::map<wchar_t, AAToken> singleTokens = {
 	{ '*', AAToken::OP },
 	{ '/', AAToken::OP },
 	{ '%', AAToken::OP },
+	{ '(', AAToken::seperator },
+	{ ')', AAToken::seperator },
 };
 
 std::vector<AALexicalResult> AALexer::Analyse(std::wstring input) {
