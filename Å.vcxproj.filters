@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\util">
+      <UniqueIdentifier>{456f5f90-96b1-425a-9cfd-2497b980a542}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -36,6 +39,9 @@
     <ClCompile Include="AA_PT.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="AAB2F.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AAVM.h">
@@ -57,6 +63,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AAByteCode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AA_literals.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="list.h">
+      <Filter>Header Files\util</Filter>
+    </ClInclude>
+    <ClInclude Include="bstream.h">
+      <Filter>Header Files\util</Filter>
+    </ClInclude>
+    <ClInclude Include="AAB2F.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

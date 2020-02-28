@@ -1,7 +1,11 @@
 #pragma once
 #include "AA_AST.h"
 #include "AAByteCode.h"
+#include "AA_literals.h"
+#include "bstream.h"
+#include "list.h"
 
+// Compiled output
 struct AAC_Out {
 	unsigned long long length;
 	unsigned char* bytes;
@@ -19,17 +23,22 @@ public:
 	struct CompiledAbstractExpression {
 		AAByteCode bc;
 		int argCount;
-		int* argValues;
+		int argValues[8];
 		CompiledAbstractExpression() {
 			bc = AAByteCode::NOP;
 			argCount = 0;
-			argValues = 0;
+			memset(argValues, -128, 8);
 		}
 		CompiledAbstractExpression(AAByteCode code, int argCount, int* argVals) {
 			this->bc = code;
 			this->argCount = argCount;
-			this->argValues = argVals;
+			memset(argValues, -128, 8);
+			memcpy(this->argValues, argValues, sizeof(int) * argCount);
 		}
+	};
+
+	struct CompiledConstantTable {
+		aa::list<AA_Literal> constValues;
 	};
 
 public:
@@ -38,12 +47,28 @@ public:
 
 private:
 
-	std::vector<CompiledAbstractExpression> CompileAST(AA_AST_NODE* pNode);
+	std::vector<CompiledAbstractExpression> CompileAST(AA_AST_NODE* pNode, CompiledConstantTable& cTable);
 
-	std::vector<CompiledAbstractExpression> Merge(std::vector<CompiledAbstractExpression> original, std::vector<CompiledAbstractExpression> add);
+	/*
+	** AST_NODE -> Bytecode functions
+	*/
 
-	CompiledAbstractExpression CompileExpression(AA_AST_NODE* pNode);
+	std::vector<CompiledAbstractExpression> CompileBinaryOperation(AA_AST_NODE* pNode, CompiledConstantTable& cTable);
+	CompiledAbstractExpression HandleConstPush(CompiledConstantTable& cTable, AA_AST_NODE* pNode);
+
+	/*
+	** Helper functions
+	*/
 
 	bool IsConstant(AA_AST_NODE_TYPE type);
+	std::vector<CompiledAbstractExpression> Merge(std::vector<CompiledAbstractExpression> original, std::vector<CompiledAbstractExpression> add);
+
+	/*
+	** Bytecode functions
+	*/
+
+	void ToByteCode(std::vector<CompiledAbstractExpression> bytecodes, CompiledConstantTable constTable, AAC_Out& result);
+	void ConstTableToByteCode(CompiledConstantTable constTable, aa::bstream& bis);
+	void ConvertToBytes(CompiledAbstractExpression expr, aa::bstream& bis);
 
 };

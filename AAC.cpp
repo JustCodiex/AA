@@ -9,48 +9,28 @@ AAC_Out AAC::CompileFromAST(AA_AST* pAbstractTree) {
 	// Simplify the abstract tree
 	pAbstractTree->Simplify();
 
+	// Constant Value table container
+	CompiledConstantTable consTable;
+
 	// Compile the execution stack
-	std::vector<CompiledAbstractExpression> executionStack = CompileAST(pAbstractTree->GetRoot());
+	std::vector<CompiledAbstractExpression> opList = CompileAST(pAbstractTree->GetRoot(), consTable);
+
+	// Combine it all to bytecode string
+	this->ToByteCode(opList, consTable, result);
 
 	// return bytecode
 	return result;
 
 }
 
-std::vector<AAC::CompiledAbstractExpression> AAC::CompileAST(AA_AST_NODE* pNode) {
+std::vector<AAC::CompiledAbstractExpression> AAC::CompileAST(AA_AST_NODE* pNode, CompiledConstantTable& cTable) {
 
 	// Stack
 	std::vector<CompiledAbstractExpression> executionStack;
 
 	switch (pNode->type) {
 	case AA_AST_NODE_TYPE::binop: {
-
-		CompiledAbstractExpression binopCAE;
-		binopCAE.argCount = 2;
-		binopCAE.argValues = new int[2];
-
-		if (pNode->content == L"+") {
-			binopCAE.bc = AAByteCode::ADD;
-		}
-
-		if (IsConstant(pNode->expressions[0]->type)) {
-			binopCAE.argValues[0] = -1;
-			executionStack.push_back(CompiledAbstractExpression(AAByteCode::PUSH_CONST, 1, new int[1]{ 0, }));
-		} else {
-			binopCAE.argValues[0] = -1;
-			executionStack = Merge(executionStack, CompileAST(pNode->expressions[0]));
-		}
-
-		if (IsConstant(pNode->expressions[1]->type)) {
-			binopCAE.argValues[0] = -2;
-			executionStack.push_back(CompiledAbstractExpression(AAByteCode::PUSH_CONST, 1, new int[1]{ 0, }));
-		} else {
-			binopCAE.argValues[0] = -2;
-			executionStack = Merge(executionStack, CompileAST(pNode->expressions[1]));
-		}
-
-		executionStack.push_back(binopCAE);
-
+		executionStack = Merge(executionStack, CompileBinaryOperation(pNode, cTable));
 		break;
 	}
 	default:
@@ -61,21 +41,38 @@ std::vector<AAC::CompiledAbstractExpression> AAC::CompileAST(AA_AST_NODE* pNode)
 
 }
 
-AAC::CompiledAbstractExpression AAC::CompileExpression(AA_AST_NODE* pNode) {
+std::vector<AAC::CompiledAbstractExpression> AAC::CompileBinaryOperation(AA_AST_NODE* pNode, CompiledConstantTable& cTable) {
 
-	CompiledAbstractExpression CAE;
-	
-	switch (pNode->type) {
-	case AA_AST_NODE_TYPE::binop:
-		if (pNode->content == L"+") {
-			CAE.bc = AAByteCode::ADD;
-		}
-		break;
-	default:
-		break;
+	std::vector<CompiledAbstractExpression> opList;
+	int stackPointer = 0;
+
+	CompiledAbstractExpression binopCAE;
+	binopCAE.argCount = 3;
+
+	if (pNode->content == L"+") {
+		binopCAE.bc = AAByteCode::ADD;
 	}
 
-	return CAE;
+	binopCAE.argValues[0] = --stackPointer;
+	binopCAE.argValues[1] = --stackPointer;
+
+	if (IsConstant(pNode->expressions[0]->type)) {
+		opList.push_back(this->HandleConstPush(cTable, pNode->expressions[0]));
+	} else {
+		opList = Merge(opList, CompileAST(pNode->expressions[0], cTable));
+	}
+
+	if (IsConstant(pNode->expressions[1]->type)) {
+		opList.push_back(this->HandleConstPush(cTable, pNode->expressions[1]));
+	} else {
+		opList = Merge(opList, CompileAST(pNode->expressions[1], cTable));
+	}
+
+	binopCAE.argValues[2] = ++stackPointer;
+
+	opList.push_back(binopCAE);
+
+	return opList;
 
 }
 
@@ -94,4 +91,97 @@ std::vector<AAC::CompiledAbstractExpression> AAC::Merge(std::vector<CompiledAbst
 
 bool AAC::IsConstant(AA_AST_NODE_TYPE type) {
 	return type == AA_AST_NODE_TYPE::intliteral;
+}
+
+AAC::CompiledAbstractExpression AAC::HandleConstPush(CompiledConstantTable& cTable, AA_AST_NODE* pNode) {
+
+	CompiledAbstractExpression pushOp;
+	pushOp.bc = AAByteCode::PUSH_CONST;
+	pushOp.argCount = 1;
+
+	AA_AnyLiteral aLit = AA_AnyLiteral();
+	AALiteralType lType = AALiteralType::Int;
+
+	switch (pNode->type) {
+	case AA_AST_NODE_TYPE::intliteral:
+		aLit.i.val = std::stoi(pNode->content);
+		lType = AALiteralType::Int;
+		break;
+	default:
+		break;
+	}
+
+	AA_Literal lit;
+	lit.lit = aLit;
+	lit.tp = lType;
+
+	int i = -1;
+	if (cTable.constValues.Contains(lit)) {
+		i = cTable.constValues.IndexOf(lit);
+	} else {
+		i = cTable.constValues.Size();
+		cTable.constValues.Add(lit);
+	}
+
+	pushOp.argValues[0] = i;
+
+	return pushOp;
+
+}
+
+void AAC::ToByteCode(std::vector<CompiledAbstractExpression> bytecodes, CompiledConstantTable constTable, AAC_Out& result) {
+
+	// Byte stream
+	aa::bstream bis;
+
+	// Convert constants table to bytecode
+	ConstTableToByteCode(constTable, bis);
+
+	// Write amount of operations
+	bis << (int)bytecodes.size();
+
+	// Write all expressions in their compiled formats
+	for (size_t i = 0; i < bytecodes.size(); i++) {
+		this->ConvertToBytes(bytecodes[i], bis);
+	}
+
+	// Get size and allocate memory buffer
+	result.length = bis.length();
+	result.bytes = new unsigned char[(int)result.length];
+	
+	// Copy stream into array
+	memcpy(result.bytes, bis.array(), (int)result.length);
+
+}
+
+void AAC::ConstTableToByteCode(CompiledConstantTable constTable, aa::bstream& wss) {
+
+	wss << (int)constTable.constValues.Size();
+
+	for (size_t i = 0; i < constTable.constValues.Size(); i++) {
+
+		AA_Literal lit = constTable.constValues.At(i);
+
+		wss << (unsigned char)lit.tp;
+		
+		switch (lit.tp) {
+		case AALiteralType::Int:
+			wss << lit.lit.i.val;
+			break;
+		default:
+			break;
+		}
+
+	}
+
+}
+
+void AAC::ConvertToBytes(CompiledAbstractExpression expr, aa::bstream& bis) {
+
+	bis << (unsigned char)expr.bc;
+
+	for (int i = 0; i < expr.argCount; i++) {
+		bis << expr.argValues[i];
+	}
+
 }

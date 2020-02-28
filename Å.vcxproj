@@ -149,6 +149,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AAB2F.cpp" />
     <ClCompile Include="AAC.cpp" />
     <ClCompile Include="AALexer.cpp" />
     <ClCompile Include="AAP.cpp" />
@@ -158,13 +159,17 @@
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AAB2F.h" />
     <ClInclude Include="AAByteCode.h" />
     <ClInclude Include="AAC.h" />
     <ClInclude Include="AALexer.h" />
     <ClInclude Include="AAP.h" />
     <ClInclude Include="AAVM.h" />
     <ClInclude Include="AA_AST.h" />
+    <ClInclude Include="AA_literals.h" />
     <ClInclude Include="AA_PT.h" />
+    <ClInclude Include="bstream.h" />
+    <ClInclude Include="list.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
