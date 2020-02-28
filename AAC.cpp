@@ -53,8 +53,8 @@ std::vector<AAC::CompiledAbstractExpression> AAC::CompileBinaryOperation(AA_AST_
 		binopCAE.bc = AAByteCode::ADD;
 	}
 
-	binopCAE.argValues[0] = --stackPointer;
-	binopCAE.argValues[1] = --stackPointer;
+	binopCAE.argValues[0] = stackPointer;
+	binopCAE.argValues[1] = ++stackPointer;
 
 	if (IsConstant(pNode->expressions[0]->type)) {
 		opList.push_back(this->HandleConstPush(cTable, pNode->expressions[0]));
@@ -68,7 +68,7 @@ std::vector<AAC::CompiledAbstractExpression> AAC::CompileBinaryOperation(AA_AST_
 		opList = Merge(opList, CompileAST(pNode->expressions[1], cTable));
 	}
 
-	binopCAE.argValues[2] = ++stackPointer;
+	binopCAE.argValues[2] = --stackPointer;
 
 	opList.push_back(binopCAE);
 
@@ -94,6 +94,9 @@ bool AAC::IsConstant(AA_AST_NODE_TYPE type) {
 }
 
 AAC::CompiledAbstractExpression AAC::HandleConstPush(CompiledConstantTable& cTable, AA_AST_NODE* pNode) {
+
+	// TODO: Update this to keep track of const counter (so two cases of 5's is added to the const table)
+	//		 If a single const is used, we don't want to waste time looking it up
 
 	CompiledAbstractExpression pushOp;
 	pushOp.bc = AAByteCode::PUSH_CONST;

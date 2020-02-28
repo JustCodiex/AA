@@ -16,6 +16,8 @@ int main() {
 
     aa::dump_bytecode(L"out\\math1.aab", bytecode);
 
+    VM->Execute(bytecode.bytes, bytecode.length);
+
     VM->Release();
 
     return 1;

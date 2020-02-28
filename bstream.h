@@ -3,6 +3,7 @@
 
 namespace aa {
 
+	// A very light-weight implementation of a byte stream, were input may only be appended.
 	class bstream {
 
 	public:
@@ -18,10 +19,12 @@ namespace aa {
 				m_buffer.push_back(bytes[i]);
 		}
 
+		// Get length of the underlying buffer at the time of the call
 		size_t length() {
 			return m_buffer.size();
 		}
 
+		// Get the pointer to the buffer's internal storage
 		unsigned char* array() {
 			return &m_buffer[0];
 		}

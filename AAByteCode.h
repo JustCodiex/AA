@@ -1,5 +1,6 @@
 #pragma once
 
+// Byte code operations for AA
 enum class AAByteCode : unsigned char {
 
 	NOP,
@@ -7,4 +8,3 @@ enum class AAByteCode : unsigned char {
 	ADD, // (Addition, 2 arguments[left, right])
 
 };
-

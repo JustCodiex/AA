@@ -163,6 +163,7 @@
     <ClInclude Include="AAByteCode.h" />
     <ClInclude Include="AAC.h" />
     <ClInclude Include="AALexer.h" />
+    <ClInclude Include="AAO.h" />
     <ClInclude Include="AAP.h" />
     <ClInclude Include="AAVM.h" />
     <ClInclude Include="AA_AST.h" />
@@ -170,6 +171,7 @@
     <ClInclude Include="AA_PT.h" />
     <ClInclude Include="bstream.h" />
     <ClInclude Include="list.h" />
+    <ClInclude Include="stack.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
