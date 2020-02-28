@@ -12,8 +12,13 @@ public:
 
 	void Release();
 
-	void Execute(std::wstring file);
-	
+	void RunFile(std::wstring file);
+	void RunExpression(std::wstring input);
+
+	AAC_Out CompileExpressionToFile(std::wstring input, std::wstring outputfile);
+	AAC_Out CompileFileToFile(std::wstring fileIn, std::wstring fileOut);
+
+	void Execute(AAC_Out bytecode);
 	void Execute(unsigned char* bytes, unsigned long long len);
 
 	AAP* GetParser() { return m_parser; }
