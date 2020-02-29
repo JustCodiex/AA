@@ -10,6 +10,7 @@ AAVM::AAVM() {
 
 	m_compiler = new AAC;
 	m_parser = new AAP;
+	m_outStream = 0;
 
 }
 
@@ -95,20 +96,52 @@ void AAVM::Execute(unsigned char* bytes, unsigned long long len) {
 
 void AAVM::Run(AA_Literal* lit, AAO* ops, int opCount) {
 
-	size_t opPointer = 0;
+	int opPointer = 0;
 	aa::stack<AA_Literal> stack;
 
 	while (opPointer < opCount) {
 
 		switch (ops[opPointer].op) {
-		case AAByteCode::PUSH_CONST:
+		case AAByteCode::PUSHC:
 			stack.Push(lit[ops[opPointer].args[0]]);
 			opPointer++;
 			break;
 		case AAByteCode::ADD: {
-			AA_Literal r = stack.At(ops[opPointer].args[0]) + stack.At(ops[opPointer].args[1]);
-			stack.Pop();
-			stack.Pop();
+			AA_Literal rhs = stack.Pop();
+			AA_Literal lhs = stack.Pop();
+			AA_Literal r = lhs + rhs;
+			stack.Push(r);
+			opPointer++;
+			break;
+		}
+		case AAByteCode::SUB: {
+			AA_Literal rhs = stack.Pop();
+			AA_Literal lhs = stack.Pop();
+			AA_Literal r = lhs - rhs;
+			stack.Push(r);
+			opPointer++;
+			break;
+		}
+		case AAByteCode::MUL: {
+			AA_Literal rhs = stack.Pop();
+			AA_Literal lhs = stack.Pop();
+			AA_Literal r = lhs * rhs;
+			stack.Push(r);
+			opPointer++;
+			break;
+		}
+		case AAByteCode::DIV: {
+			AA_Literal rhs = stack.Pop();
+			AA_Literal lhs = stack.Pop();
+			AA_Literal r = lhs / rhs;
+			stack.Push(r);
+			opPointer++;
+			break;
+		}
+		case AAByteCode::MOD: {
+			AA_Literal rhs = stack.Pop();
+			AA_Literal lhs = stack.Pop();
+			AA_Literal r = lhs % rhs;
 			stack.Push(r);
 			opPointer++;
 			break;
@@ -122,7 +155,10 @@ void AAVM::Run(AA_Literal* lit, AAO* ops, int opCount) {
 	}
 
 	if (stack.Size() == 1) {
-		printf(std::to_string(stack.Pop().lit.i.val).c_str());
+		if (m_outStream) {
+			m_outStream->operator<<(stack.Pop().lit.i.val);
+			m_outStream->write("\n", 1);
+		}
 	}
 
 }
@@ -194,15 +230,14 @@ AAO* AAVM::LoadOpSequence(unsigned char* bytes, unsigned long long len, int& cou
 		case AAByteCode::NOP:
 			opSequence[i].args = 0;
 			break;
-		case AAByteCode::PUSH_CONST:
+		case AAByteCode::PUSHC:
 			opSequence[i].args = new int[1];
 			memcpy(opSequence[i].args, bytes + offset, 4);
 			offset += 4;
 			break;
 		case AAByteCode::ADD:
-			opSequence[i].args = new int[3];
-			memcpy(opSequence[i].args, bytes + offset, 4 * 3);
-			offset += 4 * 3;
+		case AAByteCode::SUB:
+			opSequence[i].args = 0;
 			break;
 		default:
 			break;

@@ -44,17 +44,25 @@ std::vector<AAC::CompiledAbstractExpression> AAC::CompileAST(AA_AST_NODE* pNode,
 std::vector<AAC::CompiledAbstractExpression> AAC::CompileBinaryOperation(AA_AST_NODE* pNode, CompiledConstantTable& cTable) {
 
 	std::vector<CompiledAbstractExpression> opList;
-	int stackPointer = 0;
+	//int stackPointer = 0;
 
 	CompiledAbstractExpression binopCAE;
-	binopCAE.argCount = 3;
+	binopCAE.argCount = 0;
 
 	if (pNode->content == L"+") {
 		binopCAE.bc = AAByteCode::ADD;
+	} else if (pNode->content == L"-") {
+		binopCAE.bc = AAByteCode::SUB;
+	} else if (pNode->content == L"*") {
+		binopCAE.bc = AAByteCode::MUL;
+	} else if (pNode->content == L"/") {
+		binopCAE.bc = AAByteCode::DIV;
+	} else if (pNode->content == L"%") {
+		binopCAE.bc = AAByteCode::MOD;
 	}
 
-	binopCAE.argValues[0] = stackPointer;
-	binopCAE.argValues[1] = ++stackPointer;
+	//binopCAE.argValues[0] = stackPointer;
+	//binopCAE.argValues[1] = ++stackPointer;
 
 	if (IsConstant(pNode->expressions[0]->type)) {
 		opList.push_back(this->HandleConstPush(cTable, pNode->expressions[0]));
@@ -68,7 +76,7 @@ std::vector<AAC::CompiledAbstractExpression> AAC::CompileBinaryOperation(AA_AST_
 		opList = Merge(opList, CompileAST(pNode->expressions[1], cTable));
 	}
 
-	binopCAE.argValues[2] = --stackPointer;
+	//binopCAE.argValues[2] = --stackPointer;
 
 	opList.push_back(binopCAE);
 
@@ -99,7 +107,7 @@ AAC::CompiledAbstractExpression AAC::HandleConstPush(CompiledConstantTable& cTab
 	//		 If a single const is used, we don't want to waste time looking it up
 
 	CompiledAbstractExpression pushOp;
-	pushOp.bc = AAByteCode::PUSH_CONST;
+	pushOp.bc = AAByteCode::PUSHC;
 	pushOp.argCount = 1;
 
 	AA_AnyLiteral aLit = AA_AnyLiteral();

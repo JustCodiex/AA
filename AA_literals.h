@@ -78,4 +78,44 @@ struct AA_Literal {
 			break;
 		}
 	}
+	AA_Literal operator-(AA_Literal other) {
+		switch (this->tp) {
+		case AALiteralType::Int:
+			AA_Literal l = AA_Literal(*this);
+			l.lit.i.val -= other.lit.i.val;
+			return l;
+		default:
+			break;
+		}
+	}
+	AA_Literal operator*(AA_Literal other) {
+		switch (this->tp) {
+		case AALiteralType::Int:
+			AA_Literal l = AA_Literal(*this);
+			l.lit.i.val *= other.lit.i.val;
+			return l;
+		default:
+			break;
+		}
+	}
+	AA_Literal operator/(AA_Literal other) {
+		switch (this->tp) {
+		case AALiteralType::Int:
+			AA_Literal l = AA_Literal(*this);
+			l.lit.i.val /= other.lit.i.val;
+			return l;
+		default:
+			break;
+		}
+	}
+	AA_Literal operator%(AA_Literal other) {
+		switch (this->tp) {
+		case AALiteralType::Int:
+			AA_Literal l = AA_Literal(*this);
+			l.lit.i.val %= other.lit.i.val;
+			return l;
+		default:
+			break;
+		}
+	}
 };

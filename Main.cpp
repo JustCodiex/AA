@@ -8,8 +8,15 @@ int main() {
 
     AAVM* VM = AANewVM();
 
+    // Set output stream
+    VM->SetOutput(&std::cout);
+
     // Compile and execute
-    VM->Execute(VM->CompileExpressionToFile(L"15+5+7;", L"out\\math1.aab"));
+    VM->Execute(VM->CompileExpressionToFile(L"15+5+7;", L"out\\math_add.aab"));
+    VM->Execute(VM->CompileExpressionToFile(L"15+5-7;", L"out\\math_sub.aab"));
+    VM->Execute(VM->CompileExpressionToFile(L"15*5;", L"out\\math_mul.aab"));
+    VM->Execute(VM->CompileExpressionToFile(L"15/5;", L"out\\math_div.aab"));
+    VM->Execute(VM->CompileExpressionToFile(L"15%5;", L"out\\math_mod.aab"));
 
     VM->Release();
 

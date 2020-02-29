@@ -3,6 +3,7 @@
 #include "AAC.h"
 #include "AAP.h"
 #include "AAO.h"
+#include <iostream>
 
 class AAVM {
 
@@ -25,6 +26,10 @@ public:
 
 	AAC* GetCompiler() { return m_compiler; }
 
+	void SetOutput(std::ostream* stream) {
+		m_outStream = stream;
+	}
+
 private:
 
 	AA_Literal* LoadConstsTable(unsigned char* bytes, unsigned long long len, unsigned int& offset);
@@ -38,6 +43,8 @@ private:
 
 	AAP* m_parser;
 	AAC* m_compiler;
+
+	std::ostream* m_outStream;
 
 };
 
