@@ -54,6 +54,7 @@ private:
 	*/
 
 	std::vector<CompiledAbstractExpression> CompileBinaryOperation(AA_AST_NODE* pNode, CompiledConstantTable& cTable);
+	std::vector<CompiledAbstractExpression> CompileUnaryOperation(AA_AST_NODE* pNode, CompiledConstantTable& cTable);
 	CompiledAbstractExpression HandleConstPush(CompiledConstantTable& cTable, AA_AST_NODE* pNode);
 
 	/*
@@ -63,6 +64,7 @@ private:
 	bool IsConstant(AA_AST_NODE_TYPE type);
 	std::vector<CompiledAbstractExpression> Merge(std::vector<CompiledAbstractExpression> original, std::vector<CompiledAbstractExpression> add);
 	AAByteCode GetBytecodeFromBinaryOperator(std::wstring ws);
+	AAByteCode GetBytecodeFromUnaryOperator(std::wstring ws);
 
 	/*
 	** Bytecode functions

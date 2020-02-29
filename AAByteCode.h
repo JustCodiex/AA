@@ -11,5 +11,8 @@ enum class AAByteCode : unsigned char {
 	MUL, // (Multiplication, 0 arguments)
 	DIV, // (Division, 0 arguments)
 	MOD, // (Modulo, 0 arguments)
+	NNEG, // (Numberical Negation, 0 arguments)
+
+	LNEG, // (Logical Negation, 0 arguments)
 
 };

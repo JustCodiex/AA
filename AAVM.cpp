@@ -133,16 +133,19 @@ void AAVM::Run(AA_Literal* lit, AAO* ops, int opCount) {
 		case AAByteCode::DIV: {
 			AA_Literal rhs = stack.Pop();
 			AA_Literal lhs = stack.Pop();
-			AA_Literal r = lhs / rhs;
-			stack.Push(r);
+			stack.Push(lhs / rhs);
 			opPointer++;
 			break;
 		}
 		case AAByteCode::MOD: {
 			AA_Literal rhs = stack.Pop();
 			AA_Literal lhs = stack.Pop();
-			AA_Literal r = lhs % rhs;
-			stack.Push(r);
+			stack.Push(lhs % rhs);
+			opPointer++;
+			break;
+		}
+		case AAByteCode::NNEG: {
+			stack.Push(-stack.Pop());
 			opPointer++;
 			break;
 		}

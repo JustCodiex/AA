@@ -4,14 +4,16 @@
 enum class AA_PT_NODE_TYPE {
 
 	undefined,
+	
 	seperator,
-	parenthesis_start,
-	parenthesis_end,
 	
 	block,
-	binary_operation,
-	unary_operator,
 	expression,
+	parenthesis_start,
+	parenthesis_end,
+
+	binary_operation,
+	unary_operation,
 
 	intliteral,
 	floatliteral,
@@ -49,6 +51,7 @@ private:
 	AA_PT_NODE_TYPE GetSeperatorType(std::wstring val);
 
 	AA_PT_NODE* CreateTree(std::vector<AA_PT_NODE*>& nodes, int from);
+	AA_PT_NODE* CreateExpressionTree(std::vector<AA_PT_NODE*>& nodes, int from);
 
 	void Parenthesise(std::vector<AA_PT_NODE*>& nodes);
 	std::vector<AA_PT_NODE*> Parenthesise(std::vector<AA_PT_NODE*>& nodes, int& index);

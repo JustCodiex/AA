@@ -77,6 +77,7 @@ struct AA_Literal {
 		default:
 			break;
 		}
+		return *this;
 	}
 	AA_Literal operator-(AA_Literal other) {
 		switch (this->tp) {
@@ -87,6 +88,7 @@ struct AA_Literal {
 		default:
 			break;
 		}
+		return *this;
 	}
 	AA_Literal operator*(AA_Literal other) {
 		switch (this->tp) {
@@ -97,6 +99,7 @@ struct AA_Literal {
 		default:
 			break;
 		}
+		return *this;
 	}
 	AA_Literal operator/(AA_Literal other) {
 		switch (this->tp) {
@@ -107,6 +110,7 @@ struct AA_Literal {
 		default:
 			break;
 		}
+		return *this;
 	}
 	AA_Literal operator%(AA_Literal other) {
 		switch (this->tp) {
@@ -117,5 +121,17 @@ struct AA_Literal {
 		default:
 			break;
 		}
+		return *this;
+	}
+	AA_Literal operator-() {
+		switch (this->tp) {
+		case AALiteralType::Int:
+			AA_Literal l = AA_Literal(*this);
+			l.lit.i.val = -l.lit.i.val;
+			return l;
+		default:
+			break;
+		}
+		return *this;
 	}
 };

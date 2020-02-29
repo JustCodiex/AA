@@ -33,6 +33,10 @@ std::vector<AAC::CompiledAbstractExpression> AAC::CompileAST(AA_AST_NODE* pNode,
 		executionStack = Merge(executionStack, CompileBinaryOperation(pNode, cTable));
 		break;
 	}
+	case AA_AST_NODE_TYPE::unop: {
+		executionStack = Merge(executionStack, CompileUnaryOperation(pNode, cTable));
+		break;
+	}
 	default:
 		break;
 	}
@@ -67,6 +71,26 @@ std::vector<AAC::CompiledAbstractExpression> AAC::CompileBinaryOperation(AA_AST_
 
 }
 
+std::vector<AAC::CompiledAbstractExpression> AAC::CompileUnaryOperation(AA_AST_NODE* pNode, CompiledConstantTable& cTable) {
+
+	std::vector<CompiledAbstractExpression> opList;
+
+	CompiledAbstractExpression unopCAE;
+	unopCAE.argCount = 0;
+	unopCAE.bc = GetBytecodeFromUnaryOperator(pNode->content);
+
+	if (IsConstant(pNode->expressions[0]->type)) {
+		opList.push_back(this->HandleConstPush(cTable, pNode->expressions[0]));
+	} else {
+		opList = Merge(opList, CompileAST(pNode->expressions[0], cTable));
+	}
+
+	opList.push_back(unopCAE);
+
+	return opList;
+
+}
+
 std::vector<AAC::CompiledAbstractExpression> AAC::Merge(std::vector<CompiledAbstractExpression> original, std::vector<CompiledAbstractExpression> add) {
 
 	std::vector<CompiledAbstractExpression> merged = original;
@@ -96,6 +120,18 @@ AAByteCode AAC::GetBytecodeFromBinaryOperator(std::wstring ws) {
 		return AAByteCode::DIV;
 	} else if (ws == L"%") {
 		return AAByteCode::MOD;
+	} else {
+		return AAByteCode::NOP;
+	}
+
+}
+
+AAByteCode AAC::GetBytecodeFromUnaryOperator(std::wstring ws) {
+
+	if (ws == L"!") {
+		return AAByteCode::LNEG;
+	} else if (ws == L"-") {
+		return AAByteCode::NNEG;
 	} else {
 		return AAByteCode::NOP;
 	}

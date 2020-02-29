@@ -30,7 +30,7 @@ std::vector<AA_PT_NODE*> AA_PT::ToNodes(std::vector<AALexicalResult> lexResult) 
 			if (!IsUnaryOperator(aa_pt_nodes)) {
 				node->nodeType = AA_PT_NODE_TYPE::binary_operation;
 			} else {
-				node->nodeType = AA_PT_NODE_TYPE::unary_operator;
+				node->nodeType = AA_PT_NODE_TYPE::unary_operation;
 			}
 			break;
 		case AAToken::seperator:
@@ -71,7 +71,7 @@ bool AA_PT::IsUnaryOperator(std::vector<AA_PT_NODE*> nodes) {
 		return std::find(binop.begin(), binop.end(), nodes[nodes.size() - 1]->nodeType) == binop.end();
 	}
 
-	return false;
+	return true;
 
 }
 
@@ -90,15 +90,19 @@ AA_PT_NODE* AA_PT::CreateTree(std::vector<AA_PT_NODE*>& nodes, int from) {
 			nodes[nodeIndex + 1]->parent = nodes[nodeIndex];
 
 			nodes[nodeIndex]->childNodes.push_back(nodes[nodeIndex - 1]);
-
-			if (nodes[nodeIndex+1]->nodeType == AA_PT_NODE_TYPE::expression) {
-				nodes[nodeIndex]->childNodes.push_back(CreateTree(nodes[nodeIndex+1]->childNodes, 0));
-			} else {
-				nodes[nodeIndex]->childNodes.push_back(nodes[nodeIndex + 1]);
-			}
+			nodes[nodeIndex]->childNodes.push_back(CreateExpressionTree(nodes, nodeIndex + 1));
 
 			nodes.erase(nodes.begin() + nodeIndex + 1);
 			nodes.erase(nodes.begin() + nodeIndex - 1);
+
+			break;
+		case AA_PT_NODE_TYPE::unary_operation:
+
+			nodes[nodeIndex + 1]->parent = nodes[nodeIndex];
+			nodes[nodeIndex]->childNodes.push_back(CreateExpressionTree(nodes, nodeIndex + 1));
+			nodes.erase(nodes.begin() + nodeIndex + 1);
+
+			nodeIndex++;
 
 			break;
 		case AA_PT_NODE_TYPE::seperator:
@@ -110,11 +114,7 @@ AA_PT_NODE* AA_PT::CreateTree(std::vector<AA_PT_NODE*>& nodes, int from) {
 			nodeIndex++;
 			break;
 		case AA_PT_NODE_TYPE::expression: {
-			AA_PT_NODE* exp = CreateTree(nodes[nodeIndex]->childNodes, 0);
-			while (exp->nodeType == AA_PT_NODE_TYPE::expression) {
-				exp = CreateTree(exp->childNodes, 0);
-			}
-			nodes[nodeIndex] = exp;
+			nodes[nodeIndex] = CreateExpressionTree(nodes, nodeIndex);
 			nodeIndex++;
 			break;
 		}
@@ -127,6 +127,25 @@ AA_PT_NODE* AA_PT::CreateTree(std::vector<AA_PT_NODE*>& nodes, int from) {
 	root = nodes.at(0);
 
 	return root;
+
+}
+
+AA_PT_NODE* AA_PT::CreateExpressionTree(std::vector<AA_PT_NODE*>& nodes, int from) {
+
+	if (nodes[from]->nodeType == AA_PT_NODE_TYPE::expression) {
+
+		AA_PT_NODE* exp = CreateTree(nodes[from]->childNodes, 0); // Create a tree for the expression
+		while (exp->nodeType == AA_PT_NODE_TYPE::expression) { // As long as we have a single expression here, we break it down to smaller bits, incase we get input like (((5+5))).
+			exp = CreateTree(exp->childNodes, 0); // Create the tree for the sub expression
+		}
+
+		return exp;
+
+	} else {
+
+		return nodes[from];
+
+	}
 
 }
 
