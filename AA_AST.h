@@ -46,4 +46,3 @@ private:
 	AA_AST_NODE* m_root;
 
 };
-

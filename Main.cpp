@@ -11,6 +11,11 @@ int main() {
     // Set output stream
     VM->SetOutput(&std::cout);
 
+    // Current test case
+    VM->Execute(VM->CompileExpressionToFile(L"((((5+6))));", L"out\\math_paranthesis3.aab")); // Expected output = 11
+    VM->Execute(VM->CompileExpressionToFile(L"((15+5)*42)-(5/2);", L"out\\math_paranthesis2.aab")); // Expected output = 838
+    VM->Execute(VM->CompileExpressionToFile(L"(15+5)*42-(5/2);", L"out\\math_paranthesis.aab")); // Expected output = 838
+
     // Compile and execute
     VM->Execute(VM->CompileExpressionToFile(L"15+5+7;", L"out\\math_add.aab"));
     VM->Execute(VM->CompileExpressionToFile(L"15+5-7;", L"out\\math_sub.aab"));

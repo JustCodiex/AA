@@ -62,6 +62,7 @@ private:
 
 	bool IsConstant(AA_AST_NODE_TYPE type);
 	std::vector<CompiledAbstractExpression> Merge(std::vector<CompiledAbstractExpression> original, std::vector<CompiledAbstractExpression> add);
+	AAByteCode GetBytecodeFromBinaryOperator(std::wstring ws);
 
 	/*
 	** Bytecode functions
