@@ -149,7 +149,20 @@ AA_PT_NODE* AA_PT::CreateExpressionTree(std::vector<AA_PT_NODE*>& nodes, int fro
 
 }
 
-void AA_PT::Parenthesise(std::vector<AA_PT_NODE*>& nodes) {
+void AA_PT::PrioritizeBinding(std::vector<AA_PT_NODE*>& nodes) {
+
+	// Convert parenthesis blocks into singular expressions
+	this->ApplyGroupings(nodes);
+
+	// Apply bindings (eg. -1 => unary operation)
+	this->ApplyUnaryBindings(nodes);
+
+	// Apply mathematic rules So 5+5*5 = 30 and not 50
+	this->ApplyArithemticRules(nodes);
+
+}
+
+void AA_PT::ApplyGroupings(std::vector<AA_PT_NODE*>& nodes) {
 
 	int i = 0;
 	this->Parenthesise(nodes, i);
@@ -178,7 +191,7 @@ std::vector<AA_PT_NODE*> AA_PT::Parenthesise(std::vector<AA_PT_NODE*>& nodes, in
 			index = pStart;
 
 		} else if (nodes[index]->nodeType == AA_PT_NODE_TYPE::parenthesis_end) {
-		
+
 			REMOVE_NODE(index);
 
 			return subNodes;
@@ -187,27 +200,20 @@ std::vector<AA_PT_NODE*> AA_PT::Parenthesise(std::vector<AA_PT_NODE*>& nodes, in
 			subNodes.push_back(nodes[index]);
 			index++;
 		}
-		
+
 	}
 
 	return subNodes;
 
 }
 
-void AA_PT::PrioritizeBinding(std::vector<AA_PT_NODE*>& nodes) {
+void AA_PT::ApplyUnaryBindings(std::vector<AA_PT_NODE*>& nodes) {
 
-	// Convert parenthesis blocks into singular expressions
-	this->Parenthesise(nodes);
-
-	// Apply bindings (eg. -1 => unary operation)
-	this->ApplyBindings(nodes);
-
-	// Apply mathematic rules So 5+5*5 = 30 and not 50
-	this->ApplyArithemticRules(nodes);
-
-}
-
-void AA_PT::ApplyBindings(std::vector<AA_PT_NODE*>& nodes) {
+	for (size_t i = 0; i < nodes.size(); i++) {
+		if (nodes[i]->nodeType == AA_PT_NODE_TYPE::expression) {
+			ApplyUnaryBindings(nodes[i]->childNodes);
+		}
+	}
 
 	size_t index = 0;
 
@@ -225,10 +231,6 @@ void AA_PT::ApplyBindings(std::vector<AA_PT_NODE*>& nodes) {
 
 			nodes.insert(nodes.begin() + index, unaryExp);
 
-		} else if (nodes[index]->nodeType == AA_PT_NODE_TYPE::expression) {
-
-			index++;
-
 		} else {
 
 			index++;
@@ -241,6 +243,41 @@ void AA_PT::ApplyBindings(std::vector<AA_PT_NODE*>& nodes) {
 
 void AA_PT::ApplyArithemticRules(std::vector<AA_PT_NODE*>& nodes) {
 
+	for (size_t i = 0; i < nodes.size(); i++) {
+		if (nodes[i]->nodeType == AA_PT_NODE_TYPE::expression) {
+			ApplyArithemticRules(nodes[i]->childNodes);
+		}
+	}
 
+	size_t index = 0;
+
+	while (index < nodes.size()) {
+
+		if (nodes[index]->nodeType == AA_PT_NODE_TYPE::binary_operation) {
+
+			if (nodes[index]->content == L"*" || nodes[index]->content == L"/" || nodes[index]->content == L"%") {
+
+				AA_PT_NODE* binOpNode = new AA_PT_NODE;
+				binOpNode->nodeType = AA_PT_NODE_TYPE::expression;
+				binOpNode->childNodes.push_back(nodes[index - 1]);
+				binOpNode->childNodes.push_back(nodes[index]);
+				binOpNode->childNodes.push_back(nodes[index + 1]);
+
+				nodes.erase(nodes.begin() + index + 1);
+				nodes.erase(nodes.begin() + index);
+
+				nodes.insert(nodes.begin() + index, binOpNode);
+
+				nodes.erase(nodes.begin() + index - 1);
+
+			} else {
+				index++;
+			}
+
+		} else {
+			index++;
+		}
+
+	}
 
 }

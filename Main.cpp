@@ -12,9 +12,10 @@ int main() {
     VM->SetOutput(&std::cout);
 
     // Current test case
-    VM->Execute(VM->CompileExpressionToFile(L"5--5;", L"out\\math_negate4.aab")); // Expected output = 10
+    VM->Execute(VM->CompileExpressionToFile(L"5+5*5;", L"out\\math_arithmetic_binding.aab")); // Expected output = 30
 
     // Compile and execute
+    VM->Execute(VM->CompileExpressionToFile(L"5--5;", L"out\\math_negate4.aab")); // Expected output = 10
     VM->Execute(VM->CompileExpressionToFile(L"5+-5;", L"out\\math_negate3.aab")); // Expected output = 0
     VM->Execute(VM->CompileExpressionToFile(L"5+(-5);", L"out\\math_negate2.aab")); // Expected output = 0
     VM->Execute(VM->CompileExpressionToFile(L"-5;", L"out\\math_negate1.aab")); // Exepcted output = -5

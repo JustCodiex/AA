@@ -64,11 +64,11 @@ private:
 	*/
 
 	void PrioritizeBinding(std::vector<AA_PT_NODE*>& nodes);
-	void Parenthesise(std::vector<AA_PT_NODE*>& nodes);
-	std::vector<AA_PT_NODE*> Parenthesise(std::vector<AA_PT_NODE*>& nodes, int& index);
-
-	void ApplyBindings(std::vector<AA_PT_NODE*>& nodes);
+	void ApplyGroupings(std::vector<AA_PT_NODE*>& nodes);
+	void ApplyUnaryBindings(std::vector<AA_PT_NODE*>& nodes);
 	void ApplyArithemticRules(std::vector<AA_PT_NODE*>& nodes);
+
+	std::vector<AA_PT_NODE*> Parenthesise(std::vector<AA_PT_NODE*>& nodes, int& index);
 
 private:
 
