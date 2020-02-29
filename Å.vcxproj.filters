@@ -16,6 +16,24 @@
     <Filter Include="Header Files\util">
       <UniqueIdentifier>{456f5f90-96b1-425a-9cfd-2497b980a542}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\compiler">
+      <UniqueIdentifier>{86a0dc0b-6320-4618-9247-c30583cc5470}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\parser">
+      <UniqueIdentifier>{2c043d5d-134f-47f7-8b59-356e7a1d4e93}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\compiler">
+      <UniqueIdentifier>{68806610-28c5-4da6-8745-e6edb8e9066e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\parser">
+      <UniqueIdentifier>{aca1168b-8729-458e-a68f-4112501d0999}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\aautil">
+      <UniqueIdentifier>{888bbe55-c6b3-4d80-82d0-7ee7f0337692}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\aautil">
+      <UniqueIdentifier>{7849275d-8ed2-4ca6-9e75-849e7f2f51dd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -24,45 +42,27 @@
     <ClCompile Include="AAVM.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="AAC.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AAP.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AALexer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="AA_AST.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\parser</Filter>
     </ClCompile>
     <ClCompile Include="AA_PT.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="AALexer.cpp">
+      <Filter>Source Files\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="AAP.cpp">
+      <Filter>Source Files\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="AAC.cpp">
+      <Filter>Source Files\compiler</Filter>
     </ClCompile>
     <ClCompile Include="AAB2F.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\aautil</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AAVM.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AAC.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AAP.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AALexer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AA_AST.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AA_PT.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AAByteCode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AA_literals.h">
@@ -74,14 +74,32 @@
     <ClInclude Include="bstream.h">
       <Filter>Header Files\util</Filter>
     </ClInclude>
-    <ClInclude Include="AAB2F.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AAO.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="stack.h">
       <Filter>Header Files\util</Filter>
+    </ClInclude>
+    <ClInclude Include="AAB2F.h">
+      <Filter>Header Files\aautil</Filter>
+    </ClInclude>
+    <ClInclude Include="AAO.h">
+      <Filter>Header Files\compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="AAC.h">
+      <Filter>Header Files\compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="AAByteCode.h">
+      <Filter>Header Files\compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="AA_AST.h">
+      <Filter>Header Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="AA_PT.h">
+      <Filter>Header Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="AALexer.h">
+      <Filter>Header Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="AAP.h">
+      <Filter>Header Files\parser</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

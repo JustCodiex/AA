@@ -6,8 +6,8 @@ AA_PT::AA_PT(std::vector<AALexicalResult> lexResult) {
 	// Convert lexical analysis to AA_PT_NODEs
 	std::vector<AA_PT_NODE*> aa_pt_nodes = ToNodes(lexResult);
 
-	// Convert parenthesis blocks into singular expressions
-	this->Parenthesise(aa_pt_nodes);
+	// Apply mathematical arithmetic and binding rules
+	this->PrioritizeBinding(aa_pt_nodes);
 
 	// Create tree from AA_PT_NODEs
 	m_root = this->CreateTree(aa_pt_nodes, 0);
@@ -160,7 +160,7 @@ std::vector<AA_PT_NODE*> AA_PT::Parenthesise(std::vector<AA_PT_NODE*>& nodes, in
 
 	std::vector<AA_PT_NODE*> subNodes;
 
-	while (index < nodes.size()) {
+	while (index < (int)nodes.size()) {
 
 		if (nodes[index]->nodeType == AA_PT_NODE_TYPE::parenthesis_start) {
 
@@ -191,5 +191,56 @@ std::vector<AA_PT_NODE*> AA_PT::Parenthesise(std::vector<AA_PT_NODE*>& nodes, in
 	}
 
 	return subNodes;
+
+}
+
+void AA_PT::PrioritizeBinding(std::vector<AA_PT_NODE*>& nodes) {
+
+	// Convert parenthesis blocks into singular expressions
+	this->Parenthesise(nodes);
+
+	// Apply bindings (eg. -1 => unary operation)
+	this->ApplyBindings(nodes);
+
+	// Apply mathematic rules So 5+5*5 = 30 and not 50
+	this->ApplyArithemticRules(nodes);
+
+}
+
+void AA_PT::ApplyBindings(std::vector<AA_PT_NODE*>& nodes) {
+
+	size_t index = 0;
+
+	while (index < nodes.size()) {
+
+		if (nodes[index]->nodeType == AA_PT_NODE_TYPE::unary_operation) {
+
+			AA_PT_NODE* unaryExp = new AA_PT_NODE;
+			unaryExp->nodeType = AA_PT_NODE_TYPE::expression;
+			unaryExp->childNodes.push_back(nodes[index]);
+			unaryExp->childNodes.push_back(nodes[index+1]);
+
+			nodes.erase(nodes.begin() + index+1);
+			nodes.erase(nodes.begin() + index);
+
+			nodes.insert(nodes.begin() + index, unaryExp);
+
+		} else if (nodes[index]->nodeType == AA_PT_NODE_TYPE::expression) {
+
+			index++;
+
+		} else {
+
+			index++;
+
+		}
+
+	}
+
+}
+
+void AA_PT::ApplyArithemticRules(std::vector<AA_PT_NODE*>& nodes) {
+
+
 
 }

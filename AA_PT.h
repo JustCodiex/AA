@@ -44,21 +44,34 @@ public:
 
 private:
 
-	std::vector<AA_PT_NODE*> ToNodes(std::vector<AALexicalResult> lexResult);
+	/*
+	** To node converter functions
+	*/
 
+	std::vector<AA_PT_NODE*> ToNodes(std::vector<AALexicalResult> lexResult);
+	AA_PT_NODE_TYPE GetSeperatorType(std::wstring val);
 	bool IsUnaryOperator(std::vector<AA_PT_NODE*> nodes);
 
-	AA_PT_NODE_TYPE GetSeperatorType(std::wstring val);
-
+	/*
+	** To tree functions
+	*/
+	
 	AA_PT_NODE* CreateTree(std::vector<AA_PT_NODE*>& nodes, int from);
 	AA_PT_NODE* CreateExpressionTree(std::vector<AA_PT_NODE*>& nodes, int from);
 
+	/*
+	** Mathematical and language binding functions
+	*/
+
+	void PrioritizeBinding(std::vector<AA_PT_NODE*>& nodes);
 	void Parenthesise(std::vector<AA_PT_NODE*>& nodes);
 	std::vector<AA_PT_NODE*> Parenthesise(std::vector<AA_PT_NODE*>& nodes, int& index);
+
+	void ApplyBindings(std::vector<AA_PT_NODE*>& nodes);
+	void ApplyArithemticRules(std::vector<AA_PT_NODE*>& nodes);
 
 private:
 
 	AA_PT_NODE* m_root;
 
 };
-

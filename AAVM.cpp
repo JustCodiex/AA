@@ -230,16 +230,18 @@ AAO* AAVM::LoadOpSequence(unsigned char* bytes, unsigned long long len, int& cou
 		opSequence[i].op = (AAByteCode)opchar;
 
 		switch (opSequence[i].op) {
-		case AAByteCode::NOP:
-			opSequence[i].args = 0;
-			break;
 		case AAByteCode::PUSHC:
 			opSequence[i].args = new int[1];
 			memcpy(opSequence[i].args, bytes + offset, 4);
 			offset += 4;
 			break;
+		case AAByteCode::NOP:
 		case AAByteCode::ADD:
 		case AAByteCode::SUB:
+		case AAByteCode::MOD:
+		case AAByteCode::MUL:
+		case AAByteCode::DIV:
+		case AAByteCode::NNEG:
 			opSequence[i].args = 0;
 			break;
 		default:
