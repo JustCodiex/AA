@@ -7,7 +7,10 @@ AA_PT::AA_PT(std::vector<AALexicalResult> lexResult) {
 	std::vector<AA_PT_NODE*> aa_pt_nodes = ToNodes(lexResult);
 
 	// Apply mathematical arithmetic and binding rules
-	this->PrioritizeBinding(aa_pt_nodes);
+	this->ApplyOrderOfOperationBindings(aa_pt_nodes);
+
+	// Apply flow control
+	this->ApplyFlowControlBindings(aa_pt_nodes);
 
 	// Create tree from AA_PT_NODEs
 	m_root = this->CreateTree(aa_pt_nodes, 0);
@@ -36,6 +39,12 @@ std::vector<AA_PT_NODE*> AA_PT::ToNodes(std::vector<AALexicalResult> lexResult) 
 		case AAToken::seperator:
 			node->nodeType = GetSeperatorType(lexResult[i].content);
 			break;
+		case AAToken::identifier:
+			node->nodeType = AA_PT_NODE_TYPE::identifier;
+			break;
+		case AAToken::keyword:
+			node->nodeType = AA_PT_NODE_TYPE::keyword;
+			break;
 		default:
 			break;
 		}
@@ -51,7 +60,11 @@ std::vector<AA_PT_NODE*> AA_PT::ToNodes(std::vector<AALexicalResult> lexResult) 
 }
 
 AA_PT_NODE_TYPE AA_PT::GetSeperatorType(std::wstring val) {
-	if (val == L"(") {
+	if (val == L"{") {
+		return AA_PT_NODE_TYPE::block_start;
+	} else if (val == L"}") {
+		return AA_PT_NODE_TYPE::block_end;
+	} else if(val == L"(") {
 		return AA_PT_NODE_TYPE::parenthesis_start;
 	} else if (val == L")") {
 		return AA_PT_NODE_TYPE::parenthesis_end;
@@ -64,7 +77,11 @@ bool AA_PT::IsUnaryOperator(std::vector<AA_PT_NODE*> nodes) {
 
 	std::vector<AA_PT_NODE_TYPE> binop = {
 		AA_PT_NODE_TYPE::intliteral,
+		AA_PT_NODE_TYPE::floatliteral,
+		AA_PT_NODE_TYPE::charliteral,
+		AA_PT_NODE_TYPE::stringliteral,
 		AA_PT_NODE_TYPE::parenthesis_end,
+		AA_PT_NODE_TYPE::identifier,
 	};
 
 	if (nodes.size() > 0) {
@@ -82,51 +99,83 @@ AA_PT_NODE* AA_PT::CreateTree(std::vector<AA_PT_NODE*>& nodes, int from) {
 	size_t nodeIndex = from;
 	AA_PT_NODE* root = 0;
 
-	while (nodes.size() > 1 && nodeIndex < nodes.size()) {
-		switch (nodes[nodeIndex]->nodeType) {
-		case AA_PT_NODE_TYPE::binary_operation:
+	if (nodes.size() == 1 && nodes[0]->nodeType == AA_PT_NODE_TYPE::expression) {
+		return CreateExpressionTree(nodes, 0);
+		//printf("");
+	}
 
-			nodes[nodeIndex - 1]->parent = nodes[nodeIndex];
-			nodes[nodeIndex + 1]->parent = nodes[nodeIndex];
-
-			nodes[nodeIndex]->childNodes.push_back(nodes[nodeIndex - 1]);
-			nodes[nodeIndex]->childNodes.push_back(CreateExpressionTree(nodes, nodeIndex + 1));
-
-			nodes.erase(nodes.begin() + nodeIndex + 1);
-			nodes.erase(nodes.begin() + nodeIndex - 1);
-
-			break;
-		case AA_PT_NODE_TYPE::unary_operation:
-
-			nodes[nodeIndex + 1]->parent = nodes[nodeIndex];
-			nodes[nodeIndex]->childNodes.push_back(CreateExpressionTree(nodes, nodeIndex + 1));
-			nodes.erase(nodes.begin() + nodeIndex + 1);
-
-			nodeIndex++;
-
-			break;
-		case AA_PT_NODE_TYPE::seperator:
-			if (nodes[nodeIndex]->content == L";") {
-				REMOVE_NODE(nodeIndex);
-			}
-			break;
-		case AA_PT_NODE_TYPE::intliteral:
-			nodeIndex++;
-			break;
-		case AA_PT_NODE_TYPE::expression: {
-			nodes[nodeIndex] = CreateExpressionTree(nodes, nodeIndex);
-			nodeIndex++;
-			break;
+	if (nodes.size() > 0 && (nodes[0]->nodeType == AA_PT_NODE_TYPE::block)) {
+		HandleTreeCase(nodes, nodeIndex);
+	} else {
+		while (nodes.size() > 1 && nodeIndex < nodes.size()) {
+			HandleTreeCase(nodes, nodeIndex);
 		}
-		default:
-			break;
-		}
-
 	}
 
 	root = nodes.at(0);
 
 	return root;
+
+}
+
+void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
+
+	switch (nodes[nodeIndex]->nodeType) {
+	case AA_PT_NODE_TYPE::binary_operation:
+
+		nodes[nodeIndex - 1]->parent = nodes[nodeIndex];
+		nodes[nodeIndex + 1]->parent = nodes[nodeIndex];
+
+		nodes[nodeIndex]->childNodes.push_back(nodes[nodeIndex - 1]);
+		nodes[nodeIndex]->childNodes.push_back(this->CreateExpressionTree(nodes, nodeIndex + 1));
+
+		nodes.erase(nodes.begin() + nodeIndex + 1);
+		nodes.erase(nodes.begin() + nodeIndex - 1);
+
+		break;
+	case AA_PT_NODE_TYPE::unary_operation:
+
+		nodes[nodeIndex + 1]->parent = nodes[nodeIndex];
+		nodes[nodeIndex]->childNodes.push_back(this->CreateExpressionTree(nodes, nodeIndex + 1));
+		nodes.erase(nodes.begin() + nodeIndex + 1);
+
+		nodeIndex++;
+
+		break;
+	case AA_PT_NODE_TYPE::seperator:
+		if (nodes[nodeIndex]->content == L";") {
+			REMOVE_NODE(nodeIndex);
+		}
+		break;
+	case AA_PT_NODE_TYPE::identifier:
+	case AA_PT_NODE_TYPE::intliteral:
+		nodeIndex++;
+		break;
+	case AA_PT_NODE_TYPE::keyword:
+		if (nodes[nodeIndex]->content == L"var") {
+			nodes[nodeIndex] = this->CreateVariableDecl(nodes, nodeIndex);
+		}
+		nodeIndex++;
+		break;
+	case AA_PT_NODE_TYPE::expression: {
+		nodes[nodeIndex] = this->CreateExpressionTree(nodes, nodeIndex);
+		nodeIndex++;
+		break;
+	}
+	case AA_PT_NODE_TYPE::block: {
+		for (size_t i = 0; i < nodes[nodeIndex]->childNodes.size(); i++) {
+			if (nodes[nodeIndex]->childNodes[i]->nodeType == AA_PT_NODE_TYPE::expression) {
+				nodes[nodeIndex]->childNodes[i] = this->CreateTree(nodes[nodeIndex]->childNodes[i]->childNodes, 0);
+			} else {
+				printf("Uhhh....");
+			}
+		}
+		nodeIndex++;
+		break;
+	}
+	default:
+		break;
+	}
 
 }
 
@@ -149,7 +198,24 @@ AA_PT_NODE* AA_PT::CreateExpressionTree(std::vector<AA_PT_NODE*>& nodes, int fro
 
 }
 
-void AA_PT::PrioritizeBinding(std::vector<AA_PT_NODE*>& nodes) {
+AA_PT_NODE* AA_PT::CreateVariableDecl(std::vector<AA_PT_NODE*>& nodes, int from) {
+
+	if (nodes[from + 1]->nodeType != AA_PT_NODE_TYPE::identifier) {
+		printf("Err: Expected identifier");
+	}
+
+	AA_PT_NODE* valDeclExp = new AA_PT_NODE;
+	valDeclExp->nodeType = AA_PT_NODE_TYPE::decleration;
+	valDeclExp->childNodes.push_back(nodes[from]);
+	valDeclExp->childNodes.push_back(nodes[from+1]);
+
+	nodes.erase(nodes.begin() + from + 1);
+
+	return valDeclExp;
+
+}
+
+void AA_PT::ApplyOrderOfOperationBindings(std::vector<AA_PT_NODE*>& nodes) {
 
 	// Convert parenthesis blocks into singular expressions
 	this->ApplyGroupings(nodes);
@@ -160,50 +226,15 @@ void AA_PT::PrioritizeBinding(std::vector<AA_PT_NODE*>& nodes) {
 	// Apply mathematic rules So 5+5*5 = 30 and not 50
 	this->ApplyArithemticRules(nodes);
 
+	// Apply assignment order rule, so var x = 5+5 is treated as 5+5=x and not x=5, + 5
+	this->ApplyAssignmentOrder(nodes);
+
 }
 
 void AA_PT::ApplyGroupings(std::vector<AA_PT_NODE*>& nodes) {
 
 	int i = 0;
-	this->Parenthesise(nodes, i);
-
-}
-
-std::vector<AA_PT_NODE*> AA_PT::Parenthesise(std::vector<AA_PT_NODE*>& nodes, int& index) {
-
-	std::vector<AA_PT_NODE*> subNodes;
-
-	while (index < (int)nodes.size()) {
-
-		if (nodes[index]->nodeType == AA_PT_NODE_TYPE::parenthesis_start) {
-
-			REMOVE_NODE(index);
-
-			int pStart = index;
-
-			AA_PT_NODE* expNode = new AA_PT_NODE;
-			expNode->nodeType = AA_PT_NODE_TYPE::expression;
-			expNode->childNodes = Parenthesise(nodes, index);
-
-			nodes.erase(nodes.begin() + pStart, nodes.begin() + pStart + expNode->childNodes.size());
-			nodes.insert(nodes.begin() + pStart, expNode);
-
-			index = pStart;
-
-		} else if (nodes[index]->nodeType == AA_PT_NODE_TYPE::parenthesis_end) {
-
-			REMOVE_NODE(index);
-
-			return subNodes;
-
-		} else {
-			subNodes.push_back(nodes[index]);
-			index++;
-		}
-
-	}
-
-	return subNodes;
+	this->PairStatements(nodes, i, AA_PT_NODE_TYPE::parenthesis_start, AA_PT_NODE_TYPE::parenthesis_end, AA_PT_NODE_TYPE::expression);
 
 }
 
@@ -245,7 +276,9 @@ void AA_PT::ApplyArithemticRules(std::vector<AA_PT_NODE*>& nodes) {
 
 	for (size_t i = 0; i < nodes.size(); i++) {
 		if (nodes[i]->nodeType == AA_PT_NODE_TYPE::expression) {
-			ApplyArithemticRules(nodes[i]->childNodes);
+			for (size_t j = 0; j < nodes[i]->childNodes.size(); j++) {
+				ApplyArithemticRules(nodes[i]->childNodes[j]->childNodes);
+			}
 		}
 	}
 
@@ -279,5 +312,125 @@ void AA_PT::ApplyArithemticRules(std::vector<AA_PT_NODE*>& nodes) {
 		}
 
 	}
+
+}
+
+void AA_PT::ApplyAssignmentOrder(std::vector<AA_PT_NODE*>& nodes) {
+
+	size_t index = 0;
+
+	while (index < nodes.size()) {
+
+		if (nodes[index]->nodeType == AA_PT_NODE_TYPE::binary_operation) {
+
+			if (nodes[index]->content == L"=") {
+
+				size_t index2 = index;
+
+				while (index2 < nodes.size()) {
+					if (nodes[index2]->nodeType == AA_PT_NODE_TYPE::seperator) {
+						break;
+					} else {
+						index2++;
+					}
+				}
+
+				AA_PT_NODE* rhs = new AA_PT_NODE;
+				rhs->nodeType = AA_PT_NODE_TYPE::expression;
+				rhs->childNodes = std::vector<AA_PT_NODE*>(nodes.begin() + index + 1, nodes.begin() + index2);
+
+				nodes.erase(nodes.begin() + index + 1, nodes.begin() + index2);
+				nodes.insert(nodes.begin() + index + 1, rhs);
+
+			}
+
+		}
+
+		index++;
+
+	}
+
+}
+
+void AA_PT::ApplyFlowControlBindings(std::vector<AA_PT_NODE*>& nodes) {
+
+	int index = 0;
+	PairStatements(nodes, index, AA_PT_NODE_TYPE::block_start, AA_PT_NODE_TYPE::block_end, AA_PT_NODE_TYPE::block);
+
+	ApplyStatementBindings(nodes);
+
+}
+
+void AA_PT::ApplyStatementBindings(std::vector<AA_PT_NODE*>& nodes) {
+
+	size_t index = 0;
+
+	while (index < nodes.size()) {
+
+		if (nodes[index]->nodeType == AA_PT_NODE_TYPE::block) {
+			ApplyStatementBindings(nodes[index]->childNodes);
+		} else {
+
+			size_t index2 = index;
+
+			while (index2 < nodes.size()) {
+				if (nodes[index2]->nodeType == AA_PT_NODE_TYPE::seperator) {
+					index2++;
+					break;
+				} else {
+					index2++;
+				}
+			}
+
+			AA_PT_NODE* rhs = new AA_PT_NODE;
+			rhs->nodeType = AA_PT_NODE_TYPE::expression;
+			rhs->childNodes = std::vector<AA_PT_NODE*>(nodes.begin() + index, nodes.begin() + index2);
+
+			nodes.erase(nodes.begin() + index, nodes.begin() + index2);
+			nodes.insert(nodes.begin() + index, rhs);
+
+		}
+
+		index++;
+
+	}
+
+}
+
+std::vector<AA_PT_NODE*> AA_PT::PairStatements(std::vector<AA_PT_NODE*>& nodes, int& index, AA_PT_NODE_TYPE open, AA_PT_NODE_TYPE close, AA_PT_NODE_TYPE contentType) {
+
+	std::vector<AA_PT_NODE*> subNodes;
+
+	while (index < (int)nodes.size()) {
+
+		if (nodes[index]->nodeType == open) {
+
+			REMOVE_NODE(index);
+
+			int pStart = index;
+
+			AA_PT_NODE* expNode = new AA_PT_NODE;
+			expNode->nodeType = contentType;
+			expNode->childNodes = PairStatements(nodes, index, open, close, contentType);
+
+			nodes.erase(nodes.begin() + pStart, nodes.begin() + pStart + expNode->childNodes.size());
+			nodes.insert(nodes.begin() + pStart, expNode);
+
+			index = pStart;
+
+		} else if (nodes[index]->nodeType == close) {
+
+			REMOVE_NODE(index);
+
+			return subNodes;
+
+		} else {
+			subNodes.push_back(nodes[index]);
+			index++;
+		}
+
+	}
+
+	return subNodes;
 
 }

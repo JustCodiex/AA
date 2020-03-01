@@ -12,9 +12,14 @@ int main() {
     VM->SetOutput(&std::cout);
 
     // Current test case
-    VM->Execute(VM->CompileExpressionToFile(L"5+5*5;", L"out\\math_arithmetic_binding.aab")); // Expected output = 30
+    VM->Execute(VM->CompileExpressionToFile(L"{ var x = (5+5)*5-2; var y = 20; x - y; }", L"out\\block_with_var2.aab")); // Expected output: 28
 
     // Compile and execute
+    VM->Execute(VM->CompileExpressionToFile(L"{ var x = (5+5)*5-2; x; }", L"out\\block_with_var1.aab")); // Expected output: 48
+    VM->Execute(VM->CompileExpressionToFile(L"var x = (5+5)*5-2;", L"out\\variable_var_rhsop2.aab")); // Expected output: none
+    VM->Execute(VM->CompileExpressionToFile(L"var x = 5+5;", L"out\\variable_var_rhsop1.aab")); // Expected output: none
+    VM->Execute(VM->CompileExpressionToFile(L"var x = 5;", L"out\\variable_var.aab")); // Expected output: none
+    VM->Execute(VM->CompileExpressionToFile(L"5+5*5;", L"out\\math_arithmetic_binding.aab")); // Expected output = 30
     VM->Execute(VM->CompileExpressionToFile(L"5--5;", L"out\\math_negate4.aab")); // Expected output = 10
     VM->Execute(VM->CompileExpressionToFile(L"5+-5;", L"out\\math_negate3.aab")); // Expected output = 0
     VM->Execute(VM->CompileExpressionToFile(L"5+(-5);", L"out\\math_negate2.aab")); // Expected output = 0
@@ -22,12 +27,13 @@ int main() {
     VM->Execute(VM->CompileExpressionToFile(L"((((5+6))));", L"out\\math_paranthesis3.aab")); // Expected output = 11
     VM->Execute(VM->CompileExpressionToFile(L"((15+5)*42)-(5/2);", L"out\\math_paranthesis2.aab")); // Expected output = 838
     VM->Execute(VM->CompileExpressionToFile(L"(15+5)*42-(5/2);", L"out\\math_paranthesis.aab")); // Expected output = 838
-    VM->Execute(VM->CompileExpressionToFile(L"15+5+7;", L"out\\math_add.aab"));
-    VM->Execute(VM->CompileExpressionToFile(L"15+5-7;", L"out\\math_sub.aab"));
-    VM->Execute(VM->CompileExpressionToFile(L"15*5;", L"out\\math_mul.aab"));
-    VM->Execute(VM->CompileExpressionToFile(L"15/5;", L"out\\math_div.aab"));
-    VM->Execute(VM->CompileExpressionToFile(L"15%5;", L"out\\math_mod.aab"));
+    VM->Execute(VM->CompileExpressionToFile(L"15+5+7;", L"out\\math_add.aab")); // Expected output = 27
+    VM->Execute(VM->CompileExpressionToFile(L"15+5-7;", L"out\\math_sub.aab")); // Expected output = 13
+    VM->Execute(VM->CompileExpressionToFile(L"15*5;", L"out\\math_mul.aab")); // Expected output = 75
+    VM->Execute(VM->CompileExpressionToFile(L"15/5;", L"out\\math_div.aab")); // Expected output = 3
+    VM->Execute(VM->CompileExpressionToFile(L"15%5;", L"out\\math_mod.aab")); // Expected output = 0
 
+    // Release the virtual machine
     VM->Release();
 
     return 1;

@@ -3,6 +3,7 @@
 #include "AAC.h"
 #include "AAP.h"
 #include "AAO.h"
+#include "AAVarEnv.h"
 #include <iostream>
 
 class AAVM {
@@ -23,7 +24,6 @@ public:
 	void Execute(unsigned char* bytes, unsigned long long len);
 
 	AAP* GetParser() { return m_parser; }
-
 	AAC* GetCompiler() { return m_compiler; }
 
 	void SetOutput(std::ostream* stream) {
@@ -33,11 +33,12 @@ public:
 private:
 
 	AA_Literal* LoadConstsTable(unsigned char* bytes, unsigned long long len, unsigned int& offset);
+	AAVarEnv* LoadVariableEnviornment(unsigned char* bytes, unsigned long long length, unsigned int& offset);
 	AAO* LoadOpSequence(unsigned char* bytes, unsigned long long len, int& count);
 
-	void CreateExecutionEnvironment(unsigned char* bytes, unsigned long long len, AA_Literal*& constants, AAO*& oplist, int& opCount);
+	void CreateExecutionEnvironment(unsigned char* bytes, unsigned long long len, AA_Literal*& constants, AAVarEnv*& varEnv, AAO*& oplist, int& opCount);
 
-	void Run(AA_Literal* lit, AAO* ops, int opCount);
+	void Run(AA_Literal* cenv, AAVarEnv* venv, AAO* ops, int opCount);
 
 private:
 

@@ -4,6 +4,7 @@
 #include "AA_literals.h"
 #include "bstream.h"
 #include "list.h"
+#include <set>
 
 // Compiled output
 struct AAC_Out {
@@ -37,8 +38,9 @@ public:
 		}
 	};
 
-	struct CompiledConstantTable {
+	struct CompiledEnviornmentTable {
 		aa::list<AA_Literal> constValues;
+		aa::list<std::wstring> identifiers;
 	};
 
 public:
@@ -47,21 +49,26 @@ public:
 
 private:
 
-	std::vector<CompiledAbstractExpression> CompileAST(AA_AST_NODE* pNode, CompiledConstantTable& cTable);
+	std::vector<CompiledAbstractExpression> CompileAST(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable);
 
 	/*
 	** AST_NODE -> Bytecode functions
 	*/
 
-	std::vector<CompiledAbstractExpression> CompileBinaryOperation(AA_AST_NODE* pNode, CompiledConstantTable& cTable);
-	std::vector<CompiledAbstractExpression> CompileUnaryOperation(AA_AST_NODE* pNode, CompiledConstantTable& cTable);
-	CompiledAbstractExpression HandleConstPush(CompiledConstantTable& cTable, AA_AST_NODE* pNode);
+	std::vector<CompiledAbstractExpression> CompileBinaryOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable);
+	std::vector<CompiledAbstractExpression> CompileUnaryOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable);
+	std::vector<CompiledAbstractExpression> HandleStackPush(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode);
+	CompiledAbstractExpression HandleConstPush(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode);
+	CompiledAbstractExpression HandleVarPush(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode);
+	int HandleDecl(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode);
 
 	/*
 	** Helper functions
 	*/
 
 	bool IsConstant(AA_AST_NODE_TYPE type);
+	bool IsVariable(AA_AST_NODE_TYPE type);
+	bool IsDecleration(AA_AST_NODE_TYPE type);
 	std::vector<CompiledAbstractExpression> Merge(std::vector<CompiledAbstractExpression> original, std::vector<CompiledAbstractExpression> add);
 	AAByteCode GetBytecodeFromBinaryOperator(std::wstring ws);
 	AAByteCode GetBytecodeFromUnaryOperator(std::wstring ws);
@@ -70,8 +77,8 @@ private:
 	** Bytecode functions
 	*/
 
-	void ToByteCode(std::vector<CompiledAbstractExpression> bytecodes, CompiledConstantTable constTable, AAC_Out& result);
-	void ConstTableToByteCode(CompiledConstantTable constTable, aa::bstream& bis);
+	void ToByteCode(std::vector<CompiledAbstractExpression> bytecodes, CompiledEnviornmentTable constTable, AAC_Out& result);
+	void ConstTableToByteCode(CompiledEnviornmentTable constTable, aa::bstream& bis);
 	void ConvertToBytes(CompiledAbstractExpression expr, aa::bstream& bis);
 
 };

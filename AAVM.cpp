@@ -83,69 +83,80 @@ void AAVM::Execute(unsigned char* bytes, unsigned long long len) {
 	// The operation count
 	int opCount;
 
-	// Operation list and constants table
-	AAO* ops = 0; AA_Literal* constants = 0;
+	// Operation list, variable enviornment, and constants table
+	AAO* ops = 0; AA_Literal* constants = 0; AAVarEnv* venv = 0;
 
 	// Create the execution environment
-	CreateExecutionEnvironment(bytes, len, constants, ops, opCount);
+	CreateExecutionEnvironment(bytes, len, constants, venv, ops, opCount);
 
 	// Run
-	Run(constants, ops, opCount);
+	Run(constants, venv, ops, opCount);
 
 }
 
-void AAVM::Run(AA_Literal* lit, AAO* ops, int opCount) {
+void AAVM::Run(AA_Literal* cenv, AAVarEnv* venv, AAO* ops, int opCount) {
 
 	int opPointer = 0;
-	aa::stack<AA_Literal> stack;
+	aa::stack<AAVal> stack;
 
 	while (opPointer < opCount) {
 
 		switch (ops[opPointer].op) {
 		case AAByteCode::PUSHC:
-			stack.Push(lit[ops[opPointer].args[0]]);
+			stack.Push(cenv[ops[opPointer].args[0]]);
 			opPointer++;
 			break;
 		case AAByteCode::ADD: {
-			AA_Literal rhs = stack.Pop();
-			AA_Literal lhs = stack.Pop();
+			AA_Literal rhs = stack.Pop().litVal;
+			AA_Literal lhs = stack.Pop().litVal;
 			AA_Literal r = lhs + rhs;
 			stack.Push(r);
 			opPointer++;
 			break;
 		}
 		case AAByteCode::SUB: {
-			AA_Literal rhs = stack.Pop();
-			AA_Literal lhs = stack.Pop();
+			AA_Literal rhs = stack.Pop().litVal;
+			AA_Literal lhs = stack.Pop().litVal;
 			AA_Literal r = lhs - rhs;
 			stack.Push(r);
 			opPointer++;
 			break;
 		}
 		case AAByteCode::MUL: {
-			AA_Literal rhs = stack.Pop();
-			AA_Literal lhs = stack.Pop();
+			AA_Literal rhs = stack.Pop().litVal;
+			AA_Literal lhs = stack.Pop().litVal;
 			AA_Literal r = lhs * rhs;
 			stack.Push(r);
 			opPointer++;
 			break;
 		}
 		case AAByteCode::DIV: {
-			AA_Literal rhs = stack.Pop();
-			AA_Literal lhs = stack.Pop();
+			AA_Literal rhs = stack.Pop().litVal;
+			AA_Literal lhs = stack.Pop().litVal;
 			stack.Push(lhs / rhs);
 			opPointer++;
 			break;
 		}
 		case AAByteCode::MOD: {
-			AA_Literal rhs = stack.Pop();
-			AA_Literal lhs = stack.Pop();
+			AA_Literal rhs = stack.Pop().litVal;
+			AA_Literal lhs = stack.Pop().litVal;
 			stack.Push(lhs % rhs);
 			opPointer++;
 			break;
 		}
 		case AAByteCode::NNEG: {
-			stack.Push(-stack.Pop());
+			stack.Push(-stack.Pop().litVal);
+			opPointer++;
+			break;
+		}
+		case AAByteCode::GETVAR: {
+			stack.Push(venv->GetVariable(ops[opPointer].args[0]));
+			opPointer++;
+			break;
+		}
+		case AAByteCode::SETVAR: {
+			AA_Literal rhs = stack.Pop().litVal;
+			venv->SetVariable(ops[opPointer].args[0], rhs);
 			opPointer++;
 			break;
 		}
@@ -159,18 +170,19 @@ void AAVM::Run(AA_Literal* lit, AAO* ops, int opCount) {
 
 	if (stack.Size() == 1) {
 		if (m_outStream) {
-			m_outStream->operator<<(stack.Pop().lit.i.val);
+			m_outStream->operator<<(stack.Pop().litVal.lit.i.val);
 			m_outStream->write("\n", 1);
 		}
 	}
 
 }
 
-void AAVM::CreateExecutionEnvironment(unsigned char* bytes, unsigned long long len, AA_Literal*& constants, AAO*& oplist, int& opCount) {
+void AAVM::CreateExecutionEnvironment(unsigned char* bytes, unsigned long long len, AA_Literal*& constants, AAVarEnv*& varEnv, AAO*& oplist, int& opCount) {
 
-	unsigned int opOffset;
-	constants = LoadConstsTable(bytes, len, opOffset);
-	oplist = LoadOpSequence(bytes + opOffset, len, opCount);
+	unsigned int offset;
+	constants = LoadConstsTable(bytes, len, offset);
+	varEnv = LoadVariableEnviornment(bytes, len, offset);
+	oplist = LoadOpSequence(bytes + offset, len, opCount);
 
 }
 
@@ -231,6 +243,8 @@ AAO* AAVM::LoadOpSequence(unsigned char* bytes, unsigned long long len, int& cou
 
 		switch (opSequence[i].op) {
 		case AAByteCode::PUSHC:
+		case AAByteCode::GETVAR:
+		case AAByteCode::SETVAR:
 			opSequence[i].args = new int[1];
 			memcpy(opSequence[i].args, bytes + offset, 4);
 			offset += 4;
@@ -251,5 +265,38 @@ AAO* AAVM::LoadOpSequence(unsigned char* bytes, unsigned long long len, int& cou
 	}
 
 	return opSequence;
+
+}
+
+AAVarEnv* AAVM::LoadVariableEnviornment(unsigned char* bytes, unsigned long long length, unsigned int& offset) {
+
+	int count = 0;
+	memcpy(&count, bytes + offset, 4);
+	offset += 4;
+
+	AAVarEnv* venv = new AAVarEnv;
+
+	for (int i = 0; i < count; i++) {
+
+		int len = 0;
+		memcpy(&len, bytes + offset, 4);
+		offset += 4;
+
+		venv->DeclareVariable(len);
+
+		/*
+		wchar_t* identifier = new wchar_t[len + 1];
+		wmemset(identifier, '\0', len + 1);
+
+		memcpy(identifier, bytes + offset, len * 2);
+		offset += len * 2;
+
+		venv->DeclareVariable(std::wstring(identifier));
+
+		delete[] identifier;
+		*/
+	}
+
+	return venv;
 
 }

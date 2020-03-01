@@ -10,7 +10,7 @@ AAC_Out AAC::CompileFromAST(AA_AST* pAbstractTree) {
 	pAbstractTree->Simplify();
 
 	// Constant Value table container
-	CompiledConstantTable consTable;
+	CompiledEnviornmentTable consTable;
 
 	// Compile the execution stack
 	std::vector<CompiledAbstractExpression> opList = CompileAST(pAbstractTree->GetRoot(), consTable);
@@ -23,7 +23,7 @@ AAC_Out AAC::CompileFromAST(AA_AST* pAbstractTree) {
 
 }
 
-std::vector<AAC::CompiledAbstractExpression> AAC::CompileAST(AA_AST_NODE* pNode, CompiledConstantTable& cTable) {
+std::vector<AAC::CompiledAbstractExpression> AAC::CompileAST(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable) {
 
 	// Stack
 	std::vector<CompiledAbstractExpression> executionStack;
@@ -37,6 +37,22 @@ std::vector<AAC::CompiledAbstractExpression> AAC::CompileAST(AA_AST_NODE* pNode,
 		executionStack = Merge(executionStack, CompileUnaryOperation(pNode, cTable));
 		break;
 	}
+	case AA_AST_NODE_TYPE::block: {
+		for (size_t i = 0; i < pNode->expressions.size(); i++) {
+			executionStack = Merge(executionStack, this->CompileAST(pNode->expressions[i], cTable));
+		}
+		break;
+	}
+	// Implicitt return
+	case AA_AST_NODE_TYPE::variable:
+	case AA_AST_NODE_TYPE::intliteral:
+	case AA_AST_NODE_TYPE::floatliteral:
+	case AA_AST_NODE_TYPE::charliteral:
+	case AA_AST_NODE_TYPE::stringliteral:
+	{
+		executionStack = Merge(executionStack, (HandleStackPush(cTable, pNode)));
+		break;
+	}
 	default:
 		break;
 	}
@@ -45,7 +61,7 @@ std::vector<AAC::CompiledAbstractExpression> AAC::CompileAST(AA_AST_NODE* pNode,
 
 }
 
-std::vector<AAC::CompiledAbstractExpression> AAC::CompileBinaryOperation(AA_AST_NODE* pNode, CompiledConstantTable& cTable) {
+std::vector<AAC::CompiledAbstractExpression> AAC::CompileBinaryOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable) {
 
 	std::vector<CompiledAbstractExpression> opList;
 
@@ -53,16 +69,17 @@ std::vector<AAC::CompiledAbstractExpression> AAC::CompileBinaryOperation(AA_AST_
 	binopCAE.argCount = 0;
 	binopCAE.bc = GetBytecodeFromBinaryOperator(pNode->content);
 
-	if (IsConstant(pNode->expressions[0]->type)) {
-		opList.push_back(this->HandleConstPush(cTable, pNode->expressions[0]));
-	} else {
-		opList = Merge(opList, CompileAST(pNode->expressions[0], cTable));
-	}
+	if (binopCAE.bc == AAByteCode::SETVAR) {
 
-	if (IsConstant(pNode->expressions[1]->type)) {
-		opList.push_back(this->HandleConstPush(cTable, pNode->expressions[1]));
+		binopCAE.argCount = 1;
+		binopCAE.argValues[0] = HandleDecl(cTable, pNode->expressions[0]);
+		opList = Merge(opList, (HandleStackPush(cTable, pNode->expressions[1])));
+
 	} else {
-		opList = Merge(opList, CompileAST(pNode->expressions[1], cTable));
+
+		opList = Merge(opList, (HandleStackPush(cTable, pNode->expressions[0])));
+		opList = Merge(opList, (HandleStackPush(cTable, pNode->expressions[1])));
+
 	}
 
 	opList.push_back(binopCAE);
@@ -71,7 +88,7 @@ std::vector<AAC::CompiledAbstractExpression> AAC::CompileBinaryOperation(AA_AST_
 
 }
 
-std::vector<AAC::CompiledAbstractExpression> AAC::CompileUnaryOperation(AA_AST_NODE* pNode, CompiledConstantTable& cTable) {
+std::vector<AAC::CompiledAbstractExpression> AAC::CompileUnaryOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable) {
 
 	std::vector<CompiledAbstractExpression> opList;
 
@@ -79,11 +96,7 @@ std::vector<AAC::CompiledAbstractExpression> AAC::CompileUnaryOperation(AA_AST_N
 	unopCAE.argCount = 0;
 	unopCAE.bc = GetBytecodeFromUnaryOperator(pNode->content);
 
-	if (IsConstant(pNode->expressions[0]->type)) {
-		opList.push_back(this->HandleConstPush(cTable, pNode->expressions[0]));
-	} else {
-		opList = Merge(opList, CompileAST(pNode->expressions[0], cTable));
-	}
+	opList = Merge(opList, (HandleStackPush(cTable, pNode->expressions[0])));
 
 	opList.push_back(unopCAE);
 
@@ -108,6 +121,14 @@ bool AAC::IsConstant(AA_AST_NODE_TYPE type) {
 	return type == AA_AST_NODE_TYPE::intliteral;
 }
 
+bool AAC::IsVariable(AA_AST_NODE_TYPE type) {
+	return type == AA_AST_NODE_TYPE::variable;
+}
+
+bool AAC::IsDecleration(AA_AST_NODE_TYPE type) {
+	return type == AA_AST_NODE_TYPE::vardecl;
+}
+
 AAByteCode AAC::GetBytecodeFromBinaryOperator(std::wstring ws) {
 
 	if (ws == L"+") {
@@ -120,6 +141,8 @@ AAByteCode AAC::GetBytecodeFromBinaryOperator(std::wstring ws) {
 		return AAByteCode::DIV;
 	} else if (ws == L"%") {
 		return AAByteCode::MOD;
+	} else if (ws == L"=") {
+		return AAByteCode::SETVAR;
 	} else {
 		return AAByteCode::NOP;
 	}
@@ -138,7 +161,7 @@ AAByteCode AAC::GetBytecodeFromUnaryOperator(std::wstring ws) {
 
 }
 
-AAC::CompiledAbstractExpression AAC::HandleConstPush(CompiledConstantTable& cTable, AA_AST_NODE* pNode) {
+AAC::CompiledAbstractExpression AAC::HandleConstPush(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode) {
 
 	// TODO: Update this to keep track of const counter (so two cases of 5's is added to the const table)
 	//		 If a single const is used, we don't want to waste time looking it up
@@ -177,7 +200,53 @@ AAC::CompiledAbstractExpression AAC::HandleConstPush(CompiledConstantTable& cTab
 
 }
 
-void AAC::ToByteCode(std::vector<CompiledAbstractExpression> bytecodes, CompiledConstantTable constTable, AAC_Out& result) {
+AAC::CompiledAbstractExpression AAC::HandleVarPush(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode) {
+
+	CompiledAbstractExpression pushCAE;
+	pushCAE.bc = AAByteCode::GETVAR;
+	pushCAE.argCount = 1;
+
+	if (cTable.identifiers.Contains(pNode->content)) {
+		pushCAE.argValues[0] = cTable.identifiers.IndexOf(pNode->content);
+		return pushCAE;
+	} else {
+		printf("Using a variable before it's declared!");
+		return pushCAE;
+	}
+
+}
+
+int AAC::HandleDecl(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode) {
+
+	int i = -1;
+	if (cTable.identifiers.Contains(pNode->content)) {
+		i = cTable.identifiers.IndexOf(pNode->content);
+	} else {
+		i = cTable.identifiers.Size();
+		cTable.identifiers.Add(pNode->content);
+	}
+
+	return i;
+
+}
+
+std::vector<AAC::CompiledAbstractExpression> AAC::HandleStackPush(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode) {
+
+	std::vector<CompiledAbstractExpression> opList;
+
+	if (IsConstant(pNode->type)) {
+		opList.push_back(this->HandleConstPush(cTable, pNode));
+	} else if (IsVariable(pNode->type)) {
+		opList.push_back(this->HandleVarPush(cTable, pNode));
+	} else {
+		opList = Merge(opList, CompileAST(pNode, cTable));
+	}
+
+	return opList;
+
+}
+
+void AAC::ToByteCode(std::vector<CompiledAbstractExpression> bytecodes, CompiledEnviornmentTable constTable, AAC_Out& result) {
 
 	// Byte stream
 	aa::bstream bis;
@@ -202,7 +271,7 @@ void AAC::ToByteCode(std::vector<CompiledAbstractExpression> bytecodes, Compiled
 
 }
 
-void AAC::ConstTableToByteCode(CompiledConstantTable constTable, aa::bstream& wss) {
+void AAC::ConstTableToByteCode(CompiledEnviornmentTable constTable, aa::bstream& wss) {
 
 	wss << (int)constTable.constValues.Size();
 
@@ -219,6 +288,19 @@ void AAC::ConstTableToByteCode(CompiledConstantTable constTable, aa::bstream& ws
 		default:
 			break;
 		}
+
+	}
+
+	wss << (int)constTable.identifiers.Size();
+
+	for (size_t i = 0; i < constTable.identifiers.Size(); i++) {
+
+		//std::wstring identifier = constTable.identifiers.At(i);
+
+		//wss << (int)identifier.length();
+		//wss << identifier;
+
+		wss << (int)i;
 
 	}
 

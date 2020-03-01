@@ -34,12 +34,15 @@
     <Filter Include="Source Files\aautil">
       <UniqueIdentifier>{7849275d-8ed2-4ca6-9e75-849e7f2f51dd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\VM">
+      <UniqueIdentifier>{6783bf68-b796-4ba7-85fe-24f7f6fd3ac8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\VM">
+      <UniqueIdentifier>{03faace6-6e50-4a1d-8932-5f35874e34b9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AAVM.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AA_AST.cpp">
@@ -60,11 +63,14 @@
     <ClCompile Include="AAB2F.cpp">
       <Filter>Source Files\aautil</Filter>
     </ClCompile>
+    <ClCompile Include="AAVM.cpp">
+      <Filter>Source Files\VM</Filter>
+    </ClCompile>
+    <ClCompile Include="AAVarEnv.cpp">
+      <Filter>Source Files\VM</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AAVM.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="AA_literals.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -100,6 +106,15 @@
     </ClInclude>
     <ClInclude Include="AAP.h">
       <Filter>Header Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="AAVM.h">
+      <Filter>Header Files\VM</Filter>
+    </ClInclude>
+    <ClInclude Include="AAVarEnv.h">
+      <Filter>Header Files\VM</Filter>
+    </ClInclude>
+    <ClInclude Include="AAVal.h">
+      <Filter>Header Files\VM</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

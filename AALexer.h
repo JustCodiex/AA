@@ -31,7 +31,9 @@ public:
 private:
 
 	bool IsDigit(wchar_t character);
+	bool IsCharacter(wchar_t character);
+	bool IsWhitespace(wchar_t character);
+	bool IsKeyword(std::wstring w);
 	bool IsSingleToken(wchar_t character, AAToken& token);
 
 };
-

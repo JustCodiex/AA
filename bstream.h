@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <string>
 
 namespace aa {
 
@@ -16,6 +17,14 @@ namespace aa {
 			unsigned char bytes[4];
 			memcpy(bytes, &i, 4);
 			for (int i = 0; i < 4; i++)
+				m_buffer.push_back(bytes[i]);
+		}
+
+		void operator <<(std::wstring str) {
+			size_t len = str.length() * 2;
+			unsigned char* bytes = new unsigned char[len];
+			memcpy(bytes, str.c_str(), len);
+			for (size_t i = 0; i < len; i++)
 				m_buffer.push_back(bytes[i]);
 		}
 

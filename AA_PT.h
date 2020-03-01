@@ -4,16 +4,23 @@
 enum class AA_PT_NODE_TYPE {
 
 	undefined,
-	
+
 	seperator,
-	
+
 	block,
+	block_start,
+	block_end,
+
 	expression,
 	parenthesis_start,
 	parenthesis_end,
 
 	binary_operation,
 	unary_operation,
+
+	keyword,
+	identifier,
+	decleration,
 
 	intliteral,
 	floatliteral,
@@ -58,17 +65,29 @@ private:
 	
 	AA_PT_NODE* CreateTree(std::vector<AA_PT_NODE*>& nodes, int from);
 	AA_PT_NODE* CreateExpressionTree(std::vector<AA_PT_NODE*>& nodes, int from);
+	AA_PT_NODE* CreateVariableDecl(std::vector<AA_PT_NODE*>& nodes, int from);
+	void HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& index);
 
 	/*
 	** Mathematical and language binding functions
 	*/
 
-	void PrioritizeBinding(std::vector<AA_PT_NODE*>& nodes);
+	void ApplyOrderOfOperationBindings(std::vector<AA_PT_NODE*>& nodes);
 	void ApplyGroupings(std::vector<AA_PT_NODE*>& nodes);
 	void ApplyUnaryBindings(std::vector<AA_PT_NODE*>& nodes);
 	void ApplyArithemticRules(std::vector<AA_PT_NODE*>& nodes);
+	void ApplyAssignmentOrder(std::vector<AA_PT_NODE*>& nodes);
 
-	std::vector<AA_PT_NODE*> Parenthesise(std::vector<AA_PT_NODE*>& nodes, int& index);
+	/*
+	** Flow control parsing
+	*/
+	void ApplyFlowControlBindings(std::vector<AA_PT_NODE*>& nodes);
+	void ApplyStatementBindings(std::vector<AA_PT_NODE*>& nodes);
+
+	/*
+	** Open/Close operator pairing operations - eg. { <some content> } => BlockExpr, ( <some content> ) => Expr, [ <some content> ] => IndexerExpr
+	*/
+	std::vector<AA_PT_NODE*> PairStatements(std::vector<AA_PT_NODE*>& nodes, int& index, AA_PT_NODE_TYPE open, AA_PT_NODE_TYPE close, AA_PT_NODE_TYPE contentType);
 
 private:
 

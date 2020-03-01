@@ -3,7 +3,7 @@
 // Byte code operations for AA
 enum class AAByteCode : unsigned char {
 
-	NOP,
+	NOP, // No operation, expects nothing, does nothing.
 	PUSHC, // (Push a constant onto stack from the constants table, 1 argument[const ID])
 	PUSHV, // (Push a constant value onto stack, 2 arguments[literal type, value])
 	ADD, // (Addition, 0 arguments)
@@ -11,8 +11,27 @@ enum class AAByteCode : unsigned char {
 	MUL, // (Multiplication, 0 arguments)
 	DIV, // (Division, 0 arguments)
 	MOD, // (Modulo, 0 arguments)
-	NNEG, // (Numberical Negation, 0 arguments)
+	NNEG, // (Numerical Negation, 0 arguments)
+
+	INC, // (Increments top element on stack, 0 arguments)
+	DEC, // (Decrements top element on stack, 0 arguments)
+
+	SETVAR, // (Set var, 1 argument[identifier ID])
+	GETVAR, // (Get var - pushes value of variable on top of stack, 1 argument[identifier ID])
+
+	JMP, // (Relative jump to operation, 1 argument[distance])
+	LJMP, // (Long relative jump to operation, 1 argument[distance])
+	CALL, // (Call subroutine, TODO)
+	RET, // (Return, TODO)
+
+	CMP, // (Compares the two top elements on stack and returns a bool, 0 arguments)
+	LE, // (Compares numerics and returns true if x<y, 0 arguments)
+	GE, // (Compares numerics and returns true if x>y, 0 arguments)
+	GEQ, // (Compares numerics and returns true if x<=y, 0 arguments)
+	LEQ, // (Compares numerics and returns true if x>=y, 0 arguments)
 
 	LNEG, // (Logical Negation, 0 arguments)
+	LAND, // (Logical And, 0 arguments)
+	LOR, // (Logcal Or, 0 arguments)
 
 };

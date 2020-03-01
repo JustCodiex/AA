@@ -10,6 +10,9 @@ enum class AA_AST_NODE_TYPE {
 	binop,
 	unop,
 	
+	vardecl,
+	variable,
+
 	intliteral,
 	floatliteral,
 	stringliteral,
