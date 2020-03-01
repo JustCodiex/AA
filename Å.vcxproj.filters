@@ -69,6 +69,9 @@
     <ClCompile Include="AAVarEnv.cpp">
       <Filter>Source Files\VM</Filter>
     </ClCompile>
+    <ClCompile Include="AATypeChecker.cpp">
+      <Filter>Source Files\compiler</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AA_literals.h">
@@ -115,6 +118,9 @@
     </ClInclude>
     <ClInclude Include="AAVal.h">
       <Filter>Header Files\VM</Filter>
+    </ClInclude>
+    <ClInclude Include="AATypeChecker.h">
+      <Filter>Header Files\compiler</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

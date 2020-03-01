@@ -49,6 +49,8 @@ public:
 
 private:
 
+	void TypecheckAST(AA_AST* pTree);
+
 	std::vector<CompiledAbstractExpression> CompileAST(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable);
 
 	/*

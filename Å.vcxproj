@@ -153,6 +153,7 @@
     <ClCompile Include="AAC.cpp" />
     <ClCompile Include="AALexer.cpp" />
     <ClCompile Include="AAP.cpp" />
+    <ClCompile Include="AATypeChecker.cpp" />
     <ClCompile Include="AAVarEnv.cpp" />
     <ClCompile Include="AAVM.cpp" />
     <ClCompile Include="AA_AST.cpp" />
@@ -166,6 +167,7 @@
     <ClInclude Include="AALexer.h" />
     <ClInclude Include="AAO.h" />
     <ClInclude Include="AAP.h" />
+    <ClInclude Include="AATypeChecker.h" />
     <ClInclude Include="AAVal.h" />
     <ClInclude Include="AAVarEnv.h" />
     <ClInclude Include="AAVM.h" />

@@ -17,6 +17,7 @@ enum class AA_AST_NODE_TYPE {
 	floatliteral,
 	stringliteral,
 	charliteral,
+	boolliteral,
 
 };
 

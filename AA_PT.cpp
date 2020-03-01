@@ -101,7 +101,6 @@ AA_PT_NODE* AA_PT::CreateTree(std::vector<AA_PT_NODE*>& nodes, int from) {
 
 	if (nodes.size() == 1 && nodes[0]->nodeType == AA_PT_NODE_TYPE::expression) {
 		return CreateExpressionTree(nodes, 0);
-		//printf("");
 	}
 
 	if (nodes.size() > 0 && (nodes[0]->nodeType == AA_PT_NODE_TYPE::block)) {
@@ -148,6 +147,12 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 		}
 		break;
 	case AA_PT_NODE_TYPE::identifier:
+		if (nodeIndex > 0 && nodes[nodeIndex-1]->nodeType == AA_PT_NODE_TYPE::identifier) {
+			nodes[nodeIndex - 1] = this->CreateVariableDecl(nodes, nodeIndex - 1);
+		} else {
+			nodeIndex++;
+		}
+		break;
 	case AA_PT_NODE_TYPE::intliteral:
 		nodeIndex++;
 		break;
@@ -204,14 +209,14 @@ AA_PT_NODE* AA_PT::CreateVariableDecl(std::vector<AA_PT_NODE*>& nodes, int from)
 		printf("Err: Expected identifier");
 	}
 
-	AA_PT_NODE* valDeclExp = new AA_PT_NODE;
-	valDeclExp->nodeType = AA_PT_NODE_TYPE::decleration;
-	valDeclExp->childNodes.push_back(nodes[from]);
-	valDeclExp->childNodes.push_back(nodes[from+1]);
+	AA_PT_NODE* varDeclExp = new AA_PT_NODE;
+	varDeclExp->nodeType = AA_PT_NODE_TYPE::decleration;
+	varDeclExp->childNodes.push_back(nodes[from]);
+	varDeclExp->childNodes.push_back(nodes[from+1]);
 
 	nodes.erase(nodes.begin() + from + 1);
 
-	return valDeclExp;
+	return varDeclExp;
 
 }
 

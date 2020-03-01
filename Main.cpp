@@ -12,9 +12,11 @@ int main() {
     VM->SetOutput(&std::cout);
 
     // Current test case
-    VM->Execute(VM->CompileExpressionToFile(L"{ var x = (5+5)*5-2; var y = 20; x - y; }", L"out\\block_with_var2.aab")); // Expected output: 28
+    VM->Execute(VM->CompileExpressionToFile(L"{ int x = 5; x = x + 5; x; }", L"out\\block_with_type1.aab")); // Expected output: 10
 
     // Compile and execute
+    VM->Execute(VM->CompileExpressionToFile(L"{ var x = 5; x = x + 5; x; }", L"out\\block_with_var3.aab")); // Expected output: 10
+    VM->Execute(VM->CompileExpressionToFile(L"{ var x = (5+5)*5-2; var y = 20; x - y; }", L"out\\block_with_var2.aab")); // Expected output: 28
     VM->Execute(VM->CompileExpressionToFile(L"{ var x = (5+5)*5-2; x; }", L"out\\block_with_var1.aab")); // Expected output: 48
     VM->Execute(VM->CompileExpressionToFile(L"var x = (5+5)*5-2;", L"out\\variable_var_rhsop2.aab")); // Expected output: none
     VM->Execute(VM->CompileExpressionToFile(L"var x = 5+5;", L"out\\variable_var_rhsop1.aab")); // Expected output: none
@@ -35,6 +37,9 @@ int main() {
 
     // Release the virtual machine
     VM->Release();
+
+    // Allow user to see output
+    system("pause");
 
     return 1;
 

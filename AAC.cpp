@@ -1,10 +1,14 @@
 #include "AAC.h"
+#include "AATypeChecker.h"
 #include <stack>
 
 AAC_Out AAC::CompileFromAST(AA_AST* pAbstractTree) {
 
 	// Store resulting bytecode
 	AAC_Out result = AAC_Out();
+
+	// Run a type checker on the AST
+	this->TypecheckAST(pAbstractTree);
 
 	// Simplify the abstract tree
 	pAbstractTree->Simplify();
@@ -20,6 +24,14 @@ AAC_Out AAC::CompileFromAST(AA_AST* pAbstractTree) {
 
 	// return bytecode
 	return result;
+
+}
+
+void AAC::TypecheckAST(AA_AST* pTree) {
+
+	// Currently, we just run a simple type check
+	AATypeChecker checker = AATypeChecker(pTree);
+	checker.TypeCheck();
 
 }
 
