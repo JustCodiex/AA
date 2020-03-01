@@ -122,5 +122,8 @@
     <ClInclude Include="AATypeChecker.h">
       <Filter>Header Files\compiler</Filter>
     </ClInclude>
+    <ClInclude Include="AACodePosition.h">
+      <Filter>Header Files\parser</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

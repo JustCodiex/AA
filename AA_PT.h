@@ -26,6 +26,7 @@ enum class AA_PT_NODE_TYPE {
 	floatliteral,
 	stringliteral,
 	charliteral,
+	booliterral,
 
 };
 
@@ -58,6 +59,7 @@ private:
 	std::vector<AA_PT_NODE*> ToNodes(std::vector<AALexicalResult> lexResult);
 	AA_PT_NODE_TYPE GetSeperatorType(std::wstring val);
 	bool IsUnaryOperator(std::vector<AA_PT_NODE*> nodes);
+	bool IsBoolKeyword(std::wstring keyword);
 
 	/*
 	** To tree functions

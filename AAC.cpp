@@ -55,12 +55,13 @@ std::vector<AAC::CompiledAbstractExpression> AAC::CompileAST(AA_AST_NODE* pNode,
 		}
 		break;
 	}
-	// Implicitt return
+	// Implicit return
 	case AA_AST_NODE_TYPE::variable:
 	case AA_AST_NODE_TYPE::intliteral:
 	case AA_AST_NODE_TYPE::floatliteral:
 	case AA_AST_NODE_TYPE::charliteral:
 	case AA_AST_NODE_TYPE::stringliteral:
+	case AA_AST_NODE_TYPE::boolliteral:
 	{
 		executionStack = Merge(executionStack, (HandleStackPush(cTable, pNode)));
 		break;
@@ -130,7 +131,8 @@ std::vector<AAC::CompiledAbstractExpression> AAC::Merge(std::vector<CompiledAbst
 }
 
 bool AAC::IsConstant(AA_AST_NODE_TYPE type) {
-	return type == AA_AST_NODE_TYPE::intliteral;
+	return type == AA_AST_NODE_TYPE::intliteral || type == AA_AST_NODE_TYPE::boolliteral || type == AA_AST_NODE_TYPE::charliteral ||
+		type == AA_AST_NODE_TYPE::floatliteral || type == AA_AST_NODE_TYPE::stringliteral;
 }
 
 bool AAC::IsVariable(AA_AST_NODE_TYPE type) {
@@ -189,6 +191,14 @@ AAC::CompiledAbstractExpression AAC::HandleConstPush(CompiledEnviornmentTable& c
 	case AA_AST_NODE_TYPE::intliteral:
 		aLit.i.val = std::stoi(pNode->content);
 		lType = AALiteralType::Int;
+		break;
+	case AA_AST_NODE_TYPE::boolliteral:
+		aLit.b.val = pNode->content == L"true";
+		lType = AALiteralType::Boolean;
+		break;
+	case AA_AST_NODE_TYPE::floatliteral:
+		aLit.f.val = std::stof(pNode->content);
+		lType = AALiteralType::Float;
 		break;
 	default:
 		break;
@@ -297,6 +307,12 @@ void AAC::ConstTableToByteCode(CompiledEnviornmentTable constTable, aa::bstream&
 		case AALiteralType::Int:
 			wss << lit.lit.i.val;
 			break;
+		case AALiteralType::Boolean:
+			wss << lit.lit.b.val;
+			break;
+		case AALiteralType::Float:
+			wss << lit.lit.f.val;
+			break;
 		default:
 			break;
 		}
@@ -306,14 +322,7 @@ void AAC::ConstTableToByteCode(CompiledEnviornmentTable constTable, aa::bstream&
 	wss << (int)constTable.identifiers.Size();
 
 	for (size_t i = 0; i < constTable.identifiers.Size(); i++) {
-
-		//std::wstring identifier = constTable.identifiers.At(i);
-
-		//wss << (int)identifier.length();
-		//wss << identifier;
-
 		wss << (int)i;
-
 	}
 
 }

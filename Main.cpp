@@ -12,9 +12,12 @@ int main() {
     VM->SetOutput(&std::cout);
 
     // Current test case
-    VM->Execute(VM->CompileExpressionToFile(L"{ int x = 5; x = x + 5; x; }", L"out\\block_with_type1.aab")); // Expected output: 10
+    
 
-    // Compile and execute
+    // Compile and execute    
+    VM->Execute(VM->CompileExpressionToFile(L"{ float x = 1.5f; x; }", L"out\\block_with_type3.aab")); // Expected output: 1.5
+    VM->Execute(VM->CompileExpressionToFile(L"{ bool x = true; x; }", L"out\\block_with_type2.aab")); // Expected output: true
+    VM->Execute(VM->CompileExpressionToFile(L"{ int x = 5; x = x + 5; x; }", L"out\\block_with_type1.aab")); // Expected output: 10
     VM->Execute(VM->CompileExpressionToFile(L"{ var x = 5; x = x + 5; x; }", L"out\\block_with_var3.aab")); // Expected output: 10
     VM->Execute(VM->CompileExpressionToFile(L"{ var x = (5+5)*5-2; var y = 20; x - y; }", L"out\\block_with_var2.aab")); // Expected output: 28
     VM->Execute(VM->CompileExpressionToFile(L"{ var x = (5+5)*5-2; x; }", L"out\\block_with_var1.aab")); // Expected output: 48

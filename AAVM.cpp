@@ -170,7 +170,19 @@ void AAVM::Run(AA_Literal* cenv, AAVarEnv* venv, AAO* ops, int opCount) {
 
 	if (stack.Size() == 1) {
 		if (m_outStream) {
-			m_outStream->operator<<(stack.Pop().litVal.lit.i.val);
+			AA_Literal litVal = stack.Pop().litVal;
+			if (litVal.tp == AALiteralType::Int) {
+				m_outStream->operator<<(litVal.lit.i.val);
+			} else if (litVal.tp == AALiteralType::Float) {
+				std::string fs = std::to_string(litVal.lit.f.val);
+				m_outStream->write(fs.c_str(), fs.length());
+			} else if (litVal.tp == AALiteralType::Boolean) {
+				if (litVal.lit.b.val) {
+					m_outStream->write("true", 4);
+				} else {
+					m_outStream->write("false", 5);
+				}
+			}
 			m_outStream->write("\n", 1);
 		}
 	}
@@ -210,8 +222,12 @@ AA_Literal* AAVM::LoadConstsTable(unsigned char* bytes, unsigned long long len, 
 		case AALiteralType::String:
 			break;
 		case AALiteralType::Float:
+			memcpy(&table[i].lit.f.val, bytes + offset, 4);
+			offset += 4;
 			break;
 		case AALiteralType::Boolean:
+			memcpy(&table[i].lit.b.val, bytes + offset, 1);
+			offset++;
 			break;
 		default:
 			break;
@@ -284,17 +300,6 @@ AAVarEnv* AAVM::LoadVariableEnviornment(unsigned char* bytes, unsigned long long
 
 		venv->DeclareVariable(len);
 
-		/*
-		wchar_t* identifier = new wchar_t[len + 1];
-		wmemset(identifier, '\0', len + 1);
-
-		memcpy(identifier, bytes + offset, len * 2);
-		offset += len * 2;
-
-		venv->DeclareVariable(std::wstring(identifier));
-
-		delete[] identifier;
-		*/
 	}
 
 	return venv;

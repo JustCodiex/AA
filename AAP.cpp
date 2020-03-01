@@ -20,6 +20,9 @@ AA_AST* AAP::Parse(std::wstring input) {
 	// Tokenise the input with the lexer
 	std::vector< AALexicalResult> lexed = m_lexer->Analyse(input);
 
+	// Join tokens that can be joined
+	m_lexer->Join(lexed);
+
 	// Build a parse tree
 	AA_PT parseTree = AA_PT(lexed);
 

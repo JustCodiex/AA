@@ -45,6 +45,8 @@ private:
 
 	AA_AST_NODE* AbstractNode(AA_PT_NODE* pNode);
 
+	AA_AST_NODE_TYPE GetASTLiteralType(AA_PT_NODE_TYPE type);
+
 private:
 
 	AA_AST_NODE* m_root;

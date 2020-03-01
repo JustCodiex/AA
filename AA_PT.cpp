@@ -29,6 +29,9 @@ std::vector<AA_PT_NODE*> AA_PT::ToNodes(std::vector<AALexicalResult> lexResult) 
 		case AAToken::intlit:
 			node->nodeType = AA_PT_NODE_TYPE::intliteral;
 			break;
+		case AAToken::floatlit:
+			node->nodeType = AA_PT_NODE_TYPE::floatliteral;
+			break;
 		case AAToken::OP:
 			if (!IsUnaryOperator(aa_pt_nodes)) {
 				node->nodeType = AA_PT_NODE_TYPE::binary_operation;
@@ -43,7 +46,11 @@ std::vector<AA_PT_NODE*> AA_PT::ToNodes(std::vector<AALexicalResult> lexResult) 
 			node->nodeType = AA_PT_NODE_TYPE::identifier;
 			break;
 		case AAToken::keyword:
-			node->nodeType = AA_PT_NODE_TYPE::keyword;
+			if (IsBoolKeyword(lexResult[i].content)) {
+				node->nodeType = AA_PT_NODE_TYPE::booliterral;
+			} else {
+				node->nodeType = AA_PT_NODE_TYPE::keyword;
+			}
 			break;
 		default:
 			break;
@@ -90,6 +97,10 @@ bool AA_PT::IsUnaryOperator(std::vector<AA_PT_NODE*> nodes) {
 
 	return true;
 
+}
+
+bool AA_PT::IsBoolKeyword(std::wstring keyword) {
+	return keyword == L"true" || keyword == L"false";
 }
 
 #define REMOVE_NODE(i) delete nodes[i];nodes.erase(nodes.begin() + i)
@@ -154,6 +165,10 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 		}
 		break;
 	case AA_PT_NODE_TYPE::intliteral:
+	case AA_PT_NODE_TYPE::floatliteral:
+	case AA_PT_NODE_TYPE::booliterral:
+	case AA_PT_NODE_TYPE::stringliteral:
+	case AA_PT_NODE_TYPE::charliteral:
 		nodeIndex++;
 		break;
 	case AA_PT_NODE_TYPE::keyword:
