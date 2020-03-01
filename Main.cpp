@@ -12,7 +12,7 @@ int main() {
     VM->SetOutput(&std::cout);
 
     // Current test case
-    
+    VM->Execute(VM->CompileExpressionToFile(L"{ bool x = true; !x; }", L"out\\block_with_type4.aab")); // Expected output: false
 
     // Compile and execute    
     VM->Execute(VM->CompileExpressionToFile(L"{ float x = 1.5f; x; }", L"out\\block_with_type3.aab")); // Expected output: 1.5

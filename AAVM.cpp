@@ -149,6 +149,11 @@ void AAVM::Run(AA_Literal* cenv, AAVarEnv* venv, AAO* ops, int opCount) {
 			opPointer++;
 			break;
 		}
+		case AAByteCode::LNEG: {
+			stack.Push(!stack.Pop().litVal);
+			opPointer++;
+			break;
+		}
 		case AAByteCode::GETVAR: {
 			stack.Push(venv->GetVariable(ops[opPointer].args[0]));
 			opPointer++;

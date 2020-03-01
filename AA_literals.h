@@ -179,4 +179,16 @@ struct AA_Literal {
 		}
 		return *this;
 	}
+	AA_Literal operator!() {
+		switch (this->tp) {
+		case AALiteralType::Boolean: {
+			AA_Literal l = AA_Literal(*this);
+			l.lit.b.val = !l.lit.b.val;
+			return l;
+		}
+		default:
+			break;
+		}
+		return *this;
+	}
 };
