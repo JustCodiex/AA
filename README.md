@@ -21,7 +21,7 @@ Which will be evaluated to 28 (Because the language does abide by a standard ord
 }
 ```
 Above code will, as expected, output 10. A small note for the current state of the language; types are not enforced (but checked at compile time). Additionally, variable scopes are not properly defined at the moment. Meaning the language is currently using a dynamic scope system.
-For more examples of what's currently possible in the language, look inside the Main.cpp file, as it contains more examples of what's possible.
+For more examples of what's currently possible in the language, look inside the [Main.cpp](Main.cpp) file, as it contains more examples of what's possible.
 ## Why?
 Because designing programming languages is a fun and learnful experience.
 ## How does it work?
