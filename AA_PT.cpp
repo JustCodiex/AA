@@ -131,7 +131,11 @@ AA_PT_NODE* AA_PT::CreateTree(std::vector<AA_PT_NODE*>& nodes, int from) {
 		}
 	}
 
-	return nodes.at(0);
+	if (nodes.size() > 0) {
+		return nodes.at(0);
+	} else {
+		return 0;
+	}
 
 }
 
@@ -280,9 +284,11 @@ AA_PT_NODE* AA_PT::CreateFunctionDecl(std::vector<AA_PT_NODE*>& nodes, int from)
 
 	if (from + 3 < (int)nodes.size() && nodes[from + 3]->nodeType == AA_PT_NODE_TYPE::block) {
 		size_t n = 0;
-		this->HandleTreeCase(nodes[from + 3]->childNodes, n);
+		AA_PT_NODE* p = this->CreateTree(nodes[from + 3]->childNodes, n);
 		nodes[from + 3]->nodeType = AA_PT_NODE_TYPE::funcbody;
-		funDecl->childNodes.push_back(nodes[from + 3]); // function body
+		if (p) {
+			funDecl->childNodes.push_back(p); // function body
+		}
 		nodes.erase(nodes.begin() + from + 3);
 	}
 
