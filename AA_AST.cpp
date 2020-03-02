@@ -1,9 +1,7 @@
 #include "AA_AST.h"
 
 AA_AST::AA_AST(AA_PT* parseTree) {
-
 	m_root = this->AbstractNode(parseTree->GetRoot());
-
 }
 
 AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {

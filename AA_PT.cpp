@@ -1,25 +1,6 @@
 #include "AA_PT.h"
 #include <map>
 
-/*AA_PT::AA_PT(std::vector<AALexicalResult> lexResult) {
-	/*
-	// Convert lexical analysis to AA_PT_NODEs
-	std::vector<AA_PT_NODE*> aa_pt_nodes = ToNodes(lexResult);
-
-	// Apply mathematical arithmetic and binding rules
-	this->ApplyOrderOfOperationBindings(aa_pt_nodes);
-
-	// Apply flow control
-	this->ApplyFlowControlBindings(aa_pt_nodes);
-
-	// Create parse trees for all the 
-	m_roots = this->CreateTrees(aa_pt_nodes, 0);
-
-	// Create tree from AA_PT_NODEs
-	m_root = this->CreateTree(aa_pt_nodes, 0);
-	
-}*/
-
 AA_PT::AA_PT(AA_PT_NODE* root) {
 	m_root = root;
 }

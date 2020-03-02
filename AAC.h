@@ -53,6 +53,8 @@ public:
 	CompiledProcedure CompileProcedureFromAST(AA_AST* pAbstractTree);
 	AAC_Out CompileFromProcedures(std::vector<CompiledProcedure> procedures);
 
+	AAC_Out CompileFromAbstractSyntaxTrees(std::vector<AA_AST*> trees);
+
 private:
 
 	void TypecheckAST(AA_AST* pTree);
