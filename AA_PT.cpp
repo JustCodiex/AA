@@ -281,6 +281,7 @@ AA_PT_NODE* AA_PT::CreateFunctionDecl(std::vector<AA_PT_NODE*>& nodes, int from)
 	if (from + 3 < (int)nodes.size() && nodes[from + 3]->nodeType == AA_PT_NODE_TYPE::block) {
 		size_t n = 0;
 		this->HandleTreeCase(nodes[from + 3]->childNodes, n);
+		nodes[from + 3]->nodeType = AA_PT_NODE_TYPE::funcbody;
 		funDecl->childNodes.push_back(nodes[from + 3]); // function body
 		nodes.erase(nodes.begin() + from + 3);
 	}

@@ -134,5 +134,8 @@
     <ClInclude Include="bwalker.h">
       <Filter>Header Files\util</Filter>
     </ClInclude>
+    <ClInclude Include="AAFuncSignature.h">
+      <Filter>Header Files\compiler</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

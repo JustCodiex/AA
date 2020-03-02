@@ -7,9 +7,10 @@ AA_AST::AA_AST(AA_PT* parseTree) {
 AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 
 	switch (pNode->nodeType) {
+	case AA_PT_NODE_TYPE::funcbody:
 	case AA_PT_NODE_TYPE::block: {
 
-		AA_AST_NODE* blockNode = new AA_AST_NODE(L"", AA_AST_NODE_TYPE::block, pNode->position);
+		AA_AST_NODE* blockNode = new AA_AST_NODE(L"", this->GetASTBlockType(pNode->nodeType), pNode->position);
 
 		for (size_t i = 0; i < pNode->childNodes.size(); i++) {
 			blockNode->expressions.push_back(this->AbstractNode(pNode->childNodes[i]));
@@ -54,7 +55,7 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 		funDecl->expressions.push_back(new AA_AST_NODE(pNode->childNodes[0]->content, AA_AST_NODE_TYPE::typeidentifier, pNode->position));
 		funDecl->expressions.push_back(this->AbstractNode(pNode->childNodes[1]));
 
-		if (pNode->childNodes.size() >= 3) {
+		if (pNode->childNodes.size() == 3) {
 			funDecl->expressions.push_back(this->AbstractNode(pNode->childNodes[2]));
 		}
 
@@ -91,6 +92,18 @@ AA_AST_NODE_TYPE AA_AST::GetASTLiteralType(AA_PT_NODE_TYPE type) {
 		return AA_AST_NODE_TYPE::boolliteral;
 	default:
 		return AA_AST_NODE_TYPE::variable;
+	}
+}
+
+AA_AST_NODE_TYPE AA_AST::GetASTBlockType(AA_PT_NODE_TYPE type) {
+	switch (type) {
+	case AA_PT_NODE_TYPE::funcbody:
+		return AA_AST_NODE_TYPE::funcbody;
+	case AA_PT_NODE_TYPE::classbody:
+		return AA_AST_NODE_TYPE::classbody;
+	case AA_PT_NODE_TYPE::block:
+	default:
+		return AA_AST_NODE_TYPE::block;
 	}
 }
 

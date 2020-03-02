@@ -4,6 +4,10 @@
 
 AAC_Out AAC::CompileFromAbstractSyntaxTrees(std::vector<AA_AST*> trees) {
 
+	// Run the static checkers
+	this->RunStaticChecks(trees);
+
+	// Compiled procedure results
 	std::vector<AAC::CompiledProcedure> compileResults;
 
 	// Compile all the trees into individual procedures
@@ -41,6 +45,28 @@ AAC::CompiledProcedure AAC::CompileProcedureFromAST(AA_AST* pAbstractTree) {
 
 }
 
+AAC::CompiledStaticChecks AAC::RunStaticChecks(std::vector<AA_AST*> trees) {
+
+	CompiledStaticChecks staticChecks;
+
+	for (size_t i = 0; i < trees.size(); i++) {
+
+		// Register functions
+		staticChecks.registeredFunctions.Add(RegisterFunctions(trees[i]->GetRoot()));
+
+	}
+
+	for (size_t i = 0; i < trees.size(); i++) {
+
+		// Register functions
+		this->TypecheckAST(trees[i]);
+
+	}
+
+	return staticChecks;
+
+}
+
 void AAC::TypecheckAST(AA_AST* pTree) {
 
 	// Currently, we just run a simple type check
@@ -49,15 +75,25 @@ void AAC::TypecheckAST(AA_AST* pTree) {
 
 }
 
-std::vector<AAC::CompiledAbstractExpression> AAC::CompileFunctions(AA_AST_NODE* pNode) {
+aa::list<AAFuncSignature> AAC::RegisterFunctions(AA_AST_NODE* pNode) {
 
-	// Stack
-	std::vector<CompiledAbstractExpression> executionStack;
+	aa::list<AAFuncSignature> signatures;
 
+	if (pNode->type == AA_AST_NODE_TYPE::classdecl) { // TODO: change to classdecl
 
+		// stuff
 
-	// Return the stack
-	return executionStack;
+	} else if (pNode->type == AA_AST_NODE_TYPE::fundecl) {
+
+		AAFuncSignature sig;
+		sig.name = pNode->content;
+		sig.returnType = pNode->expressions[0]->content;
+
+		signatures.Add(sig);
+
+	}
+
+	return signatures;
 
 }
 
@@ -82,7 +118,9 @@ std::vector<AAC::CompiledAbstractExpression> AAC::CompileAST(AA_AST_NODE* pNode,
 		break;
 	}
 	case AA_AST_NODE_TYPE::fundecl: {
-
+		if (pNode->expressions.size() == 3) { // We've got the actual function body => compile it
+			executionStack = Merge(executionStack, this->CompileAST(pNode->expressions[2], cTable));
+		}
 		break;
 	}
 	// Implicit return

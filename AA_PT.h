@@ -11,6 +11,9 @@ enum class AA_PT_NODE_TYPE {
 	block_start,
 	block_end,
 
+	funcbody,
+	classbody,
+
 	expression,
 	parenthesis_start,
 	parenthesis_end,
@@ -22,7 +25,7 @@ enum class AA_PT_NODE_TYPE {
 	identifier,
 	vardecleration,
 	fundecleration,
-
+	
 	intliteral,
 	floatliteral,
 	stringliteral,

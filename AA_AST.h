@@ -7,10 +7,15 @@ enum class AA_AST_NODE_TYPE {
 	seperator,
 
 	block,
+	funcbody,
+	classbody,
+
 	binop,
 	unop,
 
 	fundecl,
+
+	classdecl,
 
 	typeidentifier,
 
@@ -52,6 +57,7 @@ private:
 	AA_AST_NODE* AbstractNode(AA_PT_NODE* pNode);
 
 	AA_AST_NODE_TYPE GetASTLiteralType(AA_PT_NODE_TYPE type);
+	AA_AST_NODE_TYPE GetASTBlockType(AA_PT_NODE_TYPE type);
 
 private:
 

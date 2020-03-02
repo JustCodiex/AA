@@ -2,9 +2,9 @@
 #include "AA_AST.h"
 #include "AAByteCode.h"
 #include "AA_literals.h"
+#include "AAFuncSignature.h"
 #include "bstream.h"
 #include "list.h"
-#include <set>
 
 // Compiled output
 struct AAC_Out {
@@ -48,24 +48,36 @@ public:
 		CompiledEnviornmentTable procEnvironment;
 	};
 
-public:
+	struct CompiledStaticChecks {
+		aa::list<AAFuncSignature> registeredFunctions;
+	};
 
-	CompiledProcedure CompileProcedureFromAST(AA_AST* pAbstractTree);
-	AAC_Out CompileFromProcedures(std::vector<CompiledProcedure> procedures);
+public:
 
 	AAC_Out CompileFromAbstractSyntaxTrees(std::vector<AA_AST*> trees);
 
 private:
 
-	void TypecheckAST(AA_AST* pTree);
+	/*
+	** Private compiler methods
+	*/
 
-	std::vector<CompiledAbstractExpression> CompileFunctions(AA_AST_NODE* pNode);
-	std::vector<CompiledAbstractExpression> CompileAST(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable);
+	CompiledProcedure CompileProcedureFromAST(AA_AST* pAbstractTree);
+	AAC_Out CompileFromProcedures(std::vector<CompiledProcedure> procedures);
+
+	/*
+	** Static checkers
+	*/
+
+	CompiledStaticChecks RunStaticChecks(std::vector<AA_AST*> trees);
+	void TypecheckAST(AA_AST* pTree);
+	aa::list<AAFuncSignature> RegisterFunctions(AA_AST_NODE* pNode);
 
 	/*
 	** AST_NODE -> Bytecode functions
 	*/
 
+	std::vector<CompiledAbstractExpression> CompileAST(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable);
 	std::vector<CompiledAbstractExpression> CompileBinaryOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable);
 	std::vector<CompiledAbstractExpression> CompileUnaryOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable);
 	std::vector<CompiledAbstractExpression> HandleStackPush(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode);

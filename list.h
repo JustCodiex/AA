@@ -15,6 +15,13 @@ namespace aa {
 			m_vector.push_back(val);
 		}
 
+		// Adds all items from the other list
+		void Add(list<T> other) {
+			for (size_t i = 0; i < other.Size(); i++) {
+				m_vector.push_back(other.m_vector[i]);
+			}
+		}
+
 		void Remove(T val) {
 			m_vector.erase(std::find(m_vector.begin(), m_vector.end(), val));
 		}
