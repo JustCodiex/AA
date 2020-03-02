@@ -5,7 +5,7 @@
 AAC_Out AAC::CompileFromAbstractSyntaxTrees(std::vector<AA_AST*> trees) {
 
 	// Run the static checkers
-	this->RunStaticChecks(trees);
+	CompiledStaticChecks staticChecks = this->RunStaticOperations(trees);
 
 	// Compiled procedure results
 	std::vector<AAC::CompiledProcedure> compileResults;
@@ -18,8 +18,11 @@ AAC_Out AAC::CompileFromAbstractSyntaxTrees(std::vector<AA_AST*> trees) {
 
 	}
 
+	// Map the procedures to their respective functions
+	this->MapProcedureToSignature(staticChecks, compileResults);
+
 	// Compile all procedures into bytecode
-	AAC_Out bytecode = CompileFromProcedures(compileResults);
+	AAC_Out bytecode = CompileFromProcedures(compileResults, staticChecks);
 
 	// Aslo return bytecode (so we can execute it directly)
 	return bytecode;
@@ -30,12 +33,7 @@ AAC::CompiledProcedure AAC::CompileProcedureFromAST(AA_AST* pAbstractTree) {
 
 	// Procedure for the abstract tree
 	CompiledProcedure proc;
-
-	// Run a type checker on the AST
-	this->TypecheckAST(pAbstractTree);
-
-	// Simplify the abstract tree
-	pAbstractTree->Simplify();
+	proc.node = pAbstractTree->GetRoot();
 
 	// Compile the execution stack
 	proc.procOperations = CompileAST(pAbstractTree->GetRoot(), proc.procEnvironment);
@@ -45,17 +43,20 @@ AAC::CompiledProcedure AAC::CompileProcedureFromAST(AA_AST* pAbstractTree) {
 
 }
 
-AAC::CompiledStaticChecks AAC::RunStaticChecks(std::vector<AA_AST*> trees) {
+AAC::CompiledStaticChecks AAC::RunStaticOperations(std::vector<AA_AST*> trees) {
 
+	// Static function checks
 	CompiledStaticChecks staticChecks;
 
+	// For all input trees, register possible functions
 	for (size_t i = 0; i < trees.size(); i++) {
 
 		// Register functions
-		staticChecks.registeredFunctions.Add(RegisterFunctions(trees[i]->GetRoot()));
+		staticChecks.registeredFunctions.Add(RegisterFunctions(trees[i]->GetRoot(), trees[i]->GetRoot()));
 
 	}
 
+	// For all input trees, run static type checker
 	for (size_t i = 0; i < trees.size(); i++) {
 
 		// Register functions
@@ -63,6 +64,15 @@ AAC::CompiledStaticChecks AAC::RunStaticChecks(std::vector<AA_AST*> trees) {
 
 	}
 
+	// For all input trees, optimize
+	for (size_t i = 0; i < trees.size(); i++) {
+
+		// Simplify the abstract tree
+		trees[i]->Simplify();
+
+	}
+
+	// Return result of static function check
 	return staticChecks;
 
 }
@@ -75,9 +85,9 @@ void AAC::TypecheckAST(AA_AST* pTree) {
 
 }
 
-aa::list<AAFuncSignature> AAC::RegisterFunctions(AA_AST_NODE* pNode) {
+aa::list<AAC::CompiledStaticChecks::SigPointer> AAC::RegisterFunctions(AA_AST_NODE* pNode, AA_AST_NODE* pSource) {
 
-	aa::list<AAFuncSignature> signatures;
+	aa::list<AAC::CompiledStaticChecks::SigPointer> signatures;
 
 	if (pNode->type == AA_AST_NODE_TYPE::classdecl) { // TODO: change to classdecl
 
@@ -89,7 +99,8 @@ aa::list<AAFuncSignature> AAC::RegisterFunctions(AA_AST_NODE* pNode) {
 		sig.name = pNode->content;
 		sig.returnType = pNode->expressions[0]->content;
 
-		signatures.Add(sig);
+		AAC::CompiledStaticChecks::SigPointer sP = AAC::CompiledStaticChecks::SigPointer(sig, pNode);
+		signatures.Add(sP);
 
 	}
 
@@ -336,31 +347,6 @@ std::vector<AAC::CompiledAbstractExpression> AAC::HandleStackPush(CompiledEnvior
 
 }
 
-void AAC::ToByteCode(std::vector<CompiledAbstractExpression> bytecodes, CompiledEnviornmentTable constTable, AAC_Out& result) {
-
-	// Byte stream
-	aa::bstream bis;
-
-	// Convert constants table to bytecode
-	ConstTableToByteCode(constTable, bis);
-
-	// Write amount of operations
-	bis << (int)bytecodes.size();
-
-	// Write all expressions in their compiled formats
-	for (size_t i = 0; i < bytecodes.size(); i++) {
-		this->ConvertToBytes(bytecodes[i], bis);
-	}
-
-	// Get size and allocate memory buffer
-	result.length = bis.length();
-	result.bytes = new unsigned char[(int)result.length];
-	
-	// Copy stream into array
-	memcpy(result.bytes, bis.array(), (int)result.length);
-
-}
-
 void AAC::ConstTableToByteCode(CompiledEnviornmentTable constTable, aa::bstream& wss) {
 
 	wss << (int)constTable.constValues.Size();
@@ -405,13 +391,25 @@ void AAC::ConvertToBytes(CompiledAbstractExpression expr, aa::bstream& bis) {
 
 }
 
-AAC_Out AAC::CompileFromProcedures(std::vector<CompiledProcedure> procedures) {
+AAC_Out AAC::CompileFromProcedures(std::vector<CompiledProcedure> procedures, CompiledStaticChecks staticCompileData) {
 
 	// Bytecode compilation result
 	AAC_Out compileBytecodeResult;
 
 	// Byte stream
 	aa::bstream bis;
+
+	// Write the exported signature count
+	bis << (int)staticCompileData.exportSignatures.size();
+
+	// Write the exported signatures
+	for (size_t s = 0; s < staticCompileData.exportSignatures.size(); s++) {
+
+		// Write out the export signatures
+		bis << staticCompileData.exportSignatures[s].name;
+		bis << staticCompileData.exportSignatures[s].procID;
+
+	}
 
 	// Write procedure count
 	bis << (int)procedures.size();
@@ -444,5 +442,39 @@ AAC_Out AAC::CompileFromProcedures(std::vector<CompiledProcedure> procedures) {
 
 	// Return the resulting bytecode
 	return compileBytecodeResult;
+
+}
+
+std::vector< AAC::CompiledSignature> AAC::MapProcedureToSignature(CompiledStaticChecks staticCheck, std::vector<AAC::CompiledProcedure> procedureLs) {
+
+	std::vector<CompiledSignature> procSigs;
+
+	for (size_t i = 0; i < staticCheck.registeredFunctions.Size(); i++) {
+
+		for (size_t j = 0; j < procedureLs.size(); j++) {
+
+			CompiledStaticChecks::SigPointer funcSig = staticCheck.registeredFunctions.At(i);
+
+			if (funcSig.node == procedureLs[j].node) {
+
+				CompiledSignature sig;
+				sig.procID = j;
+				sig.name = L"@" + funcSig.funcSig.returnType + L"?" + funcSig.funcSig.name + L"(";
+
+				for (size_t p = 0; p < funcSig.funcSig.parameters.size(); p++) {
+					sig.name += L"&" + funcSig.funcSig.parameters[p].type + L"@" + funcSig.funcSig.parameters[p].identifier;
+				}
+
+				sig.name += L")";
+
+				procSigs.push_back(sig);
+
+			}
+
+		}
+
+	}
+
+	return procSigs;
 
 }

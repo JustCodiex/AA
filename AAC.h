@@ -46,10 +46,25 @@ public:
 	struct CompiledProcedure {
 		std::vector<CompiledAbstractExpression> procOperations;
 		CompiledEnviornmentTable procEnvironment;
+		AA_AST_NODE* node;
+	};
+
+	struct CompiledSignature {
+		std::wstring name;
+		int procID;
 	};
 
 	struct CompiledStaticChecks {
-		aa::list<AAFuncSignature> registeredFunctions;
+		struct SigPointer {
+			AAFuncSignature funcSig;
+			AA_AST_NODE* node;
+			SigPointer(AAFuncSignature s, AA_AST_NODE* n) {
+				funcSig = s;
+				node = n;
+			}
+		};
+		aa::list<SigPointer> registeredFunctions;
+		std::vector<CompiledSignature> exportSignatures;
 	};
 
 public:
@@ -63,15 +78,15 @@ private:
 	*/
 
 	CompiledProcedure CompileProcedureFromAST(AA_AST* pAbstractTree);
-	AAC_Out CompileFromProcedures(std::vector<CompiledProcedure> procedures);
+	AAC_Out CompileFromProcedures(std::vector<CompiledProcedure> procedures, CompiledStaticChecks staticCompileData);
 
 	/*
 	** Static checkers
 	*/
 
-	CompiledStaticChecks RunStaticChecks(std::vector<AA_AST*> trees);
+	CompiledStaticChecks RunStaticOperations(std::vector<AA_AST*> trees);
 	void TypecheckAST(AA_AST* pTree);
-	aa::list<AAFuncSignature> RegisterFunctions(AA_AST_NODE* pNode);
+	aa::list<CompiledStaticChecks::SigPointer> RegisterFunctions(AA_AST_NODE* pNode, AA_AST_NODE* pSource);
 
 	/*
 	** AST_NODE -> Bytecode functions
@@ -97,10 +112,14 @@ private:
 	AAByteCode GetBytecodeFromUnaryOperator(std::wstring ws);
 
 	/*
+	** FuncSig to procedure mapper
+	*/
+	std::vector< CompiledSignature> MapProcedureToSignature(CompiledStaticChecks staticCheck, std::vector<AAC::CompiledProcedure> procedureLs);
+
+	/*
 	** Bytecode functions
 	*/
 
-	void ToByteCode(std::vector<CompiledAbstractExpression> bytecodes, CompiledEnviornmentTable constTable, AAC_Out& result);
 	void ConstTableToByteCode(CompiledEnviornmentTable constTable, aa::bstream& bis);
 	void ConvertToBytes(CompiledAbstractExpression expr, aa::bstream& bis);
 
