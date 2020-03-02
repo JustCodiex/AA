@@ -15,6 +15,11 @@ private:
 		int opCount;
 	};
 
+	struct ExportSignature {
+		std::wstring name;
+		int procID;
+	};
+
 public:
 
 	AAProgram();
@@ -30,6 +35,8 @@ private:
 
 	int m_entryPoint;
 	int m_procedureCount;
+	int m_signatureCount;
 	Procedure* m_procedures;
+	ExportSignature* m_exportedSignatures;
 
 };

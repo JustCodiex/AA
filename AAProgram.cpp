@@ -4,11 +4,24 @@ AAProgram::AAProgram() {
 	m_entryPoint = -1;
 	m_procedureCount = -1;
 	m_procedures = 0;
+	m_signatureCount = -1;
+	m_exportedSignatures = 0;
 }
 
 bool AAProgram::LoadProgram(unsigned char* bytes, unsigned long long length) {
 
 	aa::bwalker bw = aa::bwalker(bytes, length);
+
+	bw >> m_signatureCount;
+
+	m_exportedSignatures = new ExportSignature[m_signatureCount];
+
+	for (int i = 0; i < m_signatureCount; i++) {
+
+		bw >> m_exportedSignatures[i].name;
+		bw >> m_exportedSignatures[i].procID;
+
+	}
 
 	bw >> m_procedureCount;
 	bw >> m_entryPoint;

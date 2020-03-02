@@ -33,6 +33,19 @@ namespace aa{
 			m_position++;
 		}
 
+		void operator>>(std::wstring& ws) {
+			int len;
+			this->operator>>(len);
+			unsigned char* bytes = new unsigned char[len * 2];
+			memset(bytes, '\0', len * 2);
+			memcpy(bytes, m_bytes + m_position, len * 2);
+			m_position += len * 2ULL;
+			wchar_t* ubytes = new wchar_t[len + 1];
+			wmemset(ubytes, '\0', len + 1);
+			memcpy(ubytes, bytes, len * 2);
+			ws = std::wstring(ubytes);
+		}
+
 	private:
 
 		unsigned char* m_bytes;

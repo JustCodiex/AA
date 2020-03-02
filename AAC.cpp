@@ -19,7 +19,7 @@ AAC_Out AAC::CompileFromAbstractSyntaxTrees(std::vector<AA_AST*> trees) {
 	}
 
 	// Map the procedures to their respective functions
-	this->MapProcedureToSignature(staticChecks, compileResults);
+	staticChecks.exportSignatures = this->MapProcedureToSignature(staticChecks, compileResults);
 
 	// Compile all procedures into bytecode
 	AAC_Out bytecode = CompileFromProcedures(compileResults, staticChecks);
@@ -406,6 +406,7 @@ AAC_Out AAC::CompileFromProcedures(std::vector<CompiledProcedure> procedures, Co
 	for (size_t s = 0; s < staticCompileData.exportSignatures.size(); s++) {
 
 		// Write out the export signatures
+		bis << (int)staticCompileData.exportSignatures[s].name.length();
 		bis << staticCompileData.exportSignatures[s].name;
 		bis << staticCompileData.exportSignatures[s].procID;
 
