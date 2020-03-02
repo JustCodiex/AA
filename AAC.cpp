@@ -2,10 +2,10 @@
 #include "AATypeChecker.h"
 #include <stack>
 
-AAC_Out AAC::CompileFromAST(AA_AST* pAbstractTree) {
+AAC::CompiledProcedure AAC::CompileProcedureFromAST(AA_AST* pAbstractTree) {
 
-	// Store resulting bytecode
-	AAC_Out result = AAC_Out();
+	// Procedure for the abstract tree
+	CompiledProcedure proc;
 
 	// Run a type checker on the AST
 	this->TypecheckAST(pAbstractTree);
@@ -13,17 +13,11 @@ AAC_Out AAC::CompileFromAST(AA_AST* pAbstractTree) {
 	// Simplify the abstract tree
 	pAbstractTree->Simplify();
 
-	// Constant Value table container
-	CompiledEnviornmentTable consTable;
-
 	// Compile the execution stack
-	std::vector<CompiledAbstractExpression> opList = CompileAST(pAbstractTree->GetRoot(), consTable);
+	proc.procOperations = CompileAST(pAbstractTree->GetRoot(), proc.procEnvironment);
 
-	// Combine it all to bytecode string
-	this->ToByteCode(opList, consTable, result);
-
-	// return bytecode
-	return result;
+	// Return the procedure
+	return proc;
 
 }
 
@@ -32,6 +26,18 @@ void AAC::TypecheckAST(AA_AST* pTree) {
 	// Currently, we just run a simple type check
 	AATypeChecker checker = AATypeChecker(pTree);
 	checker.TypeCheck();
+
+}
+
+std::vector<AAC::CompiledAbstractExpression> AAC::CompileFunctions(AA_AST_NODE* pNode) {
+
+	// Stack
+	std::vector<CompiledAbstractExpression> executionStack;
+
+
+
+	// Return the stack
+	return executionStack;
 
 }
 
@@ -334,5 +340,47 @@ void AAC::ConvertToBytes(CompiledAbstractExpression expr, aa::bstream& bis) {
 	for (int i = 0; i < expr.argCount; i++) {
 		bis << expr.argValues[i];
 	}
+
+}
+
+AAC_Out AAC::CompileFromProcedures(std::vector<CompiledProcedure> procedures) {
+
+	// Bytecode compilation result
+	AAC_Out compileBytecodeResult;
+
+	// Byte stream
+	aa::bstream bis;
+
+	// Write procedure count
+	bis << (int)procedures.size();
+
+	// Write entry point (Pointer to the first operation to execute)
+	bis << 0;
+
+	// For all procedures
+	for (size_t p = 0; p < procedures.size(); p++) {
+
+		// Convert constants table to bytecode
+		ConstTableToByteCode(procedures[p].procEnvironment, bis);
+
+		// Write amount of operations
+		bis << (int)procedures[p].procOperations.size();
+
+		// Write all expressions in their compiled formats
+		for (size_t i = 0; i < procedures[p].procOperations.size(); i++) {
+			this->ConvertToBytes(procedures[p].procOperations[i], bis);
+		}
+
+	}
+
+	// Get size and allocate memory buffer
+	compileBytecodeResult.length = bis.length();
+	compileBytecodeResult.bytes = new unsigned char[(int)compileBytecodeResult.length];
+
+	// Copy stream into array
+	memcpy(compileBytecodeResult.bytes, bis.array(), (int)compileBytecodeResult.length);
+
+	// Return the resulting bytecode
+	return compileBytecodeResult;
 
 }

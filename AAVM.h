@@ -1,9 +1,10 @@
 #pragma once
-
 #include "AAC.h"
 #include "AAP.h"
 #include "AAO.h"
 #include "AAVarEnv.h"
+#include "AAProgram.h"
+#include "stack.h"
 #include <iostream>
 
 class AAVM {
@@ -32,13 +33,11 @@ public:
 
 private:
 
-	AA_Literal* LoadConstsTable(unsigned char* bytes, unsigned long long len, unsigned int& offset);
-	AAVarEnv* LoadVariableEnviornment(unsigned char* bytes, unsigned long long length, unsigned int& offset);
-	AAO* LoadOpSequence(unsigned char* bytes, unsigned long long len, int& count);
-
-	void CreateExecutionEnvironment(unsigned char* bytes, unsigned long long len, AA_Literal*& constants, AAVarEnv*& varEnv, AAO*& oplist, int& opCount);
-
 	void Run(AA_Literal* cenv, AAVarEnv* venv, AAO* ops, int opCount);
+
+	void Run(AAProgram* pProg);
+
+	void ReportStack(aa::stack<AAVal> stack);
 
 private:
 

@@ -114,6 +114,11 @@ struct AA_Literal {
 			l.lit.i.val += other.lit.i.val;
 			return l;
 		}
+		case AALiteralType::Float: {
+			AA_Literal l = AA_Literal(*this);
+			l.lit.f.val += other.lit.f.val;
+			return l;
+		}
 		default:
 			break;
 		}
@@ -124,6 +129,11 @@ struct AA_Literal {
 		case AALiteralType::Int: {
 			AA_Literal l = AA_Literal(*this);
 			l.lit.i.val -= other.lit.i.val;
+			return l;
+		}
+		case AALiteralType::Float: {
+			AA_Literal l = AA_Literal(*this);
+			l.lit.f.val -= other.lit.f.val;
 			return l;
 		}
 		default:
@@ -138,6 +148,11 @@ struct AA_Literal {
 			l.lit.i.val *= other.lit.i.val;
 			return l;
 		}
+		case AALiteralType::Float: {
+			AA_Literal l = AA_Literal(*this);
+			l.lit.f.val *= other.lit.f.val;
+			return l;
+		}
 		default:
 			break;
 		}
@@ -148,6 +163,11 @@ struct AA_Literal {
 		case AALiteralType::Int: {
 			AA_Literal l = AA_Literal(*this);
 			l.lit.i.val /= other.lit.i.val;
+			return l;
+		}
+		case AALiteralType::Float: {
+			AA_Literal l = AA_Literal(*this);
+			l.lit.f.val /= other.lit.f.val;
 			return l;
 		}
 		default:
@@ -162,6 +182,11 @@ struct AA_Literal {
 			l.lit.i.val %= other.lit.i.val;
 			return l;
 		}
+		/*case AALiteralType::Float: { // TODO: Implement
+			AA_Literal l = AA_Literal(*this);
+			l.lit.f.val %= other.lit.f.val;
+			return l;
+		}*/
 		default:
 			break;
 		}

@@ -36,6 +36,7 @@ std::vector<std::wstring> keywords = {
 	L"var",
 	L"true",
 	L"false",
+	L"void",
 };
 
 std::vector<AALexicalResult> AALexer::Analyse(std::wstring input) {

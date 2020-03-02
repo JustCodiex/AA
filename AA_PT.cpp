@@ -1,8 +1,8 @@
 #include "AA_PT.h"
 #include <map>
 
-AA_PT::AA_PT(std::vector<AALexicalResult> lexResult) {
-
+/*AA_PT::AA_PT(std::vector<AALexicalResult> lexResult) {
+	/*
 	// Convert lexical analysis to AA_PT_NODEs
 	std::vector<AA_PT_NODE*> aa_pt_nodes = ToNodes(lexResult);
 
@@ -12,9 +12,16 @@ AA_PT::AA_PT(std::vector<AALexicalResult> lexResult) {
 	// Apply flow control
 	this->ApplyFlowControlBindings(aa_pt_nodes);
 
+	// Create parse trees for all the 
+	m_roots = this->CreateTrees(aa_pt_nodes, 0);
+
 	// Create tree from AA_PT_NODEs
 	m_root = this->CreateTree(aa_pt_nodes, 0);
+	
+}*/
 
+AA_PT::AA_PT(AA_PT_NODE* root) {
+	m_root = root;
 }
 
 std::vector<AA_PT_NODE*> AA_PT::ToNodes(std::vector<AALexicalResult> lexResult) {
@@ -23,7 +30,7 @@ std::vector<AA_PT_NODE*> AA_PT::ToNodes(std::vector<AALexicalResult> lexResult) 
 
 	for (size_t i = 0; i < lexResult.size(); i++) {
 
-		AA_PT_NODE* node = new AA_PT_NODE;
+		AA_PT_NODE* node = new AA_PT_NODE(lexResult[i].position);
 
 		switch (lexResult[i].token) {
 		case AAToken::intlit:
@@ -103,12 +110,33 @@ bool AA_PT::IsBoolKeyword(std::wstring keyword) {
 	return keyword == L"true" || keyword == L"false";
 }
 
+std::vector<AA_PT*> AA_PT::CreateTrees(std::vector<AA_PT_NODE*>& nodes) {
+
+	size_t nodeIndex = 0;
+	std::vector<AA_PT*> parseTrees;
+	
+	AA_PT pt = AA_PT(NULL);
+	AA_PT_NODE* root = pt.CreateTree(nodes, 0);
+
+	if (nodes.at(0) == root) {
+		parseTrees.push_back(new AA_PT(root));
+	} else {
+		if (nodes.at(0)->nodeType == AA_PT_NODE_TYPE::expression) {
+			for (size_t i = 0; i < nodes.at(0)->childNodes.size(); i++) {
+				parseTrees.push_back(new AA_PT(nodes.at(0)->childNodes.at(i)));
+			}
+		}
+	}
+
+	return parseTrees;
+
+}
+
 #define REMOVE_NODE(i) delete nodes[i];nodes.erase(nodes.begin() + i)
 
 AA_PT_NODE* AA_PT::CreateTree(std::vector<AA_PT_NODE*>& nodes, int from) {
 
 	size_t nodeIndex = from;
-	AA_PT_NODE* root = 0;
 
 	if (nodes.size() == 1 && nodes[0]->nodeType == AA_PT_NODE_TYPE::expression) {
 		return CreateExpressionTree(nodes, 0);
@@ -122,13 +150,15 @@ AA_PT_NODE* AA_PT::CreateTree(std::vector<AA_PT_NODE*>& nodes, int from) {
 		}
 	}
 
-	root = nodes.at(0);
-
-	return root;
+	return nodes.at(0);
 
 }
 
 void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
+
+	if (nodeIndex >= nodes.size()) {
+		return;
+	}
 
 	switch (nodes[nodeIndex]->nodeType) {
 	case AA_PT_NODE_TYPE::binary_operation:
@@ -159,7 +189,16 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 		break;
 	case AA_PT_NODE_TYPE::identifier:
 		if (nodeIndex > 0 && nodes[nodeIndex-1]->nodeType == AA_PT_NODE_TYPE::identifier) {
-			nodes[nodeIndex - 1] = this->CreateVariableDecl(nodes, nodeIndex - 1);
+
+			// if the next segment is an argument list (expression), it's a func decl with type != void
+			// If not, it's most likely a variable decleration
+
+			if (nodeIndex + 1 < nodes.size() && nodes[nodeIndex + 1]->nodeType == AA_PT_NODE_TYPE::expression) {
+				nodes[nodeIndex - 1] = this->CreateFunctionDecl(nodes, nodeIndex - 1);
+			} else {
+				nodes[nodeIndex - 1] = this->CreateVariableDecl(nodes, nodeIndex - 1);
+			}
+
 		} else {
 			nodeIndex++;
 		}
@@ -174,6 +213,11 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 	case AA_PT_NODE_TYPE::keyword:
 		if (nodes[nodeIndex]->content == L"var") {
 			nodes[nodeIndex] = this->CreateVariableDecl(nodes, nodeIndex);
+		} else if (nodes[nodeIndex]->content == L"void") {
+			AA_PT_NODE* funcDeclNode = this->CreateFunctionDecl(nodes, nodeIndex);
+			if (funcDeclNode) {
+				nodes[nodeIndex] = funcDeclNode;
+			}
 		}
 		nodeIndex++;
 		break;
@@ -224,8 +268,8 @@ AA_PT_NODE* AA_PT::CreateVariableDecl(std::vector<AA_PT_NODE*>& nodes, int from)
 		printf("Err: Expected identifier");
 	}
 
-	AA_PT_NODE* varDeclExp = new AA_PT_NODE;
-	varDeclExp->nodeType = AA_PT_NODE_TYPE::decleration;
+	AA_PT_NODE* varDeclExp = new AA_PT_NODE(nodes[from]->position);
+	varDeclExp->nodeType = AA_PT_NODE_TYPE::vardecleration;
 	varDeclExp->childNodes.push_back(nodes[from]);
 	varDeclExp->childNodes.push_back(nodes[from+1]);
 
@@ -235,26 +279,58 @@ AA_PT_NODE* AA_PT::CreateVariableDecl(std::vector<AA_PT_NODE*>& nodes, int from)
 
 }
 
+AA_PT_NODE* AA_PT::CreateFunctionDecl(std::vector<AA_PT_NODE*>& nodes, int from) {
+
+	if (nodes[from + 1]->nodeType != AA_PT_NODE_TYPE::identifier) {
+		printf("Err: Expected identifier");
+		return 0;
+	}
+
+	if (nodes[from + 2]->nodeType != AA_PT_NODE_TYPE::expression) {
+		printf("Err: Expected argument list");
+		return 0;
+	}
+
+	AA_PT_NODE* funDecl = new AA_PT_NODE(nodes[from]->position);
+	funDecl->nodeType = AA_PT_NODE_TYPE::fundecleration;
+	funDecl->content = nodes[from + 1]->content;
+	funDecl->childNodes.push_back(nodes[from]); // return type
+	funDecl->childNodes.push_back(nodes[from+2]); // argument list
+
+	if (from + 3 < (int)nodes.size() && nodes[from + 3]->nodeType == AA_PT_NODE_TYPE::block) {
+		size_t n = 0;
+		this->HandleTreeCase(nodes[from + 3]->childNodes, n);
+		funDecl->childNodes.push_back(nodes[from + 3]); // function body
+		nodes.erase(nodes.begin() + from + 3);
+	}
+
+	nodes.erase(nodes.begin() + from, nodes.begin() + from + 3);
+	nodes.insert(nodes.begin() + from, funDecl);
+
+	return 0;
+
+}
+
 void AA_PT::ApplyOrderOfOperationBindings(std::vector<AA_PT_NODE*>& nodes) {
 
 	// Convert parenthesis blocks into singular expressions
-	this->ApplyGroupings(nodes);
+	ApplyGroupings(nodes);
 
 	// Apply bindings (eg. -1 => unary operation)
-	this->ApplyUnaryBindings(nodes);
-
+	ApplyUnaryBindings(nodes);
+	
 	// Apply mathematic rules So 5+5*5 = 30 and not 50
-	this->ApplyArithemticRules(nodes);
-
+	ApplyArithemticRules(nodes);
+	
 	// Apply assignment order rule, so var x = 5+5 is treated as 5+5=x and not x=5, + 5
-	this->ApplyAssignmentOrder(nodes);
+	ApplyAssignmentOrder(nodes);
 
 }
 
 void AA_PT::ApplyGroupings(std::vector<AA_PT_NODE*>& nodes) {
 
 	int i = 0;
-	this->PairStatements(nodes, i, AA_PT_NODE_TYPE::parenthesis_start, AA_PT_NODE_TYPE::parenthesis_end, AA_PT_NODE_TYPE::expression);
+	PairStatements(nodes, i, AA_PT_NODE_TYPE::parenthesis_start, AA_PT_NODE_TYPE::parenthesis_end, AA_PT_NODE_TYPE::expression);
 
 }
 
@@ -272,7 +348,7 @@ void AA_PT::ApplyUnaryBindings(std::vector<AA_PT_NODE*>& nodes) {
 
 		if (nodes[index]->nodeType == AA_PT_NODE_TYPE::unary_operation) {
 
-			AA_PT_NODE* unaryExp = new AA_PT_NODE;
+			AA_PT_NODE* unaryExp = new AA_PT_NODE(nodes[index]->position);
 			unaryExp->nodeType = AA_PT_NODE_TYPE::expression;
 			unaryExp->childNodes.push_back(nodes[index]);
 			unaryExp->childNodes.push_back(nodes[index+1]);
@@ -310,7 +386,7 @@ void AA_PT::ApplyArithemticRules(std::vector<AA_PT_NODE*>& nodes) {
 
 			if (nodes[index]->content == L"*" || nodes[index]->content == L"/" || nodes[index]->content == L"%") {
 
-				AA_PT_NODE* binOpNode = new AA_PT_NODE;
+				AA_PT_NODE* binOpNode = new AA_PT_NODE(nodes[index]->position);
 				binOpNode->nodeType = AA_PT_NODE_TYPE::expression;
 				binOpNode->childNodes.push_back(nodes[index - 1]);
 				binOpNode->childNodes.push_back(nodes[index]);
@@ -355,7 +431,7 @@ void AA_PT::ApplyAssignmentOrder(std::vector<AA_PT_NODE*>& nodes) {
 					}
 				}
 
-				AA_PT_NODE* rhs = new AA_PT_NODE;
+				AA_PT_NODE* rhs = new AA_PT_NODE(nodes[index]->position);
 				rhs->nodeType = AA_PT_NODE_TYPE::expression;
 				rhs->childNodes = std::vector<AA_PT_NODE*>(nodes.begin() + index + 1, nodes.begin() + index2);
 
@@ -402,7 +478,7 @@ void AA_PT::ApplyStatementBindings(std::vector<AA_PT_NODE*>& nodes) {
 				}
 			}
 
-			AA_PT_NODE* rhs = new AA_PT_NODE;
+			AA_PT_NODE* rhs = new AA_PT_NODE(nodes[index]->position);
 			rhs->nodeType = AA_PT_NODE_TYPE::expression;
 			rhs->childNodes = std::vector<AA_PT_NODE*>(nodes.begin() + index, nodes.begin() + index2);
 
@@ -429,7 +505,7 @@ std::vector<AA_PT_NODE*> AA_PT::PairStatements(std::vector<AA_PT_NODE*>& nodes, 
 
 			int pStart = index;
 
-			AA_PT_NODE* expNode = new AA_PT_NODE;
+			AA_PT_NODE* expNode = new AA_PT_NODE(nodes[index]->position);
 			expNode->nodeType = contentType;
 			expNode->childNodes = PairStatements(nodes, index, open, close, contentType);
 

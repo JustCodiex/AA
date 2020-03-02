@@ -28,12 +28,12 @@ public:
 		CompiledAbstractExpression() {
 			bc = AAByteCode::NOP;
 			argCount = 0;
-			memset(argValues, -128, 8);
+			memset(argValues, -1, sizeof(argValues));
 		}
 		CompiledAbstractExpression(AAByteCode code, int argCount, int* argVals) {
 			this->bc = code;
 			this->argCount = argCount;
-			memset(argValues, -128, 8);
+			memset(argValues, -1, sizeof(argValues));
 			memcpy(this->argValues, argValues, sizeof(int) * argCount);
 		}
 	};
@@ -43,14 +43,21 @@ public:
 		aa::list<std::wstring> identifiers;
 	};
 
+	struct CompiledProcedure {
+		std::vector<CompiledAbstractExpression> procOperations;
+		CompiledEnviornmentTable procEnvironment;
+	};
+
 public:
 
-	AAC_Out CompileFromAST(AA_AST* pAbstractTree);
+	CompiledProcedure CompileProcedureFromAST(AA_AST* pAbstractTree);
+	AAC_Out CompileFromProcedures(std::vector<CompiledProcedure> procedures);
 
 private:
 
 	void TypecheckAST(AA_AST* pTree);
 
+	std::vector<CompiledAbstractExpression> CompileFunctions(AA_AST_NODE* pNode);
 	std::vector<CompiledAbstractExpression> CompileAST(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable);
 
 	/*

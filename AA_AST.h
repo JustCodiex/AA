@@ -9,7 +9,11 @@ enum class AA_AST_NODE_TYPE {
 	block,
 	binop,
 	unop,
-	
+
+	fundecl,
+
+	typeidentifier,
+
 	vardecl,
 	variable,
 
@@ -25,9 +29,11 @@ struct AA_AST_NODE {
 	AA_AST_NODE_TYPE type;
 	std::wstring content;
 	std::vector<AA_AST_NODE*> expressions;
-	AA_AST_NODE(std::wstring content, AA_AST_NODE_TYPE type) {
+	AACodePosition position;
+	AA_AST_NODE(std::wstring content, AA_AST_NODE_TYPE type, AACodePosition pos) {
 		this->type = type;
 		this->content = content;
+		this->position = pos;
 	}
 };
 

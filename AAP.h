@@ -11,7 +11,11 @@ public:
 
 	void Release();
 
-	AA_AST* Parse(std::wstring input);
+	std::vector< AA_AST*> Parse(std::wstring input);
+
+private:
+
+	std::vector< AA_AST *> CreateParseTrees(std::vector<AALexicalResult> lexResult);
 
 private:
 

@@ -72,6 +72,9 @@
     <ClCompile Include="AATypeChecker.cpp">
       <Filter>Source Files\compiler</Filter>
     </ClCompile>
+    <ClCompile Include="AAProgram.cpp">
+      <Filter>Source Files\VM</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AA_literals.h">
@@ -124,6 +127,12 @@
     </ClInclude>
     <ClInclude Include="AACodePosition.h">
       <Filter>Header Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="AAProgram.h">
+      <Filter>Header Files\VM</Filter>
+    </ClInclude>
+    <ClInclude Include="bwalker.h">
+      <Filter>Header Files\util</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
