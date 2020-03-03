@@ -77,8 +77,8 @@ private:
 	** Private compiler methods
 	*/
 
-	CompiledProcedure CompileProcedureFromAST(AA_AST* pAbstractTree);
-	AAC_Out CompileFromProcedures(std::vector<CompiledProcedure> procedures, CompiledStaticChecks staticCompileData);
+	CompiledProcedure CompileProcedureFromAST(AA_AST* pAbstractTree, CompiledStaticChecks staticData);
+	AAC_Out CompileFromProcedures(std::vector<CompiledProcedure> procedures, CompiledStaticChecks staticCompileData, int entryPoint);
 
 	/*
 	** Static checkers
@@ -86,18 +86,23 @@ private:
 
 	CompiledStaticChecks RunStaticOperations(std::vector<AA_AST*> trees);
 	void TypecheckAST(AA_AST* pTree);
+	void CollapseGlobalScope(std::vector<AA_AST*>& trees);
 	aa::list<CompiledStaticChecks::SigPointer> RegisterFunctions(AA_AST_NODE* pNode, AA_AST_NODE* pSource);
+	CompiledStaticChecks::SigPointer RegisterFunction(AA_AST_NODE* pNode);
 
 	/*
 	** AST_NODE -> Bytecode functions
 	*/
 
-	std::vector<CompiledAbstractExpression> CompileAST(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable);
-	std::vector<CompiledAbstractExpression> CompileBinaryOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable);
-	std::vector<CompiledAbstractExpression> CompileUnaryOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable);
-	std::vector<CompiledAbstractExpression> HandleStackPush(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode);
+	std::vector<CompiledAbstractExpression> CompileAST(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData);
+	std::vector<CompiledAbstractExpression> CompileBinaryOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData);
+	std::vector<CompiledAbstractExpression> CompileUnaryOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData);
+	std::vector<CompiledAbstractExpression> CompileFunctionCall(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData);
+	std::vector<CompiledAbstractExpression> HandleStackPush(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode, CompiledStaticChecks staticData);
+
 	CompiledAbstractExpression HandleConstPush(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode);
 	CompiledAbstractExpression HandleVarPush(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode);
+	
 	int HandleDecl(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode);
 
 	/*
@@ -115,6 +120,7 @@ private:
 	** FuncSig to procedure mapper
 	*/
 	std::vector< CompiledSignature> MapProcedureToSignature(CompiledStaticChecks staticCheck, std::vector<AAC::CompiledProcedure> procedureLs);
+	int FindBestFunctionMatch(CompiledStaticChecks staticCheck, AA_AST_NODE* pNode);
 
 	/*
 	** Bytecode functions

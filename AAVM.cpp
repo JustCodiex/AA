@@ -96,10 +96,11 @@ void AAVM::Run(AAProgram* pProg) {
 	//int opPointer = 0;
 	//aa::stack<AAVal> stack;
 
+	int entryPoint = pProg->GetEntryPoint();
+
 	//clock_t s = clock();
 
-	this->Run(pProg->m_procedures[0].constTable, pProg->m_procedures[0].venv, pProg->m_procedures[0].opSequence, pProg->m_procedures[0].opCount);
-
+	this->Run(pProg->m_procedures[entryPoint].constTable, pProg->m_procedures[entryPoint].venv, pProg->m_procedures[entryPoint].opSequence, pProg->m_procedures[entryPoint].opCount);
 
 	//printf("Execute time: %fs\n", (float)(clock() - s) / CLOCKS_PER_SEC);
 
@@ -173,6 +174,11 @@ void AAVM::Run(AA_Literal* cenv, AAVarEnv* venv, AAO* ops, int opCount) {
 		case AAByteCode::SETVAR: {
 			AA_Literal rhs = stack.Pop().litVal;
 			venv->SetVariable(ops[opPointer].args[0], rhs);
+			opPointer++;
+			break;
+		}
+		case AAByteCode::CALL: {
+
 			opPointer++;
 			break;
 		}

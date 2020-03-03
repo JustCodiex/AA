@@ -1,5 +1,6 @@
 #pragma once
 #include "AA_PT.h"
+#include <map>
 
 enum class AA_AST_NODE_TYPE {
 
@@ -22,6 +23,8 @@ enum class AA_AST_NODE_TYPE {
 	vardecl,
 	variable,
 
+	funcall,
+
 	intliteral,
 	floatliteral,
 	stringliteral,
@@ -35,6 +38,7 @@ struct AA_AST_NODE {
 	std::wstring content;
 	std::vector<AA_AST_NODE*> expressions;
 	AACodePosition position;
+	std::map<const char*, void*> tags;
 	AA_AST_NODE(std::wstring content, AA_AST_NODE_TYPE type, AACodePosition pos) {
 		this->type = type;
 		this->content = content;
@@ -47,6 +51,9 @@ class AA_AST {
 public:
 
 	AA_AST(AA_PT* parseTree);
+	AA_AST(AA_AST_NODE* rootNode) {
+		m_root = rootNode;
+	}
 
 	AA_AST_NODE* GetRoot() { return m_root; }
 

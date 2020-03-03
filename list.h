@@ -11,7 +11,7 @@ namespace aa {
 
 	public:
 
-		void Add(T& val) {
+		void Add(T val) {
 			m_vector.push_back(val);
 		}
 

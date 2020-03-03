@@ -184,6 +184,18 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 				nodes[nodeIndex - 1] = this->CreateVariableDecl(nodes, nodeIndex - 1);
 			}
 
+		} else if (nodeIndex + 1 < nodes.size() && nodes[nodeIndex + 1]->nodeType == AA_PT_NODE_TYPE::expression) {
+			
+			AA_PT_NODE* funcallNode = new AA_PT_NODE(nodes[nodeIndex]->position);
+			funcallNode->content = nodes[nodeIndex]->content;
+			funcallNode->nodeType = AA_PT_NODE_TYPE::funccall;
+			funcallNode->childNodes.push_back(this->CreateExpressionTree(nodes, nodeIndex + 1));
+
+			nodes.erase(nodes.begin() + nodeIndex, nodes.begin() + nodeIndex + 2);
+			nodes.insert(nodes.begin() + nodeIndex, funcallNode);
+
+			nodeIndex++;
+
 		} else {
 			nodeIndex++;
 		}
@@ -230,7 +242,7 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 
 AA_PT_NODE* AA_PT::CreateExpressionTree(std::vector<AA_PT_NODE*>& nodes, int from) {
 
-	if (nodes[from]->nodeType == AA_PT_NODE_TYPE::expression) {
+	if (nodes[from]->nodeType == AA_PT_NODE_TYPE::expression && nodes[from]->childNodes.size() > 0) {
 
 		AA_PT_NODE* exp = CreateTree(nodes[from]->childNodes, 0); // Create a tree for the expression
 		while (exp->nodeType == AA_PT_NODE_TYPE::expression) { // As long as we have a single expression here, we break it down to smaller bits, incase we get input like (((5+5))).

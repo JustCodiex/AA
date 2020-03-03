@@ -26,6 +26,8 @@ public:
 
 	bool LoadProgram(unsigned char* bytes, unsigned long long length);
 
+	int GetEntryPoint() { return m_entryPoint; }
+
 private:
 
 	void LoadConstants(Procedure& proc, aa::bwalker& bw);

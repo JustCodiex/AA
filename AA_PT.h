@@ -26,6 +26,8 @@ enum class AA_PT_NODE_TYPE {
 	vardecleration,
 	fundecleration,
 	
+	funccall,
+
 	intliteral,
 	floatliteral,
 	stringliteral,
