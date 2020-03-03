@@ -2,7 +2,17 @@
 #include "AATypeChecker.h"
 #include <stack>
 
+void AAC::ResetCompilerInternals() {
+
+	// Reset current procedure ID
+	m_currentProcID = 0;
+
+}
+
 AAC_Out AAC::CompileFromAbstractSyntaxTrees(std::vector<AA_AST*> trees) {
+
+	// Reset the internals of the compiler
+	this->ResetCompilerInternals();
 
 	// Collapse global tree sections
 	this->CollapseGlobalScope(trees);
@@ -134,6 +144,7 @@ AAC::CompiledStaticChecks::SigPointer AAC::RegisterFunction(AA_AST_NODE* pNode) 
 	sig.returnType = pNode->expressions[0]->content;
 
 	AAC::CompiledStaticChecks::SigPointer sP = AAC::CompiledStaticChecks::SigPointer(sig, pNode);
+	sP.procID = ++m_currentProcID;
 
 	pNode->tags["funcsignature"] = &sig;
 
@@ -542,7 +553,7 @@ int AAC::FindBestFunctionMatch(CompiledStaticChecks staticCheck, AA_AST_NODE* pN
 	for (size_t i = 0; i < staticCheck.registeredFunctions.Size(); i++) {
 		AAC::CompiledStaticChecks::SigPointer sig = staticCheck.registeredFunctions.At(i);
 		if (sig.funcSig.name == funcName) {
-			return i; // TODO: When argument lists have been implemented, compare to those
+			return sig.procID; // TODO: When argument lists have been implemented, compare to those
 			if (pNode->expressions[0]->expressions.size() == sig.funcSig.parameters.size()) {
 				return i;
 			}

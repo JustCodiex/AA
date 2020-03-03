@@ -33,7 +33,7 @@ public:
 
 private:
 
-	void Run(AA_Literal* cenv, AAVarEnv* venv, AAO* ops, int opCount);
+	void Run(AAProgram::Procedure* procedures, int entry);
 
 	void Run(AAProgram* pProg);
 

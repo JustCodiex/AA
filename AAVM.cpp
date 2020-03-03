@@ -100,22 +100,26 @@ void AAVM::Run(AAProgram* pProg) {
 
 	//clock_t s = clock();
 
-	this->Run(pProg->m_procedures[entryPoint].constTable, pProg->m_procedures[entryPoint].venv, pProg->m_procedures[entryPoint].opSequence, pProg->m_procedures[entryPoint].opCount);
+	this->Run(pProg->m_procedures, entryPoint);
 
 	//printf("Execute time: %fs\n", (float)(clock() - s) / CLOCKS_PER_SEC);
 
 }
 
-void AAVM::Run(AA_Literal* cenv, AAVarEnv* venv, AAO* ops, int opCount) {
+#define AAVM_GetOperation(i) procedure[procPointer].opSequence[i].op
+#define AAVM_GetArgument(i) procedure[procPointer].opSequence[opPointer].args[i]
+
+void AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 
 	int opPointer = 0;
+	int procPointer = entry;
 	aa::stack<AAVal> stack;
 
-	while (opPointer < opCount) {
+	while (opPointer < procedure[procPointer].opCount) {
 
-		switch (ops[opPointer].op) {
+		switch (AAVM_GetOperation(opPointer)) {
 		case AAByteCode::PUSHC:
-			stack.Push(cenv[ops[opPointer].args[0]]);
+			stack.Push(procedure[procPointer].constTable[AAVM_GetArgument(0)]);
 			opPointer++;
 			break;
 		case AAByteCode::ADD: {
@@ -167,18 +171,20 @@ void AAVM::Run(AA_Literal* cenv, AAVarEnv* venv, AAO* ops, int opCount) {
 			break;
 		}
 		case AAByteCode::GETVAR: {
-			stack.Push(venv->GetVariable(ops[opPointer].args[0]));
+			stack.Push(procedure[procPointer].venv->GetVariable(AAVM_GetArgument(0)));
 			opPointer++;
 			break;
 		}
 		case AAByteCode::SETVAR: {
 			AA_Literal rhs = stack.Pop().litVal;
-			venv->SetVariable(ops[opPointer].args[0], rhs);
+			procedure[procPointer].venv->SetVariable(AAVM_GetArgument(0), rhs);
 			opPointer++;
 			break;
 		}
 		case AAByteCode::CALL: {
-
+			int callProc = AAVM_GetArgument(0);
+			// push arguments
+			//stack.Push(AA_IntLiteral(opPointer + 1)); // push pointer to next operation
 			opPointer++;
 			break;
 		}

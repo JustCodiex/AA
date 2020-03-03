@@ -58,9 +58,11 @@ public:
 		struct SigPointer {
 			AAFuncSignature funcSig;
 			AA_AST_NODE* node;
+			int procID;
 			SigPointer(AAFuncSignature s, AA_AST_NODE* n) {
 				funcSig = s;
 				node = n;
+				procID = -1;
 			}
 		};
 		aa::list<SigPointer> registeredFunctions;
@@ -128,5 +130,15 @@ private:
 
 	void ConstTableToByteCode(CompiledEnviornmentTable constTable, aa::bstream& bis);
 	void ConvertToBytes(CompiledAbstractExpression expr, aa::bstream& bis);
+
+	/*
+	** Compiler State Functions
+	*/
+
+	void ResetCompilerInternals();
+
+private:
+
+	int m_currentProcID;
 
 };
