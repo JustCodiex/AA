@@ -268,7 +268,11 @@ std::vector<AA_PT_NODE*> AA_PT::CreateArgumentTree(AA_PT_NODE* pExpNode) {
 	this->ApplyStatementBindings(pExpNode->childNodes);
 
 	for (size_t i = 0; i < pExpNode->childNodes.size(); i++) {
-		nodes.push_back(CreateExpressionTree(pExpNode->childNodes[i]->childNodes, 0));
+		std::vector<AA_PT_NODE*> argElements;
+		for (AA_PT_NODE* n : pExpNode->childNodes[i]->childNodes) {
+			argElements.push_back(n);
+		}
+		nodes.push_back(this->CreateTree(argElements, 0));
 	}
 
 	return nodes;
