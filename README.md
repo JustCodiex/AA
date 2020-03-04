@@ -31,7 +31,7 @@ int test() {
 }
 test();
 ```
-Functions can be defined as expected. Since there's no real conecpt of files, access modifiers are currently not applicable (but planned). The code sample above will run the test function and return 28. We note that the language currently works with a loose concept of a global scope. Functions are excluded from this scope, meaning the `test();` statement is considered to be part of the global scope and is executed during runtime. Meanwhile the definition of test is NOT considered part of the global scope and will therefore not execute by itself.
+Functions can be defined as expected. Since there's no real conecpt of files, access modifiers are currently not applicable (but planned). The code sample above will run the test function and return 28. We note that the language currently works with a loose concept of a global execution scope. Functions are excluded from this scope, meaning the `test();` statement is considered to be part of the global scope and is executed during runtime. Meanwhile the definition of test is NOT considered part of the global execution scope and will, therefore, not execute by itself.
 ```
 int par(int x, int y) { 
     x - y; 
