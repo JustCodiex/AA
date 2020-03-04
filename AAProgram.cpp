@@ -107,20 +107,17 @@ void AAProgram::LoadOperations(Procedure& proc, aa::bwalker& bw) {
 		case AAByteCode::PUSHC:
 		case AAByteCode::GETVAR:
 		case AAByteCode::SETVAR:
-		case AAByteCode::CALL:
+		case AAByteCode::RET:
 			proc.opSequence[i].args = new int[1];
 			bw >> proc.opSequence[i].args[0];
 			break;
-		case AAByteCode::NOP:
-		case AAByteCode::ADD:
-		case AAByteCode::SUB:
-		case AAByteCode::MOD:
-		case AAByteCode::MUL:
-		case AAByteCode::DIV:
-		case AAByteCode::NNEG:
-			proc.opSequence[i].args = 0;
+		case AAByteCode::CALL:
+			proc.opSequence[i].args = new int[2];
+			bw >> proc.opSequence[i].args[0];
+			bw >> proc.opSequence[i].args[1];
 			break;
 		default:
+			proc.opSequence[i].args = 0;
 			break;
 		}
 

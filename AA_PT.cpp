@@ -168,28 +168,31 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 
 		break;
 	case AA_PT_NODE_TYPE::seperator:
-		if (nodes[nodeIndex]->content == L";") {
+		if (nodes[nodeIndex]->content == L";" || nodes[nodeIndex]->content == L",") {
 			REMOVE_NODE(nodeIndex);
 		}
 		break;
 	case AA_PT_NODE_TYPE::identifier:
-		if (nodeIndex > 0 && nodes[nodeIndex-1]->nodeType == AA_PT_NODE_TYPE::identifier) {
+		if (nodeIndex + 1 < nodes.size() && nodes[nodeIndex + 1]->nodeType == AA_PT_NODE_TYPE::identifier) {
 
 			// if the next segment is an argument list (expression), it's a func decl with type != void
 			// If not, it's most likely a variable decleration
 
-			if (nodeIndex + 1 < nodes.size() && nodes[nodeIndex + 1]->nodeType == AA_PT_NODE_TYPE::expression) {
-				nodes[nodeIndex - 1] = this->CreateFunctionDecl(nodes, nodeIndex - 1);
+			if (nodeIndex + 2 < nodes.size() && nodes[nodeIndex + 2]->nodeType == AA_PT_NODE_TYPE::expression) {
+				nodes[nodeIndex] = this->CreateFunctionDecl(nodes, nodeIndex);
 			} else {
-				nodes[nodeIndex - 1] = this->CreateVariableDecl(nodes, nodeIndex - 1);
+				nodes[nodeIndex] = this->CreateVariableDecl(nodes, nodeIndex);
 			}
+
+			nodeIndex++;
 
 		} else if (nodeIndex + 1 < nodes.size() && nodes[nodeIndex + 1]->nodeType == AA_PT_NODE_TYPE::expression) {
 			
 			AA_PT_NODE* funcallNode = new AA_PT_NODE(nodes[nodeIndex]->position);
 			funcallNode->content = nodes[nodeIndex]->content;
 			funcallNode->nodeType = AA_PT_NODE_TYPE::funccall;
-			funcallNode->childNodes.push_back(this->CreateExpressionTree(nodes, nodeIndex + 1));
+			funcallNode->childNodes = this->CreateArgumentTree(nodes[nodeIndex +1]);
+			//funcallNode->childNodes.push_back(this->CreateExpressionTree(nodes, nodeIndex + 1));
 
 			nodes.erase(nodes.begin() + nodeIndex, nodes.begin() + nodeIndex + 2);
 			nodes.insert(nodes.begin() + nodeIndex, funcallNode);
@@ -259,6 +262,19 @@ AA_PT_NODE* AA_PT::CreateExpressionTree(std::vector<AA_PT_NODE*>& nodes, int fro
 
 }
 
+std::vector<AA_PT_NODE*> AA_PT::CreateArgumentTree(AA_PT_NODE* pExpNode) {
+
+	std::vector<AA_PT_NODE*> nodes;
+	this->ApplyStatementBindings(pExpNode->childNodes);
+
+	for (size_t i = 0; i < pExpNode->childNodes.size(); i++) {
+		nodes.push_back(CreateExpressionTree(pExpNode->childNodes[i]->childNodes, 0));
+	}
+
+	return nodes;
+
+}
+
 AA_PT_NODE* AA_PT::CreateVariableDecl(std::vector<AA_PT_NODE*>& nodes, int from) {
 
 	if (nodes[from + 1]->nodeType != AA_PT_NODE_TYPE::identifier) {
@@ -292,22 +308,55 @@ AA_PT_NODE* AA_PT::CreateFunctionDecl(std::vector<AA_PT_NODE*>& nodes, int from)
 	funDecl->nodeType = AA_PT_NODE_TYPE::fundecleration;
 	funDecl->content = nodes[from + 1]->content;
 	funDecl->childNodes.push_back(nodes[from]); // return type
-	funDecl->childNodes.push_back(nodes[from+2]); // argument list
+	funDecl->childNodes.push_back(CreateFunctionArgList(nodes[from+2])); // argument list
 
 	if (from + 3 < (int)nodes.size() && nodes[from + 3]->nodeType == AA_PT_NODE_TYPE::block) {
 		size_t n = 0;
 		AA_PT_NODE* p = this->CreateTree(nodes[from + 3]->childNodes, n);
 		nodes[from + 3]->nodeType = AA_PT_NODE_TYPE::funcbody;
-		if (p) {
-			funDecl->childNodes.push_back(p); // function body
-		}
+		funDecl->childNodes.push_back(nodes[from + 3]); // function body
 		nodes.erase(nodes.begin() + from + 3);
 	}
 
 	nodes.erase(nodes.begin() + from, nodes.begin() + from + 3);
 	nodes.insert(nodes.begin() + from, funDecl);
 
-	return 0;
+	return funDecl;
+
+}
+
+AA_PT_NODE* AA_PT::CreateFunctionArgList(AA_PT_NODE* pExpNode) {
+
+	AA_PT_NODE* argList = new AA_PT_NODE(pExpNode->position);
+	argList->nodeType = AA_PT_NODE_TYPE::funarglist;
+
+	size_t i = 0;
+	while (i < pExpNode->childNodes.size()) {
+
+		if (pExpNode->childNodes[i]->nodeType == AA_PT_NODE_TYPE::identifier) {
+			if (i + 1 < pExpNode->childNodes.size() && pExpNode->childNodes[i + 1]->nodeType == AA_PT_NODE_TYPE::identifier) {
+
+				AA_PT_NODE* arg = new AA_PT_NODE(pExpNode->childNodes[i]->position);
+				arg->nodeType = AA_PT_NODE_TYPE::funarg;
+				arg->content = pExpNode->childNodes[i + 1]->content;
+				arg->childNodes.push_back(pExpNode->childNodes[i]);
+
+				argList->childNodes.push_back(arg);
+
+				i++;
+				i++;
+
+			}
+		} else if (pExpNode->childNodes[i]->nodeType == AA_PT_NODE_TYPE::seperator && pExpNode->childNodes[i]->content == L",") {
+			i++;
+		} else {
+			printf("Some annoying error");
+			break;
+		}
+
+	}
+
+	return argList;
 
 }
 

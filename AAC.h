@@ -100,6 +100,7 @@ private:
 	std::vector<CompiledAbstractExpression> CompileBinaryOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData);
 	std::vector<CompiledAbstractExpression> CompileUnaryOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData);
 	std::vector<CompiledAbstractExpression> CompileFunctionCall(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData);
+	std::vector<CompiledAbstractExpression> CompileFuncArgs(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData);
 	std::vector<CompiledAbstractExpression> HandleStackPush(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode, CompiledStaticChecks staticData);
 
 	CompiledAbstractExpression HandleConstPush(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode);
@@ -117,12 +118,13 @@ private:
 	std::vector<CompiledAbstractExpression> Merge(std::vector<CompiledAbstractExpression> original, std::vector<CompiledAbstractExpression> add);
 	AAByteCode GetBytecodeFromBinaryOperator(std::wstring ws);
 	AAByteCode GetBytecodeFromUnaryOperator(std::wstring ws);
+	int GetReturnCount(void* funcSig);
 
 	/*
 	** FuncSig to procedure mapper
 	*/
 	std::vector< CompiledSignature> MapProcedureToSignature(CompiledStaticChecks staticCheck, std::vector<AAC::CompiledProcedure> procedureLs);
-	int FindBestFunctionMatch(CompiledStaticChecks staticCheck, AA_AST_NODE* pNode);
+	int FindBestFunctionMatch(CompiledStaticChecks staticCheck, AA_AST_NODE* pNode, int& argCount);
 
 	/*
 	** Bytecode functions

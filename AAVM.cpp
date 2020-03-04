@@ -182,10 +182,38 @@ void AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 			break;
 		}
 		case AAByteCode::CALL: {
+
 			int callProc = AAVM_GetArgument(0);
-			// push arguments
-			//stack.Push(AA_IntLiteral(opPointer + 1)); // push pointer to next operation
-			opPointer++;
+			int argCount = AAVM_GetArgument(1);
+
+			aa::stack<AAVal> args;
+			for (int i = 0; i < argCount; i++) {
+				args.Push(stack.Pop());
+			}
+
+			stack.Push(AAVal(procPointer)); // Push pointer to current proc
+			stack.Push(AAVal(opPointer + 1)); // push pointer to next operation
+
+			procPointer = callProc;
+			opPointer = 0;
+
+			while (args.Size() > 0) {
+				stack.Push(args.Pop());
+			}
+
+			break;
+		}
+		case AAByteCode::RET: {
+			int retCount = AAVM_GetArgument(0);
+			aa::stack<AAVal> returnValues;
+			for (int i = 0; i < retCount; i++) {
+				returnValues.Push(stack.Pop());
+			}
+			opPointer = stack.Pop().litVal.lit.i.val;
+			procPointer = stack.Pop().litVal.lit.i.val;
+			for (int i = 0; i < retCount; i++) {
+				stack.Push(returnValues.Pop());
+			}
 			break;
 		}
 		case AAByteCode::NOP:

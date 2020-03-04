@@ -4,6 +4,7 @@ Yep, it's yet another programming language, which probably has nothing new to ad
 The language is heavily influenced by the C languages (and it's also written in C++).
 One of the goals with the language is to introduce a more clean and, hopefully, more intuitive language.
 ### Small Examples:
+#### Arithmetic and variables
 It's currently possible to write statements like these:
 ```
 { 
@@ -21,6 +22,24 @@ Which will be evaluated to 28 (Because the language does abide by a standard ord
 }
 ```
 Above code will, as expected, output 10. A small note for the current state of the language; types are not enforced (but checked at compile time). Additionally, variable scopes are not properly defined at the moment. Meaning the language is currently using a dynamic scope system.
+#### Functions
+```
+int test() {
+    var x = 0;
+    x = 28;
+    x;
+}
+test();
+```
+Functions can be defined as expected. Since there's no real conecpt of files, access modifiers are currently not applicable (but planned). The code sample above will run the test function and return 28. We note that the language currently works with a loose concept of a global scope. Functions are excluded from this scope, meaning the `test();` statement is considered to be part of the global scope and is executed during runtime. Meanwhile the definition of test is NOT considered part of the global scope and will therefore not execute by itself.
+```
+int par(int x, int y) { 
+    x - y; 
+} 
+par(10, 5);
+```
+The `par` function defined above takes two parameters `x` and `y` and then returns the resulting subtraction of `y` from `x`. We note again that the return statement is implied.
+#### Main.cpp examples
 For more examples of what's currently possible in the language, look inside the [Main.cpp](Main.cpp) file, as it contains more examples of what's possible.
 ## Why?
 Because designing programming languages is a fun and learnful experience.

@@ -27,6 +27,8 @@ enum class AA_PT_NODE_TYPE {
 	fundecleration,
 	
 	funccall,
+	funarg,
+	funarglist,
 
 	intliteral,
 	floatliteral,
@@ -55,7 +57,6 @@ class AA_PT {
 public:
 
 	AA_PT(AA_PT_NODE* root);
-	//AA_PT(std::vector<AALexicalResult> lexResult);
 
 	AA_PT_NODE* GetRoot() { return m_root; }
 
@@ -95,7 +96,10 @@ private:
 	AA_PT_NODE* CreateExpressionTree(std::vector<AA_PT_NODE*>& nodes, int from);
 	AA_PT_NODE* CreateVariableDecl(std::vector<AA_PT_NODE*>& nodes, int from);
 	AA_PT_NODE* CreateFunctionDecl(std::vector<AA_PT_NODE*>& nodes, int from);
+	std::vector<AA_PT_NODE*> CreateArgumentTree(AA_PT_NODE* pExpNode);
 	void HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& index);
+
+	AA_PT_NODE* CreateFunctionArgList(AA_PT_NODE* pExpNode);
 
 	/*
 	** Mathematical and language binding functions
@@ -119,6 +123,5 @@ private:
 private:
 
 	AA_PT_NODE* m_root;
-	std::vector<AA_PT_NODE*> m_roots;
 
 };

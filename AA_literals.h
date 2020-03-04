@@ -89,6 +89,10 @@ struct AA_Literal {
 		lit.i = 0;
 		tp = AALiteralType::Int;
 	}
+	AA_Literal(AA_AnyLiteral l, AALiteralType t) {
+		tp = t;
+		lit = l;
+	}
 	bool operator==(AA_Literal b) {
 		if (this->tp == b.tp) {
 			switch (this->tp) {

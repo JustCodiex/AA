@@ -65,10 +65,28 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 	case AA_PT_NODE_TYPE::funccall: {
 
 		AA_AST_NODE* funCall = new AA_AST_NODE(pNode->content, AA_AST_NODE_TYPE::funcall, pNode->position);
-		funCall->expressions.push_back(this->AbstractNode(pNode->childNodes[0]));
+
+		for (size_t i = 0; i < pNode->childNodes.size(); i++) {
+			funCall->expressions.push_back(this->AbstractNode(pNode->childNodes[i]));
+		}
 
 		return funCall;
 
+	}
+	case AA_PT_NODE_TYPE::funarglist: {
+
+		AA_AST_NODE* ls = new AA_AST_NODE(pNode->content, AA_AST_NODE_TYPE::funarglist, pNode->position);
+		for (size_t i = 0; i < pNode->childNodes.size(); i++) {
+			ls->expressions.push_back(this->AbstractNode(pNode->childNodes[i]));
+		}
+
+		return ls;
+
+	}
+	case AA_PT_NODE_TYPE::funarg: {
+		AA_AST_NODE* arg = new AA_AST_NODE(pNode->content, AA_AST_NODE_TYPE::funarg, pNode->position);
+		arg->expressions.push_back(new AA_AST_NODE(pNode->childNodes[0]->content, AA_AST_NODE_TYPE::typeidentifier, pNode->childNodes[0]->position));
+		return arg;
 	}
 	case AA_PT_NODE_TYPE::intliteral:
 	case AA_PT_NODE_TYPE::charliteral:

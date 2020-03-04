@@ -12,10 +12,14 @@ int main() {
     VM->SetOutput(&std::cout);
 
     // Current test case
-    VM->Execute(VM->CompileExpressionToFile(L"void test() { 5; } test();", L"out\\func_decl_test2.aab")); // Expected output: 5
+    
 
     // Compile and execute
-    VM->Execute(VM->CompileExpressionToFile(L"void test() { 5; }", L"out\\func_decl_test2.aab")); // Expected output: none
+    VM->Execute(VM->CompileExpressionToFile(L"int par(int x, int y) { x - y; } par(10, 5);", L"out\\func_decl_test4.aab")); // Expected output: 5
+    VM->Execute(VM->CompileExpressionToFile(L"int par(int z) { var x = z; x = x + 28; x; } par(10);", L"out\\func_decl_test3.aab")); // Expected output: 38
+    VM->Execute(VM->CompileExpressionToFile(L"int test() { var x = 0; x = x + 28; x; } test();", L"out\\func_decl_test3.aab")); // Expected output: 28
+    VM->Execute(VM->CompileExpressionToFile(L"int test() { 5; } test();", L"out\\func_decl_test2.aab")); // Expected output: 5
+    VM->Execute(VM->CompileExpressionToFile(L"void test() { 5; }", L"out\\func_decl_test2.aab")); // Expected output: none (Not run, otherwise should return error AT COMPILE TIME)
     VM->Execute(VM->CompileExpressionToFile(L"void test() {  } void testb() {}", L"out\\func_decl_test1.aab")); // Expected output: none
     VM->Execute(VM->CompileExpressionToFile(L"{ float x = 1.5f; x = x + 1.25f; x; }", L"out\\block_with_type5.aab")); // Expected output: 2.75
     VM->Execute(VM->CompileExpressionToFile(L"{ bool x = true; !x; }", L"out\\block_with_type4.aab")); // Expected output: false
