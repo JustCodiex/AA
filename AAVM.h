@@ -31,6 +31,8 @@ public:
 		m_outStream = stream;
 	}
 
+	static AAVM* CreateNewVM(bool logExecuteTime, bool logCompiler);
+
 private:
 
 	void Run(AAProgram::Procedure* procedures, int entry);
@@ -46,6 +48,7 @@ private:
 
 	std::ostream* m_outStream;
 
-};
+	bool m_logExecTime;
+	bool m_logCompileMessages;
 
-AAVM* AANewVM();
+};

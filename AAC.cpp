@@ -1,5 +1,6 @@
 #include "AAC.h"
 #include "AATypeChecker.h"
+#include "AAB2F.h"
 #include <stack>
 
 void AAC::ResetCompilerInternals() {
@@ -33,6 +34,11 @@ AAC_Out AAC::CompileFromAbstractSyntaxTrees(std::vector<AA_AST*> trees) {
 
 	// Map the procedures to their respective functions
 	staticChecks.exportSignatures = this->MapProcedureToSignature(staticChecks, compileResults);
+
+	// Write operations out in a readable format
+	if (m_outfile != L"") {
+		aa::dump_instructions(m_outfile, compileResults);
+	}
 
 	// Compile all procedures into bytecode
 	AAC_Out bytecode = CompileFromProcedures(compileResults, staticChecks, 0);
@@ -307,6 +313,8 @@ std::vector<AAC::CompiledAbstractExpression> AAC::CompileFuncArgs(AA_AST_NODE* p
 	std::vector<CompiledAbstractExpression> opList;
 
 	for (size_t i = 0; i < pNode->expressions[1]->expressions.size(); i++) {
+
+		// Create setvar operation
 		CompiledAbstractExpression argCAE;
 		argCAE.bc = AAByteCode::SETVAR;
 		argCAE.argCount = 1;

@@ -73,6 +73,10 @@ public:
 
 	AAC_Out CompileFromAbstractSyntaxTrees(std::vector<AA_AST*> trees);
 
+	void SetOpListFile(std::wstring outFile) {
+		m_outfile = outFile;
+	}
+
 private:
 
 	/*
@@ -142,5 +146,6 @@ private:
 private:
 
 	int m_currentProcID;
+	std::wstring m_outfile;
 
 };

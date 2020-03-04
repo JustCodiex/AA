@@ -6,15 +6,16 @@
 
 int main() {
 
-    AAVM* VM = AANewVM();
+    AAVM* VM = AAVM::CreateNewVM(false, false);
 
     // Set output stream
     VM->SetOutput(&std::cout);
 
     // Current test case
-    VM->Execute(VM->CompileExpressionToFile(L"int par(int x, int y) { x - y; } par(15+5,par(75,50));", L"out\\func_decl_test8.aab")); // Expected output: -5
+    
 
     // Compile and execute
+    VM->Execute(VM->CompileExpressionToFile(L"int par(int x, int y) { x - y; } par(15+5,par(75,50));", L"out\\func_decl_test8.aab")); // Expected output: -5
     VM->Execute(VM->CompileExpressionToFile(L"int par(int x, int y) { x - y; } par(15+5,5);", L"out\\func_decl_test7.aab")); // Expected output: 15
     VM->Execute(VM->CompileExpressionToFile(L"int par(int x, int y) { x - y; } par(10, 5);", L"out\\func_decl_test6.aab")); // Expected output: 5
     VM->Execute(VM->CompileExpressionToFile(L"int par(int z) { var x = z; x = x + 28; x; } par(10);", L"out\\func_decl_test5.aab")); // Expected output: 38

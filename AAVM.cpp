@@ -2,8 +2,11 @@
 #include "AAB2F.h"
 #include <ctime>
 
-AAVM* AANewVM() {
-	return new AAVM;
+AAVM* AAVM::CreateNewVM(bool logExecuteTime, bool logCompiler) {
+	AAVM* vm = new AAVM();
+	vm->m_logCompileMessages = logCompiler;
+	vm->m_logExecTime = logExecuteTime;
+	return vm;
 }
 
 AAVM::AAVM() {
@@ -11,6 +14,9 @@ AAVM::AAVM() {
 	m_compiler = new AAC;
 	m_parser = new AAP;
 	m_outStream = 0;
+
+	m_logCompileMessages = false;
+	m_logExecTime = false;
 
 }
 
@@ -31,6 +37,9 @@ AAC_Out AAVM::CompileExpressionToFile(std::wstring input, std::wstring outputfil
 
 	// Generated AST from input
 	std::vector<AA_AST*> trees = m_parser->Parse(input);
+
+	// Set compiler output file
+	m_compiler->SetOpListFile(outputfile + L"op.txt");
 
 	// Compile all procedures into bytecode
 	AAC_Out bytecode = m_compiler->CompileFromAbstractSyntaxTrees(trees);
@@ -93,16 +102,22 @@ void AAVM::Execute(unsigned char* bytes, unsigned long long len) {
 
 void AAVM::Run(AAProgram* pProg) {
 
-	//int opPointer = 0;
-	//aa::stack<AAVal> stack;
-
+	// Get entry point
 	int entryPoint = pProg->GetEntryPoint();
 
-	//clock_t s = clock();
+	// Log start time
+	clock_t s = clock();
 
+	// Run the program from entry point
 	this->Run(pProg->m_procedures, entryPoint);
 
-	//printf("Execute time: %fs\n", (float)(clock() - s) / CLOCKS_PER_SEC);
+	// Should we log execution?
+	if (m_logExecTime) {
+
+		// Print execution time
+		printf("Execute time: %fs\n", (float)(clock() - s) / CLOCKS_PER_SEC);
+
+	}
 
 }
 
