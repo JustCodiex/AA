@@ -124,11 +124,17 @@ void AAVM::Run(AAProgram* pProg) {
 #define AAVM_GetOperation(i) procedure[procPointer].opSequence[i].op
 #define AAVM_GetArgument(i) procedure[procPointer].opSequence[opPointer].args[i]
 
+#define AAVM_GetCallStackPos() signed long long stackPos = (signed long long)(opPointer+1ULL); stackPos <<= 32;  stackPos |= procPointer;
+#define AAVM_PushCallStackPos() AAVM_GetCallStackPos() callstack.Push(stackPos);
+#define AAVM_PopCallStackPos() signed long long stackPos = callstack.Pop(); procPointer = (int)(stackPos & 2147483647); opPointer = (int)(stackPos >> 32);
+
 void AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 
 	int opPointer = 0;
 	int procPointer = entry;
+
 	aa::stack<AAVal> stack;
+	aa::stack<signed long long> callstack;
 
 	while (opPointer < procedure[procPointer].opCount) {
 
@@ -206,8 +212,10 @@ void AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 				args.Push(stack.Pop());
 			}
 
-			stack.Push(AAVal(procPointer)); // Push pointer to current proc
-			stack.Push(AAVal(opPointer + 1)); // push pointer to next operation
+			AAVM_PushCallStackPos()
+
+			//stack.Push(AAVal(procPointer)); // Push pointer to current proc
+			//stack.Push(AAVal(opPointer + 1)); // push pointer to next operation
 
 			procPointer = callProc;
 			opPointer = 0;
@@ -224,8 +232,9 @@ void AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 			for (int i = 0; i < retCount; i++) {
 				returnValues.Push(stack.Pop());
 			}
-			opPointer = stack.Pop().litVal.lit.i.val;
-			procPointer = stack.Pop().litVal.lit.i.val;
+			//opPointer = stack.Pop().litVal.lit.i.val;
+			//procPointer = stack.Pop().litVal.lit.i.val;
+			AAVM_PopCallStackPos();
 			for (int i = 0; i < retCount; i++) {
 				stack.Push(returnValues.Pop());
 			}
