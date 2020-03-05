@@ -36,6 +36,8 @@ std::vector<std::wstring> keywords = {
 	L"true",
 	L"false",
 	L"void",
+	L"if",
+	L"else",
 };
 
 std::vector<AALexicalResult> AALexer::Analyse(std::wistream& input) {
@@ -173,6 +175,12 @@ void AALexer::Join(std::vector<AALexicalResult>& results) {
 		if (results[i].token == AAToken::accessor) {
 			if (i > 0 && results[i - 1].token == AAToken::intlit && i + 1 < results.size() && results[i + 1].token == AAToken::intlit) {
 				this->JoinDecimal(results, i);
+			}
+		} else if (results[i].token == AAToken::OP) {
+			if (i > 0 && results[i - 1].token == AAToken::OP) {
+				AALexicalResult lR = AALexicalResult(results[i - 1].content + results[i].content, AAToken::OP, results[i-1].position);
+				results.erase(results.begin() + i - 1, results.begin() + i + 1);
+				results.insert(results.begin() + i - 1, lR);
 			}
 		}
 

@@ -24,7 +24,8 @@ enum class AAByteCode : unsigned char {
 	CALL, // (Call subroutine, 1 argument[procID])
 	RET, // (Return, 1 argument[returtCount])
 
-	CMP, // (Compares the two top elements on stack and returns a bool, 0 arguments)
+	CMPE, // (Compares the two top elements on stack and returns true if they're equal, 0 arguments)
+	CMPNE, // (Compares the two top elements on stack and returns true if they're not equal, 0 arguments)
 	LE, // (Compares numerics and returns true if x<y, 0 arguments)
 	GE, // (Compares numerics and returns true if x>y, 0 arguments)
 	GEQ, // (Compares numerics and returns true if x<=y, 0 arguments)

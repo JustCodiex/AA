@@ -13,4 +13,8 @@ struct AAVal {
 		litVal.lit.i = AA_IntLiteral(i);
 		litVal.tp = AALiteralType::Int;
 	}
+	AAVal(bool b) {
+		litVal.lit.b = AA_BoolLiteral(b);
+		litVal.tp = AALiteralType::Boolean;
+	}
 };

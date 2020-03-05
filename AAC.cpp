@@ -130,7 +130,7 @@ aa::list<AAC::CompiledStaticChecks::SigPointer> AAC::RegisterFunctions(AA_AST_NO
 
 	aa::list<AAC::CompiledStaticChecks::SigPointer> signatures;
 
-	if (pNode->type == AA_AST_NODE_TYPE::classdecl) { // TODO: change to classdecl
+	if (pNode->type == AA_AST_NODE_TYPE::classdecl) {
 
 		// stuff
 
@@ -190,11 +190,9 @@ std::vector<AAC::CompiledAbstractExpression> AAC::CompileAST(AA_AST_NODE* pNode,
 		break;
 	}
 	case AA_AST_NODE_TYPE::funcbody: {
-		for (size_t i = 0; i < pNode->expressions.size(); i++) {
-			
+		for (size_t i = 0; i < pNode->expressions.size(); i++) {			
 			executionStack = Merge(executionStack, this->CompileAST(pNode->expressions[i], cTable, staticData));
-		}
-		
+		}		
 		break;
 	}
 	case AA_AST_NODE_TYPE::fundecl: {
@@ -371,6 +369,18 @@ AAByteCode AAC::GetBytecodeFromBinaryOperator(std::wstring ws) {
 		return AAByteCode::MOD;
 	} else if (ws == L"=") {
 		return AAByteCode::SETVAR;
+	} else if (ws == L"==") {
+		return AAByteCode::CMPE;
+	} else if (ws == L"!=") {
+		return AAByteCode::CMPNE;
+	} else if (ws == L"<") {
+		return AAByteCode::LE;
+	} else if (ws == L">") {
+		return AAByteCode::GE;
+	} else if (ws == L"<=") {
+		return AAByteCode::LEQ;
+	} else if (ws == L">=") {
+		return AAByteCode::GEQ;
 	} else {
 		return AAByteCode::NOP;
 	}

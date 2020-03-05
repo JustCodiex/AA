@@ -49,6 +49,8 @@ private:
 
 	void ReportStack(aa::stack<AAVal> stack);
 
+	inline AAVal BinaryOperation(AAByteCode op, AA_Literal left, AA_Literal right);
+
 private:
 
 	AAP* m_parser;

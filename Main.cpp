@@ -12,9 +12,11 @@ int main() {
     VM->SetOutput(&std::cout);
 
     // Current test case
-    
+    VM->CompileAndRunExpression(L"5 + 15 <= 10;", L"out\\bin\\cmp_leq2.aab", L"out\\op\\cmp_leq2.txt"); // Expected output: false
 
     // Compile and execute
+    VM->CompileAndRunExpression(L"5 <= 10;", L"out\\bin\\cmp_leq1.aab", L"out\\op\\cmp_leq1.txt"); // Expected output: true
+    VM->CompileAndRunFile(L"testing\\func.aa", L"out\\bin\\func.aab", L"out\\op\\func.txt"); // Check file (Executes correctly, 15/03/20)
     VM->CompileAndRunExpression(L"int par(int x, int y) { x - y; } par(15+5,par(75,50));", L"out\\bin\\func_decl_test8.aab", L"out\\op\\func_decl_test8.txt"); // Expected output: -5
     VM->CompileAndRunExpression(L"int par(int x, int y) { x - y; } par(15+5,5);", L"out\\bin\\func_decl_test7.aab", L"out\\op\\func_decl_test7.txt"); // Expected output: 15
     VM->CompileAndRunExpression(L"int par(int x, int y) { x - y; } par(10, 5);", L"out\\bin\\func_decl_test6.aab", L"out\\op\\func_decl_test6.txt"); // Expected output: 5

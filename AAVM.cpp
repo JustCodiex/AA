@@ -174,50 +174,30 @@ void AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 	aa::stack<signed long long> callstack;
 
 	while (opPointer < procedure[procPointer].opCount) {
-
 		switch (AAVM_GetOperation(opPointer)) {
+		case AAByteCode::ADD:
+		case AAByteCode::CMPE:
+		case AAByteCode::CMPNE:
+		case AAByteCode::DIV:
+		case AAByteCode::GE:
+		case AAByteCode::GEQ:
+		case AAByteCode::LE:
+		case AAByteCode::LEQ:
+		case AAByteCode::MOD:
+		case AAByteCode::MUL:
+		case AAByteCode::SUB:
+		{
+			AA_Literal rhs = stack.Pop().litVal;
+			AA_Literal lhs = stack.Pop().litVal;
+			stack.Push(BinaryOperation(AAVM_GetOperation(opPointer), lhs, rhs));
+			opPointer++;
+			break;
+		}
 		case AAByteCode::PUSHC:
 			stack.Push(procedure[procPointer].constTable[AAVM_GetArgument(0)]);
 			opPointer++;
 			break;
-		case AAByteCode::ADD: {
-			AA_Literal rhs = stack.Pop().litVal;
-			AA_Literal lhs = stack.Pop().litVal;
-			AA_Literal r = lhs + rhs;
-			stack.Push(r);
-			opPointer++;
-			break;
-		}
-		case AAByteCode::SUB: {
-			AA_Literal rhs = stack.Pop().litVal;
-			AA_Literal lhs = stack.Pop().litVal;
-			AA_Literal r = lhs - rhs;
-			stack.Push(r);
-			opPointer++;
-			break;
-		}
-		case AAByteCode::MUL: {
-			AA_Literal rhs = stack.Pop().litVal;
-			AA_Literal lhs = stack.Pop().litVal;
-			AA_Literal r = lhs * rhs;
-			stack.Push(r);
-			opPointer++;
-			break;
-		}
-		case AAByteCode::DIV: {
-			AA_Literal rhs = stack.Pop().litVal;
-			AA_Literal lhs = stack.Pop().litVal;
-			stack.Push(lhs / rhs);
-			opPointer++;
-			break;
-		}
-		case AAByteCode::MOD: {
-			AA_Literal rhs = stack.Pop().litVal;
-			AA_Literal lhs = stack.Pop().litVal;
-			stack.Push(lhs % rhs);
-			opPointer++;
-			break;
-		}
+		
 		case AAByteCode::NNEG: {
 			stack.Push(-stack.Pop().litVal);
 			opPointer++;
@@ -287,6 +267,46 @@ void AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 
 	this->ReportStack(stack);
 
+}
+
+AAVal AAVM::BinaryOperation(AAByteCode op, AA_Literal lhs, AA_Literal rhs) {
+	switch (op) {
+	case AAByteCode::ADD: {
+		return lhs + rhs;
+	}
+	case AAByteCode::SUB: {
+		return lhs - rhs;
+	}
+	case AAByteCode::MUL: {
+		return lhs * rhs;
+	}
+	case AAByteCode::DIV: {
+		return lhs / rhs;
+	}
+	case AAByteCode::MOD: {
+		return lhs % rhs;
+	}
+	case AAByteCode::CMPE: {
+		return lhs == rhs;
+	}
+	case AAByteCode::CMPNE: {
+		return lhs != rhs;
+	}
+	case AAByteCode::LE: {
+		return lhs < rhs;
+	}
+	case AAByteCode::LEQ: {
+		return lhs <= rhs;
+	}
+	case AAByteCode::GE: {
+		return lhs > rhs;
+	}
+	case AAByteCode::GEQ: {
+		return lhs >= rhs;
+	}
+	default:
+		return AAVal(0);
+	}
 }
 
 void AAVM::ReportStack(aa::stack<AAVal> stack) {

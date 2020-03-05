@@ -29,8 +29,11 @@ namespace aa {
 		case AAByteCode::CALL:
 			output = L"CALL";
 			break;
-		case AAByteCode::CMP:
-			output = L"CMP";
+		case AAByteCode::CMPE:
+			output = L"CMPE";
+			break;
+		case AAByteCode::CMPNE:
+			output = L"CMPNE";
 			break;
 		case AAByteCode::DEC:
 			output = L"DEC";
