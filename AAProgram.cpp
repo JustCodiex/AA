@@ -108,6 +108,8 @@ void AAProgram::LoadOperations(Procedure& proc, aa::bwalker& bw) {
 		case AAByteCode::GETVAR:
 		case AAByteCode::SETVAR:
 		case AAByteCode::RET:
+		case AAByteCode::JMP:
+		case AAByteCode::JMPF:
 			proc.opSequence[i].args = new int[1];
 			bw >> proc.opSequence[i].args[0];
 			break;

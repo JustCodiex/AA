@@ -15,6 +15,12 @@ enum class AA_PT_NODE_TYPE {
 	classbody,
 
 	expression,
+	condition,
+
+	ifstatement,
+	elseifstatement,
+	elsestatement,
+
 	parenthesis_start,
 	parenthesis_end,
 
@@ -92,10 +98,11 @@ private:
 	** To tree functions
 	*/
 	
-	AA_PT_NODE* CreateTree(std::vector<AA_PT_NODE*>& nodes, int from);
-	AA_PT_NODE* CreateExpressionTree(std::vector<AA_PT_NODE*>& nodes, int from);
-	AA_PT_NODE* CreateVariableDecl(std::vector<AA_PT_NODE*>& nodes, int from);
-	AA_PT_NODE* CreateFunctionDecl(std::vector<AA_PT_NODE*>& nodes, int from);
+	AA_PT_NODE* CreateTree(std::vector<AA_PT_NODE*>& nodes, size_t from);
+	AA_PT_NODE* CreateExpressionTree(std::vector<AA_PT_NODE*>& nodes, size_t from);
+	AA_PT_NODE* CreateVariableDecl(std::vector<AA_PT_NODE*>& nodes, size_t from);
+	AA_PT_NODE* CreateFunctionDecl(std::vector<AA_PT_NODE*>& nodes, size_t from);
+	AA_PT_NODE* CreateConditionBlock(std::vector<AA_PT_NODE*>& nodes, size_t from);
 	std::vector<AA_PT_NODE*> CreateArgumentTree(AA_PT_NODE* pExpNode);
 	void HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& index);
 

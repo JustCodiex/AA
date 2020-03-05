@@ -88,6 +88,20 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 		arg->expressions.push_back(new AA_AST_NODE(pNode->childNodes[0]->content, AA_AST_NODE_TYPE::typeidentifier, pNode->childNodes[0]->position));
 		return arg;
 	}
+	case AA_PT_NODE_TYPE::condition: {
+		AA_AST_NODE* con = new AA_AST_NODE(pNode->content, AA_AST_NODE_TYPE::condition, pNode->position);
+		con->expressions.push_back(this->AbstractNode(pNode->childNodes[0]));
+		return con;
+	}
+	case AA_PT_NODE_TYPE::ifstatement: {
+		AA_AST_NODE* ifstatement = new AA_AST_NODE(L"if", AA_AST_NODE_TYPE::ifstatement, pNode->position);
+		ifstatement->expressions.push_back(this->AbstractNode(pNode->childNodes[0])); // condition
+		ifstatement->expressions.push_back(this->AbstractNode(pNode->childNodes[1])); // stuff to execute if condition holds
+		if (pNode->childNodes.size() > 2) {
+			// do more stuff
+		}
+		return ifstatement;
+	}
 	case AA_PT_NODE_TYPE::intliteral:
 	case AA_PT_NODE_TYPE::charliteral:
 	case AA_PT_NODE_TYPE::floatliteral:

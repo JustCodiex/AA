@@ -219,6 +219,10 @@ std::vector<AAC::CompiledAbstractExpression> AAC::CompileAST(AA_AST_NODE* pNode,
 		}
 		break;
 	}
+	case AA_AST_NODE_TYPE::ifstatement: {
+		executionStack = Merge(executionStack, CompileConditionalBlock(pNode, cTable, staticData));
+		break;
+	}
 	// Implicit return
 	case AA_AST_NODE_TYPE::variable:
 	case AA_AST_NODE_TYPE::intliteral:
@@ -325,6 +329,36 @@ std::vector<AAC::CompiledAbstractExpression> AAC::CompileFuncArgs(AA_AST_NODE* p
 
 	}
 
+	return opList;
+
+}
+
+std::vector<AAC::CompiledAbstractExpression> AAC::CompileConditionalBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData) {
+
+	// Operations list
+	std::vector<CompiledAbstractExpression> opList;
+
+	// Push condition
+	opList = this->Merge(opList, this->CompileBinaryOperation(pNode->expressions[0]->expressions[0], cTable, staticData)); // will throw error when multiple conditions become possible
+
+	// Compile body (because we need to know the length of it)
+	std::vector<CompiledAbstractExpression> bodyList = this->CompileAST(pNode->expressions[1], cTable, staticData);
+
+	// Create jump if false condition
+	CompiledAbstractExpression jmpInstruction;
+	jmpInstruction.bc = AAByteCode::JMPF;
+	jmpInstruction.argCount = 1;
+	jmpInstruction.argValues[0] = (int)bodyList.size();
+
+	// Add jump instruction after condition
+	opList.push_back(jmpInstruction);
+
+	// Add body
+	opList = Merge(opList, bodyList);
+
+	// add the rest of the possible if and if-else statements....
+
+	// return oplist
 	return opList;
 
 }

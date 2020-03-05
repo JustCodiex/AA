@@ -115,7 +115,7 @@ std::vector<AA_PT*> AA_PT::CreateTrees(std::vector<AA_PT_NODE*>& nodes) {
 
 #define REMOVE_NODE(i) delete nodes[i];nodes.erase(nodes.begin() + i)
 
-AA_PT_NODE* AA_PT::CreateTree(std::vector<AA_PT_NODE*>& nodes, int from) {
+AA_PT_NODE* AA_PT::CreateTree(std::vector<AA_PT_NODE*>& nodes, size_t from) {
 
 	size_t nodeIndex = from;
 
@@ -218,6 +218,8 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 			if (funcDeclNode) {
 				nodes[nodeIndex] = funcDeclNode;
 			}
+		} else if (nodes[nodeIndex]->content == L"if") {
+			nodes[nodeIndex] = this->CreateConditionBlock(nodes, nodeIndex);
 		}
 		nodeIndex++;
 		break;
@@ -243,7 +245,7 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 
 }
 
-AA_PT_NODE* AA_PT::CreateExpressionTree(std::vector<AA_PT_NODE*>& nodes, int from) {
+AA_PT_NODE* AA_PT::CreateExpressionTree(std::vector<AA_PT_NODE*>& nodes, size_t from) {
 
 	if (nodes[from]->nodeType == AA_PT_NODE_TYPE::expression && nodes[from]->childNodes.size() > 0) {
 
@@ -279,7 +281,7 @@ std::vector<AA_PT_NODE*> AA_PT::CreateArgumentTree(AA_PT_NODE* pExpNode) {
 
 }
 
-AA_PT_NODE* AA_PT::CreateVariableDecl(std::vector<AA_PT_NODE*>& nodes, int from) {
+AA_PT_NODE* AA_PT::CreateVariableDecl(std::vector<AA_PT_NODE*>& nodes, size_t from) {
 
 	if (nodes[from + 1]->nodeType != AA_PT_NODE_TYPE::identifier) {
 		printf("Err: Expected identifier");
@@ -296,7 +298,7 @@ AA_PT_NODE* AA_PT::CreateVariableDecl(std::vector<AA_PT_NODE*>& nodes, int from)
 
 }
 
-AA_PT_NODE* AA_PT::CreateFunctionDecl(std::vector<AA_PT_NODE*>& nodes, int from) {
+AA_PT_NODE* AA_PT::CreateFunctionDecl(std::vector<AA_PT_NODE*>& nodes, size_t from) {
 
 	if (nodes[from + 1]->nodeType != AA_PT_NODE_TYPE::identifier) {
 		printf("Err: Expected identifier");
@@ -361,6 +363,45 @@ AA_PT_NODE* AA_PT::CreateFunctionArgList(AA_PT_NODE* pExpNode) {
 	}
 
 	return argList;
+
+}
+
+AA_PT_NODE* AA_PT::CreateConditionBlock(std::vector<AA_PT_NODE*>& nodes, size_t from) {
+
+	if (from + 1 < nodes.size() && nodes[from + 1]->nodeType == AA_PT_NODE_TYPE::expression) {
+
+		nodes[from + 1] = this->CreateTree(nodes[from + 1]->childNodes, 0);
+		
+		AA_PT_NODE* pConditionNode = new AA_PT_NODE(nodes[from + 1]->position);
+		pConditionNode->nodeType = AA_PT_NODE_TYPE::condition;
+		pConditionNode->childNodes.push_back(nodes[from + 1]);
+
+		nodes[from]->childNodes.push_back(pConditionNode);
+
+		nodes.erase(nodes.begin() + from + 1);
+
+	} else {
+		printf("if-keyword not followed by a condition - NOT allowed");
+	}
+
+	if (from + 1 < nodes.size() && (nodes[from + 1]->nodeType == AA_PT_NODE_TYPE::expression || nodes[from + 1]->nodeType == AA_PT_NODE_TYPE::block)) {
+
+		nodes[from + 1] = this->CreateTree(nodes[from + 1]->childNodes, 0);
+		nodes[from]->childNodes.push_back(nodes[from + 1]);
+
+		nodes.erase(nodes.begin() + from + 1);
+
+	} else {
+		printf("if-statement not followed by an expression or block");
+	}
+
+	if (from + 1 < nodes.size() && nodes[from + 1]->nodeType == AA_PT_NODE_TYPE::keyword) {
+		printf("if-else or if-elseif statement detected !");
+	} else {
+		nodes[from]->nodeType = AA_PT_NODE_TYPE::ifstatement;
+	}
+
+	return nodes[from];
 
 }
 

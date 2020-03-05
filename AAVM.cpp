@@ -193,11 +193,12 @@ void AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 			opPointer++;
 			break;
 		}
-		case AAByteCode::PUSHC:
-			stack.Push(procedure[procPointer].constTable[AAVM_GetArgument(0)]);
+		case AAByteCode::PUSHC: {
+			int p = AAVM_GetArgument(0);
+			stack.Push(procedure[procPointer].constTable[p]);
 			opPointer++;
 			break;
-		
+		}
 		case AAByteCode::NNEG: {
 			stack.Push(-stack.Pop().litVal);
 			opPointer++;
@@ -254,6 +255,14 @@ void AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 			AAVM_PopCallStackPos();
 			for (int i = 0; i < retCount; i++) {
 				stack.Push(returnValues.Pop());
+			}
+			break;
+		}
+		case AAByteCode::JMPF: {
+			if (stack.Pop().litVal.lit.b.val) {
+				opPointer++;
+			} else {
+				opPointer += 1 + AAVM_GetArgument(0); // jump to next (if-else or else) or next statement after block
 			}
 			break;
 		}

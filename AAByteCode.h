@@ -20,6 +20,7 @@ enum class AAByteCode : unsigned char {
 	GETVAR, // (Get var - pushes value of variable on top of stack, 1 argument[identifier ID])
 
 	JMP, // (Relative jump to operation, 1 argument[distance])
+	JMPF, // (Relative jump to operation if top of stack is false, 1 argument[distance])
 	LJMP, // (Long relative jump to operation, 1 argument[distance])
 	CALL, // (Call subroutine, 1 argument[procID])
 	RET, // (Return, 1 argument[returtCount])

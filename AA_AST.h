@@ -11,6 +11,11 @@ enum class AA_AST_NODE_TYPE {
 	funcbody,
 	classbody,
 
+	condition,
+	ifstatement,
+	elseifstatement,
+	elsestatement,
+
 	binop,
 	unop,
 
