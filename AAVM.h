@@ -18,11 +18,19 @@ public:
 	void RunFile(std::wstring file);
 	void RunExpression(std::wstring input);
 
-	AAC_Out CompileExpressionToFile(std::wstring input, std::wstring outputfile);
+	/*
+	** Compiles the input file and then saves the resulting bytecode in the specified output file
+	*/
 	AAC_Out CompileFileToFile(std::wstring fileIn, std::wstring fileOut);
 
 	void Execute(AAC_Out bytecode);
 	void Execute(unsigned char* bytes, unsigned long long len);
+
+	void CompileAndRunFile(std::wstring sourcefile);
+	void CompileAndRunFile(std::wstring sourcefile, std::wstring binaryoutputfile, std::wstring formattedoutputfile);
+
+	void CompileAndRunExpression(std::wstring input);
+	void CompileAndRunExpression(std::wstring input, std::wstring binaryoutputfile, std::wstring formattedoutputfile);
 
 	AAP* GetParser() { return m_parser; }
 	AAC* GetCompiler() { return m_compiler; }

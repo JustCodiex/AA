@@ -33,22 +33,31 @@ void AAVM::Release() {
 
 }
 
-AAC_Out AAVM::CompileExpressionToFile(std::wstring input, std::wstring outputfile) {
+void AAVM::CompileAndRunExpression(std::wstring input) {
+	this->CompileAndRunExpression(input, L"", L"");
+}
+
+void AAVM::CompileAndRunExpression(std::wstring input, std::wstring binaryoutputfile, std::wstring formattedoutputfile) {
 
 	// Generated AST from input
 	std::vector<AA_AST*> trees = m_parser->Parse(input);
 
 	// Set compiler output file
-	m_compiler->SetOpListFile(outputfile + L"op.txt");
+	m_compiler->SetOpListFile(formattedoutputfile);
 
 	// Compile all procedures into bytecode
 	AAC_Out bytecode = m_compiler->CompileFromAbstractSyntaxTrees(trees);
 
-	// Dump bytecode
-	aa::dump_bytecode(outputfile, bytecode);
+	// Only dump bytecode if a filepath is specified
+	if (binaryoutputfile != L"") {
 
-	// Aslo return bytecode (so we can execute it directly)
-	return bytecode;
+		// Dump bytecode
+		aa::dump_bytecode(binaryoutputfile, bytecode);
+
+	}
+
+	// Execute the bytecode
+	this->Execute(bytecode);
 
 }
 
@@ -80,6 +89,34 @@ void AAVM::RunExpression(std::wstring input) {
 
 	// Execute the bytecode
 	Execute(bytecode.bytes, bytecode.length);
+
+}
+
+void AAVM::CompileAndRunFile(std::wstring sourcefile) {
+	this->CompileAndRunFile(sourcefile, L"", L"");
+}
+
+void AAVM::CompileAndRunFile(std::wstring sourcefile, std::wstring binaryoutputfile, std::wstring formattedoutputfile) {
+
+	// Generated AST from input
+	std::vector<AA_AST*> trees = m_parser->Parse(std::wifstream(sourcefile));
+
+	// Set output file for the compiler
+	m_compiler->SetOpListFile(formattedoutputfile);
+
+	// Compile all procedures into bytecode
+	AAC_Out bytecode = m_compiler->CompileFromAbstractSyntaxTrees(trees);
+
+	// Should we print output?
+	if (binaryoutputfile != L"") {
+
+		// Dump bytecode
+		aa::dump_bytecode(binaryoutputfile, bytecode);
+
+	}
+
+	// Execute the bytecode
+	this->Execute(bytecode);
 
 }
 

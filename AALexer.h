@@ -1,6 +1,8 @@
 #pragma once
 #include <vector>
 #include <string>
+#include <fstream>
+#include <sstream>
 #include "AACodePosition.h"
 
 enum class AAToken {
@@ -32,6 +34,7 @@ class AALexer {
 
 public:
 
+	std::vector<AALexicalResult> Analyse(std::wistream& input);
 	std::vector<AALexicalResult> Analyse(std::wstring input);
 
 	void Join(std::vector<AALexicalResult>& results);

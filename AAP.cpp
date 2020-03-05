@@ -18,14 +18,28 @@ void AAP::Release() {
 
 std::vector< AA_AST*> AAP::Parse(std::wstring input) {
 
-	// Tokenise the input with the lexer
-	std::vector< AALexicalResult> lexed = m_lexer->Analyse(input);
+	// Tokenise the input with the lexer and then parse
+	return this->InternalParse(m_lexer->Analyse(input));
+
+}
+
+std::vector< AA_AST*> AAP::Parse(std::wifstream input) {
+	
+	// Convert file stream to input stream
+	std::wistream& wss = input;
+
+	// Tokenise the input with the lexer and then parse
+	return this->InternalParse(m_lexer->Analyse(wss));
+
+}
+
+std::vector< AA_AST*> AAP::InternalParse(std::vector<AALexicalResult> res) {
 
 	// Join tokens that can be joined
-	m_lexer->Join(lexed);
+	m_lexer->Join(res);
 
 	// Create parse trees
-	return this->CreateParseTrees(lexed);
+	return this->CreateParseTrees(res);
 
 }
 

@@ -1,5 +1,4 @@
 #include "AALexer.h"
-#include <sstream>
 #include <map>
 
 std::map<wchar_t, AAToken> singleTokens = {
@@ -39,45 +38,44 @@ std::vector<std::wstring> keywords = {
 	L"void",
 };
 
-std::vector<AALexicalResult> AALexer::Analyse(std::wstring input) {
+std::vector<AALexicalResult> AALexer::Analyse(std::wistream& input) {
 
 	std::vector< AALexicalResult> results;
 
 	int currentLine = 1;
-	int column = 1;
+	int currentColumn = 1;
 
-	size_t index = 0;
+	wchar_t character;
 	AAToken current = AAToken::invalid;
 
 	std::wstringstream ws;
 
-	while (index < input.length()) {
+	while (input.get(character)) {
 
-		wchar_t character = input[index];
 		AAToken single;
 
 		if (IsWhitespace(character)) {
 
 			if (character == '\n') {
 				currentLine++;
-				column = 0;
+				currentColumn = 0;
 			}
 
 			// Push token
-			this->DetermineToken(ws, current, results, AACodePosition(currentLine, column - 1 - ws.str().length()));
+			this->DetermineToken(ws, current, results, AACodePosition(currentLine, currentColumn - 1 - ws.str().length()));
 
 			ws.str(L"");
 			current = AAToken::invalid;
 
 		} else if (IsSingleToken(character, single)) {
-			
+
 			if (current != AAToken::invalid) {
-				this->DetermineToken(ws, current, results, AACodePosition(currentLine, column - 1 - ws.str().length()));
+				this->DetermineToken(ws, current, results, AACodePosition(currentLine, currentColumn - 1 - ws.str().length()));
 				ws.str(L"");
 			}
 
 			ws << character;
-			results.push_back(AALexicalResult(ws.str(), single, AACodePosition(currentLine, column)));
+			results.push_back(AALexicalResult(ws.str(), single, AACodePosition(currentLine, currentColumn)));
 
 			ws.str(L"");
 			current = AAToken::invalid;
@@ -90,19 +88,27 @@ std::vector<AALexicalResult> AALexer::Analyse(std::wstring input) {
 			current = AAToken::intlit;
 		} else {
 			if (current == AAToken::intlit && character == 'f') {
-				results.push_back(AALexicalResult(ws.str(), current, AACodePosition(currentLine, column))); // TODO: Fix incorrect column
-				results.push_back(AALexicalResult(L"f", AAToken::identifier, AACodePosition(currentLine, column)));
+				results.push_back(AALexicalResult(ws.str(), current, AACodePosition(currentLine, currentColumn))); // TODO: Fix incorrect column
+				results.push_back(AALexicalResult(L"f", AAToken::identifier, AACodePosition(currentLine, currentColumn)));
 				ws.str(L"");
 				current = AAToken::invalid;
 			}
 		}
 
-		index++;
-		column++;
+		currentColumn++;
 
 	}
 
 	return results;
+
+}
+
+std::vector<AALexicalResult> AALexer::Analyse(std::wstring input) {
+
+	std::wstringstream wss;
+	wss << input;
+
+	return this->Analyse(wss);
 
 }
 

@@ -12,9 +12,11 @@ public:
 	void Release();
 
 	std::vector< AA_AST*> Parse(std::wstring input);
+	std::vector< AA_AST*> Parse(std::wifstream input);
 
 private:
 
+	std::vector< AA_AST*> InternalParse(std::vector<AALexicalResult> res);
 	std::vector< AA_AST *> CreateParseTrees(std::vector<AALexicalResult> lexResult);
 
 private:
