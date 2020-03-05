@@ -97,10 +97,24 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 		AA_AST_NODE* ifstatement = new AA_AST_NODE(L"if", AA_AST_NODE_TYPE::ifstatement, pNode->position);
 		ifstatement->expressions.push_back(this->AbstractNode(pNode->childNodes[0])); // condition
 		ifstatement->expressions.push_back(this->AbstractNode(pNode->childNodes[1])); // stuff to execute if condition holds
-		if (pNode->childNodes.size() > 2) {
-			// do more stuff
+		size_t restBlock = pNode->childNodes.size() - 2;
+		for (size_t i = 0; i < restBlock; i++) {
+			ifstatement->expressions.push_back(this->AbstractNode(pNode->childNodes[i + 2]));
 		}
 		return ifstatement;
+	}
+	case AA_PT_NODE_TYPE::elsestatement: {
+		AA_AST_NODE* elsestatement = new AA_AST_NODE(L"else", AA_AST_NODE_TYPE::elsestatement, pNode->position);
+		for (size_t i = 0; i < pNode->childNodes.size(); i++) {
+			elsestatement->expressions.push_back(this->AbstractNode(pNode->childNodes[i]));
+		}
+		return elsestatement;
+	}
+	case AA_PT_NODE_TYPE::elseifstatement: {
+		AA_AST_NODE* elifstatement = new AA_AST_NODE(L"elseif", AA_AST_NODE_TYPE::elseifstatement, pNode->position);
+		elifstatement->expressions.push_back(this->AbstractNode(pNode->childNodes[0])); // condition
+		elifstatement->expressions.push_back(this->AbstractNode(pNode->childNodes[1])); // stuff to execute if condition holds
+		return elifstatement;
 	}
 	case AA_PT_NODE_TYPE::intliteral:
 	case AA_PT_NODE_TYPE::charliteral:

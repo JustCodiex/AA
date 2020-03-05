@@ -12,9 +12,12 @@ int main() {
     VM->SetOutput(&std::cout);
 
     // Current test case
-    VM->CompileAndRunExpression(L"if (5 < 6) { 25; }", L"out\\bin\\if1.aab", L"out\\op\\if1.txt"); // Expected output: 25
+    VM->CompileAndRunFile(L"examples\\recursion.aa", L"out\\bin\\recursion.aab", L"out\\op\\recursion.txt"); // doesnt work yet because a function environment has not been implemented
 
     // Compile and execute
+    VM->CompileAndRunExpression(L"if (6 < 5) { 25; } else if (4 < 5) { 27; } else { 30; }", L"out\\bin\\if3.aab", L"out\\op\\if3.txt"); // Expected output: 27
+    VM->CompileAndRunExpression(L"if (6 < 5) { 25; } else { 30; }", L"out\\bin\\if2.aab", L"out\\op\\if2.txt"); // Expected output: 30
+    VM->CompileAndRunExpression(L"if (5 < 6) { 25; }", L"out\\bin\\if1.aab", L"out\\op\\if1.txt"); // Expected output: 25
     VM->CompileAndRunExpression(L"5 + 15 <= 10;", L"out\\bin\\cmp_leq2.aab", L"out\\op\\cmp_leq2.txt"); // Expected output: false
     VM->CompileAndRunExpression(L"5 <= 10;", L"out\\bin\\cmp_leq1.aab", L"out\\op\\cmp_leq1.txt"); // Expected output: true
     VM->CompileAndRunFile(L"testing\\func.aa", L"out\\bin\\func.aab", L"out\\op\\func.txt"); // Check file (Executes correctly, 15/03/20)

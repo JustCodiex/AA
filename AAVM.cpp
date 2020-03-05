@@ -1,5 +1,6 @@
 #include "AAVM.h"
 #include "AAB2F.h"
+#include "AARuntimeEnvironment.h"
 #include <ctime>
 
 AAVM* AAVM::CreateNewVM(bool logExecuteTime, bool logCompiler) {
@@ -158,23 +159,25 @@ void AAVM::Run(AAProgram* pProg) {
 
 }
 
-#define AAVM_GetOperation(i) procedure[procPointer].opSequence[i].op
-#define AAVM_GetArgument(i) procedure[procPointer].opSequence[opPointer].args[i]
+#define AAVM_VENV execp.venv
+#define AAVM_OPI execp.opPointer
+#define AAVM_PROC execp.procPointer
 
-#define AAVM_GetCallStackPos() signed long long stackPos = (signed long long)(opPointer+1ULL); stackPos <<= 32;  stackPos |= procPointer;
-#define AAVM_PushCallStackPos() AAVM_GetCallStackPos() callstack.Push(stackPos);
-#define AAVM_PopCallStackPos() signed long long stackPos = callstack.Pop(); procPointer = (int)(stackPos & 2147483647); opPointer = (int)(stackPos >> 32);
+#define AAVM_CURRENTOP procedure[AAVM_PROC].opSequence[AAVM_OPI].op
+#define AAVM_GetArgument(i) procedure[AAVM_PROC].opSequence[AAVM_OPI].args[i]
 
 void AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 
-	int opPointer = 0;
-	int procPointer = entry;
-
 	aa::stack<AAVal> stack;
-	aa::stack<signed long long> callstack;
+	aa::stack<AARuntimeEnvironment> callstack;
 
-	while (opPointer < procedure[procPointer].opCount) {
-		switch (AAVM_GetOperation(opPointer)) {
+	AARuntimeEnvironment execp;
+	execp.opPointer = 0;
+	execp.procPointer = entry;
+	execp.venv = procedure[entry].venv->CloneSelf();
+
+	while (AAVM_OPI < procedure[AAVM_PROC].opCount) {
+		switch (AAVM_CURRENTOP) {
 		case AAByteCode::ADD:
 		case AAByteCode::CMPE:
 		case AAByteCode::CMPNE:
@@ -189,35 +192,35 @@ void AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 		{
 			AA_Literal rhs = stack.Pop().litVal;
 			AA_Literal lhs = stack.Pop().litVal;
-			stack.Push(BinaryOperation(AAVM_GetOperation(opPointer), lhs, rhs));
-			opPointer++;
+			stack.Push(BinaryOperation(AAVM_CURRENTOP, lhs, rhs));
+			AAVM_OPI++;
 			break;
 		}
 		case AAByteCode::PUSHC: {
 			int p = AAVM_GetArgument(0);
-			stack.Push(procedure[procPointer].constTable[p]);
-			opPointer++;
+			stack.Push(procedure[AAVM_PROC].constTable[p]);
+			AAVM_OPI++;
 			break;
 		}
 		case AAByteCode::NNEG: {
 			stack.Push(-stack.Pop().litVal);
-			opPointer++;
+			AAVM_OPI++;
 			break;
 		}
 		case AAByteCode::LNEG: {
 			stack.Push(!stack.Pop().litVal);
-			opPointer++;
+			AAVM_OPI++;
 			break;
 		}
 		case AAByteCode::GETVAR: {
-			stack.Push(procedure[procPointer].venv->GetVariable(AAVM_GetArgument(0)));
-			opPointer++;
+			stack.Push(AAVM_VENV->GetVariable(AAVM_GetArgument(0)));
+			AAVM_OPI++;
 			break;
 		}
 		case AAByteCode::SETVAR: {
 			AA_Literal rhs = stack.Pop().litVal;
-			procedure[procPointer].venv->SetVariable(AAVM_GetArgument(0), rhs);
-			opPointer++;
+			AAVM_VENV->SetVariable(AAVM_GetArgument(0), rhs);
+			AAVM_OPI++;
 			break;
 		}
 		case AAByteCode::CALL: {
@@ -230,13 +233,15 @@ void AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 				args.Push(stack.Pop());
 			}
 
-			AAVM_PushCallStackPos()
+			AAVM_OPI++;
+			callstack.Push(execp);
 
 			//stack.Push(AAVal(procPointer)); // Push pointer to current proc
 			//stack.Push(AAVal(opPointer + 1)); // push pointer to next operation
 
-			procPointer = callProc;
-			opPointer = 0;
+			AAVM_VENV = procedure[callProc].venv->CloneSelf();
+			AAVM_PROC = callProc;
+			AAVM_OPI = 0;
 
 			while (args.Size() > 0) {
 				stack.Push(args.Pop());
@@ -250,9 +255,13 @@ void AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 			for (int i = 0; i < retCount; i++) {
 				returnValues.Push(stack.Pop());
 			}
+
+			delete execp.venv;
+			execp = callstack.Pop();
+
 			//opPointer = stack.Pop().litVal.lit.i.val;
 			//procPointer = stack.Pop().litVal.lit.i.val;
-			AAVM_PopCallStackPos();
+
 			for (int i = 0; i < retCount; i++) {
 				stack.Push(returnValues.Pop());
 			}
@@ -260,15 +269,19 @@ void AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 		}
 		case AAByteCode::JMPF: {
 			if (stack.Pop().litVal.lit.b.val) {
-				opPointer++;
+				AAVM_OPI++;
 			} else {
-				opPointer += 1 + AAVM_GetArgument(0); // jump to next (if-else or else) or next statement after block
+				AAVM_OPI += 1 + AAVM_GetArgument(0); // jump to next (if-else or else) or next statement after block
 			}
+			break;
+		}
+		case AAByteCode::JMP: {
+			AAVM_OPI += 1 + AAVM_GetArgument(0);
 			break;
 		}
 		case AAByteCode::NOP:
 		default:
-			opPointer++;
+			AAVM_OPI++;
 			break;
 		}
 

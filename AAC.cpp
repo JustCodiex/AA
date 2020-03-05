@@ -223,6 +223,14 @@ std::vector<AAC::CompiledAbstractExpression> AAC::CompileAST(AA_AST_NODE* pNode,
 		executionStack = Merge(executionStack, CompileConditionalBlock(pNode, cTable, staticData));
 		break;
 	}
+	case AA_AST_NODE_TYPE::elseifstatement: {
+		executionStack = Merge(executionStack, CompileConditionalBlock(pNode, cTable, staticData));
+		break;
+	}
+	case AA_AST_NODE_TYPE::elsestatement: {
+		executionStack = Merge(executionStack, this->CompileAST(pNode->expressions[0], cTable, staticData));
+		break;
+	}
 	// Implicit return
 	case AA_AST_NODE_TYPE::variable:
 	case AA_AST_NODE_TYPE::intliteral:
@@ -341,22 +349,48 @@ std::vector<AAC::CompiledAbstractExpression> AAC::CompileConditionalBlock(AA_AST
 	// Push condition
 	opList = this->Merge(opList, this->CompileBinaryOperation(pNode->expressions[0]->expressions[0], cTable, staticData)); // will throw error when multiple conditions become possible
 
-	// Compile body (because we need to know the length of it)
-	std::vector<CompiledAbstractExpression> bodyList = this->CompileAST(pNode->expressions[1], cTable, staticData);
+	size_t tOffset = 0;
+	std::vector<std::vector<CompiledAbstractExpression>> allBodies;
+
+	for (size_t i = 1; i < pNode->expressions.size(); i++) {
+		std::vector<CompiledAbstractExpression> opLst = this->CompileAST(pNode->expressions[i], cTable, staticData);
+		tOffset += opLst.size();
+		if (i != pNode->expressions.size() - 1) {
+			tOffset++;
+		}
+		allBodies.push_back(opLst);
+	}
 
 	// Create jump if false condition
 	CompiledAbstractExpression jmpInstruction;
 	jmpInstruction.bc = AAByteCode::JMPF;
 	jmpInstruction.argCount = 1;
-	jmpInstruction.argValues[0] = (int)bodyList.size();
+	jmpInstruction.argValues[0] = (int)allBodies[0].size() + 1;
 
 	// Add jump instruction after condition
 	opList.push_back(jmpInstruction);
 
-	// Add body
-	opList = Merge(opList, bodyList);
+	size_t cutJmp = 0;
 
-	// add the rest of the possible if and if-else statements....
+	for (size_t i = 0; i < allBodies.size(); i++) {
+
+		if (i != allBodies.size() - 1) {
+
+			cutJmp += allBodies[i].size() + 1;
+
+			CompiledAbstractExpression jmpInstruction;
+			jmpInstruction.bc = AAByteCode::JMP;
+			jmpInstruction.argCount = 1;
+			jmpInstruction.argValues[0] = (int)(tOffset - cutJmp);
+
+			allBodies[i].push_back(jmpInstruction);
+
+		}
+
+		// Add body
+		opList = Merge(opList, allBodies[i]);
+
+	}
 
 	// return oplist
 	return opList;

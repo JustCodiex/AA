@@ -137,5 +137,8 @@
     <ClInclude Include="AAFuncSignature.h">
       <Filter>Header Files\compiler</Filter>
     </ClInclude>
+    <ClInclude Include="AARuntimeEnvironment.h">
+      <Filter>Header Files\VM</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

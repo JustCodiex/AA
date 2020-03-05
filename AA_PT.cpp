@@ -199,6 +199,16 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 
 			nodeIndex++;
 
+		} else if (nodes[nodeIndex]->childNodes.size() > 0) {
+		
+			AA_PT_NODE* funcallNode = new AA_PT_NODE(nodes[nodeIndex]->position);
+			funcallNode->content = nodes[nodeIndex]->content;
+			funcallNode->nodeType = AA_PT_NODE_TYPE::funccall;
+			funcallNode->childNodes = this->CreateArgumentTree(nodes[nodeIndex]);
+
+			nodes[nodeIndex] = funcallNode;
+			nodeIndex++;
+
 		} else {
 			nodeIndex++;
 		}
@@ -366,12 +376,12 @@ AA_PT_NODE* AA_PT::CreateFunctionArgList(AA_PT_NODE* pExpNode) {
 
 }
 
-AA_PT_NODE* AA_PT::CreateConditionBlock(std::vector<AA_PT_NODE*>& nodes, size_t from) {
+AA_PT_NODE* AA_PT::CreateIfStatement(std::vector<AA_PT_NODE*>& nodes, size_t from) {
 
 	if (from + 1 < nodes.size() && nodes[from + 1]->nodeType == AA_PT_NODE_TYPE::expression) {
 
 		nodes[from + 1] = this->CreateTree(nodes[from + 1]->childNodes, 0);
-		
+
 		AA_PT_NODE* pConditionNode = new AA_PT_NODE(nodes[from + 1]->position);
 		pConditionNode->nodeType = AA_PT_NODE_TYPE::condition;
 		pConditionNode->childNodes.push_back(nodes[from + 1]);
@@ -395,10 +405,47 @@ AA_PT_NODE* AA_PT::CreateConditionBlock(std::vector<AA_PT_NODE*>& nodes, size_t 
 		printf("if-statement not followed by an expression or block");
 	}
 
-	if (from + 1 < nodes.size() && nodes[from + 1]->nodeType == AA_PT_NODE_TYPE::keyword) {
-		printf("if-else or if-elseif statement detected !");
-	} else {
-		nodes[from]->nodeType = AA_PT_NODE_TYPE::ifstatement;
+	nodes[from]->nodeType = AA_PT_NODE_TYPE::ifstatement;
+
+	return nodes[from];
+
+}
+
+AA_PT_NODE* AA_PT::CreateConditionBlock(std::vector<AA_PT_NODE*>& nodes, size_t from) {
+
+	nodes[from] = this->CreateIfStatement(nodes, from);
+
+	while (from + 1 < nodes.size() && nodes[from + 1]->nodeType == AA_PT_NODE_TYPE::keyword) {
+
+		if (nodes[from + 1]->content == L"else") {
+
+			AA_PT_NODE* pElseNode = new AA_PT_NODE(nodes[from + 1]->position);
+			pElseNode->content = L"else";
+			pElseNode->nodeType = AA_PT_NODE_TYPE::elsestatement;
+
+			nodes[from + 2] = this->CreateTree(nodes[from + 2]->childNodes, 0);
+			pElseNode->childNodes.push_back(nodes[from + 2]);
+
+			nodes.erase(nodes.begin() + from + 1, nodes.begin() + from + 3);
+
+			nodes[from]->childNodes.push_back(pElseNode);
+
+		} else if (nodes[from + 1]->content == L"elseif") {
+
+			AA_PT_NODE* pElseIfNode = this->CreateIfStatement(nodes, from + 1);
+
+			nodes.erase(nodes.begin() + from + 1);
+
+			nodes[from]->childNodes.push_back(pElseIfNode);
+
+		} else {
+
+			printf("Something!");
+
+			break;
+
+		}
+
 	}
 
 	return nodes[from];
@@ -425,6 +472,30 @@ void AA_PT::ApplyGroupings(std::vector<AA_PT_NODE*>& nodes) {
 
 	int i = 0;
 	PairStatements(nodes, i, AA_PT_NODE_TYPE::parenthesis_start, AA_PT_NODE_TYPE::parenthesis_end, AA_PT_NODE_TYPE::expression);
+
+	//ApplyFunctionBindings(nodes);
+
+}
+
+void AA_PT::ApplyFunctionBindings(std::vector<AA_PT_NODE*>& nodes) {
+
+	size_t i = 0;
+
+	while (i < nodes.size()) {
+
+		if (nodes[i]->nodeType == AA_PT_NODE_TYPE::identifier) {
+			if (i + 1 < nodes.size() && nodes[i + 1]->nodeType == AA_PT_NODE_TYPE::expression) {
+				if (i - 1 > 0 && nodes[i - 1]->nodeType != AA_PT_NODE_TYPE::identifier) {
+					nodes[i]->childNodes.push_back(nodes[i + 1]);
+
+					nodes.erase(nodes.begin() + i + 1);
+				}
+			}
+		}
+
+		i++;
+
+	}
 
 }
 

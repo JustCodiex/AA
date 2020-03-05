@@ -103,6 +103,7 @@ private:
 	AA_PT_NODE* CreateVariableDecl(std::vector<AA_PT_NODE*>& nodes, size_t from);
 	AA_PT_NODE* CreateFunctionDecl(std::vector<AA_PT_NODE*>& nodes, size_t from);
 	AA_PT_NODE* CreateConditionBlock(std::vector<AA_PT_NODE*>& nodes, size_t from);
+	AA_PT_NODE* CreateIfStatement(std::vector<AA_PT_NODE*>& nodes, size_t from);
 	std::vector<AA_PT_NODE*> CreateArgumentTree(AA_PT_NODE* pExpNode);
 	void HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& index);
 
@@ -113,6 +114,7 @@ private:
 	*/
 
 	static void ApplyGroupings(std::vector<AA_PT_NODE*>& nodes);
+	static void ApplyFunctionBindings(std::vector<AA_PT_NODE*>& nodes);
 	static void ApplyUnaryBindings(std::vector<AA_PT_NODE*>& nodes);
 	static void ApplyArithemticRules(std::vector<AA_PT_NODE*>& nodes);
 	static void ApplyAssignmentOrder(std::vector<AA_PT_NODE*>& nodes);

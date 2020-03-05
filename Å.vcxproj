@@ -165,6 +165,7 @@
     <ClInclude Include="AAB2F.h" />
     <ClInclude Include="AAByteCode.h" />
     <ClInclude Include="AAC.h" />
+    <ClInclude Include="AARuntimeEnvironment.h" />
     <ClInclude Include="AACodePosition.h" />
     <ClInclude Include="AAFuncSignature.h" />
     <ClInclude Include="AALexer.h" />

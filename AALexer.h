@@ -51,6 +51,8 @@ private:
 
 	void JoinDecimal(std::vector<AALexicalResult>& results, size_t& i);
 
+	bool IsValidJointKeyword(std::wstring ws);
+
 	AALexicalResult Merge(std::vector<AALexicalResult> ls);
 
 };

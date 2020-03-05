@@ -182,6 +182,16 @@ void AALexer::Join(std::vector<AALexicalResult>& results) {
 				results.erase(results.begin() + i - 1, results.begin() + i + 1);
 				results.insert(results.begin() + i - 1, lR);
 			}
+		} else if (results[i].token == AAToken::keyword) {
+			if (i > 0 && results[i - 1].token == AAToken::keyword) {
+				AALexicalResult lR = AALexicalResult(results[i - 1].content + results[i].content, AAToken::keyword, results[i - 1].position);
+				if (IsValidJointKeyword(lR.content)) {
+					results.erase(results.begin() + i - 1, results.begin() + i + 1);
+					results.insert(results.begin() + i - 1, lR);
+				} else {
+					wprintf(L"Invalid joint keyword detected '%s'", lR.content.c_str());
+				}
+			}
 		}
 
 		i++;
@@ -217,6 +227,14 @@ void AALexer::JoinDecimal(std::vector<AALexicalResult>& results, size_t& i) {
 
 	i = j;
 
+}
+
+bool AALexer::IsValidJointKeyword(std::wstring ws) {
+	if (ws == L"elseif") {
+		return true;
+	} else {
+		return false;
+	}
 }
 
 AALexicalResult AALexer::Merge(std::vector<AALexicalResult> ls) {

@@ -12,6 +12,8 @@ public:
 	void SetVariable(unsigned int identifier, AAVal);
 	AAVal GetVariable(unsigned int identifier);
 
+	AAVarEnv* CloneSelf();
+
 private:
 
 	std::map<unsigned int, AAVal> m_variables;
