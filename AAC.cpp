@@ -231,6 +231,10 @@ std::vector<AAC::CompiledAbstractExpression> AAC::CompileAST(AA_AST_NODE* pNode,
 		executionStack = Merge(executionStack, this->CompileAST(pNode->expressions[0], cTable, staticData));
 		break;
 	}
+	case AA_AST_NODE_TYPE::forstatement: {
+		executionStack = Merge(executionStack, this->CompileForBlock(pNode, cTable, staticData));
+		break;
+	}
 	// Implicit return
 	case AA_AST_NODE_TYPE::variable:
 	case AA_AST_NODE_TYPE::intliteral:
@@ -391,6 +395,41 @@ std::vector<AAC::CompiledAbstractExpression> AAC::CompileConditionalBlock(AA_AST
 		opList = Merge(opList, allBodies[i]);
 
 	}
+
+	// return oplist
+	return opList;
+
+}
+
+std::vector<AAC::CompiledAbstractExpression> AAC::CompileForBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData) {
+
+	// Operations list
+	std::vector<CompiledAbstractExpression> opList;
+
+	std::vector<CompiledAbstractExpression> init = CompileAST(pNode->expressions[0], cTable, staticData);
+	std::vector<CompiledAbstractExpression> condition = CompileAST(pNode->expressions[1], cTable, staticData);
+	std::vector<CompiledAbstractExpression> afterthought = CompileAST(pNode->expressions[2], cTable, staticData);
+	std::vector<CompiledAbstractExpression> body = CompileAST(pNode->expressions[3], cTable, staticData);
+
+	opList = this->Merge(opList, init);
+
+	body = Merge(body, afterthought);
+
+	CompiledAbstractExpression jmpBckIns;
+	jmpBckIns.bc = AAByteCode::JMP;
+	jmpBckIns.argCount = 1;
+	jmpBckIns.argValues[0] = -(int)(body.size() + condition.size() + 2); // (+2 because of the additional jmp instructions)
+
+	CompiledAbstractExpression jmpDntLoopIns;
+	jmpDntLoopIns.bc = AAByteCode::JMPF;
+	jmpDntLoopIns.argCount = 1;
+	jmpDntLoopIns.argValues[0] = (int)(body.size() + 1);
+
+	condition.push_back(jmpDntLoopIns);
+	body.push_back(jmpBckIns);
+
+	opList = Merge(opList, condition);
+	opList = Merge(opList, body);
 
 	// return oplist
 	return opList;

@@ -48,11 +48,8 @@ std::vector< AA_AST*> AAP::CreateParseTrees(std::vector<AALexicalResult> lexResu
 	// Convert lexical analysis to AA_PT_NODEs
 	std::vector<AA_PT_NODE*> aa_pt_nodes = AA_PT::ToNodes(lexResult);
 
-	// Apply mathematical arithmetic and binding rules
-	AA_PT::ApplyOrderOfOperationBindings(aa_pt_nodes);
-
-	// Apply flow control
-	AA_PT::ApplyFlowControlBindings(aa_pt_nodes);
+	// Apply syntax rules
+	AA_PT::ApplySyntaxRules(aa_pt_nodes);
 
 	// Create parse trees
 	std::vector<AA_PT*> parseTrees = AA_PT::CreateTrees(aa_pt_nodes);

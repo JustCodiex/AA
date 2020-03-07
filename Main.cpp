@@ -12,7 +12,7 @@ int main() {
     VM->SetOutput(&std::cout);
 
     // Current test case
-    //VM->CompileAndRunFile(L"examples\\for-loop.aa", L"out\\bin\\for-loop.aab", L"out\\op\\for-loop.txt"); // Expected output: 90
+    VM->CompileAndRunFile(L"examples\\for-loop.aa", L"out\\bin\\for-loop.aab", L"out\\op\\for-loop.txt"); // Expected output: 90
 
     // Compile and execute
     VM->CompileAndRunFile(L"examples\\recursion.aa", L"out\\bin\\recursion.aab", L"out\\op\\recursion.txt"); // Expected output: 24

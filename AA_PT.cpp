@@ -162,9 +162,6 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 	switch (nodes[nodeIndex]->nodeType) {
 	case AA_PT_NODE_TYPE::binary_operation:
 
-		nodes[nodeIndex - 1]->parent = nodes[nodeIndex];
-		nodes[nodeIndex + 1]->parent = nodes[nodeIndex];
-
 		nodes[nodeIndex]->childNodes.push_back(nodes[nodeIndex - 1]);
 		nodes[nodeIndex]->childNodes.push_back(this->CreateExpressionTree(nodes, nodeIndex + 1));
 
@@ -174,7 +171,6 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 		break;
 	case AA_PT_NODE_TYPE::unary_operation:
 
-		nodes[nodeIndex + 1]->parent = nodes[nodeIndex];
 		nodes[nodeIndex]->childNodes.push_back(this->CreateExpressionTree(nodes, nodeIndex + 1));
 		nodes.erase(nodes.begin() + nodeIndex + 1);
 
@@ -224,17 +220,8 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 		nodeIndex++;
 		break;
 	case AA_PT_NODE_TYPE::keyword:
-		if (nodes[nodeIndex]->content == L"var") {
-			nodes[nodeIndex] = this->CreateVariableDecl(nodes, nodeIndex);
-		} else if (nodes[nodeIndex]->content == L"void") {
-			AA_PT_NODE* funcDeclNode = this->CreateFunctionDecl(nodes, nodeIndex);
-			if (funcDeclNode) {
-				nodes[nodeIndex] = funcDeclNode;
-			}
-		} else if (nodes[nodeIndex]->content == L"if") {
-			nodes[nodeIndex] = this->CreateConditionBlock(nodes, nodeIndex);
-		}
-		nodeIndex++;
+		this->HandleKeywordCase(nodes, nodeIndex);
+		
 		break;
 	case AA_PT_NODE_TYPE::expression: {
 		nodes[nodeIndex] = this->CreateExpressionTree(nodes, nodeIndex);
@@ -255,6 +242,76 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 	default:
 		break;
 	}
+
+}
+
+void AA_PT::HandleKeywordCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
+
+	if (nodes[nodeIndex]->content == L"var") {
+		
+		nodes[nodeIndex] = this->CreateVariableDecl(nodes, nodeIndex);
+
+	} else if (nodes[nodeIndex]->content == L"void") {
+		
+		AA_PT_NODE* funcDeclNode = this->CreateFunctionDecl(nodes, nodeIndex);
+		if (funcDeclNode) {
+			nodes[nodeIndex] = funcDeclNode;
+		}
+
+	} else if (nodes[nodeIndex]->content == L"if") {
+		
+		nodes[nodeIndex] = this->CreateConditionBlock(nodes, nodeIndex);
+
+	} else if (nodes[nodeIndex]->content == L"for") {
+
+		AA_PT_NODE* forStatement = new AA_PT_NODE(nodes[nodeIndex]->position);
+		forStatement->nodeType = AA_PT_NODE_TYPE::forstatement;
+
+		if (nodeIndex + 1 < nodes.size() && nodes[nodeIndex + 1]->nodeType == AA_PT_NODE_TYPE::expression) {
+
+			// Set type to block so we may extract more trees
+			nodes[nodeIndex + 1]->nodeType = AA_PT_NODE_TYPE::block;
+
+			// Make sure the statements follow syntax rules
+			ApplyOrderOfOperationBindings(nodes[nodeIndex + 1]->childNodes); // [Temporary HACK to fix something in the ApplyFunctionalBindings method)
+
+			// Get loop expressions
+			std::vector<AA_PT_NODE*> forLoopExpr = this->CreateArgumentTree(nodes[nodeIndex + 1]);
+
+			if (forLoopExpr.size() == 3) {
+				forStatement->childNodes.push_back(forLoopExpr[0]); // initialise
+				forStatement->childNodes.push_back(forLoopExpr[1]); // condition
+				forStatement->childNodes.push_back(forLoopExpr[2]); // afterthought
+			} else {
+				printf("Missing statements!");
+			}
+
+			printf("");
+
+		} else {
+
+			printf("for-statement missing expressions");
+
+		}
+
+		if (nodeIndex + 2 < nodes.size() && nodes[nodeIndex + 2]->nodeType == AA_PT_NODE_TYPE::block) {
+
+			forStatement->childNodes.push_back(this->CreateTree(nodes[nodeIndex + 2]->childNodes, 0));
+
+		} else {
+
+			printf("for-statement missing body");
+
+		}
+
+		nodes.erase(nodes.begin() + nodeIndex + 1, nodes.begin() + nodeIndex + 3);
+
+
+		nodes[nodeIndex] = forStatement;
+
+	}
+
+	nodeIndex++;
 
 }
 
@@ -716,5 +773,15 @@ std::vector<AA_PT_NODE*> AA_PT::PairStatements(std::vector<AA_PT_NODE*>& nodes, 
 	}
 
 	return subNodes;
+
+}
+
+void AA_PT::ApplySyntaxRules(std::vector<AA_PT_NODE*>& nodes) {
+
+	// Apply OOP bindings
+	ApplyOrderOfOperationBindings(nodes);
+
+	// Apply FC bindings
+	ApplyFlowControlBindings(nodes);
 
 }

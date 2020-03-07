@@ -130,6 +130,13 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 		elifstatement->expressions.push_back(this->AbstractNode(pNode->childNodes[1])); // stuff to execute if condition holds
 		return elifstatement;
 	}
+	case AA_PT_NODE_TYPE::forstatement: {
+		AA_AST_NODE* forstatement = new AA_AST_NODE(L"for", AA_AST_NODE_TYPE::forstatement, pNode->position);
+		for (size_t i = 0; i < pNode->childNodes.size(); i++) {
+			forstatement->expressions.push_back(this->AbstractNode(pNode->childNodes[i]));
+		}
+		return forstatement;
+	}
 	case AA_PT_NODE_TYPE::intliteral:
 	case AA_PT_NODE_TYPE::charliteral:
 	case AA_PT_NODE_TYPE::floatliteral:

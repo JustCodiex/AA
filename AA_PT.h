@@ -60,12 +60,10 @@ struct AA_PT_NODE {
 	AA_PT_NODE_TYPE nodeType;
 	std::wstring content;
 	std::vector< AA_PT_NODE*> childNodes;
-	AA_PT_NODE* parent;
 	AACodePosition position;
 	AA_PT_NODE(AACodePosition pos) {
 		nodeType = AA_PT_NODE_TYPE::undefined;
 		content = L"";
-		parent = 0;
 		position = pos;
 	}
 };
@@ -92,6 +90,11 @@ public:
 	** Flow control parsing
 	*/
 	static void ApplyFlowControlBindings(std::vector<AA_PT_NODE*>& nodes);
+
+	/*
+	** Incorrect structure fix
+	*/
+	static void ApplySyntaxRules(std::vector<AA_PT_NODE*>& nodes);
 
 	/*
 	** To node converter functions
@@ -123,8 +126,11 @@ private:
 	AA_PT_NODE* CreateFunctionDecl(std::vector<AA_PT_NODE*>& nodes, size_t from);
 	AA_PT_NODE* CreateConditionBlock(std::vector<AA_PT_NODE*>& nodes, size_t from);
 	AA_PT_NODE* CreateIfStatement(std::vector<AA_PT_NODE*>& nodes, size_t from);
+	
 	std::vector<AA_PT_NODE*> CreateArgumentTree(AA_PT_NODE* pExpNode);
-	void HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& index);
+	
+	inline void HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& index);
+	inline void HandleKeywordCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex);
 
 	AA_PT_NODE* CreateFunctionArgList(AA_PT_NODE* pExpNode);
 
