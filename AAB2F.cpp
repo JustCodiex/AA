@@ -164,7 +164,7 @@ namespace aa {
 				}
 				o << L"\nOPERATIONS: \n";
 				for (size_t j = 0; j < proc.procOperations.size(); j++) {
-					o << L"\t" << OpToWString(proc.procOperations[j]) << "\n";
+					o << L"\t" << L"[" << std::to_wstring(j) << L"]\t" << OpToWString(proc.procOperations[j]) << "\n";
 				}
 				o << L"END PROCEDURE;\n\n";
 

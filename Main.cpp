@@ -12,15 +12,16 @@ int main() {
     VM->SetOutput(&std::cout);
 
     // Current test case
-    VM->CompileAndRunFile(L"examples\\recursion.aa", L"out\\bin\\recursion.aab", L"out\\op\\recursion.txt"); // doesnt work yet because a function environment has not been implemented
+    //VM->CompileAndRunFile(L"examples\\for-loop.aa", L"out\\bin\\for-loop.aab", L"out\\op\\for-loop.txt"); // Expected output: 24
 
     // Compile and execute
+    VM->CompileAndRunFile(L"examples\\recursion.aa", L"out\\bin\\recursion.aab", L"out\\op\\recursion.txt"); // Expected output: 24
     VM->CompileAndRunExpression(L"if (6 < 5) { 25; } else if (4 < 5) { 27; } else { 30; }", L"out\\bin\\if3.aab", L"out\\op\\if3.txt"); // Expected output: 27
     VM->CompileAndRunExpression(L"if (6 < 5) { 25; } else { 30; }", L"out\\bin\\if2.aab", L"out\\op\\if2.txt"); // Expected output: 30
     VM->CompileAndRunExpression(L"if (5 < 6) { 25; }", L"out\\bin\\if1.aab", L"out\\op\\if1.txt"); // Expected output: 25
     VM->CompileAndRunExpression(L"5 + 15 <= 10;", L"out\\bin\\cmp_leq2.aab", L"out\\op\\cmp_leq2.txt"); // Expected output: false
     VM->CompileAndRunExpression(L"5 <= 10;", L"out\\bin\\cmp_leq1.aab", L"out\\op\\cmp_leq1.txt"); // Expected output: true
-    VM->CompileAndRunFile(L"testing\\func.aa", L"out\\bin\\func.aab", L"out\\op\\func.txt"); // Check file (Executes correctly, 15/03/20)
+    VM->CompileAndRunFile(L"testing\\func.aa", L"out\\bin\\func.aab", L"out\\op\\func.txt"); // Expected output: 51
     VM->CompileAndRunExpression(L"int par(int x, int y) { x - y; } par(15+5,par(75,50));", L"out\\bin\\func_decl_test8.aab", L"out\\op\\func_decl_test8.txt"); // Expected output: -5
     VM->CompileAndRunExpression(L"int par(int x, int y) { x - y; } par(15+5,5);", L"out\\bin\\func_decl_test7.aab", L"out\\op\\func_decl_test7.txt"); // Expected output: 15
     VM->CompileAndRunExpression(L"int par(int x, int y) { x - y; } par(10, 5);", L"out\\bin\\func_decl_test6.aab", L"out\\op\\func_decl_test6.txt"); // Expected output: 5
