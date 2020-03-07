@@ -179,8 +179,14 @@ void AALexer::Join(std::vector<AALexicalResult>& results) {
 		} else if (results[i].token == AAToken::OP) {
 			if (i > 0 && results[i - 1].token == AAToken::OP) {
 				AALexicalResult lR = AALexicalResult(results[i - 1].content + results[i].content, AAToken::OP, results[i-1].position);
-				results.erase(results.begin() + i - 1, results.begin() + i + 1);
-				results.insert(results.begin() + i - 1, lR);
+				if (IsValidJointOperator(lR.content)) {
+					results.erase(results.begin() + i - 1, results.begin() + i + 1);
+					results.insert(results.begin() + i - 1, lR);
+				} else {
+					if (lR.content != L"+-" && lR.content != L"--") {
+						wprintf(L"Invalid joint operator detected '%s'", lR.content.c_str());
+					}
+				}
 			}
 		} else if (results[i].token == AAToken::keyword) {
 			if (i > 0 && results[i - 1].token == AAToken::keyword) {
@@ -231,6 +237,20 @@ void AALexer::JoinDecimal(std::vector<AALexicalResult>& results, size_t& i) {
 
 bool AALexer::IsValidJointKeyword(std::wstring ws) {
 	if (ws == L"elseif") {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+bool AALexer::IsValidJointOperator(std::wstring ws) {
+	if (ws == L"<=") {
+		return true;
+	} else if (ws == L">=") {
+		return true;
+	} else if (ws == L"==") {
+		return true;
+	} else if (ws == L"!=") {
 		return true;
 	} else {
 		return false;

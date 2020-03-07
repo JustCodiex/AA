@@ -192,21 +192,10 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 			funcallNode->content = nodes[nodeIndex]->content;
 			funcallNode->nodeType = AA_PT_NODE_TYPE::funccall;
 			funcallNode->childNodes = this->CreateArgumentTree(nodes[nodeIndex +1]);
-			//funcallNode->childNodes.push_back(this->CreateExpressionTree(nodes, nodeIndex + 1));
 
 			nodes.erase(nodes.begin() + nodeIndex, nodes.begin() + nodeIndex + 2);
 			nodes.insert(nodes.begin() + nodeIndex, funcallNode);
 
-			nodeIndex++;
-
-		} else if (nodes[nodeIndex]->childNodes.size() > 0) {
-		
-			AA_PT_NODE* funcallNode = new AA_PT_NODE(nodes[nodeIndex]->position);
-			funcallNode->content = nodes[nodeIndex]->content;
-			funcallNode->nodeType = AA_PT_NODE_TYPE::funccall;
-			funcallNode->childNodes = this->CreateArgumentTree(nodes[nodeIndex]);
-
-			nodes[nodeIndex] = funcallNode;
 			nodeIndex++;
 
 		} else {
@@ -265,6 +254,17 @@ AA_PT_NODE* AA_PT::CreateExpressionTree(std::vector<AA_PT_NODE*>& nodes, size_t 
 		}
 
 		return exp;
+
+	} else if (nodes[from]->nodeType == AA_PT_NODE_TYPE::identifier && nodes[from]->childNodes.size() > 0) {
+	
+		AA_PT_NODE* funcallNode = new AA_PT_NODE(nodes[from]->position);
+		funcallNode->content = nodes[from]->content;
+		funcallNode->nodeType = AA_PT_NODE_TYPE::funccall;
+		funcallNode->childNodes = this->CreateArgumentTree(nodes[from]);
+
+		nodes[from] = funcallNode;
+
+		return funcallNode;
 
 	} else {
 
@@ -470,10 +470,12 @@ void AA_PT::ApplyOrderOfOperationBindings(std::vector<AA_PT_NODE*>& nodes) {
 
 void AA_PT::ApplyGroupings(std::vector<AA_PT_NODE*>& nodes) {
 
+	// Pair parenthesis statements
 	int i = 0;
 	PairStatements(nodes, i, AA_PT_NODE_TYPE::parenthesis_start, AA_PT_NODE_TYPE::parenthesis_end, AA_PT_NODE_TYPE::expression);
 
-	//ApplyFunctionBindings(nodes);
+	// Pair possible function or keywords with arguments to their parenthesis (Because arguments to something binds the strongest)
+	ApplyFunctionBindings(nodes);
 
 }
 
@@ -485,13 +487,20 @@ void AA_PT::ApplyFunctionBindings(std::vector<AA_PT_NODE*>& nodes) {
 
 		if (nodes[i]->nodeType == AA_PT_NODE_TYPE::identifier) {
 			if (i + 1 < nodes.size() && nodes[i + 1]->nodeType == AA_PT_NODE_TYPE::expression) {
-				if (i - 1 > 0 && nodes[i - 1]->nodeType != AA_PT_NODE_TYPE::identifier) {
+				if (i - 1 > 0 && nodes[i - 1]->nodeType == AA_PT_NODE_TYPE::binary_operation) {
+					ApplyFunctionBindings(nodes[i + 1]->childNodes);
 					nodes[i]->childNodes.push_back(nodes[i + 1]);
-
 					nodes.erase(nodes.begin() + i + 1);
 				}
 			}
-		}
+		} /*else if (nodes[i]->nodeType == AA_PT_NODE_TYPE::keyword) {
+			if (i + 1 < nodes.size() && nodes[i + 1]->nodeType == AA_PT_NODE_TYPE::expression) {
+				if (i - 1 > 0 && nodes[i - 1]->nodeType == AA_PT_NODE_TYPE::binary_operation) {
+					nodes[i]->childNodes.push_back(nodes[i + 1]);
+					nodes.erase(nodes.begin() + i + 1);
+				}
+			}
+		}*/
 
 		i++;
 
