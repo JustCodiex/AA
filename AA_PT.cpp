@@ -5,6 +5,20 @@ AA_PT::AA_PT(AA_PT_NODE* root) {
 	m_root = root;
 }
 
+void AA_PT::Clear() {
+	this->ClearNode(m_root);
+}
+
+void AA_PT::ClearNode(AA_PT_NODE* node) {
+
+	for (AA_PT_NODE* child : node->childNodes) {
+		this->ClearNode(child);
+	}
+
+	delete node;
+
+}
+
 std::vector<AA_PT_NODE*> AA_PT::ToNodes(std::vector<AALexicalResult> lexResult) {
 
 	std::vector<AA_PT_NODE*> aa_pt_nodes;

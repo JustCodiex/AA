@@ -4,6 +4,20 @@ AA_AST::AA_AST(AA_PT* parseTree) {
 	m_root = this->AbstractNode(parseTree->GetRoot());
 }
 
+void AA_AST::Clear() {
+	this->ClearNode(m_root);
+}
+
+void AA_AST::ClearNode(AA_AST_NODE* pNode) {
+
+	for (AA_AST_NODE* child : pNode->expressions) {
+		this->ClearNode(child);
+	}
+
+	delete pNode;
+
+}
+
 AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 
 	switch (pNode->nodeType) {

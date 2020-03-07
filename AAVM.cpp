@@ -57,6 +57,9 @@ void AAVM::CompileAndRunExpression(std::wstring input, std::wstring binaryoutput
 
 	}
 
+	// Cleanup trees
+	m_parser->ClearTrees(trees);
+
 	// Execute the bytecode
 	this->Execute(bytecode);
 
@@ -115,6 +118,9 @@ void AAVM::CompileAndRunFile(std::wstring sourcefile, std::wstring binaryoutputf
 		aa::dump_bytecode(binaryoutputfile, bytecode);
 
 	}
+
+	// Cleanup trees
+	m_parser->ClearTrees(trees);
 
 	// Execute the bytecode
 	this->Execute(bytecode);

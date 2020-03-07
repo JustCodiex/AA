@@ -78,12 +78,19 @@ public:
 
 	void Simplify(); // Eg. pre-compute operations involving constants
 
+	void Clear();
+
 private:
 
 	AA_AST_NODE* AbstractNode(AA_PT_NODE* pNode);
 
 	AA_AST_NODE_TYPE GetASTLiteralType(AA_PT_NODE_TYPE type);
 	AA_AST_NODE_TYPE GetASTBlockType(AA_PT_NODE_TYPE type);
+
+	/*
+	** Recursive clear
+	*/
+	void ClearNode(AA_AST_NODE* node);
 
 private:
 

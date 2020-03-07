@@ -60,10 +60,27 @@ std::vector< AA_AST*> AAP::CreateParseTrees(std::vector<AALexicalResult> lexResu
 
 	// Go through all the parse trees we received
 	for (size_t i = 0; i < parseTrees.size(); i++) {
-		abstractSyntaxTrees.push_back(new AA_AST(parseTrees[i]));
+		
+		// Create AST
+		AA_AST* abstractSyntaxTree = new AA_AST(parseTrees[i]);
+		
+		// Add AST to result
+		abstractSyntaxTrees.push_back(abstractSyntaxTree);
+		
+		// Clear the parse tree (No longer need it)
+		parseTrees[i]->Clear();
+
 	}
 
 	// Return their equivalent ASTs
 	return abstractSyntaxTrees;
+
+}
+
+void AAP::ClearTrees(std::vector<AA_AST*> trees) {
+
+	for (AA_AST* pTree : trees) {
+		pTree->Clear();
+	}
 
 }

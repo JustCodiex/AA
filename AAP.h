@@ -14,6 +14,8 @@ public:
 	std::vector< AA_AST*> Parse(std::wstring input);
 	std::vector< AA_AST*> Parse(std::wifstream input);
 
+	void ClearTrees(std::vector<AA_AST*> trees);
+
 private:
 
 	std::vector< AA_AST*> InternalParse(std::vector<AALexicalResult> res);

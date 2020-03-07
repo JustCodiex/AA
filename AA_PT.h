@@ -78,6 +78,8 @@ public:
 
 	AA_PT_NODE* GetRoot() { return m_root; }
 
+	void Clear();
+
 	static std::vector<AA_PT*> CreateTrees(std::vector<AA_PT_NODE*>& nodes);
 
 	/*
@@ -97,6 +99,11 @@ public:
 	static std::vector<AA_PT_NODE*> ToNodes(std::vector<AALexicalResult> lexResult);
 
 private:
+
+	/*
+	** Recursive clear
+	*/
+	void ClearNode(AA_PT_NODE* node);
 
 	/*
 	** To node converter functions
