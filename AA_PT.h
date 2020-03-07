@@ -21,6 +21,18 @@ enum class AA_PT_NODE_TYPE {
 	elseifstatement,
 	elsestatement,
 
+	forstatement,
+	foreachstatement,
+	dowhilestatement,
+	whilestatement,
+
+	breakstatement,
+	continuestatement,
+	returnstatement,
+
+	matchsatement,
+	matchcasestatement,
+
 	parenthesis_start,
 	parenthesis_end,
 

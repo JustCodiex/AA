@@ -38,6 +38,16 @@ std::vector<std::wstring> keywords = {
 	L"void",
 	L"if",
 	L"else",
+	L"for",
+	L"foreach",
+	L"while",
+	L"do",
+	L"match",
+	L"case",
+	L"as",
+	L"break",
+	L"return",
+	L"continue",
 };
 
 std::vector<AALexicalResult> AALexer::Analyse(std::wistream& input) {

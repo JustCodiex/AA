@@ -16,6 +16,18 @@ enum class AA_AST_NODE_TYPE {
 	elseifstatement,
 	elsestatement,
 
+	forstatement,
+	foreachstatement,
+	dowhilestatement,
+	whilestatement,
+
+	breakstatement,
+	continuestatement,
+	returnstatement,
+
+	matchsatement,
+	matchcasestatement,
+
 	binop,
 	unop,
 
