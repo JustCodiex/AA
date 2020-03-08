@@ -34,7 +34,7 @@ int foo() {
 }
 foo();
 ```
-[For-Loop.aa](examples\\for-loop.aa)  
+[For-Loop.aa](examples/for-loop.aa)  
 ```
 int foo() {
     var i = 0;
@@ -45,7 +45,7 @@ int foo() {
 }
 foo();
 ```
-[While-Loop.aa](examples\\while-loop.aa)  
+[While-Loop.aa](examples/while-loop.aa)  
 ```
 int foo() {
     var i = 0;
@@ -56,7 +56,7 @@ int foo() {
 }
 foo();
 ```
-[Do-While-Loop.aa](examples\\dowhile-loop.aa)  
+[Do-While-Loop.aa](examples/dowhile-loop.aa)  
 The three examples above are the only three loops currently supported. A `foreach` loop is planned, but is only really useful when arrays and iterators have been implemented.
 #### Functions
 ```
@@ -85,7 +85,7 @@ int factorial(int n) {
 }
 factorial(4);
 ```
-[Recursion.aa](examples\\recursion.aa)  
+[Recursion.aa](examples/recursion.aa)  
 We can here see, using if-statements that it's possible to calculate the factorial of a number through recursion.
 ## Why?
 Because designing programming languages is a fun and learnful experience.
