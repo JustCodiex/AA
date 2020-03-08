@@ -14,6 +14,9 @@ int main() {
     // Set output stream
     VM->SetOutput(&std::cout);
 
+    // Current test case
+    VM->CompileAndRunFile(L"testing\\class.aa", L"out\\bin\\class1.aab", L"out\\op\\class1.txt");
+
     // Run regression tests
     if (enableRegTests) {
         if (!RunRegressionTests(VM)) {
@@ -21,9 +24,6 @@ int main() {
         }
     }
 
-    // Current test case
-        // none    
-    
     // Release the virtual machine
     VM->Release();
 

@@ -43,6 +43,7 @@ enum class AA_PT_NODE_TYPE {
 	identifier,
 	vardecleration,
 	fundecleration,
+	classdecleration,
 	
 	funccall,
 	funarg,
@@ -124,6 +125,7 @@ private:
 	AA_PT_NODE* CreateTree(std::vector<AA_PT_NODE*>& nodes, size_t from);
 	AA_PT_NODE* CreateExpressionTree(std::vector<AA_PT_NODE*>& nodes, size_t from);
 	AA_PT_NODE* CreateVariableDecl(std::vector<AA_PT_NODE*>& nodes, size_t from);
+	AA_PT_NODE* CreateClassDecl(std::vector<AA_PT_NODE*>& nodes, size_t from);
 	AA_PT_NODE* CreateFunctionDecl(std::vector<AA_PT_NODE*>& nodes, size_t from);
 	AA_PT_NODE* CreateConditionBlock(std::vector<AA_PT_NODE*>& nodes, size_t from);
 	AA_PT_NODE* CreateIfStatement(std::vector<AA_PT_NODE*>& nodes, size_t from);

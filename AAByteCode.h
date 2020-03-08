@@ -37,4 +37,6 @@ enum class AAByteCode : unsigned char {
 	LAND, // (Logical And, 0 arguments)
 	LOR, // (Logcal Or, 0 arguments)
 
+	ALLOC, // (Allocate memory for new object, TBD)
+
 };

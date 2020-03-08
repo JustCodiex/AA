@@ -43,6 +43,9 @@
     <Filter Include="Source Files\aatesting">
       <UniqueIdentifier>{c80607c1-9605-43ec-9826-029b8cb847ed}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\aatesting">
+      <UniqueIdentifier>{5f2b706b-c97d-4695-8fb7-b2761b296f93}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -150,7 +153,7 @@
       <Filter>Header Files\VM</Filter>
     </ClInclude>
     <ClInclude Include="AALanguageRegressionTest.h">
-      <Filter>Header Files\aautil</Filter>
+      <Filter>Header Files\aatesting</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

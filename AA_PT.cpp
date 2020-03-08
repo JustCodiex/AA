@@ -254,6 +254,10 @@ void AA_PT::HandleKeywordCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex
 		
 		nodes[nodeIndex] = this->CreateVariableDecl(nodes, nodeIndex);
 
+	} else if (nodes[nodeIndex]->content == L"class") {
+	
+		nodes[nodeIndex] = this->CreateClassDecl(nodes, nodeIndex);
+
 	} else if (nodes[nodeIndex]->content == L"void") {
 		
 		AA_PT_NODE* funcDeclNode = this->CreateFunctionDecl(nodes, nodeIndex);
@@ -353,6 +357,41 @@ AA_PT_NODE* AA_PT::CreateVariableDecl(std::vector<AA_PT_NODE*>& nodes, size_t fr
 	nodes.erase(nodes.begin() + from + 1);
 
 	return varDeclExp;
+
+}
+
+AA_PT_NODE* AA_PT::CreateClassDecl(std::vector<AA_PT_NODE*>& nodes, size_t from) {
+
+	AA_PT_NODE* classDeclExp = new AA_PT_NODE(nodes[from]->position);
+	classDeclExp->nodeType = AA_PT_NODE_TYPE::classdecleration;
+
+	if (from + 1 < nodes.size() && nodes[from + 1]->nodeType == AA_PT_NODE_TYPE::identifier) {
+
+		classDeclExp->content = nodes[from + 1]->content;
+
+	} else {
+		printf("Found class keyword without a valid identifying name!");
+	}
+
+	if (from + 2 < nodes.size() && nodes[from + 2]->nodeType == AA_PT_NODE_TYPE::block) {
+
+		AA_PT_NODE* classBody = new AA_PT_NODE(nodes[from + 2]->position);
+		classBody->nodeType = AA_PT_NODE_TYPE::classbody;
+
+		this->ApplySyntaxRules(nodes[from+2]->childNodes);
+		auto trees = this->CreateTrees(nodes[from + 2]->childNodes);
+
+		for (AA_PT* tree : trees) {
+			classBody->childNodes.push_back(tree->GetRoot());
+		}
+
+		classDeclExp->childNodes.push_back(classBody);
+
+	}
+
+	nodes.erase(nodes.begin() + from + 1, nodes.begin() + from + 3);
+
+	return classDeclExp;
 
 }
 

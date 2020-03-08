@@ -22,6 +22,7 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 
 	switch (pNode->nodeType) {
 	case AA_PT_NODE_TYPE::funcbody:
+	case AA_PT_NODE_TYPE::classbody:
 	case AA_PT_NODE_TYPE::block: {
 
 		AA_AST_NODE* blockNode = new AA_AST_NODE(L"{<block>}", this->GetASTBlockType(pNode->nodeType), pNode->position);
@@ -150,6 +151,11 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 			dowhilestatement->expressions.push_back(this->AbstractNode(pNode->childNodes[i]));
 		}
 		return dowhilestatement;
+	}
+	case AA_PT_NODE_TYPE::classdecleration: {
+		AA_AST_NODE* classdef = new AA_AST_NODE(pNode->content, AA_AST_NODE_TYPE::classdecl, pNode->position);
+		classdef->expressions.push_back(this->AbstractNode(pNode->childNodes[0]));
+		return classdef;
 	}
 	case AA_PT_NODE_TYPE::intliteral:
 	case AA_PT_NODE_TYPE::charliteral:

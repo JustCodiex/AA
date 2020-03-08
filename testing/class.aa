@@ -1,0 +1,14 @@
+class ex {
+    void ctor() {
+
+    }
+    int nope() {
+        5;
+    }
+}
+
+int main() {
+    
+}
+
+main();
