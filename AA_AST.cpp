@@ -24,7 +24,7 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 	case AA_PT_NODE_TYPE::funcbody:
 	case AA_PT_NODE_TYPE::block: {
 
-		AA_AST_NODE* blockNode = new AA_AST_NODE(L"", this->GetASTBlockType(pNode->nodeType), pNode->position);
+		AA_AST_NODE* blockNode = new AA_AST_NODE(L"{<block>}", this->GetASTBlockType(pNode->nodeType), pNode->position);
 
 		for (size_t i = 0; i < pNode->childNodes.size(); i++) {
 			blockNode->expressions.push_back(this->AbstractNode(pNode->childNodes[i]));
@@ -136,6 +136,20 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 			forstatement->expressions.push_back(this->AbstractNode(pNode->childNodes[i]));
 		}
 		return forstatement;
+	}
+	case AA_PT_NODE_TYPE::whilestatement: {
+		AA_AST_NODE* whilestatement = new AA_AST_NODE(L"while", AA_AST_NODE_TYPE::whilestatement, pNode->position);
+		for (size_t i = 0; i < pNode->childNodes.size(); i++) {
+			whilestatement->expressions.push_back(this->AbstractNode(pNode->childNodes[i]));
+		}
+		return whilestatement;
+	}
+	case AA_PT_NODE_TYPE::dowhilestatement: {
+		AA_AST_NODE* dowhilestatement = new AA_AST_NODE(L"do-while", AA_AST_NODE_TYPE::dowhilestatement, pNode->position);
+		for (size_t i = 0; i < pNode->childNodes.size(); i++) {
+			dowhilestatement->expressions.push_back(this->AbstractNode(pNode->childNodes[i]));
+		}
+		return dowhilestatement;
 	}
 	case AA_PT_NODE_TYPE::intliteral:
 	case AA_PT_NODE_TYPE::charliteral:

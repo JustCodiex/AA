@@ -235,6 +235,14 @@ std::vector<AAC::CompiledAbstractExpression> AAC::CompileAST(AA_AST_NODE* pNode,
 		executionStack = Merge(executionStack, this->CompileForBlock(pNode, cTable, staticData));
 		break;
 	}
+	case AA_AST_NODE_TYPE::whilestatement: {
+		executionStack = Merge(executionStack, this->CompileWhileBlock(pNode, cTable, staticData));
+		break;
+	}
+	case AA_AST_NODE_TYPE::dowhilestatement: {
+		executionStack = Merge(executionStack, this->CompileDoWhileBlock(pNode, cTable, staticData));
+		break;
+	}
 	// Implicit return
 	case AA_AST_NODE_TYPE::variable:
 	case AA_AST_NODE_TYPE::intliteral:
@@ -406,30 +414,100 @@ std::vector<AAC::CompiledAbstractExpression> AAC::CompileForBlock(AA_AST_NODE* p
 	// Operations list
 	std::vector<CompiledAbstractExpression> opList;
 
+	// Compile individual
 	std::vector<CompiledAbstractExpression> init = CompileAST(pNode->expressions[0], cTable, staticData);
 	std::vector<CompiledAbstractExpression> condition = CompileAST(pNode->expressions[1], cTable, staticData);
 	std::vector<CompiledAbstractExpression> afterthought = CompileAST(pNode->expressions[2], cTable, staticData);
 	std::vector<CompiledAbstractExpression> body = CompileAST(pNode->expressions[3], cTable, staticData);
 
+	// Merge the oplist with the initialisor
 	opList = this->Merge(opList, init);
 
+	// Merge the oplist with the afterthought
 	body = Merge(body, afterthought);
 
+	// The jump instruction that jumps back to the top of the condition
 	CompiledAbstractExpression jmpBckIns;
 	jmpBckIns.bc = AAByteCode::JMP;
 	jmpBckIns.argCount = 1;
-	jmpBckIns.argValues[0] = -(int)(body.size() + condition.size() + 2); // (+2 because of the additional jmp instructions)
+	jmpBckIns.argValues[0] = -(int)(body.size() + condition.size() + 2); // (+2 because of the additional jmp instruction and because a jmp instruction adds 1 by itself)
 
+	// The jump if false instruction that will skip the body if the condition no longer holds
 	CompiledAbstractExpression jmpDntLoopIns;
 	jmpDntLoopIns.bc = AAByteCode::JMPF;
 	jmpDntLoopIns.argCount = 1;
 	jmpDntLoopIns.argValues[0] = (int)(body.size() + 1);
 
+	// Add jump instructions
 	condition.push_back(jmpDntLoopIns);
 	body.push_back(jmpBckIns);
 
+	// Add the condition and body to operations list
 	opList = Merge(opList, condition);
 	opList = Merge(opList, body);
+
+	// return oplist
+	return opList;
+
+}
+
+std::vector<AAC::CompiledAbstractExpression> AAC::CompileWhileBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData) {
+
+	// Operations list
+	std::vector<CompiledAbstractExpression> opList;
+
+	// Compile individual elements
+	std::vector<CompiledAbstractExpression> condition = CompileAST(pNode->expressions[0], cTable, staticData);
+	std::vector<CompiledAbstractExpression> body = CompileAST(pNode->expressions[1], cTable, staticData);
+
+	// The jump if false instruction that will skip the body if the condition no longer holds
+	CompiledAbstractExpression jmpDntLoopIns;
+	jmpDntLoopIns.bc = AAByteCode::JMPF;
+	jmpDntLoopIns.argCount = 1;
+	jmpDntLoopIns.argValues[0] = (int)(body.size() + 1);
+
+	// Add jump instructions
+	condition.push_back(jmpDntLoopIns);
+
+	// The jump instruction that jumps back to the top of the condition
+	CompiledAbstractExpression jmpBckIns;
+	jmpBckIns.bc = AAByteCode::JMP;
+	jmpBckIns.argCount = 1;
+	jmpBckIns.argValues[0] = -(int)(body.size() + condition.size() + 1);
+
+	// Push the jmp back
+	body.push_back(jmpBckIns);
+
+	// Add operations to the op list
+	opList = Merge(opList, condition);
+	opList = Merge(opList, body);
+
+	// return oplist
+	return opList;
+
+}
+
+std::vector<AAC::CompiledAbstractExpression> AAC::CompileDoWhileBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData) {
+
+	// Operations list
+	std::vector<CompiledAbstractExpression> opList;
+
+	// Compile individual elements
+	std::vector<CompiledAbstractExpression> condition = CompileAST(pNode->expressions[1], cTable, staticData);
+	std::vector<CompiledAbstractExpression> body = CompileAST(pNode->expressions[0], cTable, staticData);
+
+	// The jump if false instruction that will skip the body if the condition no longer holds
+	CompiledAbstractExpression jmpDntLoopIns;
+	jmpDntLoopIns.bc = AAByteCode::JMPT;
+	jmpDntLoopIns.argCount = 1;
+	jmpDntLoopIns.argValues[0] = -(int)(body.size() + condition.size() + 1);
+
+	// Add jump instructions
+	condition.push_back(jmpDntLoopIns);
+
+	// Add operations to the op list
+	opList = Merge(opList, body);
+	opList = Merge(opList, condition);
 
 	// return oplist
 	return opList;

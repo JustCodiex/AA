@@ -12,9 +12,12 @@ int main() {
     VM->SetOutput(&std::cout);
 
     // Current test case
-    VM->CompileAndRunFile(L"examples\\for-loop.aa", L"out\\bin\\for-loop.aab", L"out\\op\\for-loop.txt"); // Expected output: 90
+    
 
     // Compile and execute
+    VM->CompileAndRunFile(L"examples\\dowhile-loop.aa", L"out\\bin\\dowhile-loop.aab", L"out\\op\\dowhile-loop.txt"); // Expected output: 10
+    VM->CompileAndRunFile(L"examples\\while-loop.aa", L"out\\bin\\while-loop.aab", L"out\\op\\while-loop.txt"); // Expected output: 10
+    VM->CompileAndRunFile(L"examples\\for-loop.aa", L"out\\bin\\for-loop.aab", L"out\\op\\for-loop.txt"); // Expected output: 90
     VM->CompileAndRunFile(L"examples\\recursion.aa", L"out\\bin\\recursion.aab", L"out\\op\\recursion.txt"); // Expected output: 24
     VM->CompileAndRunExpression(L"if (6 < 5) { 25; } else if (4 < 5) { 27; } else { 30; }", L"out\\bin\\if3.aab", L"out\\op\\if3.txt"); // Expected output: 27
     VM->CompileAndRunExpression(L"if (6 < 5) { 25; } else { 30; }", L"out\\bin\\if2.aab", L"out\\op\\if2.txt"); // Expected output: 30

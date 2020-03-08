@@ -260,54 +260,28 @@ void AA_PT::HandleKeywordCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex
 
 	} else if (nodes[nodeIndex]->content == L"if") {
 		
+		// Create conditional block (This automatically includes following else-if and else statements
 		nodes[nodeIndex] = this->CreateConditionBlock(nodes, nodeIndex);
 
 	} else if (nodes[nodeIndex]->content == L"for") {
 
-		AA_PT_NODE* forStatement = new AA_PT_NODE(nodes[nodeIndex]->position);
-		forStatement->nodeType = AA_PT_NODE_TYPE::forstatement;
+		// Create for block
+		nodes[nodeIndex] = this->CreateForStatement(nodes, nodeIndex);
 
-		if (nodeIndex + 1 < nodes.size() && nodes[nodeIndex + 1]->nodeType == AA_PT_NODE_TYPE::expression) {
+	} else if (nodes[nodeIndex]->content == L"while") {
 
-			// Set type to block so we may extract more trees
-			nodes[nodeIndex + 1]->nodeType = AA_PT_NODE_TYPE::block;
+		// Create while block
+		nodes[nodeIndex] = this->CreateWhileStatement(nodes, nodeIndex);
 
-			// Make sure the statements follow syntax rules
-			ApplyOrderOfOperationBindings(nodes[nodeIndex + 1]->childNodes); // [Temporary HACK to fix something in the ApplyFunctionalBindings method)
+	} else if (nodes[nodeIndex]->content == L"do") {
 
-			// Get loop expressions
-			std::vector<AA_PT_NODE*> forLoopExpr = this->CreateArgumentTree(nodes[nodeIndex + 1]);
+		// Is it a do-while loop?
+		if (nodeIndex + 2 < nodes.size() && nodes[nodeIndex + 2]->nodeType == AA_PT_NODE_TYPE::keyword && nodes[nodeIndex + 2]->content == L"while") {
 
-			if (forLoopExpr.size() == 3) {
-				forStatement->childNodes.push_back(forLoopExpr[0]); // initialise
-				forStatement->childNodes.push_back(forLoopExpr[1]); // condition
-				forStatement->childNodes.push_back(forLoopExpr[2]); // afterthought
-			} else {
-				printf("Missing statements!");
-			}
-
-			printf("");
-
-		} else {
-
-			printf("for-statement missing expressions");
+			// Create a do-while block
+			nodes[nodeIndex] = this->CreateDoWhileStatement(nodes, nodeIndex);
 
 		}
-
-		if (nodeIndex + 2 < nodes.size() && nodes[nodeIndex + 2]->nodeType == AA_PT_NODE_TYPE::block) {
-
-			forStatement->childNodes.push_back(this->CreateTree(nodes[nodeIndex + 2]->childNodes, 0));
-
-		} else {
-
-			printf("for-statement missing body");
-
-		}
-
-		nodes.erase(nodes.begin() + nodeIndex + 1, nodes.begin() + nodeIndex + 3);
-
-
-		nodes[nodeIndex] = forStatement;
 
 	}
 
@@ -520,6 +494,104 @@ AA_PT_NODE* AA_PT::CreateConditionBlock(std::vector<AA_PT_NODE*>& nodes, size_t 
 	}
 
 	return nodes[from];
+
+}
+
+AA_PT_NODE* AA_PT::CreateForStatement(std::vector<AA_PT_NODE*>& nodes, size_t nodeIndex) {
+
+	AA_PT_NODE* forStatement = new AA_PT_NODE(nodes[nodeIndex]->position);
+	forStatement->nodeType = AA_PT_NODE_TYPE::forstatement;
+
+	if (nodeIndex + 1 < nodes.size() && nodes[nodeIndex + 1]->nodeType == AA_PT_NODE_TYPE::expression) {
+
+		// Set type to block so we may extract more trees
+		nodes[nodeIndex + 1]->nodeType = AA_PT_NODE_TYPE::block;
+
+		// Make sure the statements follow syntax rules
+		ApplyOrderOfOperationBindings(nodes[nodeIndex + 1]->childNodes); // [Temporary HACK to fix something in the ApplyFunctionalBindings method)
+
+		// Get loop expressions
+		std::vector<AA_PT_NODE*> forLoopExpr = this->CreateArgumentTree(nodes[nodeIndex + 1]);
+
+		if (forLoopExpr.size() == 3) {
+			forStatement->childNodes.push_back(forLoopExpr[0]); // initialise
+			forStatement->childNodes.push_back(forLoopExpr[1]); // condition
+			forStatement->childNodes.push_back(forLoopExpr[2]); // afterthought
+		} else {
+			printf("Missing statements!");
+		}
+
+		printf("");
+
+	} else {
+
+		printf("for-statement missing expressions");
+
+	}
+
+	if (nodeIndex + 2 < nodes.size() && nodes[nodeIndex + 2]->nodeType == AA_PT_NODE_TYPE::block) {
+
+		forStatement->childNodes.push_back(this->CreateTree(nodes[nodeIndex + 2]->childNodes, 0));
+
+	} else {
+
+		printf("for-statement missing body");
+
+	}
+
+	nodes.erase(nodes.begin() + nodeIndex + 1, nodes.begin() + nodeIndex + 3);
+
+	return forStatement;
+
+}
+
+AA_PT_NODE* AA_PT::CreateWhileStatement(std::vector<AA_PT_NODE*>& nodes, size_t nodeIndex) {
+
+	AA_PT_NODE* whileStatement = new AA_PT_NODE(nodes[nodeIndex]->position);
+	whileStatement->nodeType = AA_PT_NODE_TYPE::whilestatement;
+
+	if (nodeIndex + 1 < nodes.size() && nodes[nodeIndex + 1]->nodeType == AA_PT_NODE_TYPE::expression) {
+
+		whileStatement->childNodes.push_back(this->CreateTree(nodes[nodeIndex + 1]->childNodes, 0));
+
+	} else {
+		printf("while-statement missing condition");
+	}
+
+	if (nodeIndex + 2 < nodes.size() && nodes[nodeIndex + 2]->nodeType == AA_PT_NODE_TYPE::block) {
+
+		whileStatement->childNodes.push_back(this->CreateTree(nodes[nodeIndex + 2]->childNodes, 0));
+
+	} else {
+
+		printf("while-statement missing body");
+
+	}
+
+	nodes.erase(nodes.begin() + nodeIndex + 1, nodes.begin() + nodeIndex + 3);
+
+	return whileStatement;
+
+}
+
+AA_PT_NODE* AA_PT::CreateDoWhileStatement(std::vector<AA_PT_NODE*>& nodes, size_t nodeIndex) {
+	
+	AA_PT_NODE* dowhileStatement = new AA_PT_NODE(nodes[nodeIndex]->position);
+	dowhileStatement->nodeType = AA_PT_NODE_TYPE::dowhilestatement;
+
+	if (nodeIndex + 1 < nodes.size() && nodes[nodeIndex + 1]->nodeType == AA_PT_NODE_TYPE::block) {
+		dowhileStatement->childNodes.push_back(this->CreateTree(nodes[nodeIndex + 1]->childNodes, 0));
+	} else {
+		printf("do-while statement without a body!");
+	}
+
+	if (nodeIndex + 3 < nodes.size() && nodes[nodeIndex + 3]->nodeType == AA_PT_NODE_TYPE::expression) {
+		dowhileStatement->childNodes.push_back(this->CreateTree(nodes[nodeIndex + 3]->childNodes, 0));
+	}
+
+	nodes.erase(nodes.begin() + nodeIndex + 1, nodes.begin() + nodeIndex + 4);
+
+	return dowhileStatement;
 
 }
 

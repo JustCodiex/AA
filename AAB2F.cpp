@@ -56,6 +56,9 @@ namespace aa {
 		case AAByteCode::JMPF:
 			output = L"JMPF";
 			break;
+		case AAByteCode::JMPT:
+			output = L"JMPT";
+			break;
 		case AAByteCode::JMP:
 			output = L"JMP";
 			break;

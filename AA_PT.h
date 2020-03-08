@@ -126,6 +126,9 @@ private:
 	AA_PT_NODE* CreateFunctionDecl(std::vector<AA_PT_NODE*>& nodes, size_t from);
 	AA_PT_NODE* CreateConditionBlock(std::vector<AA_PT_NODE*>& nodes, size_t from);
 	AA_PT_NODE* CreateIfStatement(std::vector<AA_PT_NODE*>& nodes, size_t from);
+	AA_PT_NODE* CreateForStatement(std::vector<AA_PT_NODE*>& nodes, size_t from);
+	AA_PT_NODE* CreateWhileStatement(std::vector<AA_PT_NODE*>& nodes, size_t from);
+	AA_PT_NODE* CreateDoWhileStatement(std::vector<AA_PT_NODE*>& nodes, size_t from);
 	
 	std::vector<AA_PT_NODE*> CreateArgumentTree(AA_PT_NODE* pExpNode);
 	

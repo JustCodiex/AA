@@ -21,6 +21,7 @@ enum class AAByteCode : unsigned char {
 
 	JMP, // (Relative jump to operation, 1 argument[distance])
 	JMPF, // (Relative jump to operation if top of stack is false, 1 argument[distance])
+	JMPT, // (Relative jump to operation if top of stack is true, 1 argument[distance])
 	LJMP, // (Long relative jump to operation, 1 argument[distance])
 	CALL, // (Call subroutine, 1 argument[procID])
 	RET, // (Return, 1 argument[returtCount])

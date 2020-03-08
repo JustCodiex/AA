@@ -281,6 +281,14 @@ void AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 			}
 			break;
 		}
+		case AAByteCode::JMPT: {
+			if (!stack.Pop().litVal.lit.b.val) {
+				AAVM_OPI++;
+			} else {
+				AAVM_OPI += 1 + AAVM_GetArgument(0); // jump to next (if-else or else) or next statement after block
+			}
+			break;
+		}
 		case AAByteCode::JMP: {
 			AAVM_OPI += 1 + AAVM_GetArgument(0);
 			break;
