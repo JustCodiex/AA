@@ -86,6 +86,7 @@ int factorial(int n) {
 factorial(4);
 ```
 [Recursion.aa](examples/recursion.aa)  
+---
 We can here see, using if-statements that it's possible to calculate the factorial of a number through recursion.
 ## Why?
 Because designing programming languages is a fun and learnful experience.
