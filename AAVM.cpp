@@ -377,7 +377,7 @@ AAVal AAVM::ReportStack(aa::stack<AAVal> stack) {
 		}
 		return v;
 	} else {
-		return AAVal(std::wstring(L"Nil"));
+		return AAVal::Null;
 	}
 
 }

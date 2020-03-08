@@ -35,6 +35,7 @@ std::vector<std::wstring> keywords = {
 	L"var",
 	L"true",
 	L"false",
+	L"null",
 	L"void",
 	L"if",
 	L"else",

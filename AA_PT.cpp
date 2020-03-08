@@ -50,6 +50,8 @@ std::vector<AA_PT_NODE*> AA_PT::ToNodes(std::vector<AALexicalResult> lexResult) 
 		case AAToken::keyword:
 			if (IsBoolKeyword(lexResult[i].content)) {
 				node->nodeType = AA_PT_NODE_TYPE::booliterral;
+			} else if (lexResult[i].content == L"null") {
+				node->nodeType = AA_PT_NODE_TYPE::nullliteral;
 			} else {
 				node->nodeType = AA_PT_NODE_TYPE::keyword;
 			}
@@ -217,6 +219,7 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 	case AA_PT_NODE_TYPE::booliterral:
 	case AA_PT_NODE_TYPE::stringliteral:
 	case AA_PT_NODE_TYPE::charliteral:
+	case AA_PT_NODE_TYPE::nullliteral:
 		nodeIndex++;
 		break;
 	case AA_PT_NODE_TYPE::keyword:

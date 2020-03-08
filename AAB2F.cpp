@@ -126,6 +126,8 @@ namespace aa {
 			return L"F32";
 		case AALiteralType::Boolean:
 			return L"B";
+		case AALiteralType::Null:
+			return L"NULL";
 		default:
 			return L"???";
 		}
@@ -141,6 +143,8 @@ namespace aa {
 			return std::to_wstring(l.lit.f.val);
 		case AALiteralType::Boolean:
 			return (l.lit.b.val == true)?L"T":L"F";
+		case AALiteralType::Null:
+			return L"";
 		default:
 			return L"???";
 		}

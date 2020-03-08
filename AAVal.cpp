@@ -1,5 +1,7 @@
 #include "AAVal.h"
 
+AAVal AAVal::Null = AAVal(AA_Literal(AA_AnyLiteral::AA_AnyLiteral(), AALiteralType::Null));
+
 std::wstring AAVal::ToString() {
 	switch (this->litVal.tp) {
 	case AALiteralType::Boolean:
@@ -11,6 +13,6 @@ std::wstring AAVal::ToString() {
 	case AALiteralType::String:
 		return std::wstring(this->litVal.lit.s.val);
 	default:
-		return L"Nil";
+		return L"Null";
 	}
 }

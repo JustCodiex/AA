@@ -137,21 +137,21 @@ void RunArithmeticTests(AAVM* pAAVM, int& s, int& f) {
 void RunVariableDeclerationTests(AAVM* pAAVM, int& s, int& f) {
 
 	// Test modulo operator
-	if (!RunExpressionTest(pAAVM, L"var x = (5+5)*5-2;", L"out\\bin\\variable_var_rhsop2.aab", L"out\\op\\variable_var_rhsop2.txt", L"Nil")) {
+	if (!RunExpressionTest(pAAVM, L"var x = (5+5)*5-2;", L"out\\bin\\variable_var_rhsop2.aab", L"out\\op\\variable_var_rhsop2.txt", L"Null")) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test modulo operator
-	if (!RunExpressionTest(pAAVM, L"var x = 5+5;", L"out\\bin\\variable_var_rhsop1.aab", L"out\\op\\variable_var_rhsop1.txt", L"Nil")) {
+	if (!RunExpressionTest(pAAVM, L"var x = 5+5;", L"out\\bin\\variable_var_rhsop1.aab", L"out\\op\\variable_var_rhsop1.txt", L"Null")) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test modulo operator
-	if (!RunExpressionTest(pAAVM, L"var x = 5;", L"out\\bin\\variable_var.aab", L"out\\op\\variable_var.txt", L"Nil")) {
+	if (!RunExpressionTest(pAAVM, L"var x = 5;", L"out\\bin\\variable_var.aab", L"out\\op\\variable_var.txt", L"Null")) {
 		f++;
 	} else {
 		s++;
@@ -271,14 +271,14 @@ void RunFunctionTests(AAVM* pAAVM, int& s, int& f) {
 	}
 
 	// Test modulo operator
-	if (!RunExpressionTest(pAAVM, L"void test() { 5; }", L"out\\bin\\func_decl_test2.aab", L"out\\op\\func_decl_test2.txt", L"Nil")) {
+	if (!RunExpressionTest(pAAVM, L"void test() { 5; }", L"out\\bin\\func_decl_test2.aab", L"out\\op\\func_decl_test2.txt", L"Null")) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test modulo operator
-	if (!RunExpressionTest(pAAVM, L"void test() {  } void testb() {}", L"out\\bin\\func_decl_test1.aab", L"out\\op\\func_decl_test1.txt", L"Nil")) {
+	if (!RunExpressionTest(pAAVM, L"void test() {  } void testb() {}", L"out\\bin\\func_decl_test1.aab", L"out\\op\\func_decl_test1.txt", L"Null")) {
 		f++;
 	} else {
 		s++;

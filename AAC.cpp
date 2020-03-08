@@ -250,6 +250,7 @@ std::vector<AAC::CompiledAbstractExpression> AAC::CompileAST(AA_AST_NODE* pNode,
 	case AA_AST_NODE_TYPE::charliteral:
 	case AA_AST_NODE_TYPE::stringliteral:
 	case AA_AST_NODE_TYPE::boolliteral:
+	case AA_AST_NODE_TYPE::nullliteral:
 	{
 		executionStack = Merge(executionStack, (HandleStackPush(cTable, pNode, staticData)));
 		break;
@@ -620,6 +621,10 @@ AAC::CompiledAbstractExpression AAC::HandleConstPush(CompiledEnviornmentTable& c
 	case AA_AST_NODE_TYPE::floatliteral:
 		aLit.f.val = std::stof(pNode->content);
 		lType = AALiteralType::Float;
+		break;
+	case AA_AST_NODE_TYPE::nullliteral:
+		aLit.n = AA_NullLiteral();
+		lType = AALiteralType::Null;
 		break;
 	default:
 		break;

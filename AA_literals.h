@@ -6,7 +6,10 @@ enum class AALiteralType : unsigned char {
 	String,
 	Float,
 	Boolean,
+	Null,
 };
+
+struct AA_NullLiteral {};
 
 struct AA_IntLiteral {
 	signed int val;
@@ -93,6 +96,7 @@ union AA_AnyLiteral {
 	AA_BoolLiteral b;
 	AA_StringLiteral s;
 	AA_FloatLiteral f;
+	AA_NullLiteral n;
 	AA_AnyLiteral() {
 		memset(this, 0, sizeof(AA_AnyLiteral));
 	}

@@ -156,6 +156,7 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 	case AA_PT_NODE_TYPE::floatliteral:
 	case AA_PT_NODE_TYPE::booliterral:
 	case AA_PT_NODE_TYPE::stringliteral:
+	case AA_PT_NODE_TYPE::nullliteral:
 		return new AA_AST_NODE(pNode->content, GetASTLiteralType(pNode->nodeType), pNode->position);
 	case AA_PT_NODE_TYPE::identifier:
 		return new AA_AST_NODE(pNode->content, AA_AST_NODE_TYPE::variable, pNode->position);
@@ -179,6 +180,8 @@ AA_AST_NODE_TYPE AA_AST::GetASTLiteralType(AA_PT_NODE_TYPE type) {
 		return AA_AST_NODE_TYPE::charliteral;
 	case AA_PT_NODE_TYPE::booliterral:
 		return AA_AST_NODE_TYPE::boolliteral;
+	case AA_PT_NODE_TYPE::nullliteral:
+		return AA_AST_NODE_TYPE::nullliteral;
 	default:
 		return AA_AST_NODE_TYPE::variable;
 	}

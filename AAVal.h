@@ -25,4 +25,7 @@ struct AAVal {
 		litVal.tp = AALiteralType::String;
 	}
 	std::wstring ToString();
+
+	static AAVal Null;
+
 };

@@ -53,6 +53,7 @@ enum class AA_PT_NODE_TYPE {
 	stringliteral,
 	charliteral,
 	booliterral,
+	nullliteral,
 
 };
 
