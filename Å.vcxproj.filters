@@ -40,6 +40,9 @@
     <Filter Include="Source Files\VM">
       <UniqueIdentifier>{03faace6-6e50-4a1d-8932-5f35874e34b9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\aatesting">
+      <UniqueIdentifier>{c80607c1-9605-43ec-9826-029b8cb847ed}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -73,6 +76,12 @@
       <Filter>Source Files\compiler</Filter>
     </ClCompile>
     <ClCompile Include="AAProgram.cpp">
+      <Filter>Source Files\VM</Filter>
+    </ClCompile>
+    <ClCompile Include="AALanguageRegressionTest.cpp">
+      <Filter>Source Files\aatesting</Filter>
+    </ClCompile>
+    <ClCompile Include="AAVal.cpp">
       <Filter>Source Files\VM</Filter>
     </ClCompile>
   </ItemGroup>
@@ -139,6 +148,9 @@
     </ClInclude>
     <ClInclude Include="AARuntimeEnvironment.h">
       <Filter>Header Files\VM</Filter>
+    </ClInclude>
+    <ClInclude Include="AALanguageRegressionTest.h">
+      <Filter>Header Files\aautil</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

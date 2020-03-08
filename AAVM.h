@@ -23,14 +23,14 @@ public:
 	*/
 	AAC_Out CompileFileToFile(std::wstring fileIn, std::wstring fileOut);
 
-	void Execute(AAC_Out bytecode);
-	void Execute(unsigned char* bytes, unsigned long long len);
+	AAVal Execute(AAC_Out bytecode);
+	AAVal Execute(unsigned char* bytes, unsigned long long len);
 
-	void CompileAndRunFile(std::wstring sourcefile);
-	void CompileAndRunFile(std::wstring sourcefile, std::wstring binaryoutputfile, std::wstring formattedoutputfile);
+	AAVal CompileAndRunFile(std::wstring sourcefile);
+	AAVal CompileAndRunFile(std::wstring sourcefile, std::wstring binaryoutputfile, std::wstring formattedoutputfile);
 
-	void CompileAndRunExpression(std::wstring input);
-	void CompileAndRunExpression(std::wstring input, std::wstring binaryoutputfile, std::wstring formattedoutputfile);
+	AAVal CompileAndRunExpression(std::wstring input);
+	AAVal CompileAndRunExpression(std::wstring input, std::wstring binaryoutputfile, std::wstring formattedoutputfile);
 
 	AAP* GetParser() { return m_parser; }
 	AAC* GetCompiler() { return m_compiler; }
@@ -39,15 +39,23 @@ public:
 		m_outStream = stream;
 	}
 
-	static AAVM* CreateNewVM(bool logExecuteTime, bool logCompiler);
+	void EnableCompilerLog(bool enable) { m_logCompileMessages = enable; }
+	void EnableExecutionTiming(bool enable) { m_logExecTime = enable; }
+	void EnableTopStackLogging(bool enable) { m_logTopOfStackAfterExec = enable; }
+
+	bool IsCompilerLoggingEnabled() { return m_logCompileMessages; }
+	bool IsExecutionTimeLoggingEnabled() { return m_logExecTime; }
+	bool IsTopStackLoggingEnabled() { return m_logTopOfStackAfterExec; }
+
+	static AAVM* CreateNewVM(bool logExecuteTime, bool logCompiler, bool logTopStack);
 
 private:
 
-	void Run(AAProgram::Procedure* procedures, int entry);
+	AAVal Run(AAProgram::Procedure* procedures, int entry);
 
-	void Run(AAProgram* pProg);
+	AAVal Run(AAProgram* pProg);
 
-	void ReportStack(aa::stack<AAVal> stack);
+	AAVal ReportStack(aa::stack<AAVal> stack);
 
 	inline AAVal BinaryOperation(AAByteCode op, AA_Literal left, AA_Literal right);
 
@@ -60,5 +68,6 @@ private:
 
 	bool m_logExecTime;
 	bool m_logCompileMessages;
+	bool m_logTopOfStackAfterExec;
 
 };

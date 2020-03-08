@@ -151,10 +151,12 @@
   <ItemGroup>
     <ClCompile Include="AAB2F.cpp" />
     <ClCompile Include="AAC.cpp" />
+    <ClCompile Include="AALanguageRegressionTest.cpp" />
     <ClCompile Include="AALexer.cpp" />
     <ClCompile Include="AAP.cpp" />
     <ClCompile Include="AAProgram.cpp" />
     <ClCompile Include="AATypeChecker.cpp" />
+    <ClCompile Include="AAVal.cpp" />
     <ClCompile Include="AAVarEnv.cpp" />
     <ClCompile Include="AAVM.cpp" />
     <ClCompile Include="AA_AST.cpp" />
@@ -165,6 +167,7 @@
     <ClInclude Include="AAB2F.h" />
     <ClInclude Include="AAByteCode.h" />
     <ClInclude Include="AAC.h" />
+    <ClInclude Include="AALanguageRegressionTest.h" />
     <ClInclude Include="AARuntimeEnvironment.h" />
     <ClInclude Include="AACodePosition.h" />
     <ClInclude Include="AAFuncSignature.h" />

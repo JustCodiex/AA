@@ -17,4 +17,12 @@ struct AAVal {
 		litVal.lit.b = AA_BoolLiteral(b);
 		litVal.tp = AALiteralType::Boolean;
 	}
+	AAVal(std::wstring ws) {
+		litVal.lit.s.len = ws.length();
+		litVal.lit.s.val = new wchar_t[ws.length()+1];
+		wmemset(litVal.lit.s.val, '\0', ws.length() + 1);
+		wcscpy(litVal.lit.s.val, ws.c_str());
+		litVal.tp = AALiteralType::String;
+	}
+	std::wstring ToString();
 };

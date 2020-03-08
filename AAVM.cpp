@@ -3,10 +3,11 @@
 #include "AARuntimeEnvironment.h"
 #include <ctime>
 
-AAVM* AAVM::CreateNewVM(bool logExecuteTime, bool logCompiler) {
+AAVM* AAVM::CreateNewVM(bool logExecuteTime, bool logCompiler, bool logTopStack) {
 	AAVM* vm = new AAVM();
 	vm->m_logCompileMessages = logCompiler;
 	vm->m_logExecTime = logExecuteTime;
+	vm->m_logTopOfStackAfterExec = logTopStack;
 	return vm;
 }
 
@@ -16,6 +17,7 @@ AAVM::AAVM() {
 	m_parser = new AAP;
 	m_outStream = 0;
 
+	m_logTopOfStackAfterExec = false;
 	m_logCompileMessages = false;
 	m_logExecTime = false;
 
@@ -34,11 +36,11 @@ void AAVM::Release() {
 
 }
 
-void AAVM::CompileAndRunExpression(std::wstring input) {
-	this->CompileAndRunExpression(input, L"", L"");
+AAVal AAVM::CompileAndRunExpression(std::wstring input) {
+	return this->CompileAndRunExpression(input, L"", L"");
 }
 
-void AAVM::CompileAndRunExpression(std::wstring input, std::wstring binaryoutputfile, std::wstring formattedoutputfile) {
+AAVal AAVM::CompileAndRunExpression(std::wstring input, std::wstring binaryoutputfile, std::wstring formattedoutputfile) {
 
 	// Generated AST from input
 	std::vector<AA_AST*> trees = m_parser->Parse(input);
@@ -61,7 +63,7 @@ void AAVM::CompileAndRunExpression(std::wstring input, std::wstring binaryoutput
 	m_parser->ClearTrees(trees);
 
 	// Execute the bytecode
-	this->Execute(bytecode);
+	return this->Execute(bytecode);
 
 }
 
@@ -96,11 +98,11 @@ void AAVM::RunExpression(std::wstring input) {
 
 }
 
-void AAVM::CompileAndRunFile(std::wstring sourcefile) {
-	this->CompileAndRunFile(sourcefile, L"", L"");
+AAVal AAVM::CompileAndRunFile(std::wstring sourcefile) {
+	return this->CompileAndRunFile(sourcefile, L"", L"");
 }
 
-void AAVM::CompileAndRunFile(std::wstring sourcefile, std::wstring binaryoutputfile, std::wstring formattedoutputfile) {
+AAVal AAVM::CompileAndRunFile(std::wstring sourcefile, std::wstring binaryoutputfile, std::wstring formattedoutputfile) {
 
 	// Generated AST from input
 	std::vector<AA_AST*> trees = m_parser->Parse(std::wifstream(sourcefile));
@@ -123,28 +125,33 @@ void AAVM::CompileAndRunFile(std::wstring sourcefile, std::wstring binaryoutputf
 	m_parser->ClearTrees(trees);
 
 	// Execute the bytecode
-	this->Execute(bytecode);
+	return this->Execute(bytecode);
 
 }
 
-void AAVM::Execute(AAC_Out bytecode) {
-	this->Execute(bytecode.bytes, bytecode.length);
+AAVal AAVM::Execute(AAC_Out bytecode) {
+	return this->Execute(bytecode.bytes, bytecode.length);
 }
 
-void AAVM::Execute(unsigned char* bytes, unsigned long long len) {
+AAVal AAVM::Execute(unsigned char* bytes, unsigned long long len) {
 
 	// Load program so we can execute it
 	AAProgram* pProg = new AAProgram;
 	if (pProg->LoadProgram(bytes, len)) {
 
 		// Run the program
-		this->Run(pProg);
+		return this->Run(pProg);
+
+	} else {
+
+		// Return AAVal Error
+		return AAVal(L"");
 
 	}
 
 }
 
-void AAVM::Run(AAProgram* pProg) {
+AAVal AAVM::Run(AAProgram* pProg) {
 
 	// Get entry point
 	int entryPoint = pProg->GetEntryPoint();
@@ -153,7 +160,7 @@ void AAVM::Run(AAProgram* pProg) {
 	clock_t s = clock();
 
 	// Run the program from entry point
-	this->Run(pProg->m_procedures, entryPoint);
+	AAVal v = this->Run(pProg->m_procedures, entryPoint);
 
 	// Should we log execution?
 	if (m_logExecTime) {
@@ -162,6 +169,8 @@ void AAVM::Run(AAProgram* pProg) {
 		printf("Execute time: %fs\n", (float)(clock() - s) / CLOCKS_PER_SEC);
 
 	}
+
+	return v;
 
 }
 
@@ -172,7 +181,7 @@ void AAVM::Run(AAProgram* pProg) {
 #define AAVM_CURRENTOP procedure[AAVM_PROC].opSequence[AAVM_OPI].op
 #define AAVM_GetArgument(i) procedure[AAVM_PROC].opSequence[AAVM_OPI].args[i]
 
-void AAVM::Run(AAProgram::Procedure* procedure, int entry) {
+AAVal AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 
 	aa::stack<AAVal> stack;
 	aa::stack<AARuntimeEnvironment> callstack;
@@ -301,7 +310,8 @@ void AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 
 	}
 
-	this->ReportStack(stack);
+	// Return whatever's on top of the stack
+	return this->ReportStack(stack);
 
 }
 
@@ -345,11 +355,12 @@ AAVal AAVM::BinaryOperation(AAByteCode op, AA_Literal lhs, AA_Literal rhs) {
 	}
 }
 
-void AAVM::ReportStack(aa::stack<AAVal> stack) {
+AAVal AAVM::ReportStack(aa::stack<AAVal> stack) {
 
 	if (stack.Size() == 1) {
-		if (m_outStream) {
-			AA_Literal litVal = stack.Pop().litVal;
+		AAVal v = stack.Pop();
+		if (m_outStream && m_logTopOfStackAfterExec) {
+			AA_Literal litVal = v.litVal;
 			if (litVal.tp == AALiteralType::Int) {
 				m_outStream->operator<<(litVal.lit.i.val);
 			} else if (litVal.tp == AALiteralType::Float) {
@@ -364,6 +375,9 @@ void AAVM::ReportStack(aa::stack<AAVal> stack) {
 			}
 			m_outStream->write("\n", 1);
 		}
+		return v;
+	} else {
+		return AAVal(std::wstring(L"Nil"));
 	}
 
 }

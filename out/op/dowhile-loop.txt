@@ -20,7 +20,7 @@ OPERATIONS:
 	[6]	GETVAR, 0
 	[7]	PUSHC, 1
 	[8]	LE
-	[9]	, -8
+	[9]	JMPT, -8
 	[10]	GETVAR, 0
 	[11]	RET, 1
 END PROCEDURE;
