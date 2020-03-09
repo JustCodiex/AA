@@ -3,6 +3,16 @@
 #include "AAB2F.h"
 #include <stack>
 
+void AAC::SetupCompiler() {
+
+	// Create instance of class compiler
+	m_classCompiler = new AAClassCompiler;
+
+	// Reset internals
+	this->ResetCompilerInternals();
+
+}
+
 void AAC::ResetCompilerInternals() {
 
 	// Reset current procedure ID
@@ -33,7 +43,7 @@ AAC_Out AAC::CompileFromAbstractSyntaxTrees(std::vector<AA_AST*> trees) {
 	}
 
 	// Map the procedures to their respective functions
-	staticChecks.exportSignatures = this->MapProcedureToSignature(staticChecks, compileResults);
+	//staticChecks.exportSignatures = this->MapProcedureToSignature(staticChecks, compileResults);
 
 	// Write operations out in a readable format
 	if (m_outfile != L"") {
@@ -69,7 +79,7 @@ void AAC::CollapseGlobalScope(std::vector<AA_AST*>& trees) {
 
 	while (i < trees.size()) {
 
-		if (trees[i]->GetRoot()->type != AA_AST_NODE_TYPE::fundecl) {
+		if (trees[i]->GetRoot()->type != AA_AST_NODE_TYPE::fundecl && trees[i]->GetRoot()->type != AA_AST_NODE_TYPE::classdecl) {
 
 			pGlobalScope->expressions.push_back(trees[i]->GetRoot());
 			trees.erase(trees.begin() + i);
@@ -89,11 +99,41 @@ AAC::CompiledStaticChecks AAC::RunStaticOperations(std::vector<AA_AST*> trees) {
 	// Static function checks
 	CompiledStaticChecks staticChecks;
 
+	// For all input trees, register classes
+	for (size_t i = 0; i < trees.size(); i++) {
+
+		// Make sure it's a class decleration
+		if (trees[i]->GetRoot()->type == AA_AST_NODE_TYPE::classdecl) {
+
+			// Get the class
+			CompiledClass cc = this->RegisterClass(trees[i]->GetRoot());
+
+			// Register class
+			staticChecks.registeredClasses.Add(cc);
+
+			for (size_t j = 0; j < cc.methods.Size(); j++) {
+
+				AAC::CompiledStaticChecks::SigPointer sP = AAC::CompiledStaticChecks::SigPointer(cc.methods.At(j).sig, cc.methods.At(j).source);
+				sP.procID = cc.methods.At(j).procID;
+
+				staticChecks.registeredFunctions.Add(sP);
+
+			}
+
+		}
+
+	}
+
 	// For all input trees, register possible functions
 	for (size_t i = 0; i < trees.size(); i++) {
 
-		// Register functions
-		staticChecks.registeredFunctions.Add(RegisterFunctions(trees[i]->GetRoot(), trees[i]->GetRoot()));
+		// Make sure it's a function decleration
+		if (trees[i]->GetRoot()->type == AA_AST_NODE_TYPE::fundecl) {
+
+			// Register functions
+			staticChecks.registeredFunctions.Add(RegisterFunctions(trees[i]->GetRoot()));
+
+		}
 
 	}
 
@@ -126,24 +166,48 @@ void AAC::TypecheckAST(AA_AST* pTree) {
 
 }
 
-aa::list<AAC::CompiledStaticChecks::SigPointer> AAC::RegisterFunctions(AA_AST_NODE* pNode, AA_AST_NODE* pSource) {
+CompiledClass AAC::RegisterClass(AA_AST_NODE* pNode) {
+
+	CompiledClass cc;
+	cc.name = pNode->content;
+
+	if (pNode->expressions.size() == 1 && pNode->expressions[0]->type == AA_AST_NODE_TYPE::classbody) {
+
+		for (size_t i = 0; i < pNode->expressions[0]->expressions.size(); i++) {
+
+			if (pNode->expressions[0]->expressions[i]->type == AA_AST_NODE_TYPE::fundecl) {
+
+				// We need to push a "this" into the method and then, look through the body and update any local variable references to reference this.__
+				m_classCompiler->RedefineFunDecl(cc.name, pNode->expressions[0]->expressions[i]);
+
+				// Register function
+				CompiledStaticChecks::SigPointer sig = this->RegisterFunction(pNode->expressions[0]->expressions[i]);
+				CompiledClassMethod method;
+				method.sig = sig.funcSig;
+				method.source = pNode->expressions[0]->expressions[i];
+				method.procID = sig.procID;
+
+				cc.methods.Add(method);
+			}
+
+		}
+
+	}
+
+	return cc;
+
+}
+
+aa::list<AAC::CompiledStaticChecks::SigPointer> AAC::RegisterFunctions(AA_AST_NODE* pNode) {
 
 	aa::list<AAC::CompiledStaticChecks::SigPointer> signatures;
-
-	if (pNode->type == AA_AST_NODE_TYPE::classdecl) {
-
-		// stuff
-
-	} else if (pNode->type == AA_AST_NODE_TYPE::fundecl) {
-		signatures.Add(this->RegisterFunction(pNode));
-	}
+	signatures.Add(this->RegisterFunction(pNode));
 
 	return signatures;
 
 }
 
 AAC::CompiledStaticChecks::SigPointer AAC::RegisterFunction(AA_AST_NODE* pNode) {
-
 
 	AAFuncSignature sig;
 	sig.name = pNode->content;
@@ -162,7 +226,6 @@ AAC::CompiledStaticChecks::SigPointer AAC::RegisterFunction(AA_AST_NODE* pNode) 
 	AAC::CompiledStaticChecks::SigPointer sP = AAC::CompiledStaticChecks::SigPointer(sig, pNode);
 	sP.procID = ++m_currentProcID;
 
-	pNode->tags["funcsignature"] = (int)&sig; // BAD
 	pNode->tags["returncount"] = this->GetReturnCount(&sig);
 
 	return sP;
@@ -733,8 +796,8 @@ AAC_Out AAC::CompileFromProcedures(std::vector<CompiledProcedure> procedures, Co
 	aa::bstream bis;
 
 	// Write the exported signature count
-	bis << (int)staticCompileData.exportSignatures.size();
-
+	bis << 0; // (int)staticCompileData.exportSignatures.size();
+	/*
 	// Write the exported signatures
 	for (size_t s = 0; s < staticCompileData.exportSignatures.size(); s++) {
 
@@ -743,7 +806,7 @@ AAC_Out AAC::CompileFromProcedures(std::vector<CompiledProcedure> procedures, Co
 		bis << staticCompileData.exportSignatures[s].name;
 		bis << staticCompileData.exportSignatures[s].procID;
 
-	}
+	}*/
 
 	// Write procedure count
 	bis << (int)procedures.size();
@@ -778,8 +841,8 @@ AAC_Out AAC::CompileFromProcedures(std::vector<CompiledProcedure> procedures, Co
 	return compileBytecodeResult;
 
 }
-
-std::vector< AAC::CompiledSignature> AAC::MapProcedureToSignature(CompiledStaticChecks staticCheck, std::vector<AAC::CompiledProcedure> procedureLs) {
+/*
+std::vector<CompiledSignature> AAC::MapProcedureToSignature(CompiledStaticChecks staticCheck, std::vector<AAC::CompiledProcedure> procedureLs) {
 
 	std::vector<CompiledSignature> procSigs;
 
@@ -812,7 +875,7 @@ std::vector< AAC::CompiledSignature> AAC::MapProcedureToSignature(CompiledStatic
 	return procSigs;
 
 }
-
+*/
 int AAC::FindBestFunctionMatch(CompiledStaticChecks staticCheck, AA_AST_NODE* pNode, int& argCount) { // TODO: Make the typechecker do this
 
 	std::wstring funcName = pNode->content;

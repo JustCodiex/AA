@@ -3,6 +3,7 @@
 #include "AAByteCode.h"
 #include "AA_literals.h"
 #include "AAFuncSignature.h"
+#include "AAClassCompiler.h"
 #include "bstream.h"
 #include "list.h"
 
@@ -47,16 +48,7 @@ public:
 		aa::list<CompiledAbstractExpression> procOperations;
 		CompiledEnviornmentTable procEnvironment;
 		AA_AST_NODE* node;
-	};
-
-	struct CompiledSignature {
-		std::wstring name;
-		int procID;
-	};
-
-	struct CompiledClass {
-		std::wstring name;
-		aa::list<CompiledSignature> methods;
+		CompiledProcedure() { node = 0; }
 	};
 
 	struct CompiledStaticChecks {
@@ -71,10 +63,12 @@ public:
 			}
 		};
 		aa::list<SigPointer> registeredFunctions;
-		std::vector<CompiledSignature> exportSignatures;
+		aa::list<CompiledClass> registeredClasses;
 	};
 
 public:
+
+	void SetupCompiler();
 
 	AAC_Out CompileFromAbstractSyntaxTrees(std::vector<AA_AST*> trees);
 
@@ -98,8 +92,11 @@ private:
 	CompiledStaticChecks RunStaticOperations(std::vector<AA_AST*> trees);
 	void TypecheckAST(AA_AST* pTree);
 	void CollapseGlobalScope(std::vector<AA_AST*>& trees);
-	aa::list<CompiledStaticChecks::SigPointer> RegisterFunctions(AA_AST_NODE* pNode, AA_AST_NODE* pSource);
+	
+	aa::list<CompiledStaticChecks::SigPointer> RegisterFunctions(AA_AST_NODE* pNode);
+
 	CompiledStaticChecks::SigPointer RegisterFunction(AA_AST_NODE* pNode);
+	CompiledClass RegisterClass(AA_AST_NODE* pNode);
 
 	/*
 	** AST_NODE -> Bytecode functions
@@ -129,7 +126,6 @@ private:
 	bool IsConstant(AA_AST_NODE_TYPE type);
 	bool IsVariable(AA_AST_NODE_TYPE type);
 	bool IsDecleration(AA_AST_NODE_TYPE type);
-	//std::vector<CompiledAbstractExpression> Merge(std::vector<CompiledAbstractExpression> original, std::vector<CompiledAbstractExpression> add);
 	AAByteCode GetBytecodeFromBinaryOperator(std::wstring ws);
 	AAByteCode GetBytecodeFromUnaryOperator(std::wstring ws);
 	int GetReturnCount(void* funcSig);
@@ -137,7 +133,6 @@ private:
 	/*
 	** FuncSig to procedure mapper
 	*/
-	std::vector< CompiledSignature> MapProcedureToSignature(CompiledStaticChecks staticCheck, std::vector<AAC::CompiledProcedure> procedureLs);
 	int FindBestFunctionMatch(CompiledStaticChecks staticCheck, AA_AST_NODE* pNode, int& argCount);
 
 	/*
@@ -157,5 +152,7 @@ private:
 
 	int m_currentProcID;
 	std::wstring m_outfile;
+
+	AAClassCompiler* m_classCompiler;
 
 };

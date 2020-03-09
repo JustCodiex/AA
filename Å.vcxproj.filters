@@ -87,6 +87,9 @@
     <ClCompile Include="AAVal.cpp">
       <Filter>Source Files\VM</Filter>
     </ClCompile>
+    <ClCompile Include="AAClassCompiler.cpp">
+      <Filter>Source Files\compiler</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AA_literals.h">
@@ -154,6 +157,9 @@
     </ClInclude>
     <ClInclude Include="AALanguageRegressionTest.h">
       <Filter>Header Files\aatesting</Filter>
+    </ClInclude>
+    <ClInclude Include="AAClassCompiler.h">
+      <Filter>Header Files\compiler</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -2,6 +2,9 @@ class ex {
     void ctor() {
 
     }
+    int arg(int v){
+        v;
+    }
     int nope() {
         5;
     }
