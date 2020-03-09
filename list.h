@@ -47,6 +47,23 @@ namespace aa {
 			return m_vector.size();
 		}
 
+		T First() {
+			return m_vector.front();
+		}
+
+		static list<T> Merge(list<T> a, list<T> b) {
+
+			list<T> merged = a;
+
+			while (b.Size() > 0) {
+				merged.Add(b.First());
+				b.RemoveAt(0);
+			}
+
+			return merged;
+
+		}
+
 	private:
 
 		std::vector<T> m_vector;

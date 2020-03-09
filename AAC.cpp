@@ -169,48 +169,48 @@ AAC::CompiledStaticChecks::SigPointer AAC::RegisterFunction(AA_AST_NODE* pNode) 
 
 }
 
-std::vector<AAC::CompiledAbstractExpression> AAC::CompileAST(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData) {
+aa::list<AAC::CompiledAbstractExpression> AAC::CompileAST(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData) {
 
 	// Stack
-	std::vector<CompiledAbstractExpression> executionStack;
+	aa::list<CompiledAbstractExpression> executionStack;
 
 	switch (pNode->type) {
 	case AA_AST_NODE_TYPE::binop: {
-		executionStack = Merge(executionStack, CompileBinaryOperation(pNode, cTable, staticData));
+		executionStack.Add(CompileBinaryOperation(pNode, cTable, staticData));
 		break;
 	}
 	case AA_AST_NODE_TYPE::unop: {
-		executionStack = Merge(executionStack, CompileUnaryOperation(pNode, cTable, staticData));
+		executionStack.Add(CompileUnaryOperation(pNode, cTable, staticData));
 		break;
 	}
 	case AA_AST_NODE_TYPE::block: {
 		for (size_t i = 0; i < pNode->expressions.size(); i++) {
-			executionStack = Merge(executionStack, this->CompileAST(pNode->expressions[i], cTable, staticData));
+			executionStack.Add(this->CompileAST(pNode->expressions[i], cTable, staticData));
 		}
 		break;
 	}
 	case AA_AST_NODE_TYPE::funcbody: {
 		for (size_t i = 0; i < pNode->expressions.size(); i++) {			
-			executionStack = Merge(executionStack, this->CompileAST(pNode->expressions[i], cTable, staticData));
+			executionStack.Add(this->CompileAST(pNode->expressions[i], cTable, staticData));
 		}		
 		break;
 	}
 	case AA_AST_NODE_TYPE::fundecl: {
 		if (pNode->expressions.size() == 3) { // We've got the actual function body => compile it
 			this->CompileAST(pNode->expressions[1], cTable, staticData);
-			std::vector<CompiledAbstractExpression> args = this->CompileFuncArgs(pNode, cTable, staticData);
-			std::vector<CompiledAbstractExpression> body = Merge(args, this->CompileAST(pNode->expressions[2], cTable, staticData));
+			aa::list<CompiledAbstractExpression> args = this->CompileFuncArgs(pNode, cTable, staticData);
+			aa::list<CompiledAbstractExpression> body = aa::list<CompiledAbstractExpression>::Merge(args, this->CompileAST(pNode->expressions[2], cTable, staticData));
 			CompiledAbstractExpression retCAE;
 			retCAE.bc = AAByteCode::RET;
 			retCAE.argCount = 1;
 			retCAE.argValues[0] = pNode->tags["returncount"];
-			body.push_back(retCAE);
-			executionStack = Merge(executionStack, body);
+			body.Add(retCAE);
+			executionStack.Add(body);
 		}
 		break;
 	}
 	case AA_AST_NODE_TYPE::funcall: {
-		executionStack = Merge(executionStack, CompileFunctionCall(pNode, cTable, staticData));
+		executionStack .Add(CompileFunctionCall(pNode, cTable, staticData));
 		break;
 	}
 	case AA_AST_NODE_TYPE::funarglist: {
@@ -220,27 +220,27 @@ std::vector<AAC::CompiledAbstractExpression> AAC::CompileAST(AA_AST_NODE* pNode,
 		break;
 	}
 	case AA_AST_NODE_TYPE::ifstatement: {
-		executionStack = Merge(executionStack, CompileConditionalBlock(pNode, cTable, staticData));
+		executionStack.Add(CompileConditionalBlock(pNode, cTable, staticData));
 		break;
 	}
 	case AA_AST_NODE_TYPE::elseifstatement: {
-		executionStack = Merge(executionStack, CompileConditionalBlock(pNode, cTable, staticData));
+		executionStack.Add(CompileConditionalBlock(pNode, cTable, staticData));
 		break;
 	}
 	case AA_AST_NODE_TYPE::elsestatement: {
-		executionStack = Merge(executionStack, this->CompileAST(pNode->expressions[0], cTable, staticData));
+		executionStack.Add(this->CompileAST(pNode->expressions[0], cTable, staticData));
 		break;
 	}
 	case AA_AST_NODE_TYPE::forstatement: {
-		executionStack = Merge(executionStack, this->CompileForBlock(pNode, cTable, staticData));
+		executionStack.Add(this->CompileForBlock(pNode, cTable, staticData));
 		break;
 	}
 	case AA_AST_NODE_TYPE::whilestatement: {
-		executionStack = Merge(executionStack, this->CompileWhileBlock(pNode, cTable, staticData));
+		executionStack.Add(this->CompileWhileBlock(pNode, cTable, staticData));
 		break;
 	}
 	case AA_AST_NODE_TYPE::dowhilestatement: {
-		executionStack = Merge(executionStack, this->CompileDoWhileBlock(pNode, cTable, staticData));
+		executionStack.Add(this->CompileDoWhileBlock(pNode, cTable, staticData));
 		break;
 	}
 	// Implicit return
@@ -252,7 +252,7 @@ std::vector<AAC::CompiledAbstractExpression> AAC::CompileAST(AA_AST_NODE* pNode,
 	case AA_AST_NODE_TYPE::boolliteral:
 	case AA_AST_NODE_TYPE::nullliteral:
 	{
-		executionStack = Merge(executionStack, (HandleStackPush(cTable, pNode, staticData)));
+		executionStack.Add(HandleStackPush(cTable, pNode, staticData));
 		break;
 	}
 	default:
@@ -263,9 +263,9 @@ std::vector<AAC::CompiledAbstractExpression> AAC::CompileAST(AA_AST_NODE* pNode,
 
 }
 
-std::vector<AAC::CompiledAbstractExpression> AAC::CompileBinaryOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData) {
+aa::list<AAC::CompiledAbstractExpression> AAC::CompileBinaryOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData) {
 
-	std::vector<CompiledAbstractExpression> opList;
+	aa::list<CompiledAbstractExpression> opList;
 
 	CompiledAbstractExpression binopCAE;
 	binopCAE.argCount = 0;
@@ -275,47 +275,46 @@ std::vector<AAC::CompiledAbstractExpression> AAC::CompileBinaryOperation(AA_AST_
 
 		binopCAE.argCount = 1;
 		binopCAE.argValues[0] = HandleDecl(cTable, pNode->expressions[0]);
-		opList = Merge(opList, (HandleStackPush(cTable, pNode->expressions[1], staticData)));
+		opList.Add(HandleStackPush(cTable, pNode->expressions[1], staticData));
 
 	} else {
 
-		opList = Merge(opList, (HandleStackPush(cTable, pNode->expressions[0], staticData)));
-		opList = Merge(opList, (HandleStackPush(cTable, pNode->expressions[1], staticData)));
+		opList.Add(HandleStackPush(cTable, pNode->expressions[0], staticData));
+		opList.Add(HandleStackPush(cTable, pNode->expressions[1], staticData));
 
 	}
 
-	opList.push_back(binopCAE);
+	opList.Add(binopCAE);
 
 	return opList;
 
 }
 
-std::vector<AAC::CompiledAbstractExpression> AAC::CompileUnaryOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData) {
+aa::list<AAC::CompiledAbstractExpression> AAC::CompileUnaryOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData) {
 
-	std::vector<CompiledAbstractExpression> opList;
+	aa::list<CompiledAbstractExpression> opList;
 
 	CompiledAbstractExpression unopCAE;
 	unopCAE.argCount = 0;
 	unopCAE.bc = GetBytecodeFromUnaryOperator(pNode->content);
 
-	opList = Merge(opList, (HandleStackPush(cTable, pNode->expressions[0], staticData)));
-
-	opList.push_back(unopCAE);
+	opList.Add(HandleStackPush(cTable, pNode->expressions[0], staticData));
+	opList.Add(unopCAE);
 
 	return opList;
 
 }
 
-std::vector<AAC::CompiledAbstractExpression> AAC::CompileFunctionCall(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData) {
+aa::list<AAC::CompiledAbstractExpression> AAC::CompileFunctionCall(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData) {
 
-	std::vector<CompiledAbstractExpression> opList;
+	aa::list<CompiledAbstractExpression> opList;
 
 	int progArgs = 0; // Going real safe here
 	int procID = this->FindBestFunctionMatch(staticData, pNode, progArgs);
 
 	if (progArgs > 0) {
 		for (AA_AST_NODE* pArg : pNode->expressions) {
-			opList = Merge(opList, this->HandleStackPush(cTable, pArg, staticData));
+			opList.Add(this->HandleStackPush(cTable, pArg, staticData));
 		}
 	}
 
@@ -325,15 +324,15 @@ std::vector<AAC::CompiledAbstractExpression> AAC::CompileFunctionCall(AA_AST_NOD
 	callCAE.argValues[0] = procID;
 	callCAE.argValues[1] = progArgs;
 
-	opList.push_back(callCAE);
+	opList.Add(callCAE);
 
 	return opList;
 
 }
 
-std::vector<AAC::CompiledAbstractExpression> AAC::CompileFuncArgs(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData) {
+aa::list<AAC::CompiledAbstractExpression> AAC::CompileFuncArgs(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData) {
 
-	std::vector<CompiledAbstractExpression> opList;
+	aa::list<CompiledAbstractExpression> opList;
 
 	for (size_t i = 0; i < pNode->expressions[1]->expressions.size(); i++) {
 
@@ -346,7 +345,7 @@ std::vector<AAC::CompiledAbstractExpression> AAC::CompileFuncArgs(AA_AST_NODE* p
 		argCAE.argValues[0] = cTable.identifiers.IndexOf(pNode->expressions[1]->expressions[pNode->expressions[1]->expressions.size() - 1 - i]->content);
 
 		// Add operation
-		opList.push_back(argCAE);
+		opList.Add(argCAE);
 
 	}
 
@@ -354,20 +353,20 @@ std::vector<AAC::CompiledAbstractExpression> AAC::CompileFuncArgs(AA_AST_NODE* p
 
 }
 
-std::vector<AAC::CompiledAbstractExpression> AAC::CompileConditionalBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData) {
+aa::list<AAC::CompiledAbstractExpression> AAC::CompileConditionalBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData) {
 
 	// Operations list
-	std::vector<CompiledAbstractExpression> opList;
+	aa::list<CompiledAbstractExpression> opList;
 
 	// Push condition
-	opList = this->Merge(opList, this->CompileBinaryOperation(pNode->expressions[0]->expressions[0], cTable, staticData)); // will throw error when multiple conditions become possible
+	opList.Add(this->CompileBinaryOperation(pNode->expressions[0]->expressions[0], cTable, staticData)); // will throw error when multiple conditions become possible
 
 	size_t tOffset = 0;
-	std::vector<std::vector<CompiledAbstractExpression>> allBodies;
+	std::vector<aa::list<CompiledAbstractExpression>> allBodies;
 
 	for (size_t i = 1; i < pNode->expressions.size(); i++) {
-		std::vector<CompiledAbstractExpression> opLst = this->CompileAST(pNode->expressions[i], cTable, staticData);
-		tOffset += opLst.size();
+		aa::list<CompiledAbstractExpression> opLst = this->CompileAST(pNode->expressions[i], cTable, staticData);
+		tOffset += opLst.Size();
 		if (i != pNode->expressions.size() - 1) {
 			tOffset++;
 		}
@@ -378,10 +377,10 @@ std::vector<AAC::CompiledAbstractExpression> AAC::CompileConditionalBlock(AA_AST
 	CompiledAbstractExpression jmpInstruction;
 	jmpInstruction.bc = AAByteCode::JMPF;
 	jmpInstruction.argCount = 1;
-	jmpInstruction.argValues[0] = (int)allBodies[0].size() + 1;
+	jmpInstruction.argValues[0] = (int)allBodies[0].Size() + 1;
 
 	// Add jump instruction after condition
-	opList.push_back(jmpInstruction);
+	opList.Add(jmpInstruction);
 
 	size_t cutJmp = 0;
 
@@ -389,19 +388,19 @@ std::vector<AAC::CompiledAbstractExpression> AAC::CompileConditionalBlock(AA_AST
 
 		if (i != allBodies.size() - 1) {
 
-			cutJmp += allBodies[i].size() + 1;
+			cutJmp += allBodies[i].Size() + 1;
 
 			CompiledAbstractExpression jmpInstruction;
 			jmpInstruction.bc = AAByteCode::JMP;
 			jmpInstruction.argCount = 1;
 			jmpInstruction.argValues[0] = (int)(tOffset - cutJmp);
 
-			allBodies[i].push_back(jmpInstruction);
+			allBodies[i].Add(jmpInstruction);
 
 		}
 
 		// Add body
-		opList = Merge(opList, allBodies[i]);
+		opList.Add(allBodies[i]);
 
 	}
 
@@ -410,121 +409,108 @@ std::vector<AAC::CompiledAbstractExpression> AAC::CompileConditionalBlock(AA_AST
 
 }
 
-std::vector<AAC::CompiledAbstractExpression> AAC::CompileForBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData) {
+aa::list<AAC::CompiledAbstractExpression> AAC::CompileForBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData) {
 
 	// Operations list
-	std::vector<CompiledAbstractExpression> opList;
+	aa::list<CompiledAbstractExpression> opList;
 
 	// Compile individual
-	std::vector<CompiledAbstractExpression> init = CompileAST(pNode->expressions[0], cTable, staticData);
-	std::vector<CompiledAbstractExpression> condition = CompileAST(pNode->expressions[1], cTable, staticData);
-	std::vector<CompiledAbstractExpression> afterthought = CompileAST(pNode->expressions[2], cTable, staticData);
-	std::vector<CompiledAbstractExpression> body = CompileAST(pNode->expressions[3], cTable, staticData);
+	aa::list<CompiledAbstractExpression> init = CompileAST(pNode->expressions[0], cTable, staticData);
+	aa::list<CompiledAbstractExpression> condition = CompileAST(pNode->expressions[1], cTable, staticData);
+	aa::list<CompiledAbstractExpression> afterthought = CompileAST(pNode->expressions[2], cTable, staticData);
+	aa::list<CompiledAbstractExpression> body = CompileAST(pNode->expressions[3], cTable, staticData);
 
 	// Merge the oplist with the initialisor
-	opList = this->Merge(opList, init);
+	opList.Add(init);
 
 	// Merge the oplist with the afterthought
-	body = Merge(body, afterthought);
+	body = aa::list<CompiledAbstractExpression>::Merge(body, afterthought);
 
 	// The jump instruction that jumps back to the top of the condition
 	CompiledAbstractExpression jmpBckIns;
 	jmpBckIns.bc = AAByteCode::JMP;
 	jmpBckIns.argCount = 1;
-	jmpBckIns.argValues[0] = -(int)(body.size() + condition.size() + 2); // (+2 because of the additional jmp instruction and because a jmp instruction adds 1 by itself)
+	jmpBckIns.argValues[0] = -(int)(body.Size() + condition.Size() + 2); // (+2 because of the additional jmp instruction and because a jmp instruction adds 1 by itself)
 
 	// The jump if false instruction that will skip the body if the condition no longer holds
 	CompiledAbstractExpression jmpDntLoopIns;
 	jmpDntLoopIns.bc = AAByteCode::JMPF;
 	jmpDntLoopIns.argCount = 1;
-	jmpDntLoopIns.argValues[0] = (int)(body.size() + 1);
+	jmpDntLoopIns.argValues[0] = (int)(body.Size() + 1);
 
 	// Add jump instructions
-	condition.push_back(jmpDntLoopIns);
-	body.push_back(jmpBckIns);
+	condition.Add(jmpDntLoopIns);
+	body.Add(jmpBckIns);
 
 	// Add the condition and body to operations list
-	opList = Merge(opList, condition);
-	opList = Merge(opList, body);
+	opList.Add(condition);
+	opList.Add(body);
 
 	// return oplist
 	return opList;
 
 }
 
-std::vector<AAC::CompiledAbstractExpression> AAC::CompileWhileBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData) {
+aa::list<AAC::CompiledAbstractExpression> AAC::CompileWhileBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData) {
 
 	// Operations list
-	std::vector<CompiledAbstractExpression> opList;
+	aa::list<CompiledAbstractExpression> opList;
 
 	// Compile individual elements
-	std::vector<CompiledAbstractExpression> condition = CompileAST(pNode->expressions[0], cTable, staticData);
-	std::vector<CompiledAbstractExpression> body = CompileAST(pNode->expressions[1], cTable, staticData);
+	aa::list<CompiledAbstractExpression> condition = CompileAST(pNode->expressions[0], cTable, staticData);
+	aa::list<CompiledAbstractExpression> body = CompileAST(pNode->expressions[1], cTable, staticData);
 
 	// The jump if false instruction that will skip the body if the condition no longer holds
 	CompiledAbstractExpression jmpDntLoopIns;
 	jmpDntLoopIns.bc = AAByteCode::JMPF;
 	jmpDntLoopIns.argCount = 1;
-	jmpDntLoopIns.argValues[0] = (int)(body.size() + 1);
+	jmpDntLoopIns.argValues[0] = (int)(body.Size() + 1);
 
 	// Add jump instructions
-	condition.push_back(jmpDntLoopIns);
+	condition.Add(jmpDntLoopIns);
 
 	// The jump instruction that jumps back to the top of the condition
 	CompiledAbstractExpression jmpBckIns;
 	jmpBckIns.bc = AAByteCode::JMP;
 	jmpBckIns.argCount = 1;
-	jmpBckIns.argValues[0] = -(int)(body.size() + condition.size() + 1);
+	jmpBckIns.argValues[0] = -(int)(body.Size() + condition.Size() + 1);
 
 	// Push the jmp back
-	body.push_back(jmpBckIns);
+	body.Add(jmpBckIns);
 
 	// Add operations to the op list
-	opList = Merge(opList, condition);
-	opList = Merge(opList, body);
+	opList.Add(condition);
+	opList.Add(body);	
 
 	// return oplist
 	return opList;
 
 }
 
-std::vector<AAC::CompiledAbstractExpression> AAC::CompileDoWhileBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData) {
+aa::list<AAC::CompiledAbstractExpression> AAC::CompileDoWhileBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData) {
 
 	// Operations list
-	std::vector<CompiledAbstractExpression> opList;
+	aa::list<CompiledAbstractExpression> opList;
 
 	// Compile individual elements
-	std::vector<CompiledAbstractExpression> condition = CompileAST(pNode->expressions[1], cTable, staticData);
-	std::vector<CompiledAbstractExpression> body = CompileAST(pNode->expressions[0], cTable, staticData);
+	aa::list<CompiledAbstractExpression> condition = CompileAST(pNode->expressions[1], cTable, staticData);
+	aa::list<CompiledAbstractExpression> body = CompileAST(pNode->expressions[0], cTable, staticData);
 
 	// The jump if false instruction that will skip the body if the condition no longer holds
 	CompiledAbstractExpression jmpDntLoopIns;
 	jmpDntLoopIns.bc = AAByteCode::JMPT;
 	jmpDntLoopIns.argCount = 1;
-	jmpDntLoopIns.argValues[0] = -(int)(body.size() + condition.size() + 1);
+	jmpDntLoopIns.argValues[0] = -(int)(body.Size() + condition.Size() + 1);
 
 	// Add jump instructions
-	condition.push_back(jmpDntLoopIns);
+	condition.Add(jmpDntLoopIns);
 
 	// Add operations to the op list
-	opList = Merge(opList, body);
-	opList = Merge(opList, condition);
+	opList.Add(body);
+	opList.Add(condition);
 
 	// return oplist
 	return opList;
-
-}
-
-std::vector<AAC::CompiledAbstractExpression> AAC::Merge(std::vector<CompiledAbstractExpression> original, std::vector<CompiledAbstractExpression> add) {
-
-	std::vector<CompiledAbstractExpression> merged = original;
-
-	while (add.size() > 0) {
-		merged.push_back(add.front());
-		add.erase(add.begin());
-	}
-
-	return merged;
 
 }
 
@@ -678,16 +664,16 @@ int AAC::HandleDecl(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode) {
 
 }
 
-std::vector<AAC::CompiledAbstractExpression> AAC::HandleStackPush(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode, CompiledStaticChecks staticData) {
+aa::list<AAC::CompiledAbstractExpression> AAC::HandleStackPush(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode, CompiledStaticChecks staticData) {
 
-	std::vector<CompiledAbstractExpression> opList;
+	aa::list<CompiledAbstractExpression> opList;
 
 	if (IsConstant(pNode->type)) {
-		opList.push_back(this->HandleConstPush(cTable, pNode));
+		opList.Add(this->HandleConstPush(cTable, pNode));
 	} else if (IsVariable(pNode->type)) {
-		opList.push_back(this->HandleVarPush(cTable, pNode));
+		opList.Add(this->HandleVarPush(cTable, pNode));
 	} else {
-		opList = Merge(opList, CompileAST(pNode, cTable, staticData));
+		opList.Add(CompileAST(pNode, cTable, staticData));
 	}
 
 	return opList;
@@ -772,11 +758,11 @@ AAC_Out AAC::CompileFromProcedures(std::vector<CompiledProcedure> procedures, Co
 		ConstTableToByteCode(procedures[p].procEnvironment, bis);
 
 		// Write amount of operations
-		bis << (int)procedures[p].procOperations.size();
+		bis << (int)procedures[p].procOperations.Size();
 
 		// Write all expressions in their compiled formats
-		for (size_t i = 0; i < procedures[p].procOperations.size(); i++) {
-			this->ConvertToBytes(procedures[p].procOperations[i], bis);
+		for (size_t i = 0; i < procedures[p].procOperations.Size(); i++) {
+			this->ConvertToBytes(procedures[p].procOperations.At(i), bis);
 		}
 
 	}

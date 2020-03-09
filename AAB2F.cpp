@@ -170,8 +170,8 @@ namespace aa {
 					o << L"\t" << proc.procEnvironment.identifiers.At(j) << L";";
 				}
 				o << L"\nOPERATIONS: \n";
-				for (size_t j = 0; j < proc.procOperations.size(); j++) {
-					o << L"\t" << L"[" << std::to_wstring(j) << L"]\t" << OpToWString(proc.procOperations[j]) << "\n";
+				for (size_t j = 0; j < proc.procOperations.Size(); j++) {
+					o << L"\t" << L"[" << std::to_wstring(j) << L"]\t" << OpToWString(proc.procOperations.At(j)) << "\n";
 				}
 				o << L"END PROCEDURE;\n\n";
 
