@@ -7,7 +7,7 @@ struct CompiledClassMethod {
 	AAFuncSignature sig;
 	AA_AST_NODE* source;
 	int procID;
-	//bool isCtor;
+	bool isCtor;
 };
 
 struct CompiledClass {

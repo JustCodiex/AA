@@ -200,13 +200,24 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 
 		} else if (nodeIndex + 1 < nodes.size() && nodes[nodeIndex + 1]->nodeType == AA_PT_NODE_TYPE::expression) {
 			
-			AA_PT_NODE* funcallNode = new AA_PT_NODE(nodes[nodeIndex]->position);
-			funcallNode->content = nodes[nodeIndex]->content;
-			funcallNode->nodeType = AA_PT_NODE_TYPE::funccall;
-			funcallNode->childNodes = this->CreateArgumentTree(nodes[nodeIndex +1]);
+			if (nodeIndex + 2 < nodes.size() && nodes[nodeIndex + 2]->nodeType == AA_PT_NODE_TYPE::block) {
 
-			nodes.erase(nodes.begin() + nodeIndex, nodes.begin() + nodeIndex + 2);
-			nodes.insert(nodes.begin() + nodeIndex, funcallNode);
+				// This is something of the type ([identifier] [expression] [block])
+				// Which is how you'd usually specify a class constructor
+
+				nodes[nodeIndex] = this->CreateConstructorDecl(nodes, nodeIndex);
+
+			} else {
+
+				AA_PT_NODE* funcallNode = new AA_PT_NODE(nodes[nodeIndex]->position);
+				funcallNode->content = nodes[nodeIndex]->content;
+				funcallNode->nodeType = AA_PT_NODE_TYPE::funccall;
+				funcallNode->childNodes = this->CreateArgumentTree(nodes[nodeIndex + 1]);
+
+				nodes.erase(nodes.begin() + nodeIndex, nodes.begin() + nodeIndex + 2);
+				nodes.insert(nodes.begin() + nodeIndex, funcallNode);
+
+			}
 
 			nodeIndex++;
 
@@ -392,6 +403,42 @@ AA_PT_NODE* AA_PT::CreateClassDecl(std::vector<AA_PT_NODE*>& nodes, size_t from)
 	nodes.erase(nodes.begin() + from + 1, nodes.begin() + from + 3);
 
 	return classDeclExp;
+
+}
+
+AA_PT_NODE* AA_PT::CreateConstructorDecl(std::vector<AA_PT_NODE*>& nodes, size_t from) {
+
+	if (nodes[from + 1]->nodeType != AA_PT_NODE_TYPE::expression) {
+		printf("Err: Expected function argument list");
+		return 0;
+	}
+
+	if (nodes[from + 2]->nodeType != AA_PT_NODE_TYPE::block) {
+		printf("Err: Expected function body");
+		return 0;
+	}
+
+	AA_PT_NODE* classType = new AA_PT_NODE(nodes[from]->position);
+	classType->nodeType = AA_PT_NODE_TYPE::identifier;
+	classType->content = L"ctor";
+
+	AA_PT_NODE* ctorDecl = new AA_PT_NODE(nodes[from]->position);
+	ctorDecl->nodeType = AA_PT_NODE_TYPE::fundecleration;
+	ctorDecl->content = L".ctor";
+	ctorDecl->childNodes.push_back(classType);
+	ctorDecl->childNodes.push_back(CreateFunctionArgList(nodes[from + 1])); // argument list
+
+	if (from + 2 < (int)nodes.size() && nodes[from + 2]->nodeType == AA_PT_NODE_TYPE::block) {
+		size_t n = 0;
+		AA_PT_NODE* p = this->CreateTree(nodes[from + 2]->childNodes, n);
+		nodes[from + 2]->nodeType = AA_PT_NODE_TYPE::funcbody;
+		ctorDecl->childNodes.push_back(nodes[from + 2]); // function body
+		nodes.erase(nodes.begin() + from + 2);
+	}
+
+	nodes.erase(nodes.begin() + from + 1, nodes.begin() + from + 2);
+	
+	return ctorDecl;
 
 }
 
@@ -666,7 +713,7 @@ void AA_PT::ApplyGroupings(std::vector<AA_PT_NODE*>& nodes) {
 
 void AA_PT::ApplyFunctionBindings(std::vector<AA_PT_NODE*>& nodes) {
 
-	size_t i = 0;
+	int i = 0;
 
 	while (i < nodes.size()) {
 
@@ -675,7 +722,7 @@ void AA_PT::ApplyFunctionBindings(std::vector<AA_PT_NODE*>& nodes) {
 				if (i - 1 > 0 && nodes[i - 1]->nodeType == AA_PT_NODE_TYPE::binary_operation) {
 					ApplyFunctionBindings(nodes[i + 1]->childNodes);
 					nodes[i]->childNodes.push_back(nodes[i + 1]);
-					nodes.erase(nodes.begin() + i + 1);
+					//nodes.erase(nodes.begin() + i + 1);
 				}
 			}
 		} /*else if (nodes[i]->nodeType == AA_PT_NODE_TYPE::keyword) {

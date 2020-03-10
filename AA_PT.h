@@ -1,74 +1,6 @@
 #pragma once
 #include "AALexer.h"
-
-enum class AA_PT_NODE_TYPE {
-
-	undefined,
-
-	seperator,
-
-	block,
-	block_start,
-	block_end,
-
-	funcbody,
-	classbody,
-
-	expression,
-	condition,
-
-	ifstatement,
-	elseifstatement,
-	elsestatement,
-
-	forstatement,
-	foreachstatement,
-	dowhilestatement,
-	whilestatement,
-
-	breakstatement,
-	continuestatement,
-	returnstatement,
-
-	matchsatement,
-	matchcasestatement,
-
-	parenthesis_start,
-	parenthesis_end,
-
-	binary_operation,
-	unary_operation,
-
-	keyword,
-	identifier,
-	vardecleration,
-	fundecleration,
-	classdecleration,
-	
-	funccall,
-	funarg,
-	funarglist,
-
-	intliteral,
-	floatliteral,
-	stringliteral,
-	charliteral,
-	booliterral,
-	nullliteral,
-
-};
-
-struct AA_PT_NODE {	
-	AA_PT_NODE_TYPE nodeType;
-	std::wstring content;
-	std::vector< AA_PT_NODE*> childNodes;
-	AACodePosition position;
-	AA_PT_NODE(AACodePosition pos) {
-		nodeType = AA_PT_NODE_TYPE::undefined;
-		content = L"";
-		position = pos;
-	}
-};
+#include "AA_PT_NODE.h"
 
 class AA_PT {
 	
@@ -124,9 +56,12 @@ private:
 	
 	AA_PT_NODE* CreateTree(std::vector<AA_PT_NODE*>& nodes, size_t from);
 	AA_PT_NODE* CreateExpressionTree(std::vector<AA_PT_NODE*>& nodes, size_t from);
+	
 	AA_PT_NODE* CreateVariableDecl(std::vector<AA_PT_NODE*>& nodes, size_t from);
 	AA_PT_NODE* CreateClassDecl(std::vector<AA_PT_NODE*>& nodes, size_t from);
 	AA_PT_NODE* CreateFunctionDecl(std::vector<AA_PT_NODE*>& nodes, size_t from);
+	AA_PT_NODE* CreateConstructorDecl(std::vector<AA_PT_NODE*>& nodes, size_t from);
+
 	AA_PT_NODE* CreateConditionBlock(std::vector<AA_PT_NODE*>& nodes, size_t from);
 	AA_PT_NODE* CreateIfStatement(std::vector<AA_PT_NODE*>& nodes, size_t from);
 	AA_PT_NODE* CreateForStatement(std::vector<AA_PT_NODE*>& nodes, size_t from);

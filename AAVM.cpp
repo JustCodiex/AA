@@ -256,9 +256,6 @@ AAVal AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 			AAVM_OPI++;
 			callstack.Push(execp);
 
-			//stack.Push(AAVal(procPointer)); // Push pointer to current proc
-			//stack.Push(AAVal(opPointer + 1)); // push pointer to next operation
-
 			AAVM_VENV = procedure[callProc].venv->CloneSelf();
 			AAVM_PROC = callProc;
 			AAVM_OPI = 0;
@@ -278,9 +275,6 @@ AAVal AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 
 			delete execp.venv;
 			execp = callstack.Pop();
-
-			//opPointer = stack.Pop().litVal.lit.i.val;
-			//procPointer = stack.Pop().litVal.lit.i.val;
 
 			for (int i = 0; i < retCount; i++) {
 				stack.Push(returnValues.Pop());

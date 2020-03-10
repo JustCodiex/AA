@@ -1,17 +1,14 @@
 class ex {
-    void ctor() {
+    ex() {
 
     }
-    int arg(int v){
+    int arg(int v) {
         v;
-    }
-    int nope() {
-        5;
     }
 }
 
 int main() {
-    
+    0;
 }
 
 main();

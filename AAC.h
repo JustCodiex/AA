@@ -83,6 +83,7 @@ private:
 	*/
 
 	CompiledProcedure CompileProcedureFromAST(AA_AST* pAbstractTree, CompiledStaticChecks staticData);
+	CompiledProcedure CompileProcedureFromASTNode(AA_AST_NODE* pASTNode, CompiledStaticChecks);
 	AAC_Out CompileFromProcedures(std::vector<CompiledProcedure> procedures, CompiledStaticChecks staticCompileData, int entryPoint);
 
 	/*
