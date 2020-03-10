@@ -1,5 +1,5 @@
-class ex {
-    ex() {
+class ExampleClass {
+    ExampleClass() {
 
     }
     int arg(int v) {
@@ -8,7 +8,8 @@ class ex {
 }
 
 int main() {
-    0;
+    ExampleClass ex = new ExampleClass();
+    ex.arg(5);
 }
 
 main();

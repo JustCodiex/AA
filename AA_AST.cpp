@@ -157,6 +157,11 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 		classdef->expressions.push_back(this->AbstractNode(pNode->childNodes[0]));
 		return classdef;
 	}
+	case AA_PT_NODE_TYPE::newstatement: {
+		AA_AST_NODE* newkw = new AA_AST_NODE(L"new", AA_AST_NODE_TYPE::newstatement, pNode->position);
+		newkw->expressions.push_back(this->AbstractNode(pNode->childNodes[0]));
+		return newkw;
+	}
 	case AA_PT_NODE_TYPE::intliteral:
 	case AA_PT_NODE_TYPE::charliteral:
 	case AA_PT_NODE_TYPE::floatliteral:

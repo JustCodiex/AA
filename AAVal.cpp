@@ -3,6 +3,9 @@
 AAVal AAVal::Null = AAVal(AA_Literal(AA_AnyLiteral::AA_AnyLiteral(), AALiteralType::Null));
 
 std::wstring AAVal::ToString() {
+	if (this->obj) {
+		return std::to_wstring((int)&this->obj);
+	}
 	switch (this->litVal.tp) {
 	case AALiteralType::Boolean:
 		return (this->litVal.lit.b.val) ? L"true" : L"false";
@@ -15,4 +18,13 @@ std::wstring AAVal::ToString() {
 	default:
 		return L"Null";
 	}
+}
+
+AAObject* AllocAAO(size_t sz) {
+
+	AAObject* aao = new AAObject;
+	aao->values = new AAVal[sz / sizeof(AAVal)];
+
+	return aao;
+
 }

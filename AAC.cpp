@@ -79,7 +79,6 @@ AAC::CompiledProcedure AAC::CompileProcedureFromAST(AA_AST* pAbstractTree, Compi
 
 AAC::CompiledProcedure AAC::CompileProcedureFromASTNode(AA_AST_NODE* pASTNode, CompiledStaticChecks staticData) {
 
-
 	// Procedure for the abstract tree
 	CompiledProcedure proc;
 	proc.node = pASTNode;
@@ -89,7 +88,6 @@ AAC::CompiledProcedure AAC::CompileProcedureFromASTNode(AA_AST_NODE* pASTNode, C
 
 	// Return the procedure
 	return proc;
-
 
 }
 
@@ -191,6 +189,7 @@ CompiledClass AAC::RegisterClass(AA_AST_NODE* pNode) {
 
 	CompiledClass cc;
 	cc.name = pNode->content;
+	cc.classByteSz = 0;
 
 	if (pNode->expressions.size() == 1 && pNode->expressions[0]->type == AA_AST_NODE_TYPE::classbody) {
 
@@ -211,10 +210,15 @@ CompiledClass AAC::RegisterClass(AA_AST_NODE* pNode) {
 
 				// Update return count in case of a constructor
 				if (method.isCtor) {
-					pNode->expressions[0]->expressions[i]->tags["returncount"] = 0;
+					pNode->expressions[0]->expressions[i]->tags["returncount"] = 1;
 				}
 
 				cc.methods.Add(method);
+
+			} else {
+
+
+
 			}
 
 		}
@@ -331,6 +335,10 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileAST(AA_AST_NODE* pNode, Co
 	}
 	case AA_AST_NODE_TYPE::dowhilestatement: {
 		executionStack.Add(this->CompileDoWhileBlock(pNode, cTable, staticData));
+		break;
+	}
+	case AA_AST_NODE_TYPE::newstatement: {
+		executionStack.Add(this->HandleCtorCall(pNode, cTable, staticData));
 		break;
 	}
 	// Implicit return
@@ -765,6 +773,30 @@ aa::list<AAC::CompiledAbstractExpression> AAC::HandleStackPush(CompiledEnviornme
 	} else {
 		opList.Add(CompileAST(pNode, cTable, staticData));
 	}
+
+	return opList;
+
+}
+
+aa::list<AAC::CompiledAbstractExpression> AAC::HandleCtorCall(AA_AST_NODE* pNode, CompiledEnviornmentTable& ctable, CompiledStaticChecks staticData) {
+
+	aa::list<CompiledAbstractExpression> opList;
+
+	CompiledClass cc = m_classCompiler->FindClassFromCtor(pNode->expressions[0]->content, staticData.registeredClasses);
+	CompiledClassMethod ctor = m_classCompiler->FindBestCtor(&cc);
+
+	CompiledAbstractExpression newCAE;
+	newCAE.argCount = 1;
+	newCAE.argValues[0] = cc.classByteSz;
+	newCAE.bc = AAByteCode::ALLOC;
+
+	opList.Add(newCAE);
+
+	aa::list<CompiledAbstractExpression> ctorCll = this->CompileAST(pNode->expressions[0], ctable, staticData);
+	ctorCll.Last().argValues[1]++;
+	ctorCll.Last().argValues[0] = ctor.procID;
+
+	opList.Add(ctorCll);
 
 	return opList;
 

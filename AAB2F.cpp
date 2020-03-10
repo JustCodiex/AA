@@ -107,6 +107,9 @@ namespace aa {
 		case AAByteCode::SUB:
 			output = L"SUB";
 			break;
+		case AAByteCode::ALLOC:
+			output = L"ALLOC";
+			break;
 		default:
 			break;
 		}

@@ -301,6 +301,13 @@ AAVal AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 			AAVM_OPI += 1 + AAVM_GetArgument(0);
 			break;
 		}
+		case AAByteCode::ALLOC: {
+			int allocsz = AAVM_GetArgument(0);
+			AAVal allocobj = AllocAAO((size_t)allocsz);
+			stack.Push(allocobj);
+			AAVM_OPI++;
+			break;
+		}
 		case AAByteCode::NOP:
 		default:
 			AAVM_OPI++;

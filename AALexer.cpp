@@ -51,6 +51,7 @@ std::vector<std::wstring> keywords = {
 	L"continue",
 	L"class",
 	L"new",
+	L"this",
 };
 
 std::vector<AALexicalResult> AALexer::Analyse(std::wistream& input) {

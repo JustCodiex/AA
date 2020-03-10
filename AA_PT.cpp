@@ -135,11 +135,11 @@ AA_PT_NODE* AA_PT::CreateTree(std::vector<AA_PT_NODE*>& nodes, size_t from) {
 
 	size_t nodeIndex = from;
 
-	if (nodes.size() == 1 && nodes[0]->nodeType == AA_PT_NODE_TYPE::expression) {
+	if (nodes.size() == 1 && nodes[from]->nodeType == AA_PT_NODE_TYPE::expression) {
 		return CreateExpressionTree(nodes, 0);
 	}
 
-	if (nodes.size() > 0 && (nodes[0]->nodeType == AA_PT_NODE_TYPE::block)) {
+	if (nodes.size() > 0 && (nodes[from]->nodeType == AA_PT_NODE_TYPE::block)) {
 		HandleTreeCase(nodes, nodeIndex);
 	} else {
 		while (nodes.size() > 1 && nodeIndex < nodes.size()) {
@@ -148,7 +148,7 @@ AA_PT_NODE* AA_PT::CreateTree(std::vector<AA_PT_NODE*>& nodes, size_t from) {
 	}
 
 	if (nodes.size() > 0) {
-		return nodes.at(0);
+		return nodes.at(from);
 	} else {
 		return 0;
 	}
@@ -300,6 +300,38 @@ void AA_PT::HandleKeywordCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex
 			nodes[nodeIndex] = this->CreateDoWhileStatement(nodes, nodeIndex);
 
 		}
+
+	} else if (nodes[nodeIndex]->content == L"new") {
+
+		if (nodeIndex + 2 < nodes.size() && nodes[nodeIndex + 2]->nodeType == AA_PT_NODE_TYPE::expression) {
+
+			if (nodes[nodeIndex + 1]->nodeType == AA_PT_NODE_TYPE::identifier) {
+
+				AA_PT_NODE* funcallNode = new AA_PT_NODE(nodes[nodeIndex+1]->position);
+				funcallNode->content = nodes[nodeIndex+1]->content;
+				funcallNode->nodeType = AA_PT_NODE_TYPE::funccall;
+				funcallNode->childNodes = this->CreateArgumentTree(nodes[nodeIndex + 2]);
+
+				nodes.erase(nodes.begin() + nodeIndex + 1, nodes.begin() + nodeIndex + 3);
+
+				nodes[nodeIndex]->childNodes.push_back(funcallNode);
+				nodes[nodeIndex]->nodeType = AA_PT_NODE_TYPE::newstatement;
+
+			} else {
+
+				printf("Expected identifier following 'new' keyword!");
+				return;
+
+			}
+
+		} else {
+
+			printf("Invalid usage of new!");
+			return;
+
+		}
+
+		printf("new allocation detected!");
 
 	}
 
@@ -715,10 +747,10 @@ void AA_PT::ApplyFunctionBindings(std::vector<AA_PT_NODE*>& nodes) {
 
 	int i = 0;
 
-	while (i < nodes.size()) {
+	while (i < (int)nodes.size()) {
 
 		if (nodes[i]->nodeType == AA_PT_NODE_TYPE::identifier) {
-			if (i + 1 < nodes.size() && nodes[i + 1]->nodeType == AA_PT_NODE_TYPE::expression) {
+			if (i + 1 < (int)nodes.size() && nodes[i + 1]->nodeType == AA_PT_NODE_TYPE::expression) {
 				if (i - 1 > 0 && nodes[i - 1]->nodeType == AA_PT_NODE_TYPE::binary_operation) {
 					ApplyFunctionBindings(nodes[i + 1]->childNodes);
 					nodes[i]->childNodes.push_back(nodes[i + 1]);

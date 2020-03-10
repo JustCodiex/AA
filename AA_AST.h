@@ -28,6 +28,8 @@ enum class AA_AST_NODE_TYPE {
 	matchsatement,
 	matchcasestatement,
 
+	newstatement,
+
 	binop,
 	unop,
 

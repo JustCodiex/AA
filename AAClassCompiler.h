@@ -13,6 +13,7 @@ struct CompiledClassMethod {
 struct CompiledClass {
 	std::wstring name;
 	aa::list<CompiledClassMethod> methods;
+	size_t classByteSz;
 };
 
 class AAClassCompiler {
@@ -20,6 +21,9 @@ class AAClassCompiler {
 public:
 
 	void RedefineFunDecl(std::wstring className, AA_AST_NODE* pFuncDeclNode);
+
+	CompiledClass FindClassFromCtor(std::wstring ctorname, aa::list<CompiledClass> classes);
+	CompiledClassMethod FindBestCtor(CompiledClass* pCC);
 
 private:
 

@@ -32,6 +32,8 @@ enum class AA_PT_NODE_TYPE {
 	continuestatement,
 	returnstatement,
 
+	newstatement,
+
 	matchsatement,
 	matchcasestatement,
 

@@ -47,8 +47,12 @@ namespace aa {
 			return m_vector.size();
 		}
 
-		T First() {
+		T& First() {
 			return m_vector.front();
+		}
+
+		T& Last() {
+			return m_vector.back();
 		}
 
 		static list<T> Merge(list<T> a, list<T> b) {
