@@ -50,25 +50,8 @@ AAVal AAVM::CompileAndRunExpression(std::wstring input, std::wstring binaryoutpu
 	// Generated AST from input
 	std::vector<AA_AST*> trees = m_parser->Parse(input);
 
-	// Set compiler output file
-	m_compiler->SetOpListFile(formattedoutputfile);
-
-	// Compile all procedures into bytecode
-	AAC_Out bytecode = m_compiler->CompileFromAbstractSyntaxTrees(trees);
-
-	// Only dump bytecode if a filepath is specified
-	if (binaryoutputfile != L"") {
-
-		// Dump bytecode
-		aa::dump_bytecode(binaryoutputfile, bytecode);
-
-	}
-
-	// Cleanup trees
-	m_parser->ClearTrees(trees);
-
-	// Execute the bytecode
-	return this->Execute(bytecode);
+	// Compile and run the AST
+	return this->CompileAndRun(trees, binaryoutputfile, formattedoutputfile);	
 
 }
 
@@ -112,25 +95,45 @@ AAVal AAVM::CompileAndRunFile(std::wstring sourcefile, std::wstring binaryoutput
 	// Generated AST from input
 	std::vector<AA_AST*> trees = m_parser->Parse(std::wifstream(sourcefile));
 
-	// Set output file for the compiler
+	// Compile and run the AST
+	return this->CompileAndRun(trees, binaryoutputfile, formattedoutputfile);
+
+}
+
+AAVal AAVM::CompileAndRun(std::vector<AA_AST*> trees, std::wstring binaryoutputfile, std::wstring formattedoutputfile) {
+
+	// Set compiler output file
 	m_compiler->SetOpListFile(formattedoutputfile);
 
 	// Compile all procedures into bytecode
-	AAC_Out bytecode = m_compiler->CompileFromAbstractSyntaxTrees(trees);
+	AAC_CompileResult compileResult = m_compiler->CompileFromAbstractSyntaxTrees(trees);
 
-	// Should we print output?
-	if (binaryoutputfile != L"") {
+	// Did we compile without error?
+	if (COMPILE_SUCESS(compileResult)) {
 
-		// Dump bytecode
-		aa::dump_bytecode(binaryoutputfile, bytecode);
+		// Only dump bytecode if a filepath is specified
+		if (binaryoutputfile != L"") {
+
+			// Dump bytecode
+			aa::dump_bytecode(binaryoutputfile, compileResult.result);
+
+		}
+
+		// Cleanup trees
+		m_parser->ClearTrees(trees);
+
+		// Execute the bytecode
+		return this->Execute(compileResult.result);
+
+	} else {
+
+		// Write compiler error
+		this->WriteCompilerError(compileResult.firstMsg);
+
+		// Return null
+		return AAVal::Null;
 
 	}
-
-	// Cleanup trees
-	m_parser->ClearTrees(trees);
-
-	// Execute the bytecode
-	return this->Execute(bytecode);
 
 }
 
@@ -384,6 +387,22 @@ AAVal AAVM::ReportStack(aa::stack<AAVal> stack) {
 		return v;
 	} else {
 		return AAVal::Null;
+	}
+
+}
+
+void AAVM::WriteCompilerError(AAC_CompileErrorMessage errMsg) {
+
+	// Make sure we have an output stream we can write to
+	if (m_outStream) {
+
+		// Format the compile error message
+		std::string compileErrMsg = "Failed to compile, [C" + std::to_string(errMsg.errorType) + "] -> '" + std::string(errMsg.errorMsg)
+			+ "' on line " + std::to_string(errMsg.errorSource.line) + ", column " + std::to_string(errMsg.errorSource.column) + "\n";
+
+		// Write error message
+		m_outStream->write(compileErrMsg.c_str(), compileErrMsg.length());
+
 	}
 
 }

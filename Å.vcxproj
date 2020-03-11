@@ -169,6 +169,7 @@
     <ClInclude Include="AAByteCode.h" />
     <ClInclude Include="AAC.h" />
     <ClInclude Include="AAClassCompiler.h" />
+    <ClInclude Include="AAC_Structs.h" />
     <ClInclude Include="AALanguageRegressionTest.h" />
     <ClInclude Include="AARuntimeEnvironment.h" />
     <ClInclude Include="AACodePosition.h" />

@@ -2,20 +2,11 @@
 #include "AA_AST.h"
 #include "AAByteCode.h"
 #include "AA_literals.h"
+#include "AAC_Structs.h"
 #include "AAFuncSignature.h"
 #include "AAClassCompiler.h"
 #include "bstream.h"
 #include "list.h"
-
-// Compiled output
-struct AAC_Out {
-	unsigned long long length;
-	unsigned char* bytes;
-	AAC_Out() {
-		length = 0;
-		bytes = 0;
-	}
-};
 
 // Compiler Class
 class AAC {
@@ -78,7 +69,7 @@ public:
 
 	void SetupCompiler();
 
-	AAC_Out CompileFromAbstractSyntaxTrees(std::vector<AA_AST*> trees);
+	AAC_CompileResult CompileFromAbstractSyntaxTrees(std::vector<AA_AST*> trees);
 
 	void SetOpListFile(std::wstring outFile) {
 		m_outfile = outFile;
@@ -98,7 +89,7 @@ private:
 	** Static checkers
 	*/
 
-	CompiledStaticChecks RunStaticOperations(std::vector<AA_AST*> trees);
+	AAC_CompileErrorMessage RunStaticOperations(std::vector<AA_AST*> trees, CompiledStaticChecks& staicData);
 	bool TypecheckAST(AA_AST* pTree, CompiledStaticChecks staticData);
 	void CollapseGlobalScope(std::vector<AA_AST*>& trees);
 	

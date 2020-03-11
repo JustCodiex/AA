@@ -51,6 +51,8 @@ public:
 
 private:
 
+	AAVal CompileAndRun(std::vector<AA_AST*> trees, std::wstring binaryoutputfile, std::wstring formattedoutputfile);
+
 	AAVal Run(AAProgram::Procedure* procedures, int entry);
 
 	AAVal Run(AAProgram* pProg);
@@ -58,6 +60,8 @@ private:
 	AAVal ReportStack(aa::stack<AAVal> stack);
 
 	inline AAVal BinaryOperation(AAByteCode op, AA_Literal left, AA_Literal right);
+
+	void WriteCompilerError(AAC_CompileErrorMessage errMsg);
 
 private:
 

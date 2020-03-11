@@ -20,7 +20,11 @@ void AAC::ResetCompilerInternals() {
 
 }
 
-AAC_Out AAC::CompileFromAbstractSyntaxTrees(std::vector<AA_AST*> trees) {
+AAC_CompileResult AAC::CompileFromAbstractSyntaxTrees(std::vector<AA_AST*> trees) {
+
+	// Compile Result container
+	AAC_CompileResult result;
+	AAC_CompileErrorMessage err;
 
 	// Reset the internals of the compiler
 	this->ResetCompilerInternals();
@@ -29,7 +33,12 @@ AAC_Out AAC::CompileFromAbstractSyntaxTrees(std::vector<AA_AST*> trees) {
 	this->CollapseGlobalScope(trees);
 
 	// Run the static checkers
-	CompiledStaticChecks staticChecks = this->RunStaticOperations(trees);
+	CompiledStaticChecks staticChecks;
+	if (COMPILE_ERROR(err = this->RunStaticOperations(trees, staticChecks))) {
+		result.firstMsg = err;
+		result.success = false;
+		return result;
+	}
 
 	// Compiled procedure results
 	std::vector<AAC::CompiledProcedure> compileResults;
@@ -60,16 +69,19 @@ AAC_Out AAC::CompileFromAbstractSyntaxTrees(std::vector<AA_AST*> trees) {
 	// Map the procedures to their respective functions
 	//staticChecks.exportSignatures = this->MapProcedureToSignature(staticChecks, compileResults);
 
+	// Compile all procedures into bytecode
+	result.result = CompileFromProcedures(compileResults, staticChecks, 0);
+
 	// Write operations out in a readable format
 	if (m_outfile != L"") {
 		aa::dump_instructions(m_outfile, compileResults);
 	}
 
-	// Compile all procedures into bytecode
-	AAC_Out bytecode = CompileFromProcedures(compileResults, staticChecks, 0);
+	// Set success flag to true
+	result.success = true;
 
 	// Aslo return bytecode (so we can execute it directly)
-	return bytecode;
+	return result;
 
 }
 
@@ -113,10 +125,9 @@ void AAC::CollapseGlobalScope(std::vector<AA_AST*>& trees) {
 
 }
 
-AAC::CompiledStaticChecks AAC::RunStaticOperations(std::vector<AA_AST*> trees) {
+AAC_CompileErrorMessage AAC::RunStaticOperations(std::vector<AA_AST*> trees, CompiledStaticChecks& staticChecks) {
 
 	// Static function checks
-	CompiledStaticChecks staticChecks;
 	staticChecks.registeredTypes = AATypeChecker::DefaultTypeEnv;
 
 	// For all input trees, register classes
@@ -185,7 +196,7 @@ AAC::CompiledStaticChecks AAC::RunStaticOperations(std::vector<AA_AST*> trees) {
 	}
 
 	// Return result of static function check
-	return staticChecks;
+	return NO_COMPILE_ERROR_MESSAGE;
 
 }
 

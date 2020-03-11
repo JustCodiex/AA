@@ -164,5 +164,8 @@
     <ClInclude Include="AA_PT_NODE.h">
       <Filter>Header Files\parser</Filter>
     </ClInclude>
+    <ClInclude Include="AAC_Structs.h">
+      <Filter>Header Files\compiler</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
