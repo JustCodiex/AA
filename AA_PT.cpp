@@ -190,7 +190,7 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 	case AA_PT_NODE_TYPE::accessor:
 
 		nodes[nodeIndex]->childNodes.push_back(nodes[nodeIndex - 1]);
-		nodes[nodeIndex]->childNodes.push_back(this->CreateTree(nodes, nodeIndex + 1));
+		nodes[nodeIndex]->childNodes.push_back(this->CreateTree(nodes, nodeIndex + 1)); // This currently breaks stuff!
 
 		nodes.erase(nodes.begin() + nodeIndex + 1);
 		nodes.erase(nodes.begin() + nodeIndex - 1);

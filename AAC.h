@@ -3,6 +3,7 @@
 #include "AAByteCode.h"
 #include "AA_literals.h"
 #include "AAC_Structs.h"
+#include "AATypeChecker.h"
 #include "AAFuncSignature.h"
 #include "AAClassCompiler.h"
 #include "bstream.h"
@@ -90,7 +91,7 @@ private:
 	*/
 
 	AAC_CompileErrorMessage RunStaticOperations(std::vector<AA_AST*> trees, CompiledStaticChecks& staicData);
-	bool TypecheckAST(AA_AST* pTree, CompiledStaticChecks staticData);
+	bool TypecheckAST(AA_AST* pTree, CompiledStaticChecks staticData, AATypeChecker::Error& typeError);
 	void CollapseGlobalScope(std::vector<AA_AST*>& trees);
 	
 	aa::list<CompiledStaticChecks::SigPointer> RegisterFunctions(AA_AST_NODE* pNode);

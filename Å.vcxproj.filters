@@ -167,5 +167,8 @@
     <ClInclude Include="AAC_Structs.h">
       <Filter>Header Files\compiler</Filter>
     </ClInclude>
+    <ClInclude Include="astring.h">
+      <Filter>Header Files\util</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

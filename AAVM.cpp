@@ -396,12 +396,21 @@ void AAVM::WriteCompilerError(AAC_CompileErrorMessage errMsg) {
 	// Make sure we have an output stream we can write to
 	if (m_outStream) {
 
-		// Format the compile error message
-		std::string compileErrMsg = "Failed to compile, [C" + std::to_string(errMsg.errorType) + "] -> '" + std::string(errMsg.errorMsg)
-			+ "' on line " + std::to_string(errMsg.errorSource.line) + ", column " + std::to_string(errMsg.errorSource.column) + "\n";
+		// Do we have a valid message?
+		if (errMsg.errorMsg) {
 
-		// Write error message
-		m_outStream->write(compileErrMsg.c_str(), compileErrMsg.length());
+			// Format the compile error message
+			std::string compileErrMsg = "Failed to compile, [C" + std::to_string(errMsg.errorType) + "] -> '" + std::string(errMsg.errorMsg)
+				+ "' on line " + std::to_string(errMsg.errorSource.line) + ", column " + std::to_string(errMsg.errorSource.column) + "\n";
+
+			// Write error message
+			m_outStream->write(compileErrMsg.c_str(), compileErrMsg.length());
+
+		} else {
+
+			// something much more awful
+
+		}
 
 	}
 

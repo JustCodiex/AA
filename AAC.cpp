@@ -1,5 +1,4 @@
 #include "AAC.h"
-#include "AATypeChecker.h"
 #include "AAB2F.h"
 #include <stack>
 
@@ -174,14 +173,20 @@ AAC_CompileErrorMessage AAC::RunStaticOperations(std::vector<AA_AST*> trees, Com
 	// For all input trees, run static type checker
 	for (size_t i = 0; i < trees.size(); i++) {
 
+		// Any possible type error
+		AATypeChecker::Error tErr;
+
 		// Register functions
-		if (!this->TypecheckAST(trees[i], staticChecks)) {
+		if (!this->TypecheckAST(trees[i], staticChecks, tErr)) {
 
-			// Temporarily print the typechecker failed
-			printf("Program failed typechecker!");
+			// Create error message based on type error
+			AAC_CompileErrorMessage tErrMsg;
+			tErrMsg.errorMsg = tErr.errMsg;
+			tErrMsg.errorSource = tErr.errSrc;
+			tErrMsg.errorType = tErrMsg.errorType;
 
-			// No longer need to typecheck the rest of the program ==> Something is not correct
-			//break;
+			// Return error message
+			return tErrMsg;
 
 		}
 
@@ -200,15 +205,28 @@ AAC_CompileErrorMessage AAC::RunStaticOperations(std::vector<AA_AST*> trees, Com
 
 }
 
-bool AAC::TypecheckAST(AA_AST* pTree, CompiledStaticChecks staticData) {
+bool AAC::TypecheckAST(AA_AST* pTree, CompiledStaticChecks staticData, AATypeChecker::Error& typeError) {
 
 	// Currently, we just run a simple type check
 	AATypeChecker checker = AATypeChecker(pTree, staticData.registeredTypes, staticData.GetSignatures());
 
 	// ** Apply special stuff here. ** //
 
-	// Return the result of the type checker
-	return checker.TypeCheck();
+	// Run type checker
+	if (!checker.TypeCheck()) {
+
+		// Get error
+		typeError = checker.GetErrorMessage();
+		
+		// Return false => there were errors
+		return false;
+
+	} else {
+
+		// Return true => no errors
+		return true;
+
+	}
 
 }
 
@@ -994,7 +1012,7 @@ int AAC::FindBestFunctionMatch(CompiledStaticChecks staticCheck, AA_AST_NODE* pN
 		}
 	}
 
-	wprintf(L"Unknown function! %s", funcName.c_str());
+	//wprintf(L"Unknown function! %s", funcName.c_str());
 
 	argCount = 0;
 	return 0;

@@ -186,6 +186,7 @@
     <ClInclude Include="AA_literals.h" />
     <ClInclude Include="AA_PT.h" />
     <ClInclude Include="AA_PT_NODE.h" />
+    <ClInclude Include="astring.h" />
     <ClInclude Include="bstream.h" />
     <ClInclude Include="bwalker.h" />
     <ClInclude Include="list.h" />

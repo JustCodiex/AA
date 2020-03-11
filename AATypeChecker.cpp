@@ -1,4 +1,5 @@
 #include "AATypeChecker.h"
+#include "astring.h"
 
 aa::list<std::wstring> _getdeftypeenv() {
 	aa::list<std::wstring> types;
@@ -26,6 +27,9 @@ AATypeChecker::AATypeChecker(AA_AST* pTree, aa::list<std::wstring> regTypes, aa:
 	// Set the function environment
 	m_ftenv = sigs;
 
+	// We dont have any error to start with
+	m_hasEnyErr = false;
+
 }
 
 bool AATypeChecker::TypeCheck() {
@@ -34,7 +38,7 @@ bool AATypeChecker::TypeCheck() {
 	std::wstring ws = this->TypeCheckNode(m_currentTree->GetRoot());
 
 	// Did we get invalid output?
-	if (ws == InvalidTypeStr) {
+	if (m_hasEnyErr || ws == InvalidTypeStr) {
 		return false;
 	} else {
 		if (!this->IsValidType(ws)) {
@@ -59,12 +63,12 @@ std::wstring AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 		return r;
 	}
 	case AA_AST_NODE_TYPE::binop:
-		return this->TypeCheckBinaryOperation(node->expressions[0], node->expressions[1]);
+		return this->TypeCheckBinaryOperation(node, node->expressions[0], node->expressions[1]);
 	case AA_AST_NODE_TYPE::unop:
-		return this->TypeCheckUnaryOperation(node->expressions[0]);
+		return this->TypeCheckUnaryOperation(node, node->expressions[0]);
 	case AA_AST_NODE_TYPE::accessor:
 		if (node->content == L".") {
-			return this->TypeCheckClassDotAccessorOperation(node->expressions[0], node->expressions[1]);
+			return this->TypeCheckClassDotAccessorOperation(node, node->expressions[0], node->expressions[1]);
 		} else {
 			break;
 		}
@@ -74,6 +78,8 @@ std::wstring AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 		return this->TypeCheckFuncDecl(node);
 	case AA_AST_NODE_TYPE::funcall:
 		return this->TypeCheckCallOperation(node);
+	case AA_AST_NODE_TYPE::newstatement:
+		return this->TypeCheckNewStatement(node);
 	case AA_AST_NODE_TYPE::intliteral:
 		return L"int";
 	case AA_AST_NODE_TYPE::charliteral:
@@ -110,8 +116,7 @@ std::wstring AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 
 }
 
-std::wstring AATypeChecker::TypeCheckBinaryOperation(AA_AST_NODE* left, AA_AST_NODE* right) {
-
+std::wstring AATypeChecker::TypeCheckBinaryOperation(AA_AST_NODE* pOpNode, AA_AST_NODE* left, AA_AST_NODE* right) {
 	if (left->type == AA_AST_NODE_TYPE::vardecl) {
 		
 		std::wstring typeRight = this->TypeCheckNode(right);
@@ -120,10 +125,20 @@ std::wstring AATypeChecker::TypeCheckBinaryOperation(AA_AST_NODE* left, AA_AST_N
 		} else {
 			m_vtenv[left->content] = typeRight;
 		}
-		
 		std::wstring typeLeft = m_vtenv[left->content];
-		if (typeLeft != typeRight) {
-			printf("Type mismatch");
+		if (typeLeft != typeRight) { 
+
+			// TODO: Actual typecheck (comparing int and float is allowed, string and int not)
+			// TODO: Consider custom operators
+
+			// Set error message
+			this->SetError(
+				AATypeChecker::Error(
+					"Type mismsatch on binary operation '" + string_cast(pOpNode->content) + "', left operand: '" + string_cast(typeLeft) + "' and right operand: '" + string_cast(typeRight) + "'",
+					1, pOpNode->position)
+			); // Compiler Error 1 (Typemismatch on binary operator)
+			return InvalidTypeStr;
+
 		}
 		
 		return typeLeft;
@@ -143,12 +158,12 @@ std::wstring AATypeChecker::TypeCheckBinaryOperation(AA_AST_NODE* left, AA_AST_N
 
 }
 
-std::wstring AATypeChecker::TypeCheckUnaryOperation(AA_AST_NODE* right) {
+std::wstring AATypeChecker::TypeCheckUnaryOperation(AA_AST_NODE* pOpNode, AA_AST_NODE* right) {
 	// TODO: Actually do a type check
 	return this->TypeCheckNode(right);
 }
 
-std::wstring AATypeChecker::TypeCheckClassDotAccessorOperation(AA_AST_NODE* left, AA_AST_NODE* right) {
+std::wstring AATypeChecker::TypeCheckClassDotAccessorOperation(AA_AST_NODE* pAccessorNode, AA_AST_NODE* left, AA_AST_NODE* right) {
 
 	// Check types on left and right side
 	std::wstring l = this->TypeCheckNode(left);
@@ -205,7 +220,19 @@ AAValType AATypeChecker::TypeCheckFuncDecl(AA_AST_NODE* pDeclNode) {
 
 	}
 
+	// Return the type the function returns
 	return this->TypeCheckNode(pDeclNode->expressions[0]);
+
+}
+
+AAValType AATypeChecker::TypeCheckNewStatement(AA_AST_NODE* pNewStatement) {
+
+	if (this->IsValidType(pNewStatement->expressions[0]->content)) {
+		return pNewStatement->expressions[0]->content;
+	} else {
+		// TODO: Error
+		return InvalidTypeStr;
+	}
 
 }
 
