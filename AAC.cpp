@@ -117,6 +117,7 @@ AAC::CompiledStaticChecks AAC::RunStaticOperations(std::vector<AA_AST*> trees) {
 
 	// Static function checks
 	CompiledStaticChecks staticChecks;
+	staticChecks.registeredTypes = AATypeChecker::DefaultTypeEnv;
 
 	// For all input trees, register classes
 	for (size_t i = 0; i < trees.size(); i++) {
@@ -139,6 +140,9 @@ AAC::CompiledStaticChecks AAC::RunStaticOperations(std::vector<AA_AST*> trees) {
 
 			}
 
+			// Add class name to registered types as well
+			staticChecks.registeredTypes.Add(cc.name);
+
 		}
 
 	}
@@ -160,7 +164,15 @@ AAC::CompiledStaticChecks AAC::RunStaticOperations(std::vector<AA_AST*> trees) {
 	for (size_t i = 0; i < trees.size(); i++) {
 
 		// Register functions
-		this->TypecheckAST(trees[i]);
+		if (!this->TypecheckAST(trees[i], staticChecks)) {
+
+			// Temporarily print the typechecker failed
+			printf("Program failed typechecker!");
+
+			// No longer need to typecheck the rest of the program ==> Something is not correct
+			//break;
+
+		}
 
 	}
 
@@ -177,11 +189,15 @@ AAC::CompiledStaticChecks AAC::RunStaticOperations(std::vector<AA_AST*> trees) {
 
 }
 
-void AAC::TypecheckAST(AA_AST* pTree) {
+bool AAC::TypecheckAST(AA_AST* pTree, CompiledStaticChecks staticData) {
 
 	// Currently, we just run a simple type check
-	AATypeChecker checker = AATypeChecker(pTree);
-	checker.TypeCheck();
+	AATypeChecker checker = AATypeChecker(pTree, staticData.registeredTypes, staticData.GetSignatures());
+
+	// ** Apply special stuff here. ** //
+
+	// Return the result of the type checker
+	return checker.TypeCheck();
 
 }
 
@@ -341,6 +357,10 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileAST(AA_AST_NODE* pNode, Co
 		executionStack.Add(this->HandleCtorCall(pNode, cTable, staticData));
 		break;
 	}
+	case AA_AST_NODE_TYPE::accessor: {
+		executionStack.Add(this->CompileAccessorOperation(pNode, cTable, staticData));
+		break;
+	}
 	// Implicit return
 	case AA_AST_NODE_TYPE::variable:
 	case AA_AST_NODE_TYPE::intliteral:
@@ -398,6 +418,14 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileUnaryOperation(AA_AST_NODE
 
 	opList.Add(HandleStackPush(cTable, pNode->expressions[0], staticData));
 	opList.Add(unopCAE);
+
+	return opList;
+
+}
+
+aa::list<AAC::CompiledAbstractExpression> AAC::CompileAccessorOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData) {
+
+	aa::list<CompiledAbstractExpression> opList;
 
 	return opList;
 

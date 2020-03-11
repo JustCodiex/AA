@@ -64,6 +64,14 @@ public:
 		};
 		aa::list<SigPointer> registeredFunctions;
 		aa::list<CompiledClass> registeredClasses;
+		aa::list<std::wstring> registeredTypes;
+		aa::list<AAFuncSignature> GetSignatures() {
+			aa::list<AAFuncSignature> sigs;
+			for (size_t i = 0; i < registeredFunctions.Size(); i++) {
+				sigs.Add(registeredFunctions.At(i).funcSig);
+			}
+			return sigs;
+		}
 	};
 
 public:
@@ -91,7 +99,7 @@ private:
 	*/
 
 	CompiledStaticChecks RunStaticOperations(std::vector<AA_AST*> trees);
-	void TypecheckAST(AA_AST* pTree);
+	bool TypecheckAST(AA_AST* pTree, CompiledStaticChecks staticData);
 	void CollapseGlobalScope(std::vector<AA_AST*>& trees);
 	
 	aa::list<CompiledStaticChecks::SigPointer> RegisterFunctions(AA_AST_NODE* pNode);
@@ -106,6 +114,7 @@ private:
 	aa::list<CompiledAbstractExpression> CompileAST(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData);
 	aa::list<CompiledAbstractExpression> CompileBinaryOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData);
 	aa::list<CompiledAbstractExpression> CompileUnaryOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData);
+	aa::list<CompiledAbstractExpression> CompileAccessorOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData);
 	aa::list<CompiledAbstractExpression> CompileConditionalBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData);
 	aa::list<CompiledAbstractExpression> CompileFunctionCall(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData);
 	aa::list<CompiledAbstractExpression> CompileFuncArgs(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData);

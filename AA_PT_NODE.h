@@ -8,6 +8,7 @@ enum class AA_PT_NODE_TYPE {
 	undefined,
 
 	seperator,
+	accessor,
 
 	block,
 	block_start,

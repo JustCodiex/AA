@@ -5,7 +5,9 @@
 enum class AA_AST_NODE_TYPE {
 
 	undefined,
+
 	seperator,
+	accessor,
 
 	block,
 	funcbody,
@@ -85,10 +87,19 @@ public:
 
 private:
 
+	/*
+	** AA_PT_NODE to AA_AST_NODE
+	*/
 	AA_AST_NODE* AbstractNode(AA_PT_NODE* pNode);
 
 	AA_AST_NODE_TYPE GetASTLiteralType(AA_PT_NODE_TYPE type);
 	AA_AST_NODE_TYPE GetASTBlockType(AA_PT_NODE_TYPE type);
+
+	/*
+	** AA_AST_NODE simplifier
+	*/
+	AA_AST_NODE* SimplifyNode(AA_AST_NODE* pNode);
+	AA_AST_NODE* SimplifyCallAccessorNode(AA_AST_NODE* pNode);
 
 	/*
 	** Recursive clear

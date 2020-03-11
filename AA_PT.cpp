@@ -56,6 +56,9 @@ std::vector<AA_PT_NODE*> AA_PT::ToNodes(std::vector<AALexicalResult> lexResult) 
 				node->nodeType = AA_PT_NODE_TYPE::keyword;
 			}
 			break;
+		case AAToken::accessor:
+			node->nodeType = AA_PT_NODE_TYPE::accessor;
+			break;
 		default:
 			break;
 		}
@@ -183,6 +186,15 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 		if (nodes[nodeIndex]->content == L";" || nodes[nodeIndex]->content == L",") {
 			REMOVE_NODE(nodeIndex);
 		}
+		break;
+	case AA_PT_NODE_TYPE::accessor:
+
+		nodes[nodeIndex]->childNodes.push_back(nodes[nodeIndex - 1]);
+		nodes[nodeIndex]->childNodes.push_back(this->CreateTree(nodes, nodeIndex + 1));
+
+		nodes.erase(nodes.begin() + nodeIndex + 1);
+		nodes.erase(nodes.begin() + nodeIndex - 1);
+
 		break;
 	case AA_PT_NODE_TYPE::identifier:
 		if (nodeIndex + 1 < nodes.size() && nodes[nodeIndex + 1]->nodeType == AA_PT_NODE_TYPE::identifier) {
@@ -330,8 +342,6 @@ void AA_PT::HandleKeywordCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex
 			return;
 
 		}
-
-		printf("new allocation detected!");
 
 	}
 

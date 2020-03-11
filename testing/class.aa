@@ -9,7 +9,7 @@ class ExampleClass {
 
 int main() {
     ExampleClass ex = new ExampleClass();
-    ex.arg(5);
+    ex.arg(25);
 }
 
 main();

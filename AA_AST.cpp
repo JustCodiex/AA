@@ -162,6 +162,12 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 		newkw->expressions.push_back(this->AbstractNode(pNode->childNodes[0]));
 		return newkw;
 	}
+	case AA_PT_NODE_TYPE::accessor: {
+		AA_AST_NODE* accessorNode = new AA_AST_NODE(pNode->content, AA_AST_NODE_TYPE::accessor, pNode->position);
+		accessorNode->expressions.push_back(this->AbstractNode(pNode->childNodes[0]));
+		accessorNode->expressions.push_back(this->AbstractNode(pNode->childNodes[1]));
+		return accessorNode;
+	}
 	case AA_PT_NODE_TYPE::intliteral:
 	case AA_PT_NODE_TYPE::charliteral:
 	case AA_PT_NODE_TYPE::floatliteral:
@@ -211,7 +217,44 @@ AA_AST_NODE_TYPE AA_AST::GetASTBlockType(AA_PT_NODE_TYPE type) {
 }
 
 void AA_AST::Simplify() {
+	this->SimplifyNode(m_root);
+}
 
-	return;
+AA_AST_NODE* AA_AST::SimplifyNode(AA_AST_NODE* pNode) {
+
+	switch (pNode->type) {
+	case AA_AST_NODE_TYPE::fundecl:
+		if (pNode->expressions.size() >= 3) {
+			size_t i = 0;
+			while (i < pNode->expressions[2]->expressions.size()) {
+				AA_AST_NODE* expNode = this->SimplifyNode(pNode->expressions[2]->expressions[i]);
+				if (expNode) {
+					pNode->expressions[2]->expressions[i] = expNode;
+					i++;
+				} else {
+					pNode->expressions[2]->expressions.erase(pNode->expressions[2]->expressions.begin() + i);
+				}
+			}
+		}
+		return pNode;
+	case AA_AST_NODE_TYPE::accessor:
+		return this->SimplifyCallAccessorNode(pNode);
+	default:
+		return pNode;
+	}
+
+}
+
+AA_AST_NODE* AA_AST::SimplifyCallAccessorNode(AA_AST_NODE* pNode) {
+
+	if (pNode->expressions[0]->type == AA_AST_NODE_TYPE::variable && pNode->expressions[1]->type == AA_AST_NODE_TYPE::funcall) {
+
+		pNode->expressions[1]->expressions.insert(pNode->expressions[1]->expressions.begin(), pNode->expressions[0]);
+
+		return pNode->expressions[1];
+
+	}
+
+	return pNode;
 
 }

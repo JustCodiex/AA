@@ -1,6 +1,5 @@
 #include "AAClassCompiler.h"
 
-
 void AAClassCompiler::RedefineFunDecl(std::wstring className, AA_AST_NODE* pFuncDeclNode) {
 
 	bool isConstructor = false;

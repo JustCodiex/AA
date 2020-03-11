@@ -20,11 +20,16 @@ std::wstring AAVal::ToString() {
 	}
 }
 
+// Allocates a new AAObject
 AAObject* AllocAAO(size_t sz) {
 
+	// Create new AAO
 	AAObject* aao = new AAObject;
+
+	// Allocate variables tied to the object
 	aao->values = new AAVal[sz / sizeof(AAVal)];
 
+	// Return the object
 	return aao;
 
 }
