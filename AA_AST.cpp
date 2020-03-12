@@ -237,6 +237,8 @@ AA_AST_NODE* AA_AST::SimplifyNode(AA_AST_NODE* pNode) {
 			}
 		}
 		return pNode;
+	case AA_AST_NODE_TYPE::binop:
+		return this->SimplifyBinaryNode(pNode);
 	case AA_AST_NODE_TYPE::accessor:
 		return this->SimplifyCallAccessorNode(pNode);
 	default:
@@ -248,13 +250,24 @@ AA_AST_NODE* AA_AST::SimplifyNode(AA_AST_NODE* pNode) {
 AA_AST_NODE* AA_AST::SimplifyCallAccessorNode(AA_AST_NODE* pNode) {
 
 	if (pNode->expressions[0]->type == AA_AST_NODE_TYPE::variable && pNode->expressions[1]->type == AA_AST_NODE_TYPE::funcall) {
-
 		pNode->expressions[1]->expressions.insert(pNode->expressions[1]->expressions.begin(), pNode->expressions[0]);
-
 		return pNode->expressions[1];
-
 	}
 
 	return pNode;
+
+}
+
+AA_AST_NODE* AA_AST::SimplifyBinaryNode(AA_AST_NODE* pBinaryNode) {
+
+	// Simplify lhs
+	pBinaryNode->expressions[0] = this->SimplifyNode(pBinaryNode->expressions[0]);
+
+	// Simplify rhs
+	pBinaryNode->expressions[1] = this->SimplifyNode(pBinaryNode->expressions[1]);
+
+	// TODO: Handle constant binary operations
+
+	return pBinaryNode;
 
 }

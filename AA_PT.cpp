@@ -189,11 +189,12 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 		break;
 	case AA_PT_NODE_TYPE::accessor:
 
-		nodes[nodeIndex]->childNodes.push_back(nodes[nodeIndex - 1]);
-		nodes[nodeIndex]->childNodes.push_back(this->CreateTree(nodes, nodeIndex + 1)); // This currently breaks stuff!
+		// We assume left-side is just an identifier or it handles by itself
+		// Thus we only need to sort out the right-side
+		nodes[nodeIndex]->childNodes[1] = this->CreateTree(nodes[nodeIndex]->childNodes[1]->childNodes, 0);
 
-		nodes.erase(nodes.begin() + nodeIndex + 1);
-		nodes.erase(nodes.begin() + nodeIndex - 1);
+		// Goto next element
+		nodeIndex++;
 
 		break;
 	case AA_PT_NODE_TYPE::identifier:
@@ -370,6 +371,13 @@ AA_PT_NODE* AA_PT::CreateExpressionTree(std::vector<AA_PT_NODE*>& nodes, size_t 
 		nodes[from] = funcallNode;
 
 		return funcallNode;
+
+	} else if (nodes[from]->nodeType == AA_PT_NODE_TYPE::accessor) {
+	
+		size_t d = 1;
+		this->HandleTreeCase(nodes[from]->childNodes, d);
+
+		return nodes[from];
 
 	} else {
 
@@ -750,6 +758,56 @@ void AA_PT::ApplyGroupings(std::vector<AA_PT_NODE*>& nodes) {
 
 	// Pair possible function or keywords with arguments to their parenthesis (Because arguments to something binds the strongest)
 	ApplyFunctionBindings(nodes);
+
+	// Pair member access to their respective left->right associations
+	ApplyAccessorBindings(nodes);
+
+}
+
+void AA_PT::ApplyAccessorBindings(std::vector<AA_PT_NODE*>& nodes) {
+
+	int i = 0;
+	while (i < (int)nodes.size()) {
+
+		if (nodes[i]->nodeType == AA_PT_NODE_TYPE::accessor) {
+
+			if (i - 1 < nodes.size() && nodes[i-1]->nodeType == AA_PT_NODE_TYPE::identifier) {
+
+				if (i + 1 < nodes.size() && nodes[i + 1]->nodeType == AA_PT_NODE_TYPE::identifier) {
+
+					nodes[i]->childNodes.push_back(nodes[i - 1]);
+
+					if (i + 2 < nodes.size() && nodes[i + 2]->nodeType == AA_PT_NODE_TYPE::expression) {
+
+						AA_PT_NODE* rhsNode = new AA_PT_NODE(nodes[i + 1]->position);
+						rhsNode->nodeType = AA_PT_NODE_TYPE::expression;
+						rhsNode->childNodes.push_back(nodes[i + 1]);
+						rhsNode->childNodes.push_back(nodes[i + 2]);
+
+						nodes[i]->childNodes.push_back(rhsNode);
+
+						nodes.erase(nodes.begin() + i + 1, nodes.begin() + i + 3);
+
+					} else {
+
+						printf("Detected member-variable or property access!");
+
+					}
+
+					nodes.erase(nodes.begin() + i - 1);
+					i--;
+
+					printf("");
+
+				}
+
+			}
+
+		}
+
+		i++;
+
+	}
 
 }
 

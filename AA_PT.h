@@ -80,6 +80,7 @@ private:
 	*/
 
 	static void ApplyGroupings(std::vector<AA_PT_NODE*>& nodes);
+	static void ApplyAccessorBindings(std::vector<AA_PT_NODE*>& nodes);
 	static void ApplyFunctionBindings(std::vector<AA_PT_NODE*>& nodes);
 	static void ApplyUnaryBindings(std::vector<AA_PT_NODE*>& nodes);
 	static void ApplyArithemticRules(std::vector<AA_PT_NODE*>& nodes);

@@ -99,6 +99,7 @@ private:
 	** AA_AST_NODE simplifier
 	*/
 	AA_AST_NODE* SimplifyNode(AA_AST_NODE* pNode);
+	AA_AST_NODE* SimplifyBinaryNode(AA_AST_NODE* pNode);
 	AA_AST_NODE* SimplifyCallAccessorNode(AA_AST_NODE* pNode);
 
 	/*
