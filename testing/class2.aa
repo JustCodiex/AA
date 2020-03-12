@@ -1,0 +1,13 @@
+class ExampleClass {
+    int fieldx; // This is a field (currently public)
+    ExampleClass() {
+        fieldx = 10;
+    }
+}
+
+int main() {
+    ExampleClass e = new ExampleClass();
+    e.fieldx;
+}
+
+main();

@@ -335,22 +335,33 @@ void RunIfStatementTests(AAVM* pAAVM, int& s, int& f) {
 
 void RunLoopTests(AAVM* pAAVM, int& s, int& f) {
 
-	// Test modulo operator
+	// Test dowhile loop
 	if (!RunFileTest(pAAVM, L"examples\\dowhile-loop.aa", L"out\\bin\\dowhile-loop.aab", L"out\\op\\dowhile-loop.txt", L"10")) {
 		f++;
 	} else {
 		s++;
 	}
 
-	// Test modulo operator
+	// Test while loop
 	if (!RunFileTest(pAAVM, L"examples\\while-loop.aa", L"out\\bin\\while-loop.aab", L"out\\op\\while-loop.txt", L"10")) {
 		f++;
 	} else {
 		s++;
 	}
 
-	// Test modulo operator
+	// Test for loop
 	if (!RunFileTest(pAAVM, L"examples\\for-loop.aa", L"out\\bin\\for-loop.aab", L"out\\op\\for-loop.txt", L"90")) {
+		f++;
+	} else {
+		s++;
+	}
+
+}
+
+void RunClassTests(AAVM* pAAVM, int& s, int& f) {
+
+	// Test class ctor + class method access + 'new' keyword
+	if (!RunFileTest(pAAVM, L"testing\\class1.aa", L"out\\bin\\class1.aab", L"out\\op\\class1.txt", L"55")) {
 		f++;
 	} else {
 		s++;
@@ -392,8 +403,11 @@ bool RunRegressionTests(AAVM* pAAVM) {
 	// Run if-statement tests
 	RunIfStatementTests(pAAVM, successes, fails);
 
-	// Run if-statement tests
+	// Run loop tests
 	RunLoopTests(pAAVM, successes, fails);
+
+	// Run class tests
+	RunClassTests(pAAVM, successes, fails);
 
 	std::wcout << L"Regression test report:" << std::endl;
 	std::wcout << std::to_wstring(successes + fails) << L" Completed, " << std::to_wstring(successes) << L" succeeded, " << std::to_wstring(fails) << L" failed." << std::endl << std::endl;

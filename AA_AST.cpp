@@ -266,7 +266,7 @@ AA_AST_NODE* AA_AST::SimplifyBinaryNode(AA_AST_NODE* pBinaryNode) {
 	// Simplify rhs
 	pBinaryNode->expressions[1] = this->SimplifyNode(pBinaryNode->expressions[1]);
 
-	// TODO: Handle constant binary operations
+	// TODO: Handle constant binary operations - eg. 5+5 = 10
 
 	return pBinaryNode;
 

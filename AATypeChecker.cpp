@@ -108,6 +108,8 @@ std::wstring AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 			printf("Invalid type identifier!");
 			break;
 		}
+	case AA_AST_NODE_TYPE::ifstatement:
+		return this->TypeCheckConditionalBlock(node);
 	default:
 		break;
 	}
@@ -149,7 +151,7 @@ std::wstring AATypeChecker::TypeCheckBinaryOperation(AA_AST_NODE* pOpNode, AA_AS
 		std::wstring typeRight = this->TypeCheckNode(right);
 
 		if (typeLeft != typeRight) {
-			printf("Incorrect type!");
+			//printf("Incorrect type!"); // TODO: Implement this when function calls have been implemented
 		}
 
 		return typeLeft;
@@ -158,15 +160,25 @@ std::wstring AATypeChecker::TypeCheckBinaryOperation(AA_AST_NODE* pOpNode, AA_AS
 
 }
 
-std::wstring AATypeChecker::TypeCheckUnaryOperation(AA_AST_NODE* pOpNode, AA_AST_NODE* right) {
+AAValType AATypeChecker::TypeCheckUnaryOperation(AA_AST_NODE* pOpNode, AA_AST_NODE* right) {
 	// TODO: Actually do a type check
 	return this->TypeCheckNode(right);
 }
 
-std::wstring AATypeChecker::TypeCheckClassDotAccessorOperation(AA_AST_NODE* pAccessorNode, AA_AST_NODE* left, AA_AST_NODE* right) {
+AAValType AATypeChecker::TypeCheckConditionalBlock(AA_AST_NODE* pConditionalNode) {
+
+
+
+	// A conditional block may be part of flow-control system and may not actually return something
+	// Which is perfectly legal
+	return L"void";
+
+}
+
+AAValType AATypeChecker::TypeCheckClassDotAccessorOperation(AA_AST_NODE* pAccessorNode, AA_AST_NODE* left, AA_AST_NODE* right) {
 
 	// Check types on left and right side
-	std::wstring l = this->TypeCheckNode(left);
+	AAValType l = this->TypeCheckNode(left);
 	
 	// If the right operator is a function call
 	if (right->type == AA_AST_NODE_TYPE::funcall) {
@@ -174,7 +186,7 @@ std::wstring AATypeChecker::TypeCheckClassDotAccessorOperation(AA_AST_NODE* pAcc
 	}
 
 	// Get type on the right
-	std::wstring r = this->TypeCheckNode(right);
+	AAValType r = this->TypeCheckNode(right);
 
 	// Store some static data in the left-side node
 	//left->tags["accesstype"] = 0; // Let the accessor operation know it's a class access

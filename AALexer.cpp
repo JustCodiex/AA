@@ -64,6 +64,8 @@ std::vector<AALexicalResult> AALexer::Analyse(std::wistream& input) {
 	wchar_t character;
 	AAToken current = AAToken::invalid;
 
+	bool isReadingSingleLineComment = false;
+
 	std::wstringstream ws;
 
 	while (input.get(character)) {
@@ -75,6 +77,7 @@ std::vector<AALexicalResult> AALexer::Analyse(std::wistream& input) {
 			if (character == '\n') {
 				currentLine++;
 				currentColumn = 0;
+				isReadingSingleLineComment = false;
 			}
 
 			// Push token
@@ -83,32 +86,44 @@ std::vector<AALexicalResult> AALexer::Analyse(std::wistream& input) {
 			ws.str(L"");
 			current = AAToken::invalid;
 
-		} else if (IsSingleToken(character, single)) {
+		} else if (!isReadingSingleLineComment) {
 
-			if (current != AAToken::invalid) {
-				this->DetermineToken(ws, current, results, AACodePosition(currentLine, currentColumn - 1 - ws.str().length()));
-				ws.str(L"");
-			}
+			if (IsSingleToken(character, single)) {
 
-			ws << character;
-			results.push_back(AALexicalResult(ws.str(), single, AACodePosition(currentLine, currentColumn)));
+				if (current != AAToken::invalid) {
+					this->DetermineToken(ws, current, results, AACodePosition(currentLine, currentColumn - 1 - ws.str().length()));
+					ws.str(L"");
+				}
 
-			ws.str(L"");
-			current = AAToken::invalid;
+				if (character == '/') {
+					if (results.size() > 0 && results.at(results.size() - 1).content == L"/") {
+						results.erase(results.end() - 1); // Remove the previous /
+						isReadingSingleLineComment = true; // Tell the parser we're reading a comment => don't care about what it says
+						continue;
+					}
+				}
 
-		} else if (IsCharacter(character) && (current == AAToken::identifier || current == AAToken::invalid)) {
-			ws << character;
-			current = AAToken::identifier;
-		} else if (IsDigit(character) && (current == AAToken::intlit || current == AAToken::invalid)) {
-			ws << character;
-			current = AAToken::intlit;
-		} else {
-			if (current == AAToken::intlit && character == 'f') {
-				results.push_back(AALexicalResult(ws.str(), current, AACodePosition(currentLine, currentColumn))); // TODO: Fix incorrect column
-				results.push_back(AALexicalResult(L"f", AAToken::identifier, AACodePosition(currentLine, currentColumn)));
+				ws << character;
+				results.push_back(AALexicalResult(ws.str(), single, AACodePosition(currentLine, currentColumn)));
+
 				ws.str(L"");
 				current = AAToken::invalid;
+
+			} else if (IsCharacter(character) && (current == AAToken::identifier || current == AAToken::invalid)) {
+				ws << character;
+				current = AAToken::identifier;
+			} else if (IsDigit(character) && (current == AAToken::intlit || current == AAToken::invalid)) {
+				ws << character;
+				current = AAToken::intlit;
+			} else {
+				if (current == AAToken::intlit && character == 'f') {
+					results.push_back(AALexicalResult(ws.str(), current, AACodePosition(currentLine, currentColumn))); // TODO: Fix incorrect column
+					results.push_back(AALexicalResult(L"f", AAToken::identifier, AACodePosition(currentLine, currentColumn)));
+					ws.str(L"");
+					current = AAToken::invalid;
+				}
 			}
+
 		}
 
 		currentColumn++;

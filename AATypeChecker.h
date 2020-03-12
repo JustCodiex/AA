@@ -55,6 +55,7 @@ private:
 	AAValType TypeCheckBinaryOperation(AA_AST_NODE* pOpNode, AA_AST_NODE* left, AA_AST_NODE* right);
 	AAValType TypeCheckUnaryOperation(AA_AST_NODE* pOpNode, AA_AST_NODE* right);
 	AAValType TypeCheckCallOperation(AA_AST_NODE* pCallNode);
+	AAValType TypeCheckConditionalBlock(AA_AST_NODE* pConditionalNode);
 
 	AAValType TypeCheckNewStatement(AA_AST_NODE* pNewStatement);
 
