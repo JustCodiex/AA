@@ -16,7 +16,7 @@ aa::list<std::wstring> AATypeChecker::DefaultTypeEnv = _getdeftypeenv();
 
 std::wstring AATypeChecker::InvalidTypeStr = L"TYPE NOT FOUND";
 
-AATypeChecker::AATypeChecker(AA_AST* pTree, aa::list<std::wstring> regTypes, aa::list<AAFuncSignature> sigs) {
+AATypeChecker::AATypeChecker(AA_AST* pTree, aa::list<std::wstring> regTypes, aa::list<AAFuncSignature> sigs, aa::list<CompiledClass> classes) {
 	
 	// Set the tree to work with
 	m_currentTree = pTree;
@@ -26,6 +26,9 @@ AATypeChecker::AATypeChecker(AA_AST* pTree, aa::list<std::wstring> regTypes, aa:
 
 	// Set the function environment
 	m_ftenv = sigs;
+
+	// Set the auxiliary class environment (Needed to typecheck class properties)
+	m_caenv = classes;
 
 	// We dont have any error to start with
 	m_hasEnyErr = false;
@@ -66,9 +69,15 @@ std::wstring AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 		return this->TypeCheckBinaryOperation(node, node->expressions[0], node->expressions[1]);
 	case AA_AST_NODE_TYPE::unop:
 		return this->TypeCheckUnaryOperation(node, node->expressions[0]);
-	case AA_AST_NODE_TYPE::accessor:
+	case AA_AST_NODE_TYPE::callaccess:
 		if (node->content == L".") {
-			return this->TypeCheckClassDotAccessorOperation(node, node->expressions[0], node->expressions[1]);
+			return this->TypeCheckClassDotCallAccessorOperation(node, node->expressions[0], node->expressions[1]);
+		} else {
+			break;
+		}
+	case AA_AST_NODE_TYPE::fieldaccess:
+		if (node->content == L".") {
+			return this->TypeCheckClassDotFieldAccessorOperation(node, node->expressions[0], node->expressions[1]);
 		} else {
 			break;
 		}
@@ -175,7 +184,7 @@ AAValType AATypeChecker::TypeCheckConditionalBlock(AA_AST_NODE* pConditionalNode
 
 }
 
-AAValType AATypeChecker::TypeCheckClassDotAccessorOperation(AA_AST_NODE* pAccessorNode, AA_AST_NODE* left, AA_AST_NODE* right) {
+AAValType AATypeChecker::TypeCheckClassDotCallAccessorOperation(AA_AST_NODE* pAccessorNode, AA_AST_NODE* left, AA_AST_NODE* right) {
 
 	// Check types on left and right side
 	AAValType l = this->TypeCheckNode(left);
@@ -183,7 +192,7 @@ AAValType AATypeChecker::TypeCheckClassDotAccessorOperation(AA_AST_NODE* pAccess
 	// If the right operator is a function call
 	if (right->type == AA_AST_NODE_TYPE::funcall) {
 		right->content = l + L"::" + right->content;
-	}
+	} // else ....
 
 	// Get type on the right
 	AAValType r = this->TypeCheckNode(right);
@@ -194,6 +203,39 @@ AAValType AATypeChecker::TypeCheckClassDotAccessorOperation(AA_AST_NODE* pAccess
 
 	// Return whatever we've accessed from the right side
 	return r;
+
+}
+
+AAValType AATypeChecker::TypeCheckClassDotFieldAccessorOperation(AA_AST_NODE* pAccessorNode, AA_AST_NODE* left, AA_AST_NODE* right) {
+
+	// Check types on the left
+	AAValType l = this->TypeCheckNode(left);
+
+	// Get class from lhs
+	CompiledClass cc = this->FindCompiledClassOfType(l);
+
+	// Make sure we got a valid class from this
+	if (cc.name == InvalidTypeStr) {
+		// Push error
+		return InvalidTypeStr;
+	}
+
+	int field;
+	if (AAClassCompiler::HasField(cc, right->content, field)) {
+
+		// Save the ID of the field we're referencing
+		right->tags["fieldid"] = field;
+
+		// Return field type
+		return cc.fields.At(field).type;
+
+	} else {
+
+		// Push error (invalid field name)
+
+		return InvalidTypeStr;
+
+	}
 
 }
 
@@ -260,4 +302,19 @@ std::wstring AATypeChecker::TypeOf(AAId var) {
 
 bool AATypeChecker::IsValidType(AAValType t) {
 	return m_types.Contains(t);
+}
+
+CompiledClass AATypeChecker::FindCompiledClassOfType(AAValType type) {
+
+	for (size_t i = 0; i < m_caenv.Size(); i++) {
+		if (m_caenv.At(i).name == type) {
+			return m_caenv.At(i);
+		}
+	}
+
+	CompiledClass cc;
+	cc.name = InvalidTypeStr;
+
+	return cc;
+
 }

@@ -57,6 +57,11 @@ struct AAVal {
 
 struct AAObject {
 	AAVal* values;
+	int valCount;
+	AAObject() {
+		values = 0;
+		valCount = 0;
+	}
 };
 
 AAObject* AllocAAO(size_t sz);

@@ -191,7 +191,9 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 
 		// We assume left-side is just an identifier or it handles by itself
 		// Thus we only need to sort out the right-side
-		nodes[nodeIndex]->childNodes[1] = this->CreateTree(nodes[nodeIndex]->childNodes[1]->childNodes, 0);
+		if (nodes[nodeIndex]->childNodes[1]->childNodes.size() > 0 && nodes[nodeIndex]->childNodes[1]->nodeType != AA_PT_NODE_TYPE::identifier) {
+			nodes[nodeIndex]->childNodes[1] = this->CreateTree(nodes[nodeIndex]->childNodes[1]->childNodes, 0);
+		}
 
 		// Goto next element
 		nodeIndex++;
@@ -204,9 +206,9 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 			// If not, it's most likely a variable decleration
 
 			if (nodeIndex + 2 < nodes.size() && nodes[nodeIndex + 2]->nodeType == AA_PT_NODE_TYPE::expression) {
-				nodes[nodeIndex] = this->CreateFunctionDecl(nodes, nodeIndex);
+				nodes[nodeIndex] = this->HandleFunctionDecleration(nodes, nodeIndex);
 			} else {
-				nodes[nodeIndex] = this->CreateVariableDecl(nodes, nodeIndex);
+				nodes[nodeIndex] = this->HandleVariableDecleration(nodes, nodeIndex);
 			}
 
 			nodeIndex++;
@@ -276,7 +278,7 @@ void AA_PT::HandleKeywordCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex
 
 	if (nodes[nodeIndex]->content == L"var") {
 		
-		nodes[nodeIndex] = this->CreateVariableDecl(nodes, nodeIndex);
+		nodes[nodeIndex] = this->HandleVariableDecleration(nodes, nodeIndex);
 
 	} else if (nodes[nodeIndex]->content == L"class") {
 	
@@ -350,6 +352,14 @@ void AA_PT::HandleKeywordCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex
 
 }
 
+AA_PT_NODE* AA_PT::HandleFunctionDecleration(std::vector<AA_PT_NODE*>& nodes, size_t& from) {
+	return this->CreateFunctionDecl(nodes, from);
+}
+
+AA_PT_NODE* AA_PT::HandleVariableDecleration(std::vector<AA_PT_NODE*>& nodes, size_t& from) {
+	return this->CreateVariableDecl(nodes, from);
+}
+
 AA_PT_NODE* AA_PT::CreateExpressionTree(std::vector<AA_PT_NODE*>& nodes, size_t from) {
 
 	if (nodes[from]->nodeType == AA_PT_NODE_TYPE::expression && nodes[from]->childNodes.size() > 0) {
@@ -384,6 +394,17 @@ AA_PT_NODE* AA_PT::CreateExpressionTree(std::vector<AA_PT_NODE*>& nodes, size_t 
 		return nodes[from];
 
 	}
+
+}
+
+std::vector<AA_PT_NODE*> AA_PT::CreateDeclerativeBody(std::vector<AA_PT_NODE*> nodes) {
+
+	size_t i = 0;
+	while (i < nodes.size()) {
+		this->HandleTreeCase(nodes, i);
+	}
+
+	return nodes;
 
 }
 
@@ -438,13 +459,7 @@ AA_PT_NODE* AA_PT::CreateClassDecl(std::vector<AA_PT_NODE*>& nodes, size_t from)
 
 		AA_PT_NODE* classBody = new AA_PT_NODE(nodes[from + 2]->position);
 		classBody->nodeType = AA_PT_NODE_TYPE::classbody;
-
-		this->ApplySyntaxRules(nodes[from+2]->childNodes);
-		auto trees = this->CreateTrees(nodes[from + 2]->childNodes);
-
-		for (AA_PT* tree : trees) {
-			classBody->childNodes.push_back(tree->GetRoot());
-		}
+		classBody->childNodes = this->CreateDeclerativeBody(nodes[from + 2]->childNodes);
 
 		classDeclExp->childNodes.push_back(classBody);
 
@@ -771,13 +786,13 @@ void AA_PT::ApplyAccessorBindings(std::vector<AA_PT_NODE*>& nodes) {
 
 		if (nodes[i]->nodeType == AA_PT_NODE_TYPE::accessor) {
 
-			if (i - 1 < nodes.size() && nodes[i-1]->nodeType == AA_PT_NODE_TYPE::identifier) {
+			if (i - 1 < (int)nodes.size() && nodes[i-1]->nodeType == AA_PT_NODE_TYPE::identifier) {
 
-				if (i + 1 < nodes.size() && nodes[i + 1]->nodeType == AA_PT_NODE_TYPE::identifier) {
+				if (i + 1 < (int)nodes.size() && nodes[i + 1]->nodeType == AA_PT_NODE_TYPE::identifier) {
 
 					nodes[i]->childNodes.push_back(nodes[i - 1]);
 
-					if (i + 2 < nodes.size() && nodes[i + 2]->nodeType == AA_PT_NODE_TYPE::expression) {
+					if (i + 2 < (int)nodes.size() && nodes[i + 2]->nodeType == AA_PT_NODE_TYPE::expression) {
 
 						AA_PT_NODE* rhsNode = new AA_PT_NODE(nodes[i + 1]->position);
 						rhsNode->nodeType = AA_PT_NODE_TYPE::expression;
@@ -790,14 +805,13 @@ void AA_PT::ApplyAccessorBindings(std::vector<AA_PT_NODE*>& nodes) {
 
 					} else {
 
-						printf("Detected member-variable or property access!");
+						nodes[i]->childNodes.push_back(nodes[i + 1]);
+						nodes.erase(nodes.begin() + i + 1);
 
 					}
 
 					nodes.erase(nodes.begin() + i - 1);
 					i--;
-
-					printf("");
 
 				}
 

@@ -26,8 +26,11 @@ AAObject* AllocAAO(size_t sz) {
 	// Create new AAO
 	AAObject* aao = new AAObject;
 
+	// Set size of object
+	aao->valCount = sz / sizeof(AAVal);
+
 	// Allocate variables tied to the object
-	aao->values = new AAVal[sz / sizeof(AAVal)];
+	aao->values = new AAVal[aao->valCount];
 
 	// Return the object
 	return aao;

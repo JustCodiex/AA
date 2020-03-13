@@ -51,8 +51,13 @@ AAC_CompileResult AAC::CompileFromAbstractSyntaxTrees(std::vector<AA_AST*> trees
 			// For all sub-elements of class decl
 			for (size_t j = 0; j < trees[i]->GetRoot()->expressions[0]->expressions.size(); j++) {
 
-				// Compiled AST
-				compileResults.push_back(this->CompileProcedureFromASTNode(trees[i]->GetRoot()->expressions[0]->expressions[j], staticChecks));
+				// Make sure it's a function decleration
+				if (trees[i]->GetRoot()->expressions[0]->expressions[j]->type == AA_AST_NODE_TYPE::fundecl) {
+
+					// Compiled AST
+					compileResults.push_back(this->CompileProcedureFromASTNode(trees[i]->GetRoot()->expressions[0]->expressions[j], staticChecks));
+
+				}
 
 			}
 
@@ -208,7 +213,7 @@ AAC_CompileErrorMessage AAC::RunStaticOperations(std::vector<AA_AST*> trees, Com
 bool AAC::TypecheckAST(AA_AST* pTree, CompiledStaticChecks staticData, AATypeChecker::Error& typeError) {
 
 	// Currently, we just run a simple type check
-	AATypeChecker checker = AATypeChecker(pTree, staticData.registeredTypes, staticData.GetSignatures());
+	AATypeChecker checker = AATypeChecker(pTree, staticData.registeredTypes, staticData.GetSignatures(), staticData.registeredClasses);
 
 	// ** Apply special stuff here. ** //
 
@@ -232,9 +237,13 @@ bool AAC::TypecheckAST(AA_AST* pTree, CompiledStaticChecks staticData, AATypeChe
 
 CompiledClass AAC::RegisterClass(AA_AST_NODE* pNode) {
 
+	// Compiled Class data
 	CompiledClass cc;
 	cc.name = pNode->content;
 	cc.classByteSz = 0;
+
+	// Function bodies to correct
+	std::vector<AA_AST_NODE*> funcBodyNodes;
 
 	if (pNode->expressions.size() == 1 && pNode->expressions[0]->type == AA_AST_NODE_TYPE::classbody) {
 
@@ -242,7 +251,7 @@ CompiledClass AAC::RegisterClass(AA_AST_NODE* pNode) {
 
 			if (pNode->expressions[0]->expressions[i]->type == AA_AST_NODE_TYPE::fundecl) {
 
-				// We need to push a "this" into the method and then, look through the body and update any local variable references to reference this.__
+				// We need to push a "this" into the method params list
 				m_classCompiler->RedefineFunDecl(cc.name, pNode->expressions[0]->expressions[i]);
 
 				// Register function
@@ -258,17 +267,37 @@ CompiledClass AAC::RegisterClass(AA_AST_NODE* pNode) {
 					pNode->expressions[0]->expressions[i]->tags["returncount"] = 1;
 				}
 
+				// Add method to class definition
 				cc.methods.Add(method);
+
+				if (pNode->expressions[0]->expressions[i]->expressions.size() >= 3) { // make sure it's declared
+					funcBodyNodes.push_back(pNode->expressions[0]->expressions[i]->expressions[2]);
+				}
+
+			} else if (pNode->expressions[0]->expressions[i]->type == AA_AST_NODE_TYPE::vardecl) {
+			
+				CompiledClassField field;
+				field.fieldID = (int)cc.fields.Size();
+				field.name = pNode->expressions[0]->expressions[i]->content;
+				field.type = pNode->expressions[0]->expressions[i]->expressions[0]->content;
+
+				cc.fields.Add(field);
 
 			} else {
 
-
+				printf("Unknown class member type found");
 
 			}
 
 		}
 
 	}
+
+	// Correct incorrect references (eg. field access)
+	m_classCompiler->CorrectReferences(&cc, funcBodyNodes);
+
+	// Calculate the class size in memory
+	cc.classByteSz = m_classCompiler->CalculateMemoryUse(cc);
 
 	return cc;
 
@@ -386,8 +415,12 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileAST(AA_AST_NODE* pNode, Co
 		executionStack.Add(this->HandleCtorCall(pNode, cTable, staticData));
 		break;
 	}
-	case AA_AST_NODE_TYPE::accessor: {
+	case AA_AST_NODE_TYPE::fieldaccess: {
 		executionStack.Add(this->CompileAccessorOperation(pNode, cTable, staticData));
+		break;
+	}
+	case AA_AST_NODE_TYPE::field: {
+		executionStack.Add(this->HandleFieldPush(pNode, staticData));
 		break;
 	}
 	// Implicit return
@@ -416,13 +449,21 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileBinaryOperation(AA_AST_NOD
 
 	CompiledAbstractExpression binopCAE;
 	binopCAE.argCount = 0;
-	binopCAE.bc = GetBytecodeFromBinaryOperator(pNode->content);
+	binopCAE.bc = GetBytecodeFromBinaryOperator(pNode->content, pNode->expressions[0]->type);
 
 	if (binopCAE.bc == AAByteCode::SETVAR) {
 
 		binopCAE.argCount = 1;
 		binopCAE.argValues[0] = HandleDecl(cTable, pNode->expressions[0]);
 		opList.Add(HandleStackPush(cTable, pNode->expressions[1], staticData));
+
+	} else if (binopCAE.bc == AAByteCode::SETFIELD) {
+	
+		opList.Add(HandleVarPush(cTable, pNode->expressions[0]->expressions[0]));
+		opList.Add(HandleStackPush(cTable, pNode->expressions[1], staticData));
+
+		binopCAE.argCount = 1;
+		binopCAE.argValues[0] = pNode->expressions[0]->expressions[1]->tags["fieldid"];
 
 	} else {
 
@@ -455,6 +496,9 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileUnaryOperation(AA_AST_NODE
 aa::list<AAC::CompiledAbstractExpression> AAC::CompileAccessorOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData) {
 
 	aa::list<CompiledAbstractExpression> opList;
+
+	opList.Add(this->CompileAST(pNode->expressions[0], cTable, staticData));
+	opList.Add(this->CompileAST(pNode->expressions[1], cTable, staticData));
 
 	return opList;
 
@@ -682,7 +726,7 @@ bool AAC::IsDecleration(AA_AST_NODE_TYPE type) {
 	return type == AA_AST_NODE_TYPE::vardecl;
 }
 
-AAByteCode AAC::GetBytecodeFromBinaryOperator(std::wstring ws) {
+AAByteCode AAC::GetBytecodeFromBinaryOperator(std::wstring ws, AA_AST_NODE_TYPE lhsType) {
 
 	if (ws == L"+") {
 		return AAByteCode::ADD;
@@ -695,7 +739,7 @@ AAByteCode AAC::GetBytecodeFromBinaryOperator(std::wstring ws) {
 	} else if (ws == L"%") {
 		return AAByteCode::MOD;
 	} else if (ws == L"=") {
-		return AAByteCode::SETVAR;
+		return (lhsType == AA_AST_NODE_TYPE::fieldaccess) ? AAByteCode::SETFIELD : AAByteCode::SETVAR;
 	} else if (ws == L"==") {
 		return AAByteCode::CMPE;
 	} else if (ws == L"!=") {
@@ -802,6 +846,17 @@ AAC::CompiledAbstractExpression AAC::HandleVarPush(CompiledEnviornmentTable& cTa
 		printf("Using a variable before it's declared!");
 		return pushCAE;
 	}
+
+}
+
+AAC::CompiledAbstractExpression AAC::HandleFieldPush(AA_AST_NODE* pNode, CompiledStaticChecks staticData) {
+
+	CompiledAbstractExpression pushCAE;
+	pushCAE.bc = AAByteCode::GETFIELD;
+	pushCAE.argCount = 1;
+	pushCAE.argValues[0] = pNode->tags["fieldid"];
+
+	return pushCAE;
 
 }
 

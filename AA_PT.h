@@ -56,6 +56,7 @@ private:
 	
 	AA_PT_NODE* CreateTree(std::vector<AA_PT_NODE*>& nodes, size_t from);
 	AA_PT_NODE* CreateExpressionTree(std::vector<AA_PT_NODE*>& nodes, size_t from);
+	std::vector<AA_PT_NODE*> CreateDeclerativeBody(std::vector<AA_PT_NODE*> nodes);
 	
 	AA_PT_NODE* CreateVariableDecl(std::vector<AA_PT_NODE*>& nodes, size_t from);
 	AA_PT_NODE* CreateClassDecl(std::vector<AA_PT_NODE*>& nodes, size_t from);
@@ -72,6 +73,9 @@ private:
 	
 	inline void HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& index);
 	inline void HandleKeywordCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex);
+
+	inline AA_PT_NODE* HandleFunctionDecleration(std::vector<AA_PT_NODE*>& nodes, size_t& from);
+	inline AA_PT_NODE* HandleVariableDecleration(std::vector<AA_PT_NODE*>& nodes, size_t& from);
 
 	AA_PT_NODE* CreateFunctionArgList(AA_PT_NODE* pExpNode);
 

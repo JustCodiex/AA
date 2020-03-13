@@ -110,6 +110,12 @@ namespace aa {
 		case AAByteCode::ALLOC:
 			output = L"ALLOC";
 			break;
+		case AAByteCode::GETFIELD:
+			output = L"GETFIELD";
+			break;
+		case AAByteCode::SETFIELD:
+			output = L"SETFIELD";
+			break;
 		default:
 			break;
 		}

@@ -1,5 +1,6 @@
 #pragma once
 #include "AAFuncSignature.h"
+#include "AAClassCompiler.h"
 #include "AA_AST.h"
 #include "list.h"
 #include <vector>
@@ -39,7 +40,7 @@ public:
 
 public:
 
-	AATypeChecker(AA_AST* pTree, aa::list<std::wstring> regTypes, aa::list<AAFuncSignature> sigs);
+	AATypeChecker(AA_AST* pTree, aa::list<std::wstring> regTypes, aa::list<AAFuncSignature> sigs, aa::list<CompiledClass> classes);
 
 	bool TypeCheck(); // Run a type-check on the tree
 
@@ -51,7 +52,8 @@ public:
 
 private:
 
-	AAValType TypeCheckClassDotAccessorOperation(AA_AST_NODE* pAccessorNode, AA_AST_NODE* left, AA_AST_NODE* right);
+	AAValType TypeCheckClassDotCallAccessorOperation(AA_AST_NODE* pAccessorNode, AA_AST_NODE* left, AA_AST_NODE* right);
+	AAValType TypeCheckClassDotFieldAccessorOperation(AA_AST_NODE* pAccessorNode, AA_AST_NODE* left, AA_AST_NODE* right);
 	AAValType TypeCheckBinaryOperation(AA_AST_NODE* pOpNode, AA_AST_NODE* left, AA_AST_NODE* right);
 	AAValType TypeCheckUnaryOperation(AA_AST_NODE* pOpNode, AA_AST_NODE* right);
 	AAValType TypeCheckCallOperation(AA_AST_NODE* pCallNode);
@@ -63,7 +65,13 @@ private:
 
 	AAValType TypeOf(AAId var);
 
+	/*
+	** Helper functions
+	*/
+
 	bool IsValidType(AAValType t);
+
+	CompiledClass FindCompiledClassOfType(AAValType type);
 
 	// Sets the last error if not set
 	void SetError(AATypeChecker::Error err) { if (!m_hasEnyErr) { m_errMsg = err; m_hasEnyErr = true; } }
@@ -76,6 +84,9 @@ private:
 	AAVarTypeEnv m_vtenv;
 	aa::list<AAValType> m_types;
 	aa::list<AAFuncSignature> m_ftenv;
+
+	// Class Auxiliary Environment
+	aa::list<CompiledClass> m_caenv;
 
 	bool m_hasEnyErr;
 	AATypeChecker::Error m_errMsg;

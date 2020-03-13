@@ -58,7 +58,7 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 			return new AA_AST_NODE(pNode->childNodes[1]->content, AA_AST_NODE_TYPE::vardecl, pNode->position);
 		} else { // When a specific type is specified
 			AA_AST_NODE* varDeclType = new AA_AST_NODE(pNode->childNodes[1]->content, AA_AST_NODE_TYPE::vardecl, pNode->position);
-			varDeclType->expressions.push_back(new AA_AST_NODE(pNode->childNodes[0]->content, AA_AST_NODE_TYPE::variable, pNode->position));
+			varDeclType->expressions.push_back(new AA_AST_NODE(pNode->childNodes[0]->content, AA_AST_NODE_TYPE::typeidentifier, pNode->position));
 			return varDeclType;
 		}
 
@@ -163,9 +163,13 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 		return newkw;
 	}
 	case AA_PT_NODE_TYPE::accessor: {
-		AA_AST_NODE* accessorNode = new AA_AST_NODE(pNode->content, AA_AST_NODE_TYPE::accessor, pNode->position);
+		AA_AST_NODE_TYPE nType = (pNode->childNodes[1]->nodeType == AA_PT_NODE_TYPE::identifier) ? AA_AST_NODE_TYPE::fieldaccess : AA_AST_NODE_TYPE::callaccess;
+		AA_AST_NODE* accessorNode = new AA_AST_NODE(pNode->content, nType, pNode->position);
 		accessorNode->expressions.push_back(this->AbstractNode(pNode->childNodes[0]));
 		accessorNode->expressions.push_back(this->AbstractNode(pNode->childNodes[1]));
+		if (nType == AA_AST_NODE_TYPE::fieldaccess) {
+			accessorNode->expressions[1]->type = AA_AST_NODE_TYPE::field;
+		}
 		return accessorNode;
 	}
 	case AA_PT_NODE_TYPE::intliteral:
@@ -239,7 +243,7 @@ AA_AST_NODE* AA_AST::SimplifyNode(AA_AST_NODE* pNode) {
 		return pNode;
 	case AA_AST_NODE_TYPE::binop:
 		return this->SimplifyBinaryNode(pNode);
-	case AA_AST_NODE_TYPE::accessor:
+	case AA_AST_NODE_TYPE::callaccess:
 		return this->SimplifyCallAccessorNode(pNode);
 	default:
 		return pNode;

@@ -119,7 +119,8 @@ private:
 
 	CompiledAbstractExpression HandleConstPush(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode);
 	CompiledAbstractExpression HandleVarPush(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode);
-	
+	CompiledAbstractExpression HandleFieldPush(AA_AST_NODE* pNode, CompiledStaticChecks staticData);
+
 	int HandleDecl(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode);
 
 	/*
@@ -129,7 +130,7 @@ private:
 	bool IsConstant(AA_AST_NODE_TYPE type);
 	bool IsVariable(AA_AST_NODE_TYPE type);
 	bool IsDecleration(AA_AST_NODE_TYPE type);
-	AAByteCode GetBytecodeFromBinaryOperator(std::wstring ws);
+	AAByteCode GetBytecodeFromBinaryOperator(std::wstring ws, AA_AST_NODE_TYPE lhsType);
 	AAByteCode GetBytecodeFromUnaryOperator(std::wstring ws);
 	int GetReturnCount(void* funcSig);
 

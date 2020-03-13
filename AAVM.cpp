@@ -241,7 +241,7 @@ AAVal AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 			break;
 		}
 		case AAByteCode::SETVAR: {
-			AA_Literal rhs = stack.Pop().litVal;
+			AAVal rhs = stack.Pop();
 			AAVM_VENV->SetVariable(AAVM_GetArgument(0), rhs);
 			AAVM_OPI++;
 			break;
@@ -306,8 +306,21 @@ AAVal AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 		}
 		case AAByteCode::ALLOC: {
 			int allocsz = AAVM_GetArgument(0);
-			AAVal allocobj = AllocAAO((size_t)allocsz);
+			AAVal allocobj = AAVal(AllocAAO((size_t)allocsz));
 			stack.Push(allocobj);
+			AAVM_OPI++;
+			break;
+		}
+		case AAByteCode::GETFIELD: {
+			AAVal o = stack.Pop();
+			stack.Push(o.obj->values[AAVM_GetArgument(0)]);
+			AAVM_OPI++;
+			break;
+		}
+		case AAByteCode::SETFIELD: {
+			AAVal rhs = stack.Pop();
+			AAVal o = stack.Pop();
+			o.obj->values[AAVM_GetArgument(0)] = rhs;
 			AAVM_OPI++;
 			break;
 		}

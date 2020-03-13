@@ -7,7 +7,9 @@ enum class AA_AST_NODE_TYPE {
 	undefined,
 
 	seperator,
-	accessor,
+	//accessor,
+	callaccess,
+	fieldaccess,
 
 	block,
 	funcbody,
@@ -43,6 +45,8 @@ enum class AA_AST_NODE_TYPE {
 
 	vardecl,
 	variable,
+
+	field,
 
 	funcall,
 	funarg,
