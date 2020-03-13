@@ -1,0 +1,16 @@
+class ExampleClass {
+    int fieldx; // This is a field (currently public)
+    ExampleClass() {
+        fieldx = 10;
+    }
+    int ByTen(int val) {
+        val * fieldx;
+    }
+}
+
+int main() {
+    ExampleClass e = new ExampleClass();
+    e.ByTen(5);
+}
+
+main();

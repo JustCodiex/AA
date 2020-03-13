@@ -3,22 +3,25 @@
 
 void AAClassCompiler::RedefineFunDecl(std::wstring className, AA_AST_NODE* pFuncDeclNode) {
 
+	// Flag used to see if we're a constructor func
 	bool isConstructor = false;
 
+	// Is the name set to .ctor (marked as a constructor by AST)
 	if (pFuncDeclNode->content == L".ctor") {
 		pFuncDeclNode->content = className;
 		pFuncDeclNode->expressions[0] = new AA_AST_NODE(className, AA_AST_NODE_TYPE::typeidentifier, pFuncDeclNode->position);
 		isConstructor = true;
 	}
 
+	// Fetch real function name
 	pFuncDeclNode->content = className + L"::" + pFuncDeclNode->content;
 
+	// Create 'this' reference for function decleration
 	AA_AST_NODE* thisRef = new AA_AST_NODE(L"this", AA_AST_NODE_TYPE::funarg, AACodePosition(0,0));
 	thisRef->expressions.push_back(new AA_AST_NODE(className, AA_AST_NODE_TYPE::typeidentifier, AACodePosition(0, 0)));
 	
+	// Add 'this' reference to function decleration
 	pFuncDeclNode->expressions[1]->expressions.insert(pFuncDeclNode->expressions[1]->expressions.begin(), thisRef);
-
-	// TODO: Go through the body
 
 	// Are we the constructor
 	if (isConstructor) {
@@ -93,10 +96,14 @@ void AAClassCompiler::CorrectFuncFieldReferences(AA_AST_NODE* pNode, CompiledCla
 		this->CorrectFuncFieldReferences(pNode->expressions[0], cc);
 		break;
 	case AA_AST_NODE_TYPE::variable: {
-		int fID;
+
+		int fID; // If we have a field in the class with specified variable (TODO: Check function params - because then the this word must be explicit)
 		if (HasField(*cc, pNode->content, fID)) {
+
+			// Update the identiffier to be a member access operation
 			this->UpdateIdentifierToThisFieldReference(pNode, fID);
 		}
+
 		break;
 	}
 	default:
@@ -109,7 +116,7 @@ void AAClassCompiler::UpdateIdentifierToThisFieldReference(AA_AST_NODE* pNode, i
 
 	pNode->type = AA_AST_NODE_TYPE::fieldaccess;
 	pNode->expressions.push_back(new AA_AST_NODE(L"this", AA_AST_NODE_TYPE::variable, pNode->position));
-	pNode->expressions.push_back(new AA_AST_NODE(pNode->content, AA_AST_NODE_TYPE::variable, pNode->position));
+	pNode->expressions.push_back(new AA_AST_NODE(pNode->content, AA_AST_NODE_TYPE::field, pNode->position));
 	pNode->expressions[pNode->expressions.size() - 1]->tags["fieldid"] = fieldId;
 
 }
