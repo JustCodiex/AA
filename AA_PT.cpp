@@ -189,8 +189,11 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 		break;
 	case AA_PT_NODE_TYPE::accessor:
 
-		// We assume left-side is just an identifier or it handles by itself
-		// Thus we only need to sort out the right-side
+		if (nodes[nodeIndex]->childNodes[0]->childNodes.size() > 0 && nodes[nodeIndex]->childNodes[0]->nodeType != AA_PT_NODE_TYPE::identifier) {
+			size_t t = 0;
+			this->HandleTreeCase(nodes[nodeIndex]->childNodes, t);
+		}
+
 		if (nodes[nodeIndex]->childNodes[1]->childNodes.size() > 0 && nodes[nodeIndex]->childNodes[1]->nodeType != AA_PT_NODE_TYPE::identifier) {
 			nodes[nodeIndex]->childNodes[1] = this->CreateTree(nodes[nodeIndex]->childNodes[1]->childNodes, 0);
 		}
@@ -786,7 +789,7 @@ void AA_PT::ApplyAccessorBindings(std::vector<AA_PT_NODE*>& nodes) {
 
 		if (nodes[i]->nodeType == AA_PT_NODE_TYPE::accessor) {
 
-			if (i - 1 < (int)nodes.size() && nodes[i-1]->nodeType == AA_PT_NODE_TYPE::identifier) {
+			if (i - 1 >= 0 && (nodes[i-1]->nodeType == AA_PT_NODE_TYPE::identifier || nodes[i-1]->nodeType == AA_PT_NODE_TYPE::accessor)) {
 
 				if (i + 1 < (int)nodes.size() && nodes[i + 1]->nodeType == AA_PT_NODE_TYPE::identifier) {
 

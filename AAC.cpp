@@ -497,7 +497,7 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileAccessorOperation(AA_AST_N
 
 	aa::list<CompiledAbstractExpression> opList;
 
-	opList.Add(this->CompileAST(pNode->expressions[0], cTable, staticData));
+	opList.Add(this->CompileAST(pNode->expressions[0], cTable, staticData)); // CALL ACCESS NOT HANDLEs => Implement that
 	opList.Add(this->CompileAST(pNode->expressions[1], cTable, staticData));
 
 	return opList;

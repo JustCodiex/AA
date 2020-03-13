@@ -1,0 +1,28 @@
+class Teacher {
+    int age;
+    Teacher(int a) {
+        age = a;
+    }
+}
+
+class SingleClass {
+    
+    int level;
+    Teacher teacher;
+
+    SingleClass() {
+        teacher = new Teacher(40);
+    }
+
+    Teacher GetTeacher() {
+        teacher;
+    }
+
+}
+
+int main() {
+    SingleClass s = new SingleClass();
+    s.GetTeacher().age;
+}
+
+main();
