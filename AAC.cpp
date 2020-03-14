@@ -412,6 +412,10 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileAST(AA_AST_NODE* pNode, Co
 		break;
 	}
 	case AA_AST_NODE_TYPE::newstatement: {
+		executionStack.Add(this->HandleCtorCall(pNode->expressions[0], cTable, staticData));
+		break;
+	}
+	case AA_AST_NODE_TYPE::classctorcall: {
 		executionStack.Add(this->HandleCtorCall(pNode, cTable, staticData));
 		break;
 	}
@@ -421,6 +425,10 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileAST(AA_AST_NODE* pNode, Co
 	}
 	case AA_AST_NODE_TYPE::field: {
 		executionStack.Add(this->HandleFieldPush(pNode, staticData));
+		break;
+	}
+	case AA_AST_NODE_TYPE::callaccess: {
+		executionStack.Add(this->HandleMemberCall(pNode, cTable, staticData));
 		break;
 	}
 	// Implicit return
@@ -894,7 +902,7 @@ aa::list<AAC::CompiledAbstractExpression> AAC::HandleCtorCall(AA_AST_NODE* pNode
 
 	aa::list<CompiledAbstractExpression> opList;
 
-	CompiledClass cc = m_classCompiler->FindClassFromCtor(pNode->expressions[0]->content, staticData.registeredClasses);
+	CompiledClass cc = m_classCompiler->FindClassFromCtor(pNode->content, staticData.registeredClasses);
 	CompiledClassMethod ctor = m_classCompiler->FindBestCtor(&cc);
 
 	CompiledAbstractExpression newCAE;
@@ -904,12 +912,39 @@ aa::list<AAC::CompiledAbstractExpression> AAC::HandleCtorCall(AA_AST_NODE* pNode
 
 	opList.Add(newCAE);
 
-	aa::list<CompiledAbstractExpression> ctorCll = this->CompileAST(pNode->expressions[0], ctable, staticData);
-	ctorCll.Last().argValues[1]++;
-	ctorCll.Last().argValues[0] = ctor.procID;
+	for (size_t i = 0; i < pNode->expressions.size(); i++) {
+		opList.Add(this->CompileAST(pNode->expressions[i], ctable, staticData));
+	}
 
-	opList.Add(ctorCll);
+	CompiledAbstractExpression callCAE;
+	callCAE.bc = AAByteCode::CALL;
+	callCAE.argCount = 2;
+	callCAE.argValues[0] = ctor.procID;
+	callCAE.argValues[1] = (int)ctor.sig.parameters.size();
 
+	opList.Add(callCAE);
+
+	return opList;
+
+}
+
+aa::list<AAC::CompiledAbstractExpression> AAC::HandleMemberCall(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData) {
+
+	// The op list to get from member call
+	aa::list<CompiledAbstractExpression> opList;
+
+	// Create a temporary node
+	AA_AST_NODE* tempNode = new AA_AST_NODE(pNode->expressions[1]->content, AA_AST_NODE_TYPE::funcall, pNode->expressions[0]->position);
+	tempNode->expressions = pNode->expressions[1]->expressions;
+	tempNode->expressions.insert(tempNode->expressions.begin(), pNode->expressions[0]);
+
+	// Call member
+	opList = this->CompileFunctionCall(tempNode, cTable, staticData);
+
+	// Delete the temporary node again
+	delete tempNode;
+
+	// Return the op list
 	return opList;
 
 }
@@ -1053,7 +1088,7 @@ int AAC::FindBestFunctionMatch(CompiledStaticChecks staticCheck, AA_AST_NODE* pN
 
 	for (size_t i = 0; i < staticCheck.registeredFunctions.Size(); i++) {
 		AAC::CompiledStaticChecks::SigPointer sig = staticCheck.registeredFunctions.At(i);
-		if (sig.funcSig.name == funcName) {
+		if (sig.funcSig.name.compare(funcName) == 0) {
 			if (pNode->expressions.size() == sig.funcSig.parameters.size()) {
 				bool isMatch = true; //false;
 				for (AAFuncParam p : sig.funcSig.parameters) {

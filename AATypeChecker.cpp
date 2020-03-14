@@ -89,6 +89,8 @@ std::wstring AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 		return this->TypeCheckCallOperation(node);
 	case AA_AST_NODE_TYPE::newstatement:
 		return this->TypeCheckNewStatement(node);
+	case AA_AST_NODE_TYPE::classctorcall:
+		return node->content; // Node content will match the ctor class type
 	case AA_AST_NODE_TYPE::intliteral:
 		return L"int";
 	case AA_AST_NODE_TYPE::charliteral:
@@ -282,7 +284,7 @@ AAValType AATypeChecker::TypeCheckFuncDecl(AA_AST_NODE* pDeclNode) {
 AAValType AATypeChecker::TypeCheckNewStatement(AA_AST_NODE* pNewStatement) {
 
 	if (this->IsValidType(pNewStatement->expressions[0]->content)) {
-		return pNewStatement->expressions[0]->content;
+		return this->TypeCheckNode(pNewStatement->expressions[0]);
 	} else {
 		// TODO: Error
 		return InvalidTypeStr;

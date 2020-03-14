@@ -159,7 +159,13 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 	}
 	case AA_PT_NODE_TYPE::newstatement: {
 		AA_AST_NODE* newkw = new AA_AST_NODE(L"new", AA_AST_NODE_TYPE::newstatement, pNode->position);
-		newkw->expressions.push_back(this->AbstractNode(pNode->childNodes[0]));
+		if (pNode->childNodes[0]->nodeType == AA_PT_NODE_TYPE::funccall) {
+			AA_AST_NODE* ctorNode = this->AbstractNode(pNode->childNodes[0]);
+			ctorNode->type = AA_AST_NODE_TYPE::classctorcall;
+			newkw->expressions.push_back(ctorNode);
+		} else {
+			printf("Something");
+		}
 		return newkw;
 	}
 	case AA_PT_NODE_TYPE::accessor: {

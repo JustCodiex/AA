@@ -40,6 +40,7 @@ enum class AA_AST_NODE_TYPE {
 	fundecl,
 
 	classdecl,
+	classctorcall,
 
 	typeidentifier,
 
