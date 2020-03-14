@@ -15,7 +15,7 @@ int main() {
     VM->SetOutput(&std::cout);
 
     // Current test case
-    VM->CompileAndRunFile(L"testing\\class4.aa", L"out\\bin\\class4.aab", L"out\\op\\class4.txt");
+    VM->CompileAndRunFile(L"testing\\array1.aa", L"out\\bin\\array1.aab", L"out\\op\\array1.txt");
 
     // Run regression tests
     if (enableRegTests) {

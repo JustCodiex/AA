@@ -78,6 +78,10 @@ AA_PT_NODE_TYPE AA_PT::GetSeperatorType(std::wstring val) {
 		return AA_PT_NODE_TYPE::block_start;
 	} else if (val == L"}") {
 		return AA_PT_NODE_TYPE::block_end;
+	} else if (val == L"[") {
+		return AA_PT_NODE_TYPE::indexer_start;
+	} else if (val == L"]") {
+		return AA_PT_NODE_TYPE::indexer_end;
 	} else if(val == L"(") {
 		return AA_PT_NODE_TYPE::parenthesis_start;
 	} else if (val == L")") {
@@ -203,7 +207,10 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 
 		break;
 	case AA_PT_NODE_TYPE::identifier:
-		if (nodeIndex + 1 < nodes.size() && nodes[nodeIndex + 1]->nodeType == AA_PT_NODE_TYPE::identifier) {
+		if (nodeIndex + 1 < nodes.size() && (nodes[nodeIndex + 1]->nodeType == AA_PT_NODE_TYPE::identifier || nodes[nodeIndex+1]->nodeType == AA_PT_NODE_TYPE::indexing)) {
+
+			// Handle array decleration if it's the case
+			this->HandleIndexDecl(nodes, nodeIndex);
 
 			// if the next segment is an argument list (expression), it's a func decl with type != void
 			// If not, it's most likely a variable decleration
@@ -214,6 +221,7 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 				nodes[nodeIndex] = this->HandleVariableDecleration(nodes, nodeIndex);
 			}
 
+			// Goto next element
 			nodeIndex++;
 
 		} else if (nodeIndex + 1 < nodes.size() && nodes[nodeIndex + 1]->nodeType == AA_PT_NODE_TYPE::expression) {
@@ -280,7 +288,7 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 void AA_PT::HandleKeywordCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 
 	if (nodes[nodeIndex]->content == L"var") {
-		
+
 		nodes[nodeIndex] = this->HandleVariableDecleration(nodes, nodeIndex);
 
 	} else if (nodes[nodeIndex]->content == L"class") {
@@ -352,6 +360,19 @@ void AA_PT::HandleKeywordCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex
 	}
 
 	nodeIndex++;
+
+}
+
+void AA_PT::HandleIndexDecl(std::vector<AA_PT_NODE*>& nodes, size_t nodeIndex) {
+
+	if (nodes[nodeIndex + 1]->nodeType == AA_PT_NODE_TYPE::indexing) {
+		if (nodes[nodeIndex + 1]->childNodes.size() == 0) {
+			nodes[nodeIndex]->content += L"[]";
+			nodes.erase(nodes.begin() + nodeIndex + 1);
+		} else {
+			printf("Unexpected number of arguments!");
+		}
+	}
 
 }
 
@@ -773,6 +794,10 @@ void AA_PT::ApplyGroupings(std::vector<AA_PT_NODE*>& nodes) {
 	// Pair parenthesis statements
 	int i = 0;
 	PairStatements(nodes, i, AA_PT_NODE_TYPE::parenthesis_start, AA_PT_NODE_TYPE::parenthesis_end, AA_PT_NODE_TYPE::expression);
+
+	// Pair indexers
+	i = 0;
+	PairStatements(nodes, i, AA_PT_NODE_TYPE::indexer_start, AA_PT_NODE_TYPE::indexer_end, AA_PT_NODE_TYPE::indexing);
 
 	// Pair possible function or keywords with arguments to their parenthesis (Because arguments to something binds the strongest)
 	ApplyFunctionBindings(nodes);

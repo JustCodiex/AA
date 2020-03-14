@@ -41,6 +41,10 @@ enum class AA_PT_NODE_TYPE {
 	parenthesis_start,
 	parenthesis_end,
 
+	indexer_start,
+	indexer_end,
+	indexing,
+
 	binary_operation,
 	unary_operation,
 

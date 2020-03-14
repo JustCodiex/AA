@@ -381,6 +381,13 @@ void RunClassTests(AAVM* pAAVM, int& s, int& f) {
 		s++;
 	}
 
+	// Test class for field access (3.0)
+	if (!RunFileTest(pAAVM, L"testing\\class4.aa", L"out\\bin\\class4.aab", L"out\\op\\class4.txt", L"40")) {
+		f++;
+	} else {
+		s++;
+	}
+
 }
 
 bool RunRegressionTests(AAVM* pAAVM) {
