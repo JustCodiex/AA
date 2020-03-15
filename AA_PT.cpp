@@ -1,6 +1,9 @@
 #include "AA_PT.h"
 #include <map>
 
+bool AA_PT::g_hasEnyErr = false;
+AA_PT::Error AA_PT::g_errMsg = AA_PT::Error();
+
 AA_PT::AA_PT(AA_PT_NODE* root) {
 	m_root = root;
 }
@@ -148,9 +151,15 @@ AA_PT_NODE* AA_PT::CreateTree(std::vector<AA_PT_NODE*>& nodes, size_t from) {
 
 	if (nodes.size() > 0 && (nodes[from]->nodeType == AA_PT_NODE_TYPE::block)) {
 		HandleTreeCase(nodes, nodeIndex);
+		if (nodeIndex == AA_PT_NODE_OUT_OF_BOUNDS_INDEX) {
+			return 0;
+		}
 	} else {
 		while (nodes.size() > 1 && nodeIndex < nodes.size()) {
 			HandleTreeCase(nodes, nodeIndex);
+			if (nodeIndex == AA_PT_NODE_OUT_OF_BOUNDS_INDEX) {
+				return 0;
+			}
 		}
 	}
 
@@ -329,7 +338,7 @@ void AA_PT::HandleKeywordCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex
 
 	} else if (nodes[nodeIndex]->content == L"new") {
 
-		if (nodeIndex + 2 < nodes.size() && nodes[nodeIndex + 2]->nodeType == AA_PT_NODE_TYPE::expression) {
+		if (nodeIndex + 2 < nodes.size() && (nodes[nodeIndex + 2]->nodeType == AA_PT_NODE_TYPE::expression || nodes[nodeIndex + 2]->nodeType == AA_PT_NODE_TYPE::indexing)) {
 
 			if (nodes[nodeIndex + 1]->nodeType == AA_PT_NODE_TYPE::identifier) {
 
@@ -345,14 +354,16 @@ void AA_PT::HandleKeywordCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex
 
 			} else {
 
-				printf("Expected identifier following 'new' keyword!");
+				SetError(AA_PT::Error("Expected identifier following 'new' keyword!", 1, nodes[nodeIndex]->position));
+				nodeIndex = AA_PT_NODE_OUT_OF_BOUNDS_INDEX;
 				return;
 
 			}
 
 		} else {
 
-			printf("Invalid usage of new!");
+			SetError(AA_PT::Error("Invalid usage of new!", 0, nodes[nodeIndex]->position));
+			nodeIndex = AA_PT_NODE_OUT_OF_BOUNDS_INDEX;
 			return;
 
 		}

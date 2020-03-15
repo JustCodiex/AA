@@ -16,14 +16,14 @@ void AAP::Release() {
 
 }
 
-std::vector< AA_AST*> AAP::Parse(std::wstring input) {
+AAP::AAP_ParseResult AAP::Parse(std::wstring input) {
 
 	// Tokenise the input with the lexer and then parse
 	return this->InternalParse(m_lexer->Analyse(input));
 
 }
 
-std::vector< AA_AST*> AAP::Parse(std::wifstream input) {
+AAP::AAP_ParseResult AAP::Parse(std::wifstream input) {
 	
 	// Convert file stream to input stream
 	std::wistream& wss = input;
@@ -33,7 +33,7 @@ std::vector< AA_AST*> AAP::Parse(std::wifstream input) {
 
 }
 
-std::vector< AA_AST*> AAP::InternalParse(std::vector<AALexicalResult> res) {
+AAP::AAP_ParseResult AAP::InternalParse(std::vector<AALexicalResult> res) {
 
 	// Join tokens that can be joined
 	m_lexer->Join(res);
@@ -43,7 +43,10 @@ std::vector< AA_AST*> AAP::InternalParse(std::vector<AALexicalResult> res) {
 
 }
 
-std::vector< AA_AST*> AAP::CreateParseTrees(std::vector<AALexicalResult> lexResult) {
+AAP::AAP_ParseResult AAP::CreateParseTrees(std::vector<AALexicalResult> lexResult) {
+
+	// Result of the parse operation
+	AAP_ParseResult result;
 
 	// Convert lexical analysis to AA_PT_NODEs
 	std::vector<AA_PT_NODE*> aa_pt_nodes = AA_PT::ToNodes(lexResult);
@@ -53,24 +56,36 @@ std::vector< AA_AST*> AAP::CreateParseTrees(std::vector<AALexicalResult> lexResu
 
 	// Create parse trees
 	std::vector<AA_PT*> parseTrees = AA_PT::CreateTrees(aa_pt_nodes);
-	std::vector<AA_AST*> abstractSyntaxTrees;
+	
 
-	// Go through all the parse trees we received
-	for (size_t i = 0; i < parseTrees.size(); i++) {
-		
-		// Create AST
-		AA_AST* abstractSyntaxTree = new AA_AST(parseTrees[i]);
-		
-		// Add AST to result
-		abstractSyntaxTrees.push_back(abstractSyntaxTree);
-		
-		// Clear the parse tree (No longer need it)
-		parseTrees[i]->Clear();
+	if (AA_PT::HasLastErrorMessage()) {
+
+		AA_PT::Error err = AA_PT::GetLastErrorMessage();
+		result.firstMsg = AAP_SyntaxErrorMessage(err.errType, err.errMsg, err.errSrc);
+		result.success = false;
+
+	} else {
+
+		// Go through all the parse trees we received
+		for (size_t i = 0; i < parseTrees.size(); i++) {
+
+			// Create AST
+			AA_AST* abstractSyntaxTree = new AA_AST(parseTrees[i]);
+
+			// Add AST to result
+			result.result.push_back(abstractSyntaxTree);
+
+			// Clear the parse tree (No longer need it)
+			parseTrees[i]->Clear();
+
+		}
+
+		// Mark parse result as success
+		result.success = true;
 
 	}
 
-	// Return their equivalent ASTs
-	return abstractSyntaxTrees;
+	return result;
 
 }
 

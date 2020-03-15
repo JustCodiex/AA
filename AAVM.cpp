@@ -47,11 +47,21 @@ AAVal AAVM::CompileAndRunExpression(std::wstring input) {
 
 AAVal AAVM::CompileAndRunExpression(std::wstring input, std::wstring binaryoutputfile, std::wstring formattedoutputfile) {
 
-	// Generated AST from input
-	std::vector<AA_AST*> trees = m_parser->Parse(input);
+	// Parse the input
+	AAP::AAP_ParseResult result = m_parser->Parse(input);
 
-	// Compile and run the AST
-	return this->CompileAndRun(trees, binaryoutputfile, formattedoutputfile);	
+	// Return full result of compile and run
+	return this->CompileAndRun(result, binaryoutputfile, formattedoutputfile);
+
+}
+
+AAVal AAVM::CompileAndRunFile(std::wstring sourcefile, std::wstring binaryoutputfile, std::wstring formattedoutputfile) {
+
+	// Parse the input
+	AAP::AAP_ParseResult result = m_parser->Parse(std::wifstream(sourcefile));
+
+	// Return full result of compile and run
+	return this->CompileAndRun(result, binaryoutputfile, formattedoutputfile);
 
 }
 
@@ -90,45 +100,48 @@ AAVal AAVM::CompileAndRunFile(std::wstring sourcefile) {
 	return this->CompileAndRunFile(sourcefile, L"", L"");
 }
 
-AAVal AAVM::CompileAndRunFile(std::wstring sourcefile, std::wstring binaryoutputfile, std::wstring formattedoutputfile) {
+AAVal AAVM::CompileAndRun(AAP::AAP_ParseResult result, std::wstring binaryoutputfile, std::wstring formattedoutputfile) {
 
-	// Generated AST from input
-	std::vector<AA_AST*> trees = m_parser->Parse(std::wifstream(sourcefile));
+	// The the parser succeed?
+	if (result.success) {
 
-	// Compile and run the AST
-	return this->CompileAndRun(trees, binaryoutputfile, formattedoutputfile);
+		// Set compiler output file
+		m_compiler->SetOpListFile(formattedoutputfile);
 
-}
+		// Compile all procedures into bytecode
+		AAC_CompileResult compileResult = m_compiler->CompileFromAbstractSyntaxTrees(result.result);
 
-AAVal AAVM::CompileAndRun(std::vector<AA_AST*> trees, std::wstring binaryoutputfile, std::wstring formattedoutputfile) {
+		// Did we compile without error?
+		if (COMPILE_SUCESS(compileResult)) {
 
-	// Set compiler output file
-	m_compiler->SetOpListFile(formattedoutputfile);
+			// Only dump bytecode if a filepath is specified
+			if (binaryoutputfile != L"") {
 
-	// Compile all procedures into bytecode
-	AAC_CompileResult compileResult = m_compiler->CompileFromAbstractSyntaxTrees(trees);
+				// Dump bytecode
+				aa::dump_bytecode(binaryoutputfile, compileResult.result);
 
-	// Did we compile without error?
-	if (COMPILE_SUCESS(compileResult)) {
+			}
 
-		// Only dump bytecode if a filepath is specified
-		if (binaryoutputfile != L"") {
+			// Cleanup trees
+			m_parser->ClearTrees(result.result);
 
-			// Dump bytecode
-			aa::dump_bytecode(binaryoutputfile, compileResult.result);
+			// Execute the bytecode
+			return this->Execute(compileResult.result);
+
+		} else {
+
+			// Write compiler error
+			this->WriteCompilerError(compileResult.firstMsg);
+
+			// Return null
+			return AAVal::Null;
 
 		}
 
-		// Cleanup trees
-		m_parser->ClearTrees(trees);
-
-		// Execute the bytecode
-		return this->Execute(compileResult.result);
-
 	} else {
 
-		// Write compiler error
-		this->WriteCompilerError(compileResult.firstMsg);
+		// Write syntax error
+		this->WriteSyntaxError(result.firstMsg);
 
 		// Return null
 		return AAVal::Null;
@@ -406,25 +419,45 @@ AAVal AAVM::ReportStack(aa::stack<AAVal> stack) {
 
 void AAVM::WriteCompilerError(AAC_CompileErrorMessage errMsg) {
 
-	// Make sure we have an output stream we can write to
-	if (m_outStream) {
+	// Do we have a valid message?
+	if (errMsg.errorMsg) {
 
-		// Do we have a valid message?
-		if (errMsg.errorMsg) {
+		// Format the compile error message
+		std::string compileErrMsg = "Failed to compile, [C" + std::to_string(errMsg.errorType) + "] -> '" + std::string(errMsg.errorMsg)
+			+ "' on line " + std::to_string(errMsg.errorSource.line) + ", column " + std::to_string(errMsg.errorSource.column) + "\n";
 
-			// Format the compile error message
-			std::string compileErrMsg = "Failed to compile, [C" + std::to_string(errMsg.errorType) + "] -> '" + std::string(errMsg.errorMsg)
-				+ "' on line " + std::to_string(errMsg.errorSource.line) + ", column " + std::to_string(errMsg.errorSource.column) + "\n";
-
-			// Write error message
-			m_outStream->write(compileErrMsg.c_str(), compileErrMsg.length());
-
-		} else {
-
-			// something much more awful
-
-		}
+		// Write error message
+		this->WriteMsg(compileErrMsg.c_str());
 
 	}
 
 }
+
+void AAVM::WriteSyntaxError(AAP::AAP_SyntaxErrorMessage errMsg) {
+
+	// Do we have a valid message?
+	if (errMsg.errorMsg) {
+
+		// Format the compile error message
+		std::string compileErrMsg = "Syntax error, [S" + std::to_string(errMsg.errorType) + "] -> '" + std::string(errMsg.errorMsg)
+			+ "' on line " + std::to_string(errMsg.errorSource.line) + ", column " + std::to_string(errMsg.errorSource.column) + "\n";
+
+		// Write error message
+		this->WriteMsg(compileErrMsg.c_str());
+
+	}
+
+}
+
+
+void AAVM::WriteMsg(const char* msg) {
+
+	if (m_outStream) {
+
+		// Write error message
+		m_outStream->write(msg, strlen(msg));
+
+	}
+
+}
+

@@ -121,6 +121,13 @@ std::wstring AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 		}
 	case AA_AST_NODE_TYPE::ifstatement:
 		return this->TypeCheckConditionalBlock(node);
+	case AA_AST_NODE_TYPE::vardecl:
+		if (this->IsValidType(node->expressions[0]->content)) {
+			return node->expressions[0]->content;
+		} else {
+			this->SetError(AATypeChecker::Error("Undefined type " + string_cast(node->expressions[0]->content), 2, node->position));
+			break;
+		}
 	default:
 		break;
 	}
@@ -303,7 +310,15 @@ std::wstring AATypeChecker::TypeOf(AAId var) {
 }
 
 bool AATypeChecker::IsValidType(AAValType t) {
-	return m_types.Contains(t);
+	if (!m_types.Contains(t)) {
+		if (t.length() > 2 && t.substr(t.length() - 2) == L"[]") {
+			return m_types.Contains(t.substr(0, t.length() - 2));
+		} else {
+			return false;
+		}
+	} else {
+		return true;
+	}	
 }
 
 CompiledClass AATypeChecker::FindCompiledClassOfType(AAValType type) {
