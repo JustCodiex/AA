@@ -1,6 +1,5 @@
 #include "AAVM.h"
 #include "AAB2F.h"
-#include "AARuntimeEnvironment.h"
 #include <ctime>
 
 AAVM* AAVM::CreateNewVM(bool logExecuteTime, bool logCompiler, bool logTopStack) {
@@ -48,7 +47,7 @@ AAVal AAVM::CompileAndRunExpression(std::wstring input) {
 AAVal AAVM::CompileAndRunExpression(std::wstring input, std::wstring binaryoutputfile, std::wstring formattedoutputfile) {
 
 	// Parse the input
-	AAP::AAP_ParseResult result = m_parser->Parse(input);
+	AAP_ParseResult result = m_parser->Parse(input);
 
 	// Return full result of compile and run
 	return this->CompileAndRun(result, binaryoutputfile, formattedoutputfile);
@@ -58,7 +57,7 @@ AAVal AAVM::CompileAndRunExpression(std::wstring input, std::wstring binaryoutpu
 AAVal AAVM::CompileAndRunFile(std::wstring sourcefile, std::wstring binaryoutputfile, std::wstring formattedoutputfile) {
 
 	// Parse the input
-	AAP::AAP_ParseResult result = m_parser->Parse(std::wifstream(sourcefile));
+	AAP_ParseResult result = m_parser->Parse(std::wifstream(sourcefile));
 
 	// Return full result of compile and run
 	return this->CompileAndRun(result, binaryoutputfile, formattedoutputfile);
@@ -100,7 +99,7 @@ AAVal AAVM::CompileAndRunFile(std::wstring sourcefile) {
 	return this->CompileAndRunFile(sourcefile, L"", L"");
 }
 
-AAVal AAVM::CompileAndRun(AAP::AAP_ParseResult result, std::wstring binaryoutputfile, std::wstring formattedoutputfile) {
+AAVal AAVM::CompileAndRun(AAP_ParseResult result, std::wstring binaryoutputfile, std::wstring formattedoutputfile) {
 
 	// The the parser succeed?
 	if (result.success) {
@@ -201,6 +200,8 @@ AAVal AAVM::Run(AAProgram* pProg) {
 
 #define AAVM_CURRENTOP procedure[AAVM_PROC].opSequence[AAVM_OPI].op
 #define AAVM_GetArgument(i) procedure[AAVM_PROC].opSequence[AAVM_OPI].args[i]
+
+#define AAVM_ThrowRuntimeErr(exc, msg) this->WriteRuntimeError(AAVM_RuntimeError(exc, (msg).c_str(), execp, callstack)); return AAVal::Null;
 
 AAVal AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 
@@ -337,6 +338,21 @@ AAVal AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 			AAVM_OPI++;
 			break;
 		}
+		case AAByteCode::GETELEM: {
+			int i = stack.Pop().litVal.lit.i.val;
+			AAVal e = stack.Pop();
+			if (e.obj->valCount >= 0 && i < e.obj->valCount) {
+				stack.Push(e.obj->values[i]);
+			} else {
+				AAVM_ThrowRuntimeErr("IndexOutOfRange", "Index " + std::to_string(i) + " is out of range!");
+			}
+			AAVM_OPI++;
+			break;
+		}
+		case AAByteCode::SETELEM: {
+			AAVM_OPI++;
+			break;
+		}
 		case AAByteCode::NOP:
 		default:
 			AAVM_OPI++;
@@ -433,25 +449,40 @@ void AAVM::WriteCompilerError(AAC_CompileErrorMessage errMsg) {
 
 }
 
-void AAVM::WriteSyntaxError(AAP::AAP_SyntaxErrorMessage errMsg) {
+void AAVM::WriteSyntaxError(AAP_SyntaxErrorMessage errMsg) {
 
 	// Do we have a valid message?
 	if (errMsg.errorMsg) {
 
-		// Format the compile error message
-		std::string compileErrMsg = "Syntax error, [S" + std::to_string(errMsg.errorType) + "] -> '" + std::string(errMsg.errorMsg)
+		// Format the syntax error message
+		std::string syntaxErrMsg = "Syntax error, [S" + std::to_string(errMsg.errorType) + "] -> '" + std::string(errMsg.errorMsg)
 			+ "' on line " + std::to_string(errMsg.errorSource.line) + ", column " + std::to_string(errMsg.errorSource.column) + "\n";
 
-		// Write error message
-		this->WriteMsg(compileErrMsg.c_str());
+		// Write syntax message
+		this->WriteMsg(syntaxErrMsg.c_str());
 
 	}
 
 }
 
+void AAVM::WriteRuntimeError(AAVM_RuntimeError err) {
+
+	// Make sure there's a valid error message
+	if (err.errMsg) {
+
+		// Format runtime message
+		std::string runtimeErrMsg = "Runtime exception, [" + std::string(err.errName) + "] -> '" + std::string(err.errMsg) + "'\n";
+
+		// Write message
+		this->WriteMsg(runtimeErrMsg.c_str());
+
+	}
+
+}
 
 void AAVM::WriteMsg(const char* msg) {
 
+	// Make sure there's a valid stream to write to
 	if (m_outStream) {
 
 		// Write error message
@@ -460,4 +491,3 @@ void AAVM::WriteMsg(const char* msg) {
 	}
 
 }
-

@@ -1,5 +1,6 @@
 #include "AAC.h"
 #include "AAB2F.h"
+#include "AAVal.h"
 #include <stack>
 
 void AAC::SetupCompiler() {
@@ -412,7 +413,8 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileAST(AA_AST_NODE* pNode, Co
 		break;
 	}
 	case AA_AST_NODE_TYPE::newstatement: {
-		executionStack.Add(this->HandleCtorCall(pNode->expressions[0], cTable, staticData));
+		executionStack.Add(this->CompileNewStatement(pNode, cTable, staticData));
+		
 		break;
 	}
 	case AA_AST_NODE_TYPE::classctorcall: {
@@ -441,6 +443,10 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileAST(AA_AST_NODE* pNode, Co
 	case AA_AST_NODE_TYPE::nullliteral:
 	{
 		executionStack.Add(HandleStackPush(cTable, pNode, staticData));
+		break;
+	}
+	case AA_AST_NODE_TYPE::index: {
+		executionStack.Add(HandleIndexPush(pNode, cTable, staticData));
 		break;
 	}
 	default:
@@ -721,6 +727,35 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileDoWhileBlock(AA_AST_NODE* 
 
 }
 
+aa::list<AAC::CompiledAbstractExpression> AAC::CompileNewStatement(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData) {
+
+	// Operations list
+	aa::list<CompiledAbstractExpression> opList;
+
+	// Is it a constructor call?
+	if (pNode->expressions[0]->type == AA_AST_NODE_TYPE::classctorcall) {
+		
+		// Let the specific function handle that
+		opList.Add(this->HandleCtorCall(pNode->expressions[0], cTable, staticData));
+
+	} else { // Else it's an array creation
+
+		// Create allocation instruction
+		CompiledAbstractExpression allocCAE;
+		allocCAE.bc = AAByteCode::ALLOC;
+		allocCAE.argCount = 1;
+		allocCAE.argValues[0] = std::stoi(pNode->expressions[0]->expressions[1]->content) * sizeof(AAVal);
+
+		// Add to oplist
+		opList.Add(allocCAE);
+
+	}
+
+	// return oplist
+	return opList;
+
+}
+
 bool AAC::IsConstant(AA_AST_NODE_TYPE type) {
 	return type == AA_AST_NODE_TYPE::intliteral || type == AA_AST_NODE_TYPE::boolliteral || type == AA_AST_NODE_TYPE::charliteral ||
 		type == AA_AST_NODE_TYPE::floatliteral || type == AA_AST_NODE_TYPE::stringliteral;
@@ -943,6 +978,30 @@ aa::list<AAC::CompiledAbstractExpression> AAC::HandleMemberCall(AA_AST_NODE* pNo
 
 	// Delete the temporary node again
 	delete tempNode;
+
+	// Return the op list
+	return opList;
+
+}
+
+aa::list<AAC::CompiledAbstractExpression> AAC::HandleIndexPush(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData) {
+
+	// The op list to get from member call
+	aa::list<CompiledAbstractExpression> opList;
+
+	// Handle var push (eg. actually get the variable we're looking for)
+	opList.Add(this->HandleVarPush(cTable, pNode->expressions[0]));
+
+	// Handle field fetch
+	opList.Add(this->CompileAST(pNode->expressions[1], cTable, staticData));
+
+	// Create dynamic method of fetching element operation
+	CompiledAbstractExpression getElemCAE;
+	getElemCAE.bc = AAByteCode::GETELEM;
+	getElemCAE.argCount = 0;
+
+	// Add to operations list
+	opList.Add(getElemCAE);
 
 	// Return the op list
 	return opList;

@@ -116,6 +116,12 @@ namespace aa {
 		case AAByteCode::SETFIELD:
 			output = L"SETFIELD";
 			break;
+		case AAByteCode::GETELEM:
+			output = L"GETELEM";
+			break;
+		case AAByteCode::SETELEM:
+			output = L"SETELEM";
+			break;
 		default:
 			break;
 		}

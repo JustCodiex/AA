@@ -22,11 +22,14 @@ enum class AAByteCode : unsigned char {
 	SETFIELD, // (Set field, 1 argument[field ID])
 	GETFIELD, // (Get field, 1 argument[field ID])
 
+	GETELEM, // (Get element based on dynamic indexing, 0 arguments)
+	SETELEM, // (Set element based on dynamic indexing, TBD)
+
 	JMP, // (Relative jump to operation, 1 argument[distance])
 	JMPF, // (Relative jump to operation if top of stack is false, 1 argument[distance])
 	JMPT, // (Relative jump to operation if top of stack is true, 1 argument[distance])
 	LJMP, // (Long relative jump to operation, 1 argument[distance])
-	CALL, // (Call subroutine, 1 argument[procID])
+	CALL, // (Call subroutine, 2 arguments[procID, argCount])
 	RET, // (Return, 1 argument[returtCount])
 
 	CMPE, // (Compares the two top elements on stack and returns true if they're equal, 0 arguments)
@@ -40,6 +43,6 @@ enum class AAByteCode : unsigned char {
 	LAND, // (Logical And, 0 arguments)
 	LOR, // (Logcal Or, 0 arguments)
 
-	ALLOC, // (Allocate memory for new object, TBD)
+	ALLOC, // (Allocate memory for new object, 1 argument[size in bytes])
 
 };

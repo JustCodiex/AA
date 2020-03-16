@@ -16,14 +16,14 @@ void AAP::Release() {
 
 }
 
-AAP::AAP_ParseResult AAP::Parse(std::wstring input) {
+AAP_ParseResult AAP::Parse(std::wstring input) {
 
 	// Tokenise the input with the lexer and then parse
 	return this->InternalParse(m_lexer->Analyse(input));
 
 }
 
-AAP::AAP_ParseResult AAP::Parse(std::wifstream input) {
+AAP_ParseResult AAP::Parse(std::wifstream input) {
 	
 	// Convert file stream to input stream
 	std::wistream& wss = input;
@@ -33,7 +33,7 @@ AAP::AAP_ParseResult AAP::Parse(std::wifstream input) {
 
 }
 
-AAP::AAP_ParseResult AAP::InternalParse(std::vector<AALexicalResult> res) {
+AAP_ParseResult AAP::InternalParse(std::vector<AALexicalResult> res) {
 
 	// Join tokens that can be joined
 	m_lexer->Join(res);
@@ -43,7 +43,7 @@ AAP::AAP_ParseResult AAP::InternalParse(std::vector<AALexicalResult> res) {
 
 }
 
-AAP::AAP_ParseResult AAP::CreateParseTrees(std::vector<AALexicalResult> lexResult) {
+AAP_ParseResult AAP::CreateParseTrees(std::vector<AALexicalResult> lexResult) {
 
 	// Result of the parse operation
 	AAP_ParseResult result;

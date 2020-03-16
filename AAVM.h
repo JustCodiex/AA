@@ -4,8 +4,27 @@
 #include "AAO.h"
 #include "AAVarEnv.h"
 #include "AAProgram.h"
+#include "AARuntimeEnvironment.h"
 #include "stack.h"
 #include <iostream>
+
+struct AAVM_RuntimeError {
+	const char* errMsg;
+	const char* errName;
+	AARuntimeEnvironment errEnv;
+	aa::stack<AARuntimeEnvironment> callStack;
+	AAVM_RuntimeError() {
+		this->errMsg = 0;
+		this->errName = 0;
+		this->errEnv = AARuntimeEnvironment();
+	}
+	AAVM_RuntimeError(const char* eType, const char* eMsg, AARuntimeEnvironment env, aa::stack<AARuntimeEnvironment> cstack) {
+		this->errName = eType;
+		this->errMsg = eMsg;
+		this->errEnv = env;
+		this->callStack = cstack;
+	}
+};
 
 class AAVM {
 
@@ -51,7 +70,7 @@ public:
 
 private:
 
-	AAVal CompileAndRun(AAP::AAP_ParseResult input, std::wstring binaryoutputfile, std::wstring formattedoutputfile);
+	AAVal CompileAndRun(AAP_ParseResult input, std::wstring binaryoutputfile, std::wstring formattedoutputfile);
 
 	AAVal Run(AAProgram::Procedure* procedures, int entry);
 
@@ -62,7 +81,8 @@ private:
 	inline AAVal BinaryOperation(AAByteCode op, AA_Literal left, AA_Literal right);
 
 	void WriteCompilerError(AAC_CompileErrorMessage errMsg);
-	void WriteSyntaxError(AAP::AAP_SyntaxErrorMessage errMsg);
+	void WriteSyntaxError(AAP_SyntaxErrorMessage errMsg);
+	void WriteRuntimeError(AAVM_RuntimeError err);
 
 	void WriteMsg(const char* msg);
 
