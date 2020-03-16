@@ -390,6 +390,31 @@ void RunClassTests(AAVM* pAAVM, int& s, int& f) {
 
 }
 
+void RunArrayTests(AAVM* pAAVM, int& s, int& f) {
+
+	// Test array decleration
+	if (!RunFileTest(pAAVM, L"testing\\array1.aa", L"out\\bin\\array1.aab", L"out\\op\\array1.txt", L"Null")) {
+		f++;
+	} else {
+		s++;
+	}
+
+	// Test array get from index
+	if (!RunFileTest(pAAVM, L"testing\\array2.aa", L"out\\bin\\array2.aab", L"out\\op\\array2.txt", L"0")) {
+		f++;
+	} else {
+		s++;
+	}
+
+	// Test update array value at index
+	if (!RunFileTest(pAAVM, L"testing\\array3.aa", L"out\\bin\\array3.aab", L"out\\op\\array3.txt", L"11")) {
+		f++;
+	} else {
+		s++;
+	}
+
+}
+
 bool RunRegressionTests(AAVM* pAAVM) {
 
 	bool cmplog, execlog, stacklog;
@@ -417,6 +442,9 @@ bool RunRegressionTests(AAVM* pAAVM) {
 
 	// Run block tests
 	RunBlockTests(pAAVM, successes, fails);
+
+	// Run array tests
+	RunArrayTests(pAAVM, successes, fails);
 
 	// Run function tests
 	RunFunctionTests(pAAVM, successes, fails);
