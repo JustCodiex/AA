@@ -479,6 +479,12 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileBinaryOperation(AA_AST_NOD
 		binopCAE.argCount = 1;
 		binopCAE.argValues[0] = pNode->expressions[0]->expressions[1]->tags["fieldid"];
 
+	} else if (binopCAE.bc == AAByteCode::SETELEM) {
+	
+		opList.Add(HandleVarPush(cTable, pNode->expressions[0]->expressions[0]));
+		opList.Add(HandleStackPush(cTable, pNode->expressions[0]->expressions[1], staticData));
+		opList.Add(HandleStackPush(cTable, pNode->expressions[1], staticData));
+
 	} else {
 
 		opList.Add(HandleStackPush(cTable, pNode->expressions[0], staticData));
@@ -782,7 +788,13 @@ AAByteCode AAC::GetBytecodeFromBinaryOperator(std::wstring ws, AA_AST_NODE_TYPE 
 	} else if (ws == L"%") {
 		return AAByteCode::MOD;
 	} else if (ws == L"=") {
-		return (lhsType == AA_AST_NODE_TYPE::fieldaccess) ? AAByteCode::SETFIELD : AAByteCode::SETVAR;
+		if (lhsType == AA_AST_NODE_TYPE::fieldaccess) {
+			return AAByteCode::SETFIELD;
+		} else if (lhsType == AA_AST_NODE_TYPE::index) {
+			return AAByteCode::SETELEM;
+		} else {
+			return AAByteCode::SETVAR;
+		}
 	} else if (ws == L"==") {
 		return AAByteCode::CMPE;
 	} else if (ws == L"!=") {

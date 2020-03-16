@@ -15,6 +15,7 @@ int main() {
     VM->SetOutput(&std::cout);
 
     // Current test case
+    VM->CompileAndRunFile(L"testing\\array3.aa", L"out\\bin\\array3.aab", L"out\\op\\array3.txt");
     VM->CompileAndRunFile(L"testing\\array2.aa", L"out\\bin\\array2.aab", L"out\\op\\array2.txt");
     VM->CompileAndRunFile(L"testing\\array1.aa", L"out\\bin\\array1.aab", L"out\\op\\array1.txt");
 

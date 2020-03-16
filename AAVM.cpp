@@ -341,7 +341,7 @@ AAVal AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 		case AAByteCode::GETELEM: {
 			int i = stack.Pop().litVal.lit.i.val;
 			AAVal e = stack.Pop();
-			if (e.obj->valCount >= 0 && i < e.obj->valCount) {
+			if (i >= 0 && i < e.obj->valCount) {
 				stack.Push(e.obj->values[i]);
 			} else {
 				AAVM_ThrowRuntimeErr("IndexOutOfRange", "Index " + std::to_string(i) + " is out of range!");
@@ -350,6 +350,14 @@ AAVal AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 			break;
 		}
 		case AAByteCode::SETELEM: {
+			AAVal v = stack.Pop();
+			int i = stack.Pop().litVal.lit.i.val;
+			AAVal e = stack.Pop();
+			if (i >= 0 && i < e.obj->valCount) {
+				e.obj->values[i] = v;
+			} else {
+				AAVM_ThrowRuntimeErr("IndexOutOfRange", "Index " + std::to_string(i) + " is out of range!");
+			}
 			AAVM_OPI++;
 			break;
 		}

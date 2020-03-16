@@ -103,6 +103,7 @@ bool AA_PT::IsUnaryOperator(std::vector<AA_PT_NODE*> nodes) {
 		AA_PT_NODE_TYPE::stringliteral,
 		AA_PT_NODE_TYPE::parenthesis_end,
 		AA_PT_NODE_TYPE::identifier,
+		AA_PT_NODE_TYPE::indexer_end,
 	};
 
 	if (nodes.size() > 0) {

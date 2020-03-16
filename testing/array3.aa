@@ -1,0 +1,5 @@
+{
+    int[] arr = new int[10]; // Create new array of 10 elements
+    arr[5] = 11; // Set the 6th element to be 11
+    arr[5]; // Fetch the 6th element
+}
