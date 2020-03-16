@@ -58,18 +58,21 @@ private:
 	AAValType TypeCheckUnaryOperation(AA_AST_NODE* pOpNode, AA_AST_NODE* right);
 	AAValType TypeCheckCallOperation(AA_AST_NODE* pCallNode);
 	AAValType TypeCheckConditionalBlock(AA_AST_NODE* pConditionalNode);
+	AAValType TypeCheckIndexOperation(AA_AST_NODE* pIndexNode);
 
 	AAValType TypeCheckNewStatement(AA_AST_NODE* pNewStatement);
 
 	AAValType TypeCheckFuncDecl(AA_AST_NODE* pDeclNode);
 
 	AAValType TypeOf(AAId var);
+	AAValType TypeOfArrayElements(AAValType t);
 
 	/*
 	** Helper functions
 	*/
 
 	bool IsValidType(AAValType t);
+	bool IsArrayType(AAValType t);
 
 	CompiledClass FindCompiledClassOfType(AAValType type);
 

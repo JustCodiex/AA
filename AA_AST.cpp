@@ -163,8 +163,10 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 			AA_AST_NODE* ctorNode = this->AbstractNode(pNode->childNodes[0]);
 			ctorNode->type = AA_AST_NODE_TYPE::classctorcall;
 			newkw->expressions.push_back(ctorNode);
+		} else if (pNode->childNodes[0]->nodeType == AA_PT_NODE_TYPE::indexat) {
+			newkw->expressions.push_back(this->AbstractNode(pNode->childNodes[0]));
 		} else {
-			printf("Something");
+			printf("Undefined (new) operation @%i", __LINE__);
 		}
 		return newkw;
 	}
@@ -177,6 +179,12 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 			accessorNode->expressions[1]->type = AA_AST_NODE_TYPE::field;
 		}
 		return accessorNode;
+	}
+	case AA_PT_NODE_TYPE::indexat: {
+		AA_AST_NODE* indexatNode = new AA_AST_NODE(L"", AA_AST_NODE_TYPE::index, pNode->position);
+		indexatNode->expressions.push_back(this->AbstractNode(pNode->childNodes[0]));
+		indexatNode->expressions.push_back(this->AbstractNode(pNode->childNodes[1]));
+		return indexatNode;
 	}
 	case AA_PT_NODE_TYPE::intliteral:
 	case AA_PT_NODE_TYPE::charliteral:

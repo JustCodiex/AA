@@ -16,6 +16,8 @@ aa::list<std::wstring> AATypeChecker::DefaultTypeEnv = _getdeftypeenv();
 
 std::wstring AATypeChecker::InvalidTypeStr = L"TYPE NOT FOUND";
 
+#define AATC_ERROR(msg, pos) this->SetError(AATypeChecker::Error(msg, __COUNTER__, pos)); return AATypeChecker::InvalidTypeStr
+
 AATypeChecker::AATypeChecker(AA_AST* pTree, aa::list<std::wstring> regTypes, aa::list<AAFuncSignature> sigs, aa::list<CompiledClass> classes) {
 	
 	// Set the tree to work with
@@ -125,9 +127,10 @@ std::wstring AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 		if (this->IsValidType(node->expressions[0]->content)) {
 			return node->expressions[0]->content;
 		} else {
-			this->SetError(AATypeChecker::Error("Undefined type " + string_cast(node->expressions[0]->content), 2, node->position));
-			break;
+			AATC_ERROR("Undefined type " + string_cast(node->expressions[0]->content), node->position);
 		}
+	case AA_AST_NODE_TYPE::index:
+		return this->TypeCheckIndexOperation(node);
 	default:
 		break;
 	}
@@ -155,7 +158,7 @@ std::wstring AATypeChecker::TypeCheckBinaryOperation(AA_AST_NODE* pOpNode, AA_AS
 			this->SetError(
 				AATypeChecker::Error(
 					"Type mismsatch on binary operation '" + string_cast(pOpNode->content) + "', left operand: '" + string_cast(typeLeft) + "' and right operand: '" + string_cast(typeRight) + "'",
-					1, pOpNode->position)
+					__COUNTER__, pOpNode->position)
 			); // Compiler Error 1 (Typemismatch on binary operator)
 			return InvalidTypeStr;
 
@@ -290,16 +293,35 @@ AAValType AATypeChecker::TypeCheckFuncDecl(AA_AST_NODE* pDeclNode) {
 
 AAValType AATypeChecker::TypeCheckNewStatement(AA_AST_NODE* pNewStatement) {
 
-	if (this->IsValidType(pNewStatement->expressions[0]->content)) {
-		return this->TypeCheckNode(pNewStatement->expressions[0]);
-	} else {
-		// TODO: Error
-		return InvalidTypeStr;
+	if (pNewStatement->expressions[0]->type == AA_AST_NODE_TYPE::classctorcall) {
+		if (this->IsValidType(pNewStatement->expressions[0]->content)) {
+			return this->TypeCheckNode(pNewStatement->expressions[0]);
+		}
+	} else if (pNewStatement->expressions[0]->type == AA_AST_NODE_TYPE::index) {
+		AAValType tp = pNewStatement->expressions[0]->expressions[0]->content;
+		if (this->IsValidType(tp)) {
+			return tp + L"[]";
+		}
 	}
+
+	AATC_ERROR("Undefined type '" + string_cast(pNewStatement->expressions[0]->content) + "' in new statement", pNewStatement->position);
+	return InvalidTypeStr;
 
 }
 
-std::wstring AATypeChecker::TypeOf(AAId var) {
+AAValType AATypeChecker::TypeCheckIndexOperation(AA_AST_NODE* pIndexNode) {
+
+	AAValType arrType = this->TypeOf(pIndexNode->expressions[0]->content);
+
+	if (IsValidType(arrType) && IsArrayType(arrType)) {
+		return this->TypeOfArrayElements(arrType);
+	}
+
+	return InvalidTypeStr;
+
+}
+
+AAValType AATypeChecker::TypeOf(AAId var) {
 
 	if (this->m_vtenv.find(var) != this->m_vtenv.end()) {
 		return this->m_vtenv[var];
@@ -307,6 +329,14 @@ std::wstring AATypeChecker::TypeOf(AAId var) {
 		return InvalidTypeStr;
 	}
 
+}
+
+AAValType AATypeChecker::TypeOfArrayElements(AAValType t) {
+	if (t.length() > 2) {
+		return t.substr(0, t.length() - 2);
+	} else {
+		return InvalidTypeStr;
+	}
 }
 
 bool AATypeChecker::IsValidType(AAValType t) {
@@ -319,6 +349,10 @@ bool AATypeChecker::IsValidType(AAValType t) {
 	} else {
 		return true;
 	}	
+}
+
+bool AATypeChecker::IsArrayType(AAValType t) {
+	return (t.length() > 2 && t.substr(t.length() - 2) == L"[]");
 }
 
 CompiledClass AATypeChecker::FindCompiledClassOfType(AAValType type) {

@@ -48,6 +48,7 @@ enum class AA_AST_NODE_TYPE {
 	variable,
 
 	field,
+	index,
 
 	funcall,
 	funarg,

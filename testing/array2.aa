@@ -1,2 +1,4 @@
-int[] arr = new int[10];
-arr[0];
+{
+    int[] arr = new int[10]; // Create new array of 10 elements
+    arr[0]; // Fetch the first element
+}

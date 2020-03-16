@@ -57,7 +57,7 @@ AAP::AAP_ParseResult AAP::CreateParseTrees(std::vector<AALexicalResult> lexResul
 	// Create parse trees
 	std::vector<AA_PT*> parseTrees = AA_PT::CreateTrees(aa_pt_nodes);
 	
-
+	// Instead of continuing with a flawed parse tree we'll just report the error
 	if (AA_PT::HasLastErrorMessage()) {
 
 		AA_PT::Error err = AA_PT::GetLastErrorMessage();
@@ -85,6 +85,7 @@ AAP::AAP_ParseResult AAP::CreateParseTrees(std::vector<AALexicalResult> lexResul
 
 	}
 
+	// Return parse result
 	return result;
 
 }

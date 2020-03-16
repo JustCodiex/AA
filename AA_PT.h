@@ -124,6 +124,11 @@ private:
 	AA_PT_NODE* CreateFunctionArgList(AA_PT_NODE* pExpNode);
 
 	/*
+	** To tree helper functions
+	*/
+	bool IsDeclarativeIndexer(AA_PT_NODE* pNode);
+
+	/*
 	** Mathematical and language binding functions
 	*/
 

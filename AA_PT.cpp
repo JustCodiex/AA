@@ -216,7 +216,7 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 
 		break;
 	case AA_PT_NODE_TYPE::identifier:
-		if (nodeIndex + 1 < nodes.size() && (nodes[nodeIndex + 1]->nodeType == AA_PT_NODE_TYPE::identifier || nodes[nodeIndex+1]->nodeType == AA_PT_NODE_TYPE::indexing)) {
+		if (nodeIndex + 1 < nodes.size() && (nodes[nodeIndex + 1]->nodeType == AA_PT_NODE_TYPE::identifier || IsDeclarativeIndexer(nodes[nodeIndex+1]))) {
 
 			// Handle array decleration if it's the case
 			this->HandleIndexDecl(nodes, nodeIndex);
@@ -253,6 +253,19 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 				nodes.insert(nodes.begin() + nodeIndex, funcallNode);
 
 			}
+
+			nodeIndex++;
+
+		} else if (nodeIndex + 1 < nodes.size() && nodes[nodeIndex + 1]->nodeType == AA_PT_NODE_TYPE::indexing) {
+		
+			AA_PT_NODE* indexatNode = new AA_PT_NODE(nodes[nodeIndex]->position);
+			indexatNode->nodeType = AA_PT_NODE_TYPE::indexat;
+			indexatNode->childNodes.push_back(nodes[nodeIndex]);
+			indexatNode->childNodes.push_back(this->CreateTree(nodes[nodeIndex + 1]->childNodes, 0));
+
+			nodes.erase(nodes.begin() + nodeIndex + 1);
+
+			nodes[nodeIndex] = indexatNode;
 
 			nodeIndex++;
 
@@ -340,7 +353,7 @@ void AA_PT::HandleKeywordCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex
 
 		if (nodeIndex + 2 < nodes.size() && (nodes[nodeIndex + 2]->nodeType == AA_PT_NODE_TYPE::expression || nodes[nodeIndex + 2]->nodeType == AA_PT_NODE_TYPE::indexing)) {
 
-			if (nodes[nodeIndex + 1]->nodeType == AA_PT_NODE_TYPE::identifier) {
+			if (nodes[nodeIndex + 1]->nodeType == AA_PT_NODE_TYPE::identifier && nodes[nodeIndex+2]->nodeType != AA_PT_NODE_TYPE::indexing) {
 
 				AA_PT_NODE* funcallNode = new AA_PT_NODE(nodes[nodeIndex+1]->position);
 				funcallNode->content = nodes[nodeIndex+1]->content;
@@ -351,6 +364,18 @@ void AA_PT::HandleKeywordCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex
 
 				nodes[nodeIndex]->childNodes.push_back(funcallNode);
 				nodes[nodeIndex]->nodeType = AA_PT_NODE_TYPE::newstatement;
+
+			} else if (nodes[nodeIndex + 1]->nodeType == AA_PT_NODE_TYPE::identifier && nodes[nodeIndex + 2]->nodeType == AA_PT_NODE_TYPE::indexing) {
+				
+				size_t i = nodeIndex + 1;
+				this->HandleTreeCase(nodes, i);
+
+				nodes[nodeIndex]->childNodes.push_back(nodes[nodeIndex + 1]);
+				nodes[nodeIndex]->nodeType = AA_PT_NODE_TYPE::newstatement;
+
+				nodes.erase(nodes.begin() + nodeIndex + 1);
+
+				return;
 
 			} else {
 
@@ -710,8 +735,6 @@ AA_PT_NODE* AA_PT::CreateForStatement(std::vector<AA_PT_NODE*>& nodes, size_t no
 			printf("Missing statements!");
 		}
 
-		printf("");
-
 	} else {
 
 		printf("for-statement missing expressions");
@@ -781,6 +804,16 @@ AA_PT_NODE* AA_PT::CreateDoWhileStatement(std::vector<AA_PT_NODE*>& nodes, size_
 	nodes.erase(nodes.begin() + nodeIndex + 1, nodes.begin() + nodeIndex + 4);
 
 	return dowhileStatement;
+
+}
+
+bool AA_PT::IsDeclarativeIndexer(AA_PT_NODE* pNode) {
+
+	if (pNode->nodeType == AA_PT_NODE_TYPE::indexing) {
+		return pNode->childNodes.size() == 0;
+	} else {
+		return false;
+	}
 
 }
 

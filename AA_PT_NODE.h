@@ -44,6 +44,7 @@ enum class AA_PT_NODE_TYPE {
 	indexer_start,
 	indexer_end,
 	indexing,
+	indexat,
 
 	binary_operation,
 	unary_operation,
