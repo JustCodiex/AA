@@ -435,6 +435,9 @@ AAVal AAVM::ReportStack(aa::stack<AAVal> stack) {
 			} else if (litVal.tp == AALiteralType::Char) {
 				std::string cl = string_cast(std::wstring(1, litVal.lit.c.val));
 				m_outStream->write(cl.c_str(), 1);
+			} else if (litVal.tp == AALiteralType::String) {
+				std::string s = string_cast(litVal.lit.s.val);
+				m_outStream->write(s.c_str(), s.length());
 			}
 			m_outStream->write("\n", 1);
 		}

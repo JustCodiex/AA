@@ -60,8 +60,14 @@ void AAProgram::LoadConstants(Procedure& proc, aa::bwalker& bw) {
 		case AALiteralType::Int:
 			bw >> proc.constTable[i].lit.i.val;
 			break;
-		case AALiteralType::String:
+		case AALiteralType::String: {
+			std::wstring ws;
+			bw >> ws;
+			proc.constTable[i].lit.s.len = ws.length();
+			proc.constTable[i].lit.s.val = new wchar_t[proc.constTable[i].lit.s.len];
+			wcscpy(proc.constTable[i].lit.s.val, ws.c_str());			
 			break;
+		}
 		case AALiteralType::Float:
 			bw >> proc.constTable[i].lit.f.val;
 			break;

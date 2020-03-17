@@ -415,6 +415,17 @@ void RunArrayTests(AAVM* pAAVM, int& s, int& f) {
 
 }
 
+void RunTextTests(AAVM* pAAVM, int& s, int& f) {
+
+	// Test update array value at index
+	if (!RunFileTest(pAAVM, L"testing\\char1.aa", L"out\\bin\\char1.aab", L"out\\op\\char1.txt", L"A")) {
+		f++;
+	} else {
+		s++;
+	}
+
+}
+
 bool RunRegressionTests(AAVM* pAAVM) {
 
 	bool cmplog, execlog, stacklog;
@@ -442,6 +453,9 @@ bool RunRegressionTests(AAVM* pAAVM) {
 
 	// Run block tests
 	RunBlockTests(pAAVM, successes, fails);
+
+	// Run text tests
+	RunTextTests(pAAVM, successes, fails);
 
 	// Run array tests
 	RunArrayTests(pAAVM, successes, fails);

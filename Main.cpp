@@ -9,13 +9,14 @@ bool enableRegTests = true;
 
 int main() {
 
+    // Create the VM we'll be using
     AAVM* VM = AAVM::CreateNewVM(false, false, true);
 
     // Set output stream
     VM->SetOutput(&std::cout);
 
     // Current test case
-    VM->CompileAndRunFile(L"testing\\char1.aa", L"out\\bin\\char1.aab", L"out\\op\\char1.txt");
+    VM->CompileAndRunFile(L"testing\\string1.aa", L"out\\bin\\string1.aab", L"out\\op\\string1.txt");
 
     // Run regression tests
     if (enableRegTests) {

@@ -15,6 +15,8 @@ std::wstring AAVal::ToString() {
 		return std::to_wstring(this->litVal.lit.i.val);
 	case AALiteralType::String:
 		return std::wstring(this->litVal.lit.s.val);
+	case AALiteralType::Char:
+		return std::wstring(1, this->litVal.lit.c.val);
 	default:
 		return L"Null";
 	}

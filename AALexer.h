@@ -59,6 +59,9 @@ private:
 	bool IsValidJointKeyword(std::wstring ws);
 	bool IsValidJointOperator(std::wstring ws);
 
+	AAToken FirstNonWhitespaceBefore(std::vector<AALexicalResult> tokens, int i, int& o);
+	AAToken FirstNonWhitespaceAfter(std::vector<AALexicalResult> tokens, int i, int& o);
+
 	AALexicalResult Merge(std::vector<AALexicalResult> ls);
 
 };

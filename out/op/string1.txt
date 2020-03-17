@@ -1,0 +1,10 @@
+START PROCEDURE 0 ():
+CONSTANTS:	[UTF-8, This is a string - Hello from AA]
+IDENTIFIERS: 
+	s;
+OPERATIONS: 
+	[0]	PUSHC, 0
+	[1]	SETVAR, 0
+	[2]	GETVAR, 0
+END PROCEDURE;
+

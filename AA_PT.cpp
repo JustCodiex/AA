@@ -28,6 +28,10 @@ std::vector<AA_PT_NODE*> AA_PT::ToNodes(std::vector<AALexicalResult> lexResult) 
 
 	for (size_t i = 0; i < lexResult.size(); i++) {
 
+		if (lexResult[i].token == AAToken::whitespace) {
+			continue;
+		}
+
 		AA_PT_NODE* node = new AA_PT_NODE(lexResult[i].position);
 
 		switch (lexResult[i].token) {

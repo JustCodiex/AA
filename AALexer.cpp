@@ -89,6 +89,9 @@ std::vector<AALexicalResult> AALexer::Analyse(std::wistream& input) {
 			// Push token
 			this->DetermineToken(ws, current, results, AACodePosition(currentLine, currentColumn - 1 - ws.str().length()));
 
+			// Push the whitespace (We need it incase of strings (The AA_PT will ignore it)
+			results.push_back(AALexicalResult(std::wstring(1, character), AAToken::whitespace, AACodePosition(currentLine, currentColumn)));
+
 			ws.str(L"");
 			current = AAToken::invalid;
 
@@ -224,11 +227,12 @@ void AALexer::Join(std::vector<AALexicalResult>& results) {
 				}
 			}
 		} else if (results[i].token == AAToken::keyword) {
-			if (i > 0 && results[i - 1].token == AAToken::keyword) {
-				AALexicalResult lR = AALexicalResult(results[i - 1].content + results[i].content, AAToken::keyword, results[i - 1].position);
+			int j;
+			if (FirstNonWhitespaceBefore(results, i, j) == AAToken::keyword) {
+				AALexicalResult lR = AALexicalResult(results[j].content + results[i].content, AAToken::keyword, results[j].position);
 				if (IsValidJointKeyword(lR.content)) {
-					results.erase(results.begin() + i - 1, results.begin() + i + 1);
-					results.insert(results.begin() + i - 1, lR);
+					results.erase(results.begin() + j, results.begin() + i + 1);
+					results.insert(results.begin() + j, lR);
 				} else {
 					wprintf(L"Invalid joint keyword detected '%s'", lR.content.c_str());
 				}
@@ -250,7 +254,27 @@ void AALexer::Join(std::vector<AALexicalResult>& results) {
 
 			} else if (results[i].content == L"\"") {
 
-				wprintf(L"ddd");
+				std::wstring ws = L"";
+				size_t j = i;
+
+				i++;
+
+				while (i < results.size()) {
+
+					if (results[i].token == AAToken::quote && results[i].content == L"\"") {
+						break;
+					} else {
+						ws += results[i].content;
+					}
+
+					i++;
+
+				}
+
+				results.erase(results.begin() + j + 1, results.begin() + i + 1);
+
+				results[j].token = AAToken::stringlit;
+				results[j].content = ws;
 
 			}
 
@@ -311,6 +335,21 @@ bool AALexer::IsValidJointOperator(std::wstring ws) {
 	} else {
 		return false;
 	}
+}
+
+AAToken AALexer::FirstNonWhitespaceBefore(std::vector<AALexicalResult> tokens, int i, int& o) {
+	o = i - 1;
+	while (o >= 0) {
+		if (tokens[o].token != AAToken::whitespace) {
+			return tokens[o].token;
+		}
+		o--;
+	}
+	return AAToken::invalid;
+}
+
+AAToken AALexer::FirstNonWhitespaceAfter(std::vector<AALexicalResult> tokens, int i, int& o) {
+	return AAToken::invalid;
 }
 
 AALexicalResult AALexer::Merge(std::vector<AALexicalResult> ls) {
