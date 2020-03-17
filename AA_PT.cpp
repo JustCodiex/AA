@@ -37,6 +37,12 @@ std::vector<AA_PT_NODE*> AA_PT::ToNodes(std::vector<AALexicalResult> lexResult) 
 		case AAToken::floatlit:
 			node->nodeType = AA_PT_NODE_TYPE::floatliteral;
 			break;
+		case AAToken::stringlit:
+			node->nodeType = AA_PT_NODE_TYPE::stringliteral;
+			break;
+		case AAToken::charlit:
+			node->nodeType = AA_PT_NODE_TYPE::charliteral;
+			break;
 		case AAToken::OP:
 			if (!IsUnaryOperator(aa_pt_nodes)) {
 				node->nodeType = AA_PT_NODE_TYPE::binary_operation;

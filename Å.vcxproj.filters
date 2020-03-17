@@ -46,6 +46,9 @@
     <Filter Include="Header Files\aatesting">
       <UniqueIdentifier>{5f2b706b-c97d-4695-8fb7-b2761b296f93}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\util">
+      <UniqueIdentifier>{d798c4ae-a0f8-4624-9bd7-960d0994898f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -89,6 +92,9 @@
     </ClCompile>
     <ClCompile Include="AAClassCompiler.cpp">
       <Filter>Source Files\compiler</Filter>
+    </ClCompile>
+    <ClCompile Include="astring.cpp">
+      <Filter>Source Files\util</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

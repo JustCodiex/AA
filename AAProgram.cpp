@@ -68,6 +68,9 @@ void AAProgram::LoadConstants(Procedure& proc, aa::bwalker& bw) {
 		case AALiteralType::Boolean:
 			bw >> proc.constTable[i].lit.b.val;
 			break;
+		case AALiteralType::Char:
+			bw >> proc.constTable[i].lit.c.val;
+			break;
 		default:
 			break;
 		}

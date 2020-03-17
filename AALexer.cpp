@@ -12,6 +12,9 @@ std::map<wchar_t, AAToken> singleTokens = {
 	{ ']', AAToken::seperator },
 	{ '.', AAToken::accessor },
 	{ ':', AAToken::accessor },
+	{ '\\', AAToken::escape },
+	{ '\'', AAToken::quote },
+	{ '\"', AAToken::quote },
 	{ '+', AAToken::OP },
 	{ '-', AAToken::OP },
 	{ '*', AAToken::OP },
@@ -52,6 +55,9 @@ std::vector<std::wstring> keywords = {
 	L"class",
 	L"new",
 	L"this",
+	L"try",
+	L"catch",
+	L"when",
 };
 
 std::vector<AALexicalResult> AALexer::Analyse(std::wistream& input) {
@@ -227,6 +233,27 @@ void AALexer::Join(std::vector<AALexicalResult>& results) {
 					wprintf(L"Invalid joint keyword detected '%s'", lR.content.c_str());
 				}
 			}
+		} else if (results[i].token == AAToken::quote) {
+
+			if (results[i].content == L"'") { // SINGLE character => char literal
+
+				if (i + 2 < results.size() && results[i+2].token == AAToken::quote && results[i+2].content == L"'") {
+
+					results[i].content = results[i + 1].content;
+					results[i].token = AAToken::charlit;
+
+					results.erase(results.begin() + i + 1, results.begin() + i + 3);
+
+				} else {
+					wprintf(L"Invalid char literal detected!");
+				}
+
+			} else if (results[i].content == L"\"") {
+
+				wprintf(L"ddd");
+
+			}
+
 		}
 
 		i++;

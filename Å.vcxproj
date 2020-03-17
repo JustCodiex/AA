@@ -162,6 +162,7 @@
     <ClCompile Include="AAVM.cpp" />
     <ClCompile Include="AA_AST.cpp" />
     <ClCompile Include="AA_PT.cpp" />
+    <ClCompile Include="astring.cpp" />
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -33,6 +33,11 @@ namespace aa{
 			m_position++;
 		}
 
+		void operator>>(wchar_t& c) {
+			memcpy(&c, m_bytes + m_position, 2);
+			m_position += 2;
+		}
+
 		void operator>>(std::wstring& ws) {
 			int len;
 			this->operator>>(len);

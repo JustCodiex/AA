@@ -4,6 +4,7 @@
 enum class AALiteralType : unsigned char {
 	Int,
 	String,
+	Char,
 	Float,
 	Boolean,
 	Null,
@@ -23,6 +24,22 @@ struct AA_IntLiteral {
 		return this->val == b.val;
 	}
 	bool operator!=(AA_IntLiteral b) {
+		return this->val != b.val;
+	}
+};
+
+struct AA_CharLiteral {
+	wchar_t val;
+	AA_CharLiteral() {
+		this->val = '\0';
+	}
+	AA_CharLiteral(signed int v) {
+		this->val = v;
+	}
+	bool operator==(AA_CharLiteral b) {
+		return this->val == b.val;
+	}
+	bool operator!=(AA_CharLiteral b) {
 		return this->val != b.val;
 	}
 };
@@ -97,6 +114,7 @@ union AA_AnyLiteral {
 	AA_StringLiteral s;
 	AA_FloatLiteral f;
 	AA_NullLiteral n;
+	AA_CharLiteral c;
 	AA_AnyLiteral() {
 		memset(this, 0, sizeof(AA_AnyLiteral));
 	}
@@ -124,6 +142,8 @@ struct AA_Literal {
 				return this->lit.f == b.lit.f;
 			case AALiteralType::String:
 				return this->lit.s == b.lit.s;
+			case AALiteralType::Char:
+				return this->lit.c == b.lit.c;
 			default:
 				return false;
 			}
@@ -142,6 +162,8 @@ struct AA_Literal {
 				return this->lit.f != b.lit.f;
 			case AALiteralType::String:
 				return this->lit.s != b.lit.s;
+			case AALiteralType::Char:
+				return this->lit.c != b.lit.c;
 			default:
 				return false;
 			}

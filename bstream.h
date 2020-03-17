@@ -20,6 +20,13 @@ namespace aa {
 				m_buffer.push_back(bytes[i]);
 		}
 
+		void operator <<(wchar_t wc) {
+			unsigned char bytes[2];
+			memcpy(bytes, &wc, 2);
+			for (int i = 0; i < 2; i++)
+				m_buffer.push_back(bytes[i]);
+		}
+
 		void operator <<(float f) {
 			unsigned char bytes[4];
 			memcpy(bytes, &f, 4);

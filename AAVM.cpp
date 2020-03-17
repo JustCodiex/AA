@@ -1,5 +1,6 @@
 #include "AAVM.h"
 #include "AAB2F.h"
+#include "astring.h"
 #include <ctime>
 
 AAVM* AAVM::CreateNewVM(bool logExecuteTime, bool logCompiler, bool logTopStack) {
@@ -431,6 +432,9 @@ AAVal AAVM::ReportStack(aa::stack<AAVal> stack) {
 				} else {
 					m_outStream->write("false", 5);
 				}
+			} else if (litVal.tp == AALiteralType::Char) {
+				std::string cl = string_cast(std::wstring(1, litVal.lit.c.val));
+				m_outStream->write(cl.c_str(), 1);
 			}
 			m_outStream->write("\n", 1);
 		}

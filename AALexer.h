@@ -15,8 +15,13 @@ enum class AAToken {
 	intlit,
 	floatlit,
 	doublelit,
+	charlit,
+	stringlit,
+	stringOP, // special operator on string literal
 	comment,
 	accessor,
+	escape,
+	quote,
 };
 
 struct AALexicalResult {

@@ -862,6 +862,10 @@ AAC::CompiledAbstractExpression AAC::HandleConstPush(CompiledEnviornmentTable& c
 		aLit.f.val = std::stof(pNode->content);
 		lType = AALiteralType::Float;
 		break;
+	case AA_AST_NODE_TYPE::charliteral:
+		aLit.c.val = pNode->content[0];
+		lType = AALiteralType::Char;
+		break;
 	case AA_AST_NODE_TYPE::nullliteral:
 		aLit.n = AA_NullLiteral();
 		lType = AALiteralType::Null;
@@ -1039,6 +1043,9 @@ void AAC::ConstTableToByteCode(CompiledEnviornmentTable constTable, aa::bstream&
 			break;
 		case AALiteralType::Float:
 			wss << lit.lit.f.val;
+			break;
+		case AALiteralType::Char:
+			wss << lit.lit.c.val;
 			break;
 		default:
 			break;
