@@ -5,10 +5,9 @@
 #include "AAVarEnv.h"
 #include "AAProgram.h"
 #include "AARuntimeEnvironment.h"
+#include "AACClass.h"
 #include "stack.h"
 #include <iostream>
-
-typedef void(*AACFunction)(AAVM*, AARuntimeEnvironment*);
 
 struct AAVM_RuntimeError {
 	const char* errMsg;
@@ -68,7 +67,8 @@ public:
 	bool IsExecutionTimeLoggingEnabled() { return m_logExecTime; }
 	bool IsTopStackLoggingEnabled() { return m_logTopOfStackAfterExec; }
 
-	void RegisterClass(std::wstring typeName, std::map<std::wstring, AACFunction> funcPtrs);
+	int RegisterFunction(AACSingleFunction funcPtr);
+	void RegisterClass(std::wstring typeName, AACClass cClass);
 
 	static AAVM* CreateNewVM(bool logExecuteTime, bool logCompiler, bool logTopStack);
 

@@ -16,7 +16,7 @@ int main() {
     VM->SetOutput(&std::cout);
 
     // Current test case
-    VM->CompileAndRunFile(L"testing\\string1.aa", L"out\\bin\\string1.aab", L"out\\op\\string1.txt");
+    VM->CompileAndRunFile(L"testing\\string2.aa", L"out\\bin\\string2.aab", L"out\\op\\string2.txt");
 
     // Run regression tests
     if (enableRegTests) {
@@ -24,12 +24,12 @@ int main() {
             return -1;
         }
     }
-
+    /*
     std::cout << sizeof(AAVal) << std::endl;
     std::cout << sizeof(AA_Literal) << std::endl;
     std::cout << sizeof(AA_AnyLiteral) << std::endl;
     std::cout << sizeof(AA_NullLiteral) << std::endl;
-
+    */
     // Release the virtual machine
     VM->Release();
 

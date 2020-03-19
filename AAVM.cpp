@@ -286,6 +286,23 @@ AAVal AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 
 			break;
 		}
+		case AAByteCode::VMCALL: {
+			
+			int callProc = AAVM_GetArgument(0);
+			int argCount = AAVM_GetArgument(1);
+
+			aa::stack<AAVal> args;
+			for (int i = 0; i < argCount; i++) {
+				args.Push(stack.Pop());
+			}
+
+			AAVM_OPI++;
+			callstack.Push(execp);
+
+			printf("Reached this");
+
+			break;
+		}
 		case AAByteCode::RET: {
 			int retCount = AAVM_GetArgument(0);
 			aa::stack<AAVal> returnValues;
@@ -492,16 +509,50 @@ void AAVM::WriteMsg(const char* msg) {
 
 }
 
-void AAVM::RegisterClass(std::wstring typeName, std::map<std::wstring, AACFunction> funcPtrs) {
+int AAVM::RegisterFunction(AACSingleFunction funcPtr) {
+
+	wprintf(funcPtr.name.c_str());
+
+	return -1;
+
+}
+
+void AAVM::RegisterClass(std::wstring typeName, AACClass cClass) {
 
 	CompiledClass cc;
 	cc.name = typeName;
 
-	for (auto classMethod : funcPtrs) {
+	for (auto& func : cClass.classMethods) {
 
+		func.name = cc.name + L"::" + func.name;
+		int procID = this->RegisterFunction(func);
 
+		AAFuncSignature sig;
+		sig.name = func.name;
+		sig.returnType = func.returnType;
+		sig.parameters = func.params;
+		sig.isVMFunc = true;
 
-		wprintf(classMethod.first.c_str());
+		CompiledClassMethod ccm;
+		ccm.sig = sig;
+		ccm.isCtor = func.name == cc.name + L"::.ctor";
+		ccm.isPublic = true;
+		ccm.procID = procID;
+		ccm.source = NULL;
+
+		cc.methods.Add(ccm);
+
+	}
+
+	for (auto& field : cClass.classFields) {
+
+		CompiledClassField ccf;
+		ccf.fieldID = (int)cc.fields.Size();
+		ccf.isPublic = false;
+		ccf.type = field.fieldtype;
+		ccf.name = field.fieldname;
+
+		cc.fields.Add(ccf);
 
 	}
 
@@ -509,12 +560,9 @@ void AAVM::RegisterClass(std::wstring typeName, std::map<std::wstring, AACFuncti
 
 void AAVM::LoadStandardLibrary() {
 
-	AACFunction f = &AAString_Ctor;
+	AACClass stringClass;
+	stringClass.classMethods.push_back(AACSingleFunction(L".ctor", &AAString_Ctor, L"string", 0));
 
-	std::map<std::wstring, AACFunction> strPtrs = {
-		{ L".ctor", f },
-	};
-
-	this->RegisterClass(L"string", strPtrs);
+	this->RegisterClass(L"string", stringClass);
 
 }

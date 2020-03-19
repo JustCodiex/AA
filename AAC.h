@@ -142,7 +142,8 @@ private:
 	/*
 	** FuncSig to procedure mapper
 	*/
-	int FindBestFunctionMatch(CompiledStaticChecks staticCheck, AA_AST_NODE* pNode, int& argCount);
+
+	int FindBestFunctionMatch(CompiledStaticChecks staticCheck, AA_AST_NODE* pNode, int& argCount, bool& isVMCall);
 
 	/*
 	** Bytecode functions

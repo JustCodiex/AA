@@ -46,7 +46,7 @@ enum class AAByteCode : unsigned char {
 	HALLOC, // (Heap Allocate memory for new object, 1 argument[size in bytes])
 	SALLOC, // (Stack allocate memory for the new object, 1 argument[size in bytes])
 
-	VMCALL, // (Virtual Machine call, TBD)
+	VMCALL, // (Virtual Machine call, 2 arguments[procID, argCount])
 
 	TRY, // ---
 	THROW, // ---

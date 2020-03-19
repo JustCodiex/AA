@@ -529,7 +529,8 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileFunctionCall(AA_AST_NODE* 
 	aa::list<CompiledAbstractExpression> opList;
 
 	int progArgs = 0; // Going real safe here
-	int procID = this->FindBestFunctionMatch(staticData, pNode, progArgs);
+	bool progIsVmCall = false; // Hopefully we can make a little use of C++ functions as possible, so this should be the default
+	int procID = this->FindBestFunctionMatch(staticData, pNode, progArgs, progIsVmCall);
 
 	if (progArgs > 0) {
 		for (AA_AST_NODE* pArg : pNode->expressions) {
@@ -539,7 +540,7 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileFunctionCall(AA_AST_NODE* 
 
 	CompiledAbstractExpression callCAE;
 	callCAE.argCount = 2;
-	callCAE.bc = AAByteCode::CALL;
+	callCAE.bc = (progIsVmCall) ? AAByteCode::VMCALL : AAByteCode::CALL;
 	callCAE.argValues[0] = procID;
 	callCAE.argValues[1] = progArgs;
 
@@ -974,7 +975,7 @@ aa::list<AAC::CompiledAbstractExpression> AAC::HandleCtorCall(AA_AST_NODE* pNode
 	}
 
 	CompiledAbstractExpression callCAE;
-	callCAE.bc = AAByteCode::CALL;
+	callCAE.bc = (ctor.sig.isVMFunc) ? AAByteCode::VMCALL : AAByteCode::CALL;
 	callCAE.argCount = 2;
 	callCAE.argValues[0] = ctor.procID;
 	callCAE.argValues[1] = (int)ctor.sig.parameters.size();
@@ -1170,7 +1171,7 @@ std::vector<CompiledSignature> AAC::MapProcedureToSignature(CompiledStaticChecks
 
 }
 */
-int AAC::FindBestFunctionMatch(CompiledStaticChecks staticCheck, AA_AST_NODE* pNode, int& argCount) { // TODO: Make the typechecker do this
+int AAC::FindBestFunctionMatch(CompiledStaticChecks staticCheck, AA_AST_NODE* pNode, int& argCount, bool& isVMCall) { // TODO: Make the typechecker do this
 
 	std::wstring funcName = pNode->content;
 
@@ -1183,6 +1184,7 @@ int AAC::FindBestFunctionMatch(CompiledStaticChecks staticCheck, AA_AST_NODE* pN
 
 				}
 				if (isMatch) {
+					isVMCall = sig.funcSig.isVMFunc;
 					argCount = (int)sig.funcSig.parameters.size();
 					return sig.procID;
 				}
@@ -1193,6 +1195,7 @@ int AAC::FindBestFunctionMatch(CompiledStaticChecks staticCheck, AA_AST_NODE* pN
 	//wprintf(L"Unknown function! %s", funcName.c_str());
 
 	argCount = 0;
+	isVMCall = false;
 	return 0;
 
 }

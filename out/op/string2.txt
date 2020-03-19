@@ -1,0 +1,12 @@
+START PROCEDURE 0 ():
+CONSTANTS:	[UTF-8, Hello World using explicit string ctor]
+IDENTIFIERS: 
+	s;
+OPERATIONS: 
+	[0]	HALLOC, 0
+	[1]	PUSHC, 0
+	[2]	CALL, -1, 0
+	[3]	SETVAR, 0
+	[4]	GETVAR, 0
+END PROCEDURE;
+

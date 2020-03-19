@@ -417,8 +417,19 @@ void RunArrayTests(AAVM* pAAVM, int& s, int& f) {
 
 void RunTextTests(AAVM* pAAVM, int& s, int& f) {
 
-	// Test update array value at index
+	/** Char tests **/
+
+	// Test char
 	if (!RunFileTest(pAAVM, L"testing\\char1.aa", L"out\\bin\\char1.aab", L"out\\op\\char1.txt", L"A")) {
+		f++;
+	} else {
+		s++;
+	}
+
+	/** String tests **/
+
+	// Test string
+	if (!RunFileTest(pAAVM, L"testing\\string1.aa", L"out\\bin\\string1.aab", L"out\\op\\string1.txt", L"This is a string - Hello from AA")) {
 		f++;
 	} else {
 		s++;

@@ -1,5 +1,4 @@
 {
-    string a = "Hello";
-    string b = "World";
-    a + " " + b;
+    string s = new string("Hello World using explicit string ctor");
+    s;
 }

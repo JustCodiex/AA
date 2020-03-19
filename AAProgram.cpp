@@ -128,6 +128,7 @@ void AAProgram::LoadOperations(Procedure& proc, aa::bwalker& bw) {
 			bw >> proc.opSequence[i].args[0];
 			break;
 		case AAByteCode::CALL:
+		case AAByteCode::VMCALL:
 			proc.opSequence[i].args = new int[2];
 			bw >> proc.opSequence[i].args[0];
 			bw >> proc.opSequence[i].args[1];

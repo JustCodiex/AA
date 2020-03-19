@@ -185,5 +185,11 @@
     <ClInclude Include="AAString.h">
       <Filter>Header Files\VM\builtin</Filter>
     </ClInclude>
+    <ClInclude Include="AACFunction.h">
+      <Filter>Header Files\VM\builtin</Filter>
+    </ClInclude>
+    <ClInclude Include="AACClass.h">
+      <Filter>Header Files\VM\builtin</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
