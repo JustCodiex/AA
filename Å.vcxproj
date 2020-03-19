@@ -179,6 +179,7 @@
     <ClInclude Include="AAO.h" />
     <ClInclude Include="AAP.h" />
     <ClInclude Include="AAProgram.h" />
+    <ClInclude Include="AAString.h" />
     <ClInclude Include="AATypeChecker.h" />
     <ClInclude Include="AAVal.h" />
     <ClInclude Include="AAVarEnv.h" />

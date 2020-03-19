@@ -107,8 +107,11 @@ namespace aa {
 		case AAByteCode::SUB:
 			output = L"SUB";
 			break;
-		case AAByteCode::ALLOC:
-			output = L"ALLOC";
+		case AAByteCode::HALLOC:
+			output = L"HALLOC";
+			break;
+		case AAByteCode::SALLOC:
+			output = L"SALLOC";
 			break;
 		case AAByteCode::GETFIELD:
 			output = L"GETFIELD";
@@ -121,6 +124,9 @@ namespace aa {
 			break;
 		case AAByteCode::SETELEM:
 			output = L"SETELEM";
+			break;
+		case AAByteCode::VMCALL:
+			output = L"VMCALL";
 			break;
 		default:
 			break;

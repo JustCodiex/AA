@@ -23,7 +23,7 @@ enum class AAByteCode : unsigned char {
 	GETFIELD, // (Get field, 1 argument[field ID])
 
 	GETELEM, // (Get element based on dynamic indexing, 0 arguments)
-	SETELEM, // (Set element based on dynamic indexing, TBD)
+	SETELEM, // (Set element based on dynamic indexing, 0 arguments)
 
 	JMP, // (Relative jump to operation, 1 argument[distance])
 	JMPF, // (Relative jump to operation if top of stack is false, 1 argument[distance])
@@ -43,6 +43,31 @@ enum class AAByteCode : unsigned char {
 	LAND, // (Logical And, 0 arguments)
 	LOR, // (Logcal Or, 0 arguments)
 
-	ALLOC, // (Allocate memory for new object, 1 argument[size in bytes])
+	HALLOC, // (Heap Allocate memory for new object, 1 argument[size in bytes])
+	SALLOC, // (Stack allocate memory for the new object, 1 argument[size in bytes])
+
+	VMCALL, // (Virtual Machine call, TBD)
+
+	TRY, // ---
+	THROW, // ---
+	BRK, // (Break, 0 args)
+
+	CASTI2F, // i32 => f32
+	CASTF2I, // f32 => i32
+	CASTS2I, // i16 => f32
+	CASTS2F, // i16 => f32
+	CASTF2S, // f32 => i16
+	CASTL2F, // i64 => f32
+	CASTL2I, // i64 => i32
+	CASTL2S, // i64 => i16
+	CASTF2L, // f32 => i64
+	CASTI2D, // i32 => f64
+	CASTS2D, // i16 => f64
+	CASTF2D, // f32 => f64
+	CASTL2D, // i64 => f64
+	CASTD2I, // f64 => i32
+ 	CASTD2S, // f64 => i16
+	CASTD2F, // f64 => f32
+ 	CASTD2L, // f64 => i64
 
 };

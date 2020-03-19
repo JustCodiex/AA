@@ -748,7 +748,7 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileNewStatement(AA_AST_NODE* 
 
 		// Create allocation instruction
 		CompiledAbstractExpression allocCAE;
-		allocCAE.bc = AAByteCode::ALLOC;
+		allocCAE.bc = AAByteCode::HALLOC;
 		allocCAE.argCount = 1;
 		allocCAE.argValues[0] = std::stoi(pNode->expressions[0]->expressions[1]->content) * sizeof(AAVal);
 
@@ -965,7 +965,7 @@ aa::list<AAC::CompiledAbstractExpression> AAC::HandleCtorCall(AA_AST_NODE* pNode
 	CompiledAbstractExpression newCAE;
 	newCAE.argCount = 1;
 	newCAE.argValues[0] = cc.classByteSz;
-	newCAE.bc = AAByteCode::ALLOC;
+	newCAE.bc = AAByteCode::HALLOC;
 
 	opList.Add(newCAE);
 

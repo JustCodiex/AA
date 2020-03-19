@@ -120,7 +120,8 @@ void AAProgram::LoadOperations(Procedure& proc, aa::bwalker& bw) {
 		case AAByteCode::JMP:
 		case AAByteCode::JMPF:
 		case AAByteCode::JMPT:
-		case AAByteCode::ALLOC:
+		case AAByteCode::HALLOC:
+		case AAByteCode::SALLOC:
 		case AAByteCode::GETFIELD:
 		case AAByteCode::SETFIELD:
 			proc.opSequence[i].args = new int[1];

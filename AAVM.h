@@ -8,6 +8,8 @@
 #include "stack.h"
 #include <iostream>
 
+typedef void(*AACFunction)(AAVM*, AARuntimeEnvironment*);
+
 struct AAVM_RuntimeError {
 	const char* errMsg;
 	const char* errName;
@@ -66,6 +68,8 @@ public:
 	bool IsExecutionTimeLoggingEnabled() { return m_logExecTime; }
 	bool IsTopStackLoggingEnabled() { return m_logTopOfStackAfterExec; }
 
+	void RegisterClass(std::wstring typeName, std::map<std::wstring, AACFunction> funcPtrs);
+
 	static AAVM* CreateNewVM(bool logExecuteTime, bool logCompiler, bool logTopStack);
 
 private:
@@ -85,6 +89,8 @@ private:
 	void WriteRuntimeError(AAVM_RuntimeError err);
 
 	void WriteMsg(const char* msg);
+
+	void LoadStandardLibrary();
 
 private:
 

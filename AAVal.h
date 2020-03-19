@@ -19,29 +19,29 @@ struct AAVal {
 	}
 	
 	AAVal(int i) {
-		litVal.lit.i = AA_IntLiteral(i);
 		litVal.tp = AALiteralType::Int;
+		litVal.lit.i = AA_IntLiteral(i);
 		obj = 0;
 	}
 
 	AAVal(float f) {
-		litVal.lit.f = AA_FloatLiteral(f);
 		litVal.tp = AALiteralType::Float;
+		litVal.lit.f = AA_FloatLiteral(f);
 		obj = 0;
 	}
 	
 	AAVal(bool b) {
-		litVal.lit.b = AA_BoolLiteral(b);
 		litVal.tp = AALiteralType::Boolean;
+		litVal.lit.b = AA_BoolLiteral(b);
 		obj = 0;
 	}
 	
 	AAVal(std::wstring ws) {
+		litVal.tp = AALiteralType::String;
 		litVal.lit.s.len = ws.length();
 		litVal.lit.s.val = new wchar_t[ws.length()+1];
 		wmemset(litVal.lit.s.val, '\0', ws.length() + 1);
-		wcscpy(litVal.lit.s.val, ws.c_str());
-		litVal.tp = AALiteralType::String;
+		wcscpy(litVal.lit.s.val, ws.c_str());		
 		obj = 0;
 	}
 	

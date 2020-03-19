@@ -49,6 +49,12 @@
     <Filter Include="Source Files\util">
       <UniqueIdentifier>{d798c4ae-a0f8-4624-9bd7-960d0994898f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\VM\builtin">
+      <UniqueIdentifier>{0dfb11d7-a498-4ca3-aa70-6ae8d812395c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\VM\builtin">
+      <UniqueIdentifier>{603a04d6-da5e-4f17-a455-a2d85c02c30f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -98,9 +104,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AA_literals.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="list.h">
       <Filter>Header Files\util</Filter>
     </ClInclude>
@@ -175,6 +178,12 @@
     </ClInclude>
     <ClInclude Include="astring.h">
       <Filter>Header Files\util</Filter>
+    </ClInclude>
+    <ClInclude Include="AA_literals.h">
+      <Filter>Header Files\VM\builtin</Filter>
+    </ClInclude>
+    <ClInclude Include="AAString.h">
+      <Filter>Header Files\VM\builtin</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

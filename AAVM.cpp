@@ -1,6 +1,7 @@
 #include "AAVM.h"
 #include "AAB2F.h"
 #include "astring.h"
+#include "AAString.h"
 #include <ctime>
 
 AAVM* AAVM::CreateNewVM(bool logExecuteTime, bool logCompiler, bool logTopStack) {
@@ -8,6 +9,7 @@ AAVM* AAVM::CreateNewVM(bool logExecuteTime, bool logCompiler, bool logTopStack)
 	vm->m_logCompileMessages = logCompiler;
 	vm->m_logExecTime = logExecuteTime;
 	vm->m_logTopOfStackAfterExec = logTopStack;
+	vm->LoadStandardLibrary();
 	return vm;
 }
 
@@ -319,7 +321,7 @@ AAVal AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 			AAVM_OPI += 1 + AAVM_GetArgument(0);
 			break;
 		}
-		case AAByteCode::ALLOC: {
+		case AAByteCode::HALLOC: {
 			int allocsz = AAVM_GetArgument(0);
 			AAVal allocobj = AAVal(AllocAAO((size_t)allocsz));
 			stack.Push(allocobj);
@@ -393,22 +395,22 @@ AAVal AAVM::BinaryOperation(AAByteCode op, AA_Literal lhs, AA_Literal rhs) {
 		return lhs % rhs;
 	}
 	case AAByteCode::CMPE: {
-		return lhs == rhs;
+		return AAVal(lhs == rhs);
 	}
 	case AAByteCode::CMPNE: {
-		return lhs != rhs;
+		return AAVal(lhs != rhs);
 	}
 	case AAByteCode::LE: {
-		return lhs < rhs;
+		return AAVal(lhs < rhs);
 	}
 	case AAByteCode::LEQ: {
-		return lhs <= rhs;
+		return AAVal(lhs <= rhs);
 	}
 	case AAByteCode::GE: {
-		return lhs > rhs;
+		return AAVal(lhs > rhs);
 	}
 	case AAByteCode::GEQ: {
-		return lhs >= rhs;
+		return AAVal(lhs >= rhs);
 	}
 	default:
 		return AAVal(0);
@@ -420,25 +422,8 @@ AAVal AAVM::ReportStack(aa::stack<AAVal> stack) {
 	if (stack.Size() == 1) {
 		AAVal v = stack.Pop();
 		if (m_outStream && m_logTopOfStackAfterExec) {
-			AA_Literal litVal = v.litVal;
-			if (litVal.tp == AALiteralType::Int) {
-				m_outStream->operator<<(litVal.lit.i.val);
-			} else if (litVal.tp == AALiteralType::Float) {
-				std::string fs = std::to_string(litVal.lit.f.val);
-				m_outStream->write(fs.c_str(), fs.length());
-			} else if (litVal.tp == AALiteralType::Boolean) {
-				if (litVal.lit.b.val) {
-					m_outStream->write("true", 4);
-				} else {
-					m_outStream->write("false", 5);
-				}
-			} else if (litVal.tp == AALiteralType::Char) {
-				std::string cl = string_cast(std::wstring(1, litVal.lit.c.val));
-				m_outStream->write(cl.c_str(), 1);
-			} else if (litVal.tp == AALiteralType::String) {
-				std::string s = string_cast(litVal.lit.s.val);
-				m_outStream->write(s.c_str(), s.length());
-			}
+			std::wstring ws = v.ToString();
+			m_outStream->write(string_cast(ws).c_str(), ws.length());
 			m_outStream->write("\n", 1);
 		}
 		return v;
@@ -504,5 +489,32 @@ void AAVM::WriteMsg(const char* msg) {
 		m_outStream->write(msg, strlen(msg));
 
 	}
+
+}
+
+void AAVM::RegisterClass(std::wstring typeName, std::map<std::wstring, AACFunction> funcPtrs) {
+
+	CompiledClass cc;
+	cc.name = typeName;
+
+	for (auto classMethod : funcPtrs) {
+
+
+
+		wprintf(classMethod.first.c_str());
+
+	}
+
+}
+
+void AAVM::LoadStandardLibrary() {
+
+	AACFunction f = &AAString_Ctor;
+
+	std::map<std::wstring, AACFunction> strPtrs = {
+		{ L".ctor", f },
+	};
+
+	this->RegisterClass(L"string", strPtrs);
 
 }

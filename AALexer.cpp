@@ -58,6 +58,17 @@ std::vector<std::wstring> keywords = {
 	L"try",
 	L"catch",
 	L"when",
+	L"import",
+	L"namespace",
+	L"public",
+	L"private",
+	L"protected",
+	L"abstract",
+	L"interface",
+	L"sealed",
+	L"external",
+	L"internal",
+	L"define",
 };
 
 std::vector<AALexicalResult> AALexer::Analyse(std::wistream& input) {
@@ -349,7 +360,15 @@ AAToken AALexer::FirstNonWhitespaceBefore(std::vector<AALexicalResult> tokens, i
 }
 
 AAToken AALexer::FirstNonWhitespaceAfter(std::vector<AALexicalResult> tokens, int i, int& o) {
+	o = i + 1;
+	while (o < tokens.size()) {
+		if (tokens[o].token != AAToken::whitespace) {
+			return tokens[o].token;
+		}
+		o++;
+	}
 	return AAToken::invalid;
+
 }
 
 AALexicalResult AALexer::Merge(std::vector<AALexicalResult> ls) {

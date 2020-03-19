@@ -25,6 +25,11 @@ int main() {
         }
     }
 
+    std::cout << sizeof(AAVal) << std::endl;
+    std::cout << sizeof(AA_Literal) << std::endl;
+    std::cout << sizeof(AA_AnyLiteral) << std::endl;
+    std::cout << sizeof(AA_NullLiteral) << std::endl;
+
     // Release the virtual machine
     VM->Release();
 

@@ -76,6 +76,8 @@ public:
 		m_outfile = outFile;
 	}
 
+	AAClassCompiler* GetClassCompilerInstance() { return m_classCompiler; }
+
 private:
 
 	/*
