@@ -78,6 +78,9 @@ public:
 
 	AAClassCompiler* GetClassCompilerInstance() { return m_classCompiler; }
 
+	void AddVMClass(CompiledClass cc);
+	void AddVMFunction(AAFuncSignature sig, int procID);
+
 private:
 
 	/*
@@ -93,6 +96,7 @@ private:
 	*/
 
 	AAC_CompileErrorMessage RunStaticOperations(std::vector<AA_AST*> trees, CompiledStaticChecks& staicData);
+	CompiledStaticChecks NewStaticCheck();
 	bool TypecheckAST(AA_AST* pTree, CompiledStaticChecks staticData, AATypeChecker::Error& typeError);
 	void CollapseGlobalScope(std::vector<AA_AST*>& trees);
 	
@@ -162,6 +166,9 @@ private:
 
 	int m_currentProcID;
 	std::wstring m_outfile;
+
+	std::vector<CompiledClass> m_preregisteredClasses;
+	std::vector<CompiledStaticChecks::SigPointer> m_preregisteredFunctions;
 
 	AAClassCompiler* m_classCompiler;
 

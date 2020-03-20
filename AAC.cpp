@@ -33,7 +33,7 @@ AAC_CompileResult AAC::CompileFromAbstractSyntaxTrees(std::vector<AA_AST*> trees
 	this->CollapseGlobalScope(trees);
 
 	// Run the static checkers
-	CompiledStaticChecks staticChecks;
+	CompiledStaticChecks staticChecks = this->NewStaticCheck();
 	if (COMPILE_ERROR(err = this->RunStaticOperations(trees, staticChecks))) {
 		result.firstMsg = err;
 		result.success = false;
@@ -130,10 +130,39 @@ void AAC::CollapseGlobalScope(std::vector<AA_AST*>& trees) {
 
 }
 
-AAC_CompileErrorMessage AAC::RunStaticOperations(std::vector<AA_AST*> trees, CompiledStaticChecks& staticChecks) {
+AAC::CompiledStaticChecks AAC::NewStaticCheck() {
+
+	// Static check obj
+	CompiledStaticChecks staticChecks;
 
 	// Static function checks
 	staticChecks.registeredTypes = AATypeChecker::DefaultTypeEnv;
+
+	// For all classes
+	for (size_t i = 0; i < this->m_preregisteredClasses.size(); i++) {
+
+		// Add type name
+		staticChecks.registeredTypes.Add(this->m_preregisteredClasses[i].name);
+
+		// Add the class
+		staticChecks.registeredClasses.Add(this->m_preregisteredClasses[i]);
+
+	}
+
+	// For all functions
+	for (size_t i = 0; i < this->m_preregisteredFunctions.size(); i++) {
+
+		// Add function
+		staticChecks.registeredFunctions.Add(this->m_preregisteredFunctions[i]);
+
+	}
+
+	// Return static checks obj
+	return staticChecks;
+
+}
+
+AAC_CompileErrorMessage AAC::RunStaticOperations(std::vector<AA_AST*> trees, CompiledStaticChecks& staticChecks) {
 
 	// For all input trees, register classes
 	for (size_t i = 0; i < trees.size(); i++) {
@@ -1197,5 +1226,18 @@ int AAC::FindBestFunctionMatch(CompiledStaticChecks staticCheck, AA_AST_NODE* pN
 	argCount = 0;
 	isVMCall = false;
 	return 0;
+
+}
+
+void AAC::AddVMClass(CompiledClass cc) {
+	m_preregisteredClasses.push_back(cc);
+}
+
+void AAC::AddVMFunction(AAFuncSignature sig, int procID) {
+
+	CompiledStaticChecks::SigPointer sP = CompiledStaticChecks::SigPointer(sig, NULL);
+	sP.procID = procID;
+	
+	m_preregisteredFunctions.push_back(sP);
 
 }

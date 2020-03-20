@@ -151,6 +151,7 @@
   <ItemGroup>
     <ClCompile Include="AAB2F.cpp" />
     <ClCompile Include="AAC.cpp" />
+    <ClCompile Include="AACFunction.cpp" />
     <ClCompile Include="AAClassCompiler.cpp" />
     <ClCompile Include="AALanguageRegressionTest.cpp" />
     <ClCompile Include="AALexer.cpp" />

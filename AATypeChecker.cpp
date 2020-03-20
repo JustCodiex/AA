@@ -3,12 +3,12 @@
 
 aa::list<std::wstring> _getdeftypeenv() {
 	aa::list<std::wstring> types;
+	types.Add(L"null");
 	types.Add(L"int");
 	types.Add(L"float");
 	types.Add(L"bool");
-	types.Add(L"string");
+	//types.Add(L"string");
 	types.Add(L"char");
-	types.Add(L"null");
 	return types;
 }
 

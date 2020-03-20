@@ -288,18 +288,21 @@ AAVal AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 		}
 		case AAByteCode::VMCALL: {
 			
+			// Get function
 			int callProc = AAVM_GetArgument(0);
 			int argCount = AAVM_GetArgument(1);
-
+			
+			// Collect arguments
 			aa::stack<AAVal> args;
 			for (int i = 0; i < argCount; i++) {
 				args.Push(stack.Pop());
 			}
 
-			AAVM_OPI++;
-			callstack.Push(execp);
+			// Call the native function
+			this->m_cppfunctions[callProc].fPtr(this, args, stack);
 
-			printf("Reached this");
+			// Goto next cmd
+			AAVM_OPI++;
 
 			break;
 		}
@@ -509,11 +512,32 @@ void AAVM::WriteMsg(const char* msg) {
 
 }
 
+int AAVM::RegisterFunction(AACSingleFunction funcPtr, AAFuncSignature& funcSig) {
+
+	// Create function signature
+	funcSig.name = funcPtr.name;
+	funcSig.returnType = funcPtr.returnType;
+	funcSig.parameters = funcPtr.params;
+	funcSig.isVMFunc = true;
+
+	// Fetch proc ID
+	int procId = (int)m_cppfunctions.size();
+
+	// Push functions
+	m_cppfunctions.push_back(funcPtr);
+
+	// Add VM function so the compiler can recognize it
+	m_compiler->AddVMFunction(funcSig, procId);
+
+	// Return the proc ID
+	return procId;
+
+}
+
 int AAVM::RegisterFunction(AACSingleFunction funcPtr) {
 
-	wprintf(funcPtr.name.c_str());
-
-	return -1;
+	AAFuncSignature dcSig;
+	return this->RegisterFunction(funcPtr, dcSig);
 
 }
 
@@ -523,23 +547,33 @@ void AAVM::RegisterClass(std::wstring typeName, AACClass cClass) {
 	cc.name = typeName;
 
 	for (auto& func : cClass.classMethods) {
-
+		
+		// Update function name
 		func.name = cc.name + L"::" + func.name;
-		int procID = this->RegisterFunction(func);
 
+		// Check if it's a constructor
+		bool isCtor = func.name == cc.name + L"::.ctor";;
+
+		// Function signature
 		AAFuncSignature sig;
-		sig.name = func.name;
-		sig.returnType = func.returnType;
-		sig.parameters = func.params;
-		sig.isVMFunc = true;
 
+		// If it's a constructor, push the 'this' identifier
+		if (isCtor) {
+			func.params.insert(func.params.begin(), AAFuncParam(L"string", L"this"));
+		}
+
+		// Register the funcion and get the VMCall procID
+		int procID = this->RegisterFunction(func, sig);
+
+		// The actual class method
 		CompiledClassMethod ccm;
 		ccm.sig = sig;
-		ccm.isCtor = func.name == cc.name + L"::.ctor";
+		ccm.isCtor = isCtor;
 		ccm.isPublic = true;
 		ccm.procID = procID;
 		ccm.source = NULL;
 
+		// Add method to class
 		cc.methods.Add(ccm);
 
 	}
@@ -556,12 +590,19 @@ void AAVM::RegisterClass(std::wstring typeName, AACClass cClass) {
 
 	}
 
+	// Update class size
+	cc.classByteSz = m_compiler->GetClassCompilerInstance()->CalculateMemoryUse(cc);
+
+	// Add the VM class
+	m_compiler->AddVMClass(cc);
+
 }
 
 void AAVM::LoadStandardLibrary() {
 
 	AACClass stringClass;
-	stringClass.classMethods.push_back(AACSingleFunction(L".ctor", &AAString_Ctor, L"string", 0));
+	stringClass.classFields.push_back(AACClassField(L"string", L"_str"));
+	stringClass.classMethods.push_back(AACSingleFunction(L".ctor", &AAString_Ctor, L"string", 1, AAFuncParam(L"string", L"x")));
 
 	this->RegisterClass(L"string", stringClass);
 

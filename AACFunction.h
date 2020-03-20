@@ -1,11 +1,15 @@
 #pragma once
+#include "AAVal.h"
+#include "stack.h"
+#include "list.h"
+#include "AAFuncSignature.h"
 #include <stdarg.h>
 #include <vector>
 
 class AAVM;
 struct AARuntimeEnvironment;
 
-typedef void(*AACFunctionPtr)(AAVM*, AARuntimeEnvironment*);
+typedef void(*AACFunctionPtr)(AAVM*, aa::stack<AAVal>, aa::stack<AAVal>&);
 
 struct AACSingleFunction {
 
@@ -27,3 +31,9 @@ struct AACSingleFunction {
 	}
 
 };
+
+namespace aa {
+
+	list<AAVal> ToArgumentList(stack<AAVal> args);
+
+}

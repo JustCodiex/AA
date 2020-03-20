@@ -1,10 +1,15 @@
 #include "AAVal.h"
+#include <sstream>
+#include <iomanip>
 
 AAVal AAVal::Null = AAVal(AA_Literal(AA_AnyLiteral::AA_AnyLiteral(), AALiteralType::Null));
 
 std::wstring AAVal::ToString() {
 	if (this->obj) {
-		return std::to_wstring((int)&this->obj);
+		int addr = (int)&this->obj;
+		std::wstringstream ws;
+		ws << L"0x" << std::setfill((wchar_t)'0') << std::setw(sizeof(int) * 2) << std::hex << addr;
+		return ws.str();
 	}
 	switch (this->litVal.tp) {
 	case AALiteralType::Boolean:

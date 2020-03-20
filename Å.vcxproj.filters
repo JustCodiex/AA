@@ -102,6 +102,9 @@
     <ClCompile Include="astring.cpp">
       <Filter>Source Files\util</Filter>
     </ClCompile>
+    <ClCompile Include="AACFunction.cpp">
+      <Filter>Source Files\VM\builtin</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="list.h">

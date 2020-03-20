@@ -90,6 +90,8 @@ private:
 
 	void WriteMsg(const char* msg);
 
+	int RegisterFunction(AACSingleFunction funcPtr, AAFuncSignature& funcSig);
+
 	void LoadStandardLibrary();
 
 private:
@@ -102,5 +104,7 @@ private:
 	bool m_logExecTime;
 	bool m_logCompileMessages;
 	bool m_logTopOfStackAfterExec;
+
+	std::vector<AACSingleFunction> m_cppfunctions;
 
 };
