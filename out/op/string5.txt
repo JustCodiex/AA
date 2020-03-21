@@ -1,0 +1,24 @@
+START PROCEDURE 0 ():
+CONSTANTS:	[UTF-8, "Hello"]	[UTF-8, "World"]	[UTF-8, "Hello "]	[UTF-8, " "]
+IDENTIFIERS: 
+	a;	b;
+OPERATIONS: 
+	[0]	PUSHC, 0
+	[1]	SETVAR, 0
+	[2]	PUSHC, 1
+	[3]	SETVAR, 1
+	[4]	GETVAR, 0
+	[5]	VMCALL, 0, 1
+	[6]	GETVAR, 1
+	[7]	VMCALL, 0, 1
+	[8]	PUSHC, 2
+	[9]	PUSHC, 1
+	[10]	ADD
+	[11]	VMCALL, 0, 1
+	[12]	GETVAR, 0
+	[13]	PUSHC, 3
+	[14]	VMCALL, 2, 2
+	[15]	GETVAR, 1
+	[16]	VMCALL, 2, 2
+END PROCEDURE;
+
