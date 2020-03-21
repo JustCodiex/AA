@@ -11,9 +11,23 @@ struct AACClassField {
 	}
 };
 
+struct AACClassOperator {
+	std::wstring operatorToOverride;
+	AACSingleFunction funcPtr;
+	AACClassOperator() {
+		this->operatorToOverride = L"NO OPERATOR";
+		this->funcPtr = AACSingleFunction(L"", 0, L"", 0);
+	}
+	AACClassOperator(std::wstring op, AACSingleFunction fPtr) {
+		this->operatorToOverride = op;
+		this->funcPtr = fPtr;
+	}
+};
+
 struct AACClass {
 
 	std::vector<AACClassField> classFields;
 	std::vector<AACSingleFunction> classMethods;
+	std::vector<AACClassOperator> classOperators;
 
 };

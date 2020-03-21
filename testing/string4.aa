@@ -1,0 +1,7 @@
+{
+    string a = "Hello";
+    string b = "World";
+    println(a);
+    println(b);
+    a + " " + b;
+}

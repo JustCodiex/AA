@@ -68,13 +68,21 @@ private:
 	AAValType TypeOfArrayElements(AAValType t);
 
 	/*
+	** Primitive helper functions
+	*/
+
+	AAValType TypeCheckBinaryOperationOnPrimitive(AA_AST_NODE* pOpNode, AAValType typeLeft, AAValType typeRight);
+
+	/*
 	** Helper functions
 	*/
 
 	bool IsValidType(AAValType t);
+	bool IsPrimitiveType(AAValType t);
 	bool IsArrayType(AAValType t);
 
 	CompiledClass FindCompiledClassOfType(AAValType type);
+	bool FindCompiledClassOperation(CompiledClass cc, std::wstring operatorType, AAValType right, CompiledClassOperator& op);
 
 	// Sets the last error if not set
 	void SetError(AATypeChecker::Error err) { if (!m_hasEnyErr) { m_errMsg = err; m_hasEnyErr = true; } }

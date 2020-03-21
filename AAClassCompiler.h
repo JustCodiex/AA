@@ -18,6 +18,19 @@ struct CompiledClassMethod {
 	}
 };
 
+struct CompiledClassOperator {
+	std::wstring op;
+	CompiledClassMethod method;
+	CompiledClassOperator() {
+		op = L"";
+		method = CompiledClassMethod();
+	}
+	CompiledClassOperator(std::wstring op, CompiledClassMethod method) {
+		this->op = op;
+		this->method = method;
+	}
+};
+
 struct CompiledClassField {
 	std::wstring name;
 	std::wstring type;
@@ -34,6 +47,7 @@ struct CompiledClassField {
 struct CompiledClass {
 	std::wstring name;
 	aa::list<CompiledClassMethod> methods;
+	aa::list<CompiledClassOperator> operators;
 	aa::list<CompiledClassField> fields;
 	size_t classByteSz;
 	CompiledClass() {

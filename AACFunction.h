@@ -17,7 +17,11 @@ struct AACSingleFunction {
 	std::wstring returnType;
 	std::vector<AAFuncParam> params;
 	AACFunctionPtr fPtr;
-
+	AACSingleFunction() {
+		this->name = L"";
+		this->returnType = L"";
+		this->fPtr = 0;
+	}
 	AACSingleFunction(std::wstring name, AACFunctionPtr ptr, std::wstring rt, int n_args, ...) {
 		this->name = name;
 		this->fPtr = ptr;

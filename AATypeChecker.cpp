@@ -7,7 +7,6 @@ aa::list<std::wstring> _getdeftypeenv() {
 	types.Add(L"int");
 	types.Add(L"float");
 	types.Add(L"bool");
-	//types.Add(L"string");
 	types.Add(L"char");
 	return types;
 }
@@ -168,16 +167,59 @@ std::wstring AATypeChecker::TypeCheckBinaryOperation(AA_AST_NODE* pOpNode, AA_AS
 
 	} else {
 
-		std::wstring typeLeft = this->TypeCheckNode(left);
-		std::wstring typeRight = this->TypeCheckNode(right);
+		AAValType typeLeft = this->TypeCheckNode(left);
+		AAValType typeRight = this->TypeCheckNode(right);
+		
+		if (IsPrimitiveType(typeLeft) && IsPrimitiveType(typeRight)) {
+			pOpNode->tags["useCall"] = false;
+			return this->TypeCheckBinaryOperationOnPrimitive(pOpNode, typeLeft, typeRight);
+		} else {
 
-		if (typeLeft != typeRight) {
-			//printf("Incorrect type!"); // TODO: Implement this when function calls have been implemented
+			std::wstring op = pOpNode->content;
+			CompiledClass ccLeft = FindCompiledClassOfType(typeLeft);
+
+			if (ccLeft.name == InvalidTypeStr) {
+				/*this->SetError(
+					AATypeChecker::Error(
+						"Unknown operand type '" + string_cast(typeLeft) + "'",
+						__COUNTER__, pOpNode->position)
+				);
+				return InvalidTypeStr;*/ return typeLeft; // TODO: Reenable this when function parameter type checking has been enabled
+			}
+
+			CompiledClassOperator ccop;
+			if (this->FindCompiledClassOperation(ccLeft, op, typeRight, ccop)) {
+
+				// Tag the operator node with the procID
+				pOpNode->tags["useCall"] = true;
+				pOpNode->tags["operatorProcID"] = ccop.method.procID;
+				pOpNode->tags["operatorIsVM"] = ccop.method.sig.isVMFunc;
+
+				// Return the type of whatever the operator will return
+				return ccop.method.sig.returnType;
+
+			} else {
+				this->SetError(
+					AATypeChecker::Error(
+						"Invalid operator '" + string_cast(op) + "' on left operand type '" + string_cast(typeLeft) + "' and right operand type '" + string_cast(typeRight) + "'",
+						__COUNTER__, pOpNode->position)
+					);
+				return InvalidTypeStr;
+			}
+
 		}
 
-		return typeLeft;
-
 	}
+
+}
+
+AAValType AATypeChecker::TypeCheckBinaryOperationOnPrimitive(AA_AST_NODE* pOpNode, AAValType typeLeft, AAValType typeRight) {
+
+	if (typeLeft != typeRight) {
+		//printf("Incorrect type!"); // TODO: Implement this when function calls have been implemented
+	}
+
+	return typeLeft;
 
 }
 
@@ -264,6 +306,7 @@ AAValType AATypeChecker::TypeCheckCallOperation(AA_AST_NODE* pCallNode) {
 			// TODO: Typecheck params
 			pCallNode->tags["calls"] = (int)i;
 
+			// return the returntype
 			return sig.returnType;
 
 		}
@@ -351,6 +394,10 @@ bool AATypeChecker::IsValidType(AAValType t) {
 	}	
 }
 
+bool AATypeChecker::IsPrimitiveType(AAValType t) {
+	return t == L"int" || t == L"float" || t == L"char" || t == L"boolean";
+}
+
 bool AATypeChecker::IsArrayType(AAValType t) {
 	return (t.length() > 2 && t.substr(t.length() - 2) == L"[]");
 }
@@ -367,5 +414,24 @@ CompiledClass AATypeChecker::FindCompiledClassOfType(AAValType type) {
 	cc.name = InvalidTypeStr;
 
 	return cc;
+
+}
+
+bool AATypeChecker::FindCompiledClassOperation(CompiledClass cc, std::wstring operatorType, AAValType right, CompiledClassOperator& op) {
+
+	for (size_t i = 0; i < cc.operators.Size(); i++) {
+		if (cc.operators.At(i).op.compare(operatorType) == 0) {
+
+			if (cc.operators.At(i).method.sig.parameters[1].type.compare(right) == 0) {
+
+				op = cc.operators.At(i);
+				return true;
+
+			}
+
+		}
+	}
+
+	return false;
 
 }

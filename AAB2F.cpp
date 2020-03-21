@@ -161,7 +161,7 @@ namespace aa {
 		case AALiteralType::Int:
 			return std::to_wstring(l.lit.i.val);
 		case AALiteralType::String:
-			return l.lit.s.val;
+			return L"\"" + std::wstring(l.lit.s.val) + L"\"";
 		case AALiteralType::Float:
 			return std::to_wstring(l.lit.f.val);
 		case AALiteralType::Boolean:

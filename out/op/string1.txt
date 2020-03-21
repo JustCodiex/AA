@@ -1,5 +1,5 @@
 START PROCEDURE 0 ():
-CONSTANTS:	[UTF-8, This is a string - Hello from AA]
+CONSTANTS:	[UTF-8, "This is a string - Hello from AA"]
 IDENTIFIERS: 
 	s;
 OPERATIONS: 

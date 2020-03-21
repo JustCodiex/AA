@@ -435,6 +435,18 @@ void RunTextTests(AAVM* pAAVM, int& s, int& f) {
 		s++;
 	}
 
+	if (!RunFileTest(pAAVM, L"testing\\string2.aa", L"out\\bin\\string2.aab", L"out\\op\\string2.txt", L"5")) {
+		f++;
+	} else {
+		s++;
+	}
+
+	if (!RunFileTest(pAAVM, L"testing\\string3.aa", L"out\\bin\\string3.aab", L"out\\op\\string3.txt", L"Hello World")) {
+		f++;
+	} else {
+		s++;
+	}
+
 }
 
 bool RunRegressionTests(AAVM* pAAVM) {

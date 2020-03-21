@@ -44,7 +44,14 @@ struct AAVal {
 		wcscpy(litVal.lit.s.val, ws.c_str());		
 		obj = 0;
 	}
-	
+
+	AAVal(wchar_t* str, size_t l) {
+		litVal.tp = AALiteralType::String;
+		litVal.lit.s.len = l;
+		litVal.lit.s.val = str;
+		obj = 0;
+	}
+
 	AAVal(AAObject* o) {
 		obj = o;
 	}

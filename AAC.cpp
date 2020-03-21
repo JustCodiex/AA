@@ -516,6 +516,15 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileBinaryOperation(AA_AST_NOD
 
 	} else {
 
+		if (pNode->tags["useCall"]) {
+
+			binopCAE.bc = (pNode->tags["operatorIsVM"]) ? AAByteCode::VMCALL : AAByteCode::CALL;
+			binopCAE.argCount = 2;
+			binopCAE.argValues[0] = pNode->tags["operatorProcID"];
+			binopCAE.argValues[1] = 2;
+
+		}
+
 		opList.Add(HandleStackPush(cTable, pNode->expressions[0], staticData));
 		opList.Add(HandleStackPush(cTable, pNode->expressions[1], staticData));
 

@@ -2,6 +2,7 @@
 #include "AAB2F.h"
 #include "astring.h"
 #include "AAString.h"
+#include "AAConsole.h"
 #include <ctime>
 
 AAVM* AAVM::CreateNewVM(bool logExecuteTime, bool logCompiler, bool logTopStack) {
@@ -576,6 +577,36 @@ void AAVM::RegisterClass(std::wstring typeName, AACClass cClass) {
 
 	}
 
+	for (auto& op : cClass.classOperators) {
+
+		// Get the actual function
+		AACSingleFunction func = op.funcPtr;
+
+		// Update function name
+		func.name = cc.name + L"::" + func.name;
+
+		// Function signature
+		AAFuncSignature sig;
+
+		// Because it's a class method we always push the 'this' identifier -> Note, should not be the case if static (but not implemented yet)
+		func.params.insert(func.params.begin(), AAFuncParam(L"string", L"this"));
+
+		// Register the funcion and get the VMCall procID
+		int procID = this->RegisterFunction(func, sig);
+
+		// The actual class method
+		CompiledClassMethod ccm;
+		ccm.sig = sig;
+		ccm.isCtor = false;
+		ccm.isPublic = true;
+		ccm.procID = procID;
+		ccm.source = NULL;
+
+		// Add method to operators list
+		cc.operators.Add(CompiledClassOperator(op.operatorToOverride, ccm));
+
+	}
+
 	for (auto& field : cClass.classFields) {
 
 		CompiledClassField ccf;
@@ -598,11 +629,15 @@ void AAVM::RegisterClass(std::wstring typeName, AACClass cClass) {
 
 void AAVM::LoadStandardLibrary() {
 
+	// Register println
+	this->RegisterFunction(AACSingleFunction(L"println", &AAConsole_PrintLn, L"void", 1, AAFuncParam(L"Any", L"obj")));
+
 	AACClass stringClass;
 	//stringClass.classFields.push_back(AACClassField(L"string", L"_str"));
 	//stringClass.classMethods.push_back(AACSingleFunction(L".ctor", &AAString_Ctor, L"string", 1, AAFuncParam(L"string", L"x")));
 	
 	stringClass.classMethods.push_back(AACSingleFunction(L"length", &AAString_Length, L"int", 0));
+	stringClass.classOperators.push_back(AACClassOperator(L"+", AACSingleFunction(L"concat", &AAString_Concat, L"string", 1, AAFuncParam(L"string", L"_x"))));
 
 	this->RegisterClass(L"string", stringClass);
 
