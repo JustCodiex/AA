@@ -25,7 +25,7 @@ std::wstring AAVal::ToString() {
 	default:
 		return L"Null";
 	}
-}
+} 
 
 // Allocates a new AAObject
 AAObject* AllocAAO(size_t sz) {

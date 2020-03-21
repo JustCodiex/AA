@@ -1,4 +1,4 @@
 {
-    string s = new string("Hello World using explicit string ctor");
-    s;
+    string s = "Hello";
+    s.length();
 }

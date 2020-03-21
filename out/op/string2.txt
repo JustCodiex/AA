@@ -1,12 +1,11 @@
 START PROCEDURE 0 ():
-CONSTANTS:	[UTF-8, Hello World using explicit string ctor]
+CONSTANTS:	[UTF-8, Hello]
 IDENTIFIERS: 
 	s;
 OPERATIONS: 
-	[0]	HALLOC, 16
-	[1]	PUSHC, 0
-	[2]	VMCALL, 0, 2
-	[3]	SETVAR, 0
-	[4]	GETVAR, 0
+	[0]	PUSHC, 0
+	[1]	SETVAR, 0
+	[2]	GETVAR, 0
+	[3]	VMCALL, 0, 1
 END PROCEDURE;
 

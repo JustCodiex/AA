@@ -16,3 +16,20 @@ void AAString_Ctor(AAVM* pAAVm, aa::stack<AAVal> args, aa::stack<AAVal>& stack) 
 	return;
 
 }
+
+void AAString_Length(AAVM* pAAVm, aa::stack<AAVal> args, aa::stack<AAVal>& stack) {
+
+	// Convert argument stack into a list
+	aa::list<AAVal> argl = aa::ToArgumentList(args);
+
+	// Make sure it's a string
+	if (argl.At(0).litVal.tp == AALiteralType::String) {
+
+		// Push to stack
+		stack.Push(AAVal((int)(argl.At(0).litVal.lit.s.len)));
+
+	} else {
+		// throw err
+	}
+
+}

@@ -557,10 +557,8 @@ void AAVM::RegisterClass(std::wstring typeName, AACClass cClass) {
 		// Function signature
 		AAFuncSignature sig;
 
-		// If it's a constructor, push the 'this' identifier
-		if (isCtor) {
-			func.params.insert(func.params.begin(), AAFuncParam(L"string", L"this"));
-		}
+		// Because it's a class method we always push the 'this' identifier -> Note, should not be the case if static (but not implemented yet)
+		func.params.insert(func.params.begin(), AAFuncParam(L"string", L"this"));
 
 		// Register the funcion and get the VMCall procID
 		int procID = this->RegisterFunction(func, sig);
@@ -601,8 +599,10 @@ void AAVM::RegisterClass(std::wstring typeName, AACClass cClass) {
 void AAVM::LoadStandardLibrary() {
 
 	AACClass stringClass;
-	stringClass.classFields.push_back(AACClassField(L"string", L"_str"));
-	stringClass.classMethods.push_back(AACSingleFunction(L".ctor", &AAString_Ctor, L"string", 1, AAFuncParam(L"string", L"x")));
+	//stringClass.classFields.push_back(AACClassField(L"string", L"_str"));
+	//stringClass.classMethods.push_back(AACSingleFunction(L".ctor", &AAString_Ctor, L"string", 1, AAFuncParam(L"string", L"x")));
+	
+	stringClass.classMethods.push_back(AACSingleFunction(L"length", &AAString_Length, L"int", 0));
 
 	this->RegisterClass(L"string", stringClass);
 
