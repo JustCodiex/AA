@@ -288,6 +288,7 @@ CompiledClass AAC::RegisterClass(AA_AST_NODE* pNode) {
 				CompiledStaticChecks::SigPointer sig = this->RegisterFunction(pNode->expressions[0]->expressions[i]);
 				CompiledClassMethod method;
 				method.sig = sig.funcSig;
+				method.sig.isClassMethod = true;
 				method.source = pNode->expressions[0]->expressions[i];
 				method.procID = sig.procID;
 				method.isCtor = sig.funcSig.name == (cc.name + L"::" + cc.name);

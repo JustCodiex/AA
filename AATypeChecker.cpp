@@ -251,10 +251,6 @@ AAValType AATypeChecker::TypeCheckClassDotCallAccessorOperation(AA_AST_NODE* pAc
 	// Get type on the right
 	AAValType r = this->TypeCheckNode(right);
 
-	// Store some static data in the left-side node
-	//left->tags["accesstype"] = 0; // Let the accessor operation know it's a class access
-	//left->tags["classtyperef"] = (int)(m_types.IndexOf(l)); // Let accessor operation know the index of the class type
-
 	// Return whatever we've accessed from the right side
 	return r;
 
@@ -301,13 +297,19 @@ AAValType AATypeChecker::TypeCheckCallOperation(AA_AST_NODE* pCallNode) {
 		// Does the function contain the name we need?
 		if (m_ftenv.At(i).name == pCallNode->content) {
 
+			// Get the signature
 			AAFuncSignature sig = m_ftenv.At(i);
 
-			// TODO: Typecheck params
-			pCallNode->tags["calls"] = (int)i;
+			// Is the function matching to the argument types?
+			if (this->IsTypeMatchingFunction(sig, pCallNode)) {
 
-			// return the returntype
-			return sig.returnType;
+				// Update the call ID
+				pCallNode->tags["calls"] = (int)i;
+
+				// return the returntype
+				return sig.returnType;
+
+			}
 
 		}
 
@@ -400,6 +402,51 @@ bool AATypeChecker::IsPrimitiveType(AAValType t) {
 
 bool AATypeChecker::IsArrayType(AAValType t) {
 	return (t.length() > 2 && t.substr(t.length() - 2) == L"[]");
+}
+
+bool AATypeChecker::IsMatchingTypes(AAValType tCompare, AAValType tExpected) {
+
+	if (tCompare.compare(tExpected) == 0) {
+		return true;
+	} else {
+		if (tExpected.compare(L"Any") == 0) {
+			return true;
+		} else {
+			return false; // TODO: Check inheritance
+		}
+	}
+
+}
+
+bool AATypeChecker::IsTypeMatchingFunction(AAFuncSignature sig, AA_AST_NODE* pCallNode) {
+
+	// Parameter offset
+	size_t paramOffset = sig.isClassMethod ? 1 : 0;
+
+	// Is this the correct function to call?
+	if (pCallNode->expressions.size() == sig.parameters.size() - paramOffset) {
+
+		// Flag to make sure the argument types are valid
+		bool isMatchingArgTypes = true;
+
+		// For all params
+		for (size_t j = paramOffset; j < sig.parameters.size(); j++) {
+
+			// If they're not a type match, break
+			if (!this->IsMatchingTypes(this->TypeCheckNode(pCallNode->expressions[j - paramOffset]), sig.parameters[j].type)) {
+				isMatchingArgTypes = false;
+				break;
+			}
+
+		}
+
+		// Return whatever we found out in the above loop
+		return isMatchingArgTypes;
+
+	}
+
+	return false;
+
 }
 
 CompiledClass AATypeChecker::FindCompiledClassOfType(AAValType type) {

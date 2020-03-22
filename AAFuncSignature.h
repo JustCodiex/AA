@@ -27,23 +27,27 @@ struct AAFuncSignature {
 	std::wstring name;
 	std::vector<AAFuncParam> parameters;
 	bool isVMFunc;
+	bool isClassMethod;
 
 	AAFuncSignature() {
 		this->returnType = L"void";
 		this->name = L"anonymousfunc000";
 		this->isVMFunc = false;
+		this->isClassMethod = false;
 	}
 
 	AAFuncSignature(std::wstring name) {
 		this->returnType = L"void";
 		this->name = name;
 		this->isVMFunc = false;
+		this->isClassMethod = false;
 	}
 
 	AAFuncSignature(std::wstring name, std::wstring type) {
 		this->returnType = type;
 		this->name = name;
 		this->isVMFunc = false;
+		this->isClassMethod = false;
 	}
 
 	AAFuncSignature(std::wstring name, std::wstring type, std::vector<AAFuncParam> params) {
@@ -51,6 +55,7 @@ struct AAFuncSignature {
 		this->name = L"anonymousfunc000";
 		this->parameters = params;
 		this->isVMFunc = false;
+		this->isClassMethod = false;
 	}
 
 	bool operator==(AAFuncSignature other) {

@@ -13,7 +13,7 @@ OPERATIONS:
 	[7]	VMCALL, 0, 1
 	[8]	PUSHC, 2
 	[9]	PUSHC, 1
-	[10]	ADD
+	[10]	VMCALL, 2, 2
 	[11]	VMCALL, 0, 1
 	[12]	GETVAR, 0
 	[13]	PUSHC, 3

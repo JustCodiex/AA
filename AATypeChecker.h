@@ -81,6 +81,9 @@ private:
 	bool IsPrimitiveType(AAValType t);
 	bool IsArrayType(AAValType t);
 
+	bool IsTypeMatchingFunction(AAFuncSignature sig, AA_AST_NODE* pCallNode);
+	bool IsMatchingTypes(AAValType tCompare, AAValType tExpected);
+
 	CompiledClass FindCompiledClassOfType(AAValType type);
 	bool FindCompiledClassOperation(CompiledClass cc, std::wstring operatorType, AAValType right, CompiledClassOperator& op);
 

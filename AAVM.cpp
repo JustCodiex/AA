@@ -513,13 +513,14 @@ void AAVM::WriteMsg(const char* msg) {
 
 }
 
-int AAVM::RegisterFunction(AACSingleFunction funcPtr, AAFuncSignature& funcSig) {
+int AAVM::RegisterFunction(AACSingleFunction funcPtr, AAFuncSignature& funcSig, bool isClassMethod) {
 
 	// Create function signature
 	funcSig.name = funcPtr.name;
 	funcSig.returnType = funcPtr.returnType;
 	funcSig.parameters = funcPtr.params;
 	funcSig.isVMFunc = true;
+	funcSig.isClassMethod = isClassMethod;
 
 	// Fetch proc ID
 	int procId = (int)m_cppfunctions.size();
@@ -562,7 +563,7 @@ void AAVM::RegisterClass(std::wstring typeName, AACClass cClass) {
 		func.params.insert(func.params.begin(), AAFuncParam(L"string", L"this"));
 
 		// Register the funcion and get the VMCall procID
-		int procID = this->RegisterFunction(func, sig);
+		int procID = this->RegisterFunction(func, sig, true);
 
 		// The actual class method
 		CompiledClassMethod ccm;
@@ -592,7 +593,7 @@ void AAVM::RegisterClass(std::wstring typeName, AACClass cClass) {
 		func.params.insert(func.params.begin(), AAFuncParam(L"string", L"this"));
 
 		// Register the funcion and get the VMCall procID
-		int procID = this->RegisterFunction(func, sig);
+		int procID = this->RegisterFunction(func, sig, true);
 
 		// The actual class method
 		CompiledClassMethod ccm;
@@ -633,9 +634,6 @@ void AAVM::LoadStandardLibrary() {
 	this->RegisterFunction(AACSingleFunction(L"println", &AAConsole_PrintLn, L"void", 1, AAFuncParam(L"Any", L"obj")));
 
 	AACClass stringClass;
-	//stringClass.classFields.push_back(AACClassField(L"string", L"_str"));
-	//stringClass.classMethods.push_back(AACSingleFunction(L".ctor", &AAString_Ctor, L"string", 1, AAFuncParam(L"string", L"x")));
-	
 	stringClass.classMethods.push_back(AACSingleFunction(L"length", &AAString_Length, L"int", 0));
 	stringClass.classOperators.push_back(AACClassOperator(L"+", AACSingleFunction(L"concat", &AAString_Concat, L"string", 1, AAFuncParam(L"string", L"_x"))));
 
