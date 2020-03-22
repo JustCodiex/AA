@@ -3,7 +3,6 @@
 #include "astring.h"
 #include "AAString.h"
 #include "AAConsole.h"
-#include <ctime>
 
 AAVM* AAVM::CreateNewVM(bool logExecuteTime, bool logCompiler, bool logTopStack) {
 	AAVM* vm = new AAVM();
@@ -24,6 +23,8 @@ AAVM::AAVM() {
 
 	m_parser = new AAP;
 	m_outStream = 0;
+
+	m_startCompile = 0;
 
 	m_logTopOfStackAfterExec = false;
 	m_logCompileMessages = false;
@@ -50,6 +51,9 @@ AAVal AAVM::CompileAndRunExpression(std::wstring input) {
 
 AAVal AAVM::CompileAndRunExpression(std::wstring input, std::wstring binaryoutputfile, std::wstring formattedoutputfile) {
 
+	// Start compile clock
+	m_startCompile = clock();
+
 	// Parse the input
 	AAP_ParseResult result = m_parser->Parse(input);
 
@@ -59,6 +63,9 @@ AAVal AAVM::CompileAndRunExpression(std::wstring input, std::wstring binaryoutpu
 }
 
 AAVal AAVM::CompileAndRunFile(std::wstring sourcefile, std::wstring binaryoutputfile, std::wstring formattedoutputfile) {
+	
+	// Start compile clock
+	m_startCompile = clock();
 
 	// Parse the input
 	AAP_ParseResult result = m_parser->Parse(std::wifstream(sourcefile));
@@ -113,6 +120,9 @@ AAVal AAVM::CompileAndRun(AAP_ParseResult result, std::wstring binaryoutputfile,
 
 		// Compile all procedures into bytecode
 		AAC_CompileResult compileResult = m_compiler->CompileFromAbstractSyntaxTrees(result.result);
+
+		// Log compile time and other messages
+		this->StopAndLogCompile();
 
 		// Did we compile without error?
 		if (COMPILE_SUCESS(compileResult)) {
@@ -638,5 +648,14 @@ void AAVM::LoadStandardLibrary() {
 	stringClass.classOperators.push_back(AACClassOperator(L"+", AACSingleFunction(L"concat", &AAString_Concat, L"string", 1, AAFuncParam(L"string", L"_x"))));
 
 	this->RegisterClass(L"string", stringClass);
+
+}
+
+void AAVM::StopAndLogCompile() {
+
+	// If we should log stuff, we do it now
+	if (m_logCompileMessages) {
+		printf("Compile time: %fs\n", (float)(clock() - m_startCompile) / CLOCKS_PER_SEC);
+	}
 
 }

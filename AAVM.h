@@ -8,6 +8,7 @@
 #include "AACClass.h"
 #include "stack.h"
 #include <iostream>
+#include <ctime>
 
 struct AAVM_RuntimeError {
 	const char* errMsg;
@@ -94,6 +95,8 @@ private:
 
 	void LoadStandardLibrary();
 
+	void StopAndLogCompile();
+
 private:
 
 	AAP* m_parser;
@@ -106,5 +109,7 @@ private:
 	bool m_logTopOfStackAfterExec;
 
 	std::vector<AACSingleFunction> m_cppfunctions;
+
+	clock_t m_startCompile;
 
 };

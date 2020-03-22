@@ -3,6 +3,6 @@
     string b = "World";
     println(a);
     println(b);
-    println("Hello " + "World"); // TODO: Fix the non-recursive typecheck for function arguments
+    println("Hello " + "World");
     a + " " + b;
 }
