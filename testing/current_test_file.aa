@@ -1,0 +1,26 @@
+namespace spaceA {
+    class StringList {
+        StringList() {
+            println("Hello World...");
+        }
+    }
+}
+
+namespace spaceB {
+    class StringList {
+        StringList() {
+            println("Goodbye World");
+        }
+    }
+}
+
+// Whenever we see X (StringList) we're to read it as spaceA::StringList, unless otherwise is specified.
+using StringList from spaceA;
+
+int main() {
+    StringList a = new StringList();
+    spaceB::StringList b = new StringList();
+    42;
+}
+
+main();

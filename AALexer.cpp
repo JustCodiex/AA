@@ -35,11 +35,20 @@ std::vector<wchar_t> whitespaceCharacters = {
 };
 
 std::vector<std::wstring> keywords = {
+	
+	// Inferred value type keyword (var => variable, typechecker will solve this)
 	L"var",
+	
+	// Boolean values (true and false)
 	L"true",
 	L"false",
+
+	// Void-Types (Null, Void, Any)
 	L"null",
 	L"void",
+	L"Any",
+
+	// Flow-Control
 	L"if",
 	L"else",
 	L"for",
@@ -48,27 +57,45 @@ std::vector<std::wstring> keywords = {
 	L"do",
 	L"match",
 	L"case",
-	L"as",
 	L"break",
 	L"return",
 	L"continue",
+
+	// Conditions and conversions
+	L"when",
+	L"as",
+	L"is",
+	
+	// Class keywords
 	L"class",
 	L"new",
 	L"this",
+	
+	// Try-catch keywords
 	L"try",
 	L"catch",
-	L"when",
-	L"import",
+	L"throw",
+	
+	// Use statements
+	L"using",
+	L"from",
 	L"namespace",
+
+	// Access modifiers
 	L"public",
 	L"private",
 	L"protected",
 	L"abstract",
 	L"interface",
 	L"sealed",
+
+	// Linkage modifiers
 	L"external",
 	L"internal",
+
+	// Pre-processing
 	L"define",
+
 };
 
 std::vector<AALexicalResult> AALexer::Analyse(std::wistream& input) {
@@ -361,7 +388,7 @@ AAToken AALexer::FirstNonWhitespaceBefore(std::vector<AALexicalResult> tokens, i
 
 AAToken AALexer::FirstNonWhitespaceAfter(std::vector<AALexicalResult> tokens, int i, int& o) {
 	o = i + 1;
-	while (o < tokens.size()) {
+	while (o < (int)tokens.size()) {
 		if (tokens[o].token != AAToken::whitespace) {
 			return tokens[o].token;
 		}

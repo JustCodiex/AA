@@ -98,7 +98,7 @@ int wmain(int argc, wchar_t** argv) {
                 inputFile = argv[i + 1];
                 i++;
             } else {
-                printf("Invalid or missing command argument '-c'");
+                wprintf(L"Invalid or missing command argument '-c'");
             }
         } else if (wcscmp(argv[i], L"-oae") == 0) {
             if (isCompileInput) {
@@ -107,7 +107,7 @@ int wmain(int argc, wchar_t** argv) {
                     executeOutput = true;
                     i++;
                 } else {
-                    printf("Invalid or missing command argument '-oae'");
+                    wprintf(L"Invalid or missing command argument '-oae'");
                 }
             } else {
                 wprintf(L"Unable to execute non-binary output");
