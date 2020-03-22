@@ -468,7 +468,7 @@ bool RunRegressionTests(AAVM* pAAVM) {
 	successes = 0;
 
 	// Enable logging
-	pAAVM->EnableCompilerLog(false);
+	pAAVM->EnableCompilerLog(true);
 	pAAVM->EnableExecutionTiming(true);
 	pAAVM->EnableTopStackLogging(false);
 

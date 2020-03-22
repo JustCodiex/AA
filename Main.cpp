@@ -90,6 +90,8 @@ int wmain(int argc, wchar_t** argv) {
             printOutput = false;
         } else if (wcscmp(argv[i], L"-pause") == 0) {
             pauseOnComplete = true;
+        } else if (wcscmp(argv[i], L"-test_regressive") == 0) {
+            enableRegTests = true;
         } else if (wcscmp(argv[i], L"-c") == 0) {
             isCompileInput = true;
             if (i + 1 < argc && argv[i+1][0] != '-') {
@@ -111,7 +113,7 @@ int wmain(int argc, wchar_t** argv) {
                 wprintf(L"Unable to execute non-binary output");
             }
         } else {
-            wprintf(L"\!- Unknown or invalid argument '%s'\n", argv[i]);
+            wprintf(L"!- Unknown or invalid argument '%s'\n", argv[i]);
         }
 
         i++;
