@@ -20,6 +20,9 @@ enum class AA_PT_NODE_TYPE {
 	expression,
 	condition,
 
+	usingstatement,
+	fromstatement,
+
 	ifstatement,
 	elseifstatement,
 	elsestatement,
@@ -54,12 +57,16 @@ enum class AA_PT_NODE_TYPE {
 	vardecleration,
 	fundecleration,
 	classdecleration,
+	namespacedecleration,
 
 	funccall,
 	funarg,
 	funarglist,
 
 	intliteral,
+	shortliteral,
+	longliteral,
+	doubleliteral,
 	floatliteral,
 	stringliteral,
 	charliteral,

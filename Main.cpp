@@ -137,7 +137,7 @@ int wmain(int argc, wchar_t** argv) {
 
     } else {
 
-        wprintf(L"Functionality not implemented!");
+        wprintf(L"Functionality not implemented!\n");
 
     }
 

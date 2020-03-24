@@ -104,6 +104,7 @@ private:
 	AA_PT_NODE* CreateClassDecl(std::vector<AA_PT_NODE*>& nodes, size_t from);
 	AA_PT_NODE* CreateFunctionDecl(std::vector<AA_PT_NODE*>& nodes, size_t from);
 	AA_PT_NODE* CreateConstructorDecl(std::vector<AA_PT_NODE*>& nodes, size_t from);
+	AA_PT_NODE* CreateNamespaceDecl(std::vector<AA_PT_NODE*>& nodes, size_t from);
 
 	AA_PT_NODE* CreateConditionBlock(std::vector<AA_PT_NODE*>& nodes, size_t from);
 	AA_PT_NODE* CreateIfStatement(std::vector<AA_PT_NODE*>& nodes, size_t from);

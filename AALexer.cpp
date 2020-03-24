@@ -249,7 +249,15 @@ void AALexer::Join(std::vector<AALexicalResult>& results) {
 	while (i < results.size()) {
 		
 		if (results[i].token == AAToken::accessor) {
-			if (i > 0 && results[i - 1].token == AAToken::intlit && i + 1 < results.size() && results[i + 1].token == AAToken::intlit) {
+			if (i > 0 && results[i - 1].token == AAToken::accessor) {
+				AALexicalResult lR = AALexicalResult(results[i - 1].content + results[i].content, AAToken::accessor, results[i - 1].position);
+				if (IsValidJointOperator(lR.content)) {
+					results.erase(results.begin() + i - 1, results.begin() + i + 1);
+					results.insert(results.begin() + i - 1, lR);
+				} else {
+					wprintf(L"Invalid joint accessor detected '%s'", lR.content.c_str());
+				}
+			} else if (i > 0 && results[i - 1].token == AAToken::intlit && i + 1 < results.size() && results[i + 1].token == AAToken::intlit) {
 				this->JoinDecimal(results, i);
 			}
 		} else if (results[i].token == AAToken::OP) {
@@ -369,6 +377,8 @@ bool AALexer::IsValidJointOperator(std::wstring ws) {
 	} else if (ws == L"==") {
 		return true;
 	} else if (ws == L"!=") {
+		return true;
+	} else if (ws == L"::") {
 		return true;
 	} else {
 		return false;

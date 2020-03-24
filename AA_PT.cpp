@@ -137,7 +137,9 @@ std::vector<AA_PT*> AA_PT::CreateTrees(std::vector<AA_PT_NODE*>& nodes) {
 	AA_PT_NODE* root = pt.CreateTree(nodes, 0);
 
 	if (nodes.at(0) == root) {
-		parseTrees.push_back(new AA_PT(root));
+		for (size_t i = 0; i < nodes.size(); i++) {
+			parseTrees.push_back(new AA_PT(nodes.at(i)));
+		}
 	} else {
 		if (nodes.at(0)->nodeType == AA_PT_NODE_TYPE::expression) {
 			for (size_t i = 0; i < nodes.at(0)->childNodes.size(); i++) {
@@ -327,6 +329,10 @@ void AA_PT::HandleKeywordCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex
 	} else if (nodes[nodeIndex]->content == L"class") {
 	
 		nodes[nodeIndex] = this->CreateClassDecl(nodes, nodeIndex);
+
+	} else if (nodes[nodeIndex]->content == L"namespace") {
+	
+		nodes[nodeIndex] = this->CreateNamespaceDecl(nodes, nodeIndex);
 
 	} else if (nodes[nodeIndex]->content == L"void") {
 		
@@ -643,6 +649,32 @@ AA_PT_NODE* AA_PT::CreateFunctionArgList(AA_PT_NODE* pExpNode) {
 	}
 
 	return argList;
+
+}
+
+AA_PT_NODE* AA_PT::CreateNamespaceDecl(std::vector<AA_PT_NODE*>& nodes, size_t from) {
+
+	if (from + 1 < nodes.size() && nodes[from + 1]->nodeType == AA_PT_NODE_TYPE::identifier) {
+
+		if (from + 2 < nodes.size() && nodes[from + 2]->nodeType == AA_PT_NODE_TYPE::block) {
+
+			nodes[from]->nodeType = AA_PT_NODE_TYPE::namespacedecleration;
+			nodes[from]->content = nodes[from + 1]->content;
+			nodes[from]->childNodes = this->CreateDeclerativeBody(nodes[from + 2]->childNodes);
+
+			nodes.erase(nodes.begin() + from + 1, nodes.begin() + from + 3);
+
+		} else {
+			SetError(AA_PT::Error("Expected namespace content", 0, nodes[from]->position));
+			return NULL;
+		}
+
+	} else {
+		SetError(AA_PT::Error("Expected namespace identifier", 0, nodes[from]->position));
+		return NULL;
+	}
+
+	return nodes[from];
 
 }
 
