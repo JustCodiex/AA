@@ -410,6 +410,54 @@ void AA_PT::HandleKeywordCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex
 
 		}
 
+	} else if (nodes[nodeIndex]->content == L"using") {
+
+		if (nodeIndex + 1 < nodes.size() && nodes[nodeIndex + 1]->nodeType == AA_PT_NODE_TYPE::identifier) {
+
+			if (nodeIndex + 2 < nodes.size() && nodes[nodeIndex + 2]->nodeType == AA_PT_NODE_TYPE::keyword) {
+
+				if (nodes[nodeIndex + 2]->content == L"from") {
+
+					if (nodeIndex + 3 < nodes.size() && nodes[nodeIndex + 3]->nodeType == AA_PT_NODE_TYPE::identifier) {
+
+						nodes[nodeIndex]->nodeType = AA_PT_NODE_TYPE::usingstatement;
+						nodes[nodeIndex]->content = nodes[nodeIndex + 1]->content;
+						nodes[nodeIndex + 2]->nodeType = AA_PT_NODE_TYPE::fromstatement;
+						nodes[nodeIndex + 2]->content = nodes[nodeIndex + 3]->content;
+
+						nodes[nodeIndex]->childNodes.push_back(nodes[nodeIndex + 2]);
+
+						nodes.erase(nodes.begin() + nodeIndex + 1, nodes.begin() + nodeIndex + 4);
+
+					} else {
+						SetError(AA_PT::Error("Expected identifier following 'from' keyword!", 2, nodes[nodeIndex]->position));
+						nodeIndex = AA_PT_NODE_OUT_OF_BOUNDS_INDEX;
+						return;
+					}
+
+				} else {
+					SetError(AA_PT::Error("Expected 'from' keyword in 'using' statement", 3, nodes[nodeIndex]->position));
+					nodeIndex = AA_PT_NODE_OUT_OF_BOUNDS_INDEX;
+					return;
+				}
+
+			} else {
+
+				nodes[nodeIndex]->nodeType = AA_PT_NODE_TYPE::usingstatement;
+				nodes[nodeIndex]->content = nodes[nodeIndex + 1]->content;
+
+				nodes.erase(nodes.begin() + nodeIndex + 1, nodes.begin() + nodeIndex + 2);
+
+			}
+
+		} else {
+			SetError(AA_PT::Error("Expected identifier following 'using' keyword!", 4, nodes[nodeIndex]->position));
+			nodeIndex = AA_PT_NODE_OUT_OF_BOUNDS_INDEX;
+			return;
+		}
+
+		printf("");
+
 	}
 
 	nodeIndex++;

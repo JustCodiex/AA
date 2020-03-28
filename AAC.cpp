@@ -34,7 +34,7 @@ AAC_CompileResult AAC::CompileFromAbstractSyntaxTrees(std::vector<AA_AST*> trees
 
 	// Run the static checkers
 	CompiledStaticChecks staticChecks = this->NewStaticCheck();
-	if (COMPILE_ERROR(err = this->RunStaticOperations(trees, staticChecks))) {
+	if (COMPILE_ERROR(err = this->RunStaticOperations(trees, staticChecks, L""))) {
 		result.firstMsg = err;
 		result.success = false;
 		return result;
@@ -111,11 +111,15 @@ AAC::CompiledProcedure AAC::CompileProcedureFromASTNode(AA_AST_NODE* pASTNode, C
 void AAC::CollapseGlobalScope(std::vector<AA_AST*>& trees) {
 
 	size_t i = 0;
-	AA_AST_NODE* pGlobalScope = new AA_AST_NODE(L"", AA_AST_NODE_TYPE::block, AACodePosition(0, 0));
+	AA_AST_NODE* pGlobalScope = new AA_AST_NODE(L"<GlobalScope>", AA_AST_NODE_TYPE::block, AACodePosition(0, 0));
 
 	while (i < trees.size()) {
 
-		if (trees[i]->GetRoot()->type != AA_AST_NODE_TYPE::fundecl && trees[i]->GetRoot()->type != AA_AST_NODE_TYPE::classdecl) {
+		AA_AST_NODE_TYPE nodeType = trees[i]->GetRoot()->type;
+
+		if (nodeType != AA_AST_NODE_TYPE::fundecl && nodeType != AA_AST_NODE_TYPE::classdecl && 
+			nodeType != AA_AST_NODE_TYPE::usingspecificstatement && nodeType != AA_AST_NODE_TYPE::usingstatement && // Using statements need to preserve their position in code
+			nodeType != AA_AST_NODE_TYPE::name_space) { // namespaces are per definition not part of the global namespace/scope
 
 			pGlobalScope->expressions.push_back(trees[i]->GetRoot());
 			trees.erase(trees.begin() + i);
@@ -126,7 +130,9 @@ void AAC::CollapseGlobalScope(std::vector<AA_AST*>& trees) {
 
 	}
 
-	trees.insert(trees.begin(), new AA_AST(pGlobalScope));
+	if (pGlobalScope->expressions.size() > 0) {
+		trees.insert(trees.begin(), new AA_AST(pGlobalScope));
+	}
 
 }
 
@@ -162,7 +168,41 @@ AAC::CompiledStaticChecks AAC::NewStaticCheck() {
 
 }
 
-AAC_CompileErrorMessage AAC::RunStaticOperations(std::vector<AA_AST*> trees, CompiledStaticChecks& staticChecks) {
+AAC_CompileErrorMessage AAC::RunStaticOperations(std::vector<AA_AST*> trees, CompiledStaticChecks& staticChecks, std::wstring currentnamespace) {
+	
+	// Compile error container
+	AAC_CompileErrorMessage err;
+
+	// For all input trees, register namespaces
+	for (size_t i = 0; i < trees.size(); i++) {
+
+		// Is name space?
+		if (trees[i]->GetRoot()->type == AA_AST_NODE_TYPE::name_space) {
+
+			// Temp abstract syntax trees
+			std::vector<AA_AST*> tempASTTrees;
+
+			// Add elements of namespaces
+			for (size_t j = 0; j < trees[i]->GetRoot()->expressions.size(); j++) {
+				tempASTTrees.push_back(new AA_AST(trees[i]->GetRoot()->expressions[j]));
+			}
+
+			// Run operation
+			err = this->RunStaticOperations(tempASTTrees, staticChecks, currentnamespace);
+
+			// Delete all the temporary ASTs
+			for (size_t j = 0; j < tempASTTrees.size(); j++) {
+				delete tempASTTrees[j];
+			}
+
+			// Any compile error?
+			if (COMPILE_ERROR(err)) {
+				return err;
+			}
+
+		}
+
+	}
 
 	// For all input trees, register classes
 	for (size_t i = 0; i < trees.size(); i++) {
@@ -215,13 +255,12 @@ AAC_CompileErrorMessage AAC::RunStaticOperations(std::vector<AA_AST*> trees, Com
 		if (!this->TypecheckAST(trees[i], staticChecks, tErr)) {
 
 			// Create error message based on type error
-			AAC_CompileErrorMessage tErrMsg;
-			tErrMsg.errorMsg = tErr.errMsg;
-			tErrMsg.errorSource = tErr.errSrc;
-			tErrMsg.errorType = tErrMsg.errorType;
+			err.errorMsg = tErr.errMsg;
+			err.errorSource = tErr.errSrc;
+			err.errorType = tErr.errType;
 
 			// Return error message
-			return tErrMsg;
+			return err;
 
 		}
 

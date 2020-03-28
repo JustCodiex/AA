@@ -186,6 +186,22 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 		indexatNode->expressions.push_back(this->AbstractNode(pNode->childNodes[1]));
 		return indexatNode;
 	}
+	case AA_PT_NODE_TYPE::namespacedecleration: {
+		AA_AST_NODE* namespacedeclNode = new AA_AST_NODE(pNode->content, AA_AST_NODE_TYPE::name_space, pNode->position);
+		for (size_t i = 0; i < pNode->childNodes.size(); i++) {
+			namespacedeclNode->expressions.push_back(this->AbstractNode(pNode->childNodes[i]));
+		}
+		return namespacedeclNode;
+	}
+	case AA_PT_NODE_TYPE::usingstatement: {
+		if (pNode->childNodes.size() == 0) {
+			return new AA_AST_NODE(pNode->content, AA_AST_NODE_TYPE::usingstatement, pNode->position);
+		} else {
+			AA_AST_NODE* usefromNode = new AA_AST_NODE(pNode->content, AA_AST_NODE_TYPE::usingspecificstatement, pNode->position);
+			usefromNode->expressions.push_back(new AA_AST_NODE(pNode->childNodes[0]->content, AA_AST_NODE_TYPE::name_space, pNode->position));
+			return usefromNode;
+		}
+	}
 	case AA_PT_NODE_TYPE::intliteral:
 	case AA_PT_NODE_TYPE::charliteral:
 	case AA_PT_NODE_TYPE::floatliteral:

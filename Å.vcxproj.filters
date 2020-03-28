@@ -197,5 +197,8 @@
     <ClInclude Include="AAConsole.h">
       <Filter>Header Files\VM\builtin</Filter>
     </ClInclude>
+    <ClInclude Include="AA_AST_NODE.h">
+      <Filter>Header Files\parser</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

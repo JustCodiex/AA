@@ -95,7 +95,7 @@ private:
 	** Static checkers
 	*/
 
-	AAC_CompileErrorMessage RunStaticOperations(std::vector<AA_AST*> trees, CompiledStaticChecks& staicData);
+	AAC_CompileErrorMessage RunStaticOperations(std::vector<AA_AST*> trees, CompiledStaticChecks& staicData, std::wstring currentnamespace);
 	CompiledStaticChecks NewStaticCheck();
 	bool TypecheckAST(AA_AST* pTree, CompiledStaticChecks staticData, AATypeChecker::Error& typeError);
 	void CollapseGlobalScope(std::vector<AA_AST*>& trees);

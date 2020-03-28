@@ -21,6 +21,6 @@ int main() {
     StringList a = new StringList();
     spaceB::StringList b = new StringList();
     42;
-}
+}; // Global scope, remember the semicolon! (This is kind of a bug)
 
 main();

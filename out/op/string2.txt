@@ -1,4 +1,4 @@
-START PROCEDURE 0 ():
+START PROCEDURE 0 (<GlobalScope>):
 CONSTANTS:	[UTF-8, "Hello"]
 IDENTIFIERS: 
 	s;

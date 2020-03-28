@@ -191,6 +191,7 @@
     <ClInclude Include="AAVarEnv.h" />
     <ClInclude Include="AAVM.h" />
     <ClInclude Include="AA_AST.h" />
+    <ClInclude Include="AA_AST_NODE.h" />
     <ClInclude Include="AA_literals.h" />
     <ClInclude Include="AA_PT.h" />
     <ClInclude Include="AA_PT_NODE.h" />
