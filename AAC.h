@@ -2,11 +2,7 @@
 #include "AA_AST.h"
 #include "AAByteCode.h"
 #include "AA_literals.h"
-#include "AAC_Structs.h"
-#include "AATypeChecker.h"
-#include "AAFuncSignature.h"
-#include "AAClassCompiler.h"
-#include "AACNamespace.h"
+#include "AAStaticAnalysis.h"
 #include "bstream.h"
 #include "list.h"
 
@@ -57,6 +53,8 @@ public:
 	};
 
 public:
+
+	AAC();
 
 	void SetupCompiler();
 
@@ -162,5 +160,6 @@ private:
 	std::vector<AAFuncSignature> m_preregisteredFunctions;
 
 	AAClassCompiler* m_classCompiler;
+	AAStaticAnalysis* m_staticAnalyser;
 
 };

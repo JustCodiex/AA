@@ -3,10 +3,24 @@
 #include "AAVal.h"
 #include <stack>
 
+AAC::AAC() {
+
+	// Set support classes to null
+	m_classCompiler = 0;
+	m_staticAnalyser = 0;
+
+	// Set current procID to 0
+	m_currentProcID = 0;
+
+}
+
 void AAC::SetupCompiler() {
 
 	// Create instance of class compiler
 	m_classCompiler = new AAClassCompiler;
+
+	// Create instance of static analyser
+	m_staticAnalyser = new AAStaticAnalysis;
 
 	// Reset internals
 	this->ResetCompilerInternals();
@@ -17,6 +31,9 @@ void AAC::ResetCompilerInternals() {
 
 	// Reset current procedure ID
 	m_currentProcID = 0;
+
+	// Reset registered types and other static configurations
+	m_staticAnalyser->Reset(m_preregisteredFunctions, m_preregisteredClasses);
 
 }
 
@@ -1184,19 +1201,6 @@ AAC_Out AAC::CompileFromProcedures(std::vector<CompiledProcedure> procedures, Co
 	// Byte stream
 	aa::bstream bis;
 
-	// Write the exported signature count
-	bis << 0; // (int)staticCompileData.exportSignatures.size();
-	/*
-	// Write the exported signatures
-	for (size_t s = 0; s < staticCompileData.exportSignatures.size(); s++) {
-
-		// Write out the export signatures
-		bis << (int)staticCompileData.exportSignatures[s].name.length();
-		bis << staticCompileData.exportSignatures[s].name;
-		bis << staticCompileData.exportSignatures[s].procID;
-
-	}*/
-
 	// Write procedure count
 	bis << (int)procedures.size();
 
@@ -1230,41 +1234,7 @@ AAC_Out AAC::CompileFromProcedures(std::vector<CompiledProcedure> procedures, Co
 	return compileBytecodeResult;
 
 }
-/*
-std::vector<CompiledSignature> AAC::MapProcedureToSignature(CompiledStaticChecks staticCheck, std::vector<AAC::CompiledProcedure> procedureLs) {
 
-	std::vector<CompiledSignature> procSigs;
-
-	for (size_t i = 0; i < staticCheck.registeredFunctions.Size(); i++) {
-
-		for (size_t j = 0; j < procedureLs.size(); j++) {
-
-			CompiledStaticChecks::SigPointer funcSig = staticCheck.registeredFunctions.At(i);
-
-			if (funcSig.node == procedureLs[j].node) {
-
-				CompiledSignature sig;
-				sig.procID = j;
-				sig.name = L"@" + funcSig.funcSig.returnType + L"?" + funcSig.funcSig.name + L"(";
-
-				for (size_t p = 0; p < funcSig.funcSig.parameters.size(); p++) {
-					sig.name += L"&" + funcSig.funcSig.parameters[p].type + L"@" + funcSig.funcSig.parameters[p].identifier;
-				}
-
-				sig.name += L")";
-
-				procSigs.push_back(sig);
-
-			}
-
-		}
-
-	}
-
-	return procSigs;
-
-}
-*/
 int AAC::FindBestFunctionMatch(CompiledStaticChecks staticCheck, AA_AST_NODE* pNode, int& argCount, bool& isVMCall) { // TODO: Make the typechecker do this
 
 	std::wstring funcName = pNode->content;

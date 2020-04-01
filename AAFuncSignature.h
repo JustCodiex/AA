@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+struct AACNamespace;
+
 struct AAFuncParam {
 	std::wstring type;
 	std::wstring identifier;
@@ -33,6 +35,7 @@ struct AAFuncSignature {
 	bool isClassCtor;
 	AAAccessModifier accessModifier;
 	bool isVirtual;
+	AACNamespace* domain;
 
 	AA_AST_NODE* node;
 	int procID;
@@ -47,6 +50,7 @@ struct AAFuncSignature {
 		this->isVirtual = false;
 		this->node = 0;
 		this->procID = -1;
+		this->domain = 0;
 	}
 
 	AAFuncSignature(std::wstring name) {
@@ -59,6 +63,7 @@ struct AAFuncSignature {
 		this->isVirtual = false;
 		this->node = 0;
 		this->procID = -1;
+		this->domain = 0;
 	}
 
 	AAFuncSignature(std::wstring name, std::wstring type) {
@@ -71,6 +76,7 @@ struct AAFuncSignature {
 		this->isVirtual = false;
 		this->node = 0;
 		this->procID = -1;
+		this->domain = 0;
 	}
 
 	AAFuncSignature(std::wstring name, std::wstring type, std::vector<AAFuncParam> params) {
@@ -84,6 +90,7 @@ struct AAFuncSignature {
 		this->isVirtual = false;
 		this->node = 0;
 		this->procID = -1;
+		this->domain = 0;
 	}
 
 	bool operator==(AAFuncSignature other) {

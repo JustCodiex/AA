@@ -41,9 +41,14 @@ struct AAClassSignature {
 	aa::set<AAClassFieldSignature> fields;
 	size_t classByteSz;
 	AAAccessModifier accessModifier;
+	AACNamespace* domain;
 	AAClassSignature() {
 		this->name = L"";
 		this->classByteSz = 0;
 		this->accessModifier = AAAccessModifier::PUBLIC;
+		this->domain = 0;
+	}
+	bool operator==(AAClassSignature other) {
+		return other.name == this->name /*&& other.domain == this->domain*/;
 	}
 };

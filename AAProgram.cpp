@@ -12,7 +12,7 @@ bool AAProgram::LoadProgram(unsigned char* bytes, unsigned long long length) {
 
 	aa::bwalker bw = aa::bwalker(bytes, length);
 
-	bw >> m_signatureCount;
+	/*bw >> m_signatureCount;
 
 	m_exportedSignatures = new ExportSignature[m_signatureCount];
 
@@ -21,7 +21,7 @@ bool AAProgram::LoadProgram(unsigned char* bytes, unsigned long long length) {
 		bw >> m_exportedSignatures[i].name;
 		bw >> m_exportedSignatures[i].procID;
 
-	}
+	}*/
 
 	bw >> m_procedureCount;
 	bw >> m_entryPoint;

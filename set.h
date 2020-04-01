@@ -125,6 +125,26 @@ namespace aa {
 			}
 		}
 
+		/// <summary>
+		/// Clears the set and copies all distinct elements from the vector
+		/// </summary>
+		/// <param name="vec">The vector to copy set elements from</param>
+		void FromVector(std::vector<T> vec) {
+			m_list = aa::list<T>();
+			for (T& t : vec) {
+				this->Add(t);
+			}
+		}
+
+		/// <summary>
+		/// Clears the set and copies all distinct elements from the list into the set
+		/// </summary>
+		/// <param name="ls">The list to copy set elements from</param>
+		void FromList(aa::list<T> ls) {
+			m_list = aa::list<T>();
+			ls.ForEach([this](T& t) { this->Add(t); });
+		}
+
 	private:
 
 		aa::list<T> m_list;

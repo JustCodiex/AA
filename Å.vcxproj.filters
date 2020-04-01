@@ -105,6 +105,9 @@
     <ClCompile Include="AACFunction.cpp">
       <Filter>Source Files\VM\builtin</Filter>
     </ClCompile>
+    <ClCompile Include="AAStaticAnalysis.cpp">
+      <Filter>Source Files\compiler</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="list.h">
@@ -210,6 +213,9 @@
       <Filter>Header Files\compiler</Filter>
     </ClInclude>
     <ClInclude Include="AAAccessModifier.h">
+      <Filter>Header Files\compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="AAStaticAnalysis.h">
       <Filter>Header Files\compiler</Filter>
     </ClInclude>
   </ItemGroup>
