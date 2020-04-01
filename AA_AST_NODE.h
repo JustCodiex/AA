@@ -1,4 +1,5 @@
 #pragma once
+#include "AACodePosition.h"
 #include <string>
 #include <vector>
 #include <map>

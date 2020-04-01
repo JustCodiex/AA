@@ -169,12 +169,15 @@
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AAAccessModifier.h" />
     <ClInclude Include="AAB2F.h" />
     <ClInclude Include="AAByteCode.h" />
     <ClInclude Include="AAC.h" />
     <ClInclude Include="AACClass.h" />
     <ClInclude Include="AACFunction.h" />
+    <ClInclude Include="AAClassSignature.h" />
     <ClInclude Include="AAClassCompiler.h" />
+    <ClInclude Include="AACNamespace.h" />
     <ClInclude Include="AAConsole.h" />
     <ClInclude Include="AAC_Structs.h" />
     <ClInclude Include="AALanguageRegressionTest.h" />
@@ -199,6 +202,7 @@
     <ClInclude Include="bstream.h" />
     <ClInclude Include="bwalker.h" />
     <ClInclude Include="list.h" />
+    <ClInclude Include="set.h" />
     <ClInclude Include="stack.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

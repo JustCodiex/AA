@@ -1,3 +1,4 @@
+#include "AACodePosition.h"
 #include "AAClassCompiler.h"
 #include "AAVal.h"
 
@@ -34,7 +35,7 @@ void AAClassCompiler::RedefineFunDecl(std::wstring className, AA_AST_NODE* pFunc
 
 }
 
-CompiledClass AAClassCompiler::FindClassFromCtor(std::wstring ctorname, aa::list<CompiledClass> classes) {
+AAClassSignature AAClassCompiler::FindClassFromCtor(std::wstring ctorname, aa::list<AAClassSignature> classes) {
 
 	for (size_t i = 0; i < classes.Size(); i++) {
 		if (classes.At(i).name == ctorname) {
@@ -42,23 +43,18 @@ CompiledClass AAClassCompiler::FindClassFromCtor(std::wstring ctorname, aa::list
 		}
 	}
 
-	return CompiledClass();
+	return AAClassSignature();
 
 }
 
-CompiledClassMethod AAClassCompiler::FindBestCtor(CompiledClass* pCC) {
+AAFuncSignature AAClassCompiler::FindBestCtor(AAClassSignature* pCC) {
 
-	for (size_t i = 0; i < pCC->methods.Size(); i++) {
-		if (pCC->methods.At(i).isCtor) {
-			return pCC->methods.At(i);
-		}
-	}
-
-	return CompiledClassMethod();
+	// TODO: Fix this so we may have multiple ctors
+	return pCC->methods.FindFirst([](AAFuncSignature& sig) { return sig.isClassCtor; });
 
 }
 
-size_t AAClassCompiler::CalculateMemoryUse(CompiledClass cc) {
+size_t AAClassCompiler::CalculateMemoryUse(AAClassSignature cc) {
 
 	// Total size of class in memory
 	size_t total = 0;
@@ -71,7 +67,7 @@ size_t AAClassCompiler::CalculateMemoryUse(CompiledClass cc) {
 
 }
 
-void AAClassCompiler::CorrectReferences(CompiledClass* cc, std::vector<AA_AST_NODE*> pFuncBodies) {
+void AAClassCompiler::CorrectReferences(AAClassSignature* cc, std::vector<AA_AST_NODE*> pFuncBodies) {
 
 	for (size_t i = 0; i < pFuncBodies.size(); i++) {
 		this->CorrectFuncFieldReferences(pFuncBodies[i], cc);
@@ -79,7 +75,7 @@ void AAClassCompiler::CorrectReferences(CompiledClass* cc, std::vector<AA_AST_NO
 
 }
 
-void AAClassCompiler::CorrectFuncFieldReferences(AA_AST_NODE* pNode, CompiledClass* cc) {
+void AAClassCompiler::CorrectFuncFieldReferences(AA_AST_NODE* pNode, AAClassSignature* cc) {
 
 	switch (pNode->type) {
 	case AA_AST_NODE_TYPE::block:
@@ -121,15 +117,6 @@ void AAClassCompiler::UpdateIdentifierToThisFieldReference(AA_AST_NODE* pNode, i
 
 }
 
-bool AAClassCompiler::HasField(CompiledClass cc, std::wstring fieldname, int& fieldID) {
-
-	for (size_t i = 0; i < cc.fields.Size(); i++) {
-		if (cc.fields.At(i).name == fieldname) {
-			fieldID = cc.fields.At(i).fieldID;
-			return true;
-		}
-	}
-
-	return false;
-
+bool AAClassCompiler::HasField(AAClassSignature cc, std::wstring fieldname, int& fieldID) {
+	return cc.fields.FindFirstIndex([fieldname](AAClassFieldSignature& sig) { return sig.name == fieldname; }, fieldID);
 }

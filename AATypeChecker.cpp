@@ -17,7 +17,7 @@ std::wstring AATypeChecker::InvalidTypeStr = L"TYPE NOT FOUND";
 
 #define AATC_ERROR(msg, pos) this->SetError(AATypeChecker::Error(msg, __COUNTER__, pos)); return AATypeChecker::InvalidTypeStr
 
-AATypeChecker::AATypeChecker(AA_AST* pTree, aa::list<std::wstring> regTypes, aa::list<AAFuncSignature> sigs, aa::list<CompiledClass> classes) {
+AATypeChecker::AATypeChecker(AA_AST* pTree, aa::list<std::wstring> regTypes, aa::list<AAFuncSignature> sigs, aa::list<AAClassSignature> classes) {
 	
 	// Set the tree to work with
 	m_currentTree = pTree;
@@ -176,7 +176,7 @@ std::wstring AATypeChecker::TypeCheckBinaryOperation(AA_AST_NODE* pOpNode, AA_AS
 		} else {
 
 			std::wstring op = pOpNode->content;
-			CompiledClass ccLeft = FindCompiledClassOfType(typeLeft);
+			AAClassSignature ccLeft = FindCompiledClassOfType(typeLeft);
 
 			if (ccLeft.name == InvalidTypeStr) {
 				/*this->SetError(
@@ -187,16 +187,16 @@ std::wstring AATypeChecker::TypeCheckBinaryOperation(AA_AST_NODE* pOpNode, AA_AS
 				return InvalidTypeStr;*/ return typeLeft; // TODO: Reenable this when function parameter type checking has been enabled
 			}
 
-			CompiledClassOperator ccop;
+			AAClassOperatorSignature ccop;
 			if (this->FindCompiledClassOperation(ccLeft, op, typeRight, ccop)) {
 
 				// Tag the operator node with the procID
 				pOpNode->tags["useCall"] = true;
 				pOpNode->tags["operatorProcID"] = ccop.method.procID;
-				pOpNode->tags["operatorIsVM"] = ccop.method.sig.isVMFunc;
+				pOpNode->tags["operatorIsVM"] = ccop.method.isVMFunc;
 
 				// Return the type of whatever the operator will return
-				return ccop.method.sig.returnType;
+				return ccop.method.returnType;
 
 			} else {
 				this->SetError(
@@ -262,7 +262,7 @@ AAValType AATypeChecker::TypeCheckClassDotFieldAccessorOperation(AA_AST_NODE* pA
 	AAValType l = this->TypeCheckNode(left);
 
 	// Get class from lhs
-	CompiledClass cc = this->FindCompiledClassOfType(l);
+	AAClassSignature cc = this->FindCompiledClassOfType(l);
 
 	// Make sure we got a valid class from this
 	if (cc.name == InvalidTypeStr) {
@@ -277,7 +277,7 @@ AAValType AATypeChecker::TypeCheckClassDotFieldAccessorOperation(AA_AST_NODE* pA
 		right->tags["fieldid"] = field;
 
 		// Return field type
-		return cc.fields.At(field).type;
+		return cc.fields.Apply(field).type;
 
 	} else {
 
@@ -449,7 +449,7 @@ bool AATypeChecker::IsTypeMatchingFunction(AAFuncSignature sig, AA_AST_NODE* pCa
 
 }
 
-CompiledClass AATypeChecker::FindCompiledClassOfType(AAValType type) {
+AAClassSignature AATypeChecker::FindCompiledClassOfType(AAValType type) {
 
 	for (size_t i = 0; i < m_caenv.Size(); i++) {
 		if (m_caenv.At(i).name == type) {
@@ -457,28 +457,19 @@ CompiledClass AATypeChecker::FindCompiledClassOfType(AAValType type) {
 		}
 	}
 
-	CompiledClass cc;
+	AAClassSignature cc;
 	cc.name = InvalidTypeStr;
 
 	return cc;
 
 }
 
-bool AATypeChecker::FindCompiledClassOperation(CompiledClass cc, std::wstring operatorType, AAValType right, CompiledClassOperator& op) {
+bool AATypeChecker::FindCompiledClassOperation(AAClassSignature cc, std::wstring operatorType, AAValType right, AAClassOperatorSignature& op) {
 
-	for (size_t i = 0; i < cc.operators.Size(); i++) {
-		if (cc.operators.At(i).op.compare(operatorType) == 0) {
+	// Find the first operator matching the condition
+	op = cc.operators.FindFirst([operatorType, right](AAClassOperatorSignature& sig) { return sig.op.compare(operatorType) == 0 && sig.method.parameters[1].type.compare(right) == 0; });
 
-			if (cc.operators.At(i).method.sig.parameters[1].type.compare(right) == 0) {
-
-				op = cc.operators.At(i);
-				return true;
-
-			}
-
-		}
-	}
-
-	return false;
+	// Return true if the operator is not a default operator
+	return !(op == AAClassOperatorSignature());
 
 }

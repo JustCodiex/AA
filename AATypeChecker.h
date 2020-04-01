@@ -1,5 +1,4 @@
 #pragma once
-#include "AAFuncSignature.h"
 #include "AAClassCompiler.h"
 #include "AA_AST.h"
 #include "list.h"
@@ -40,7 +39,7 @@ public:
 
 public:
 
-	AATypeChecker(AA_AST* pTree, aa::list<std::wstring> regTypes, aa::list<AAFuncSignature> sigs, aa::list<CompiledClass> classes);
+	AATypeChecker(AA_AST* pTree, aa::list<std::wstring> regTypes, aa::list<AAFuncSignature> sigs, aa::list<AAClassSignature> classes);
 
 	bool TypeCheck(); // Run a type-check on the tree
 
@@ -84,8 +83,8 @@ private:
 	bool IsTypeMatchingFunction(AAFuncSignature sig, AA_AST_NODE* pCallNode);
 	bool IsMatchingTypes(AAValType tCompare, AAValType tExpected);
 
-	CompiledClass FindCompiledClassOfType(AAValType type);
-	bool FindCompiledClassOperation(CompiledClass cc, std::wstring operatorType, AAValType right, CompiledClassOperator& op);
+	AAClassSignature FindCompiledClassOfType(AAValType type);
+	bool FindCompiledClassOperation(AAClassSignature cc, std::wstring operatorType, AAValType right, AAClassOperatorSignature& op);
 
 	// Sets the last error if not set
 	void SetError(AATypeChecker::Error err) { if (!m_hasEnyErr) { m_errMsg = err; m_hasEnyErr = true; } }
@@ -100,7 +99,7 @@ private:
 	aa::list<AAFuncSignature> m_ftenv;
 
 	// Class Auxiliary Environment
-	aa::list<CompiledClass> m_caenv;
+	aa::list<AAClassSignature> m_caenv;
 
 	bool m_hasEnyErr;
 	AATypeChecker::Error m_errMsg;

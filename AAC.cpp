@@ -187,13 +187,21 @@ AAC_CompileErrorMessage AAC::RunStaticOperations(std::vector<AA_AST*> trees, Com
 				tempASTTrees.push_back(new AA_AST(trees[i]->GetRoot()->expressions[j]));
 			}
 
+			// Subspace
+			CompiledStaticChecks subSpace = CompiledStaticChecks();
+			subSpace.parentspace = &staticChecks;
+			subSpace.parentspacename = currentnamespace;
+
 			// Run operation
-			err = this->RunStaticOperations(tempASTTrees, staticChecks, currentnamespace);
+			err = this->RunStaticOperations(tempASTTrees, subSpace, (currentnamespace != L"") ? (currentnamespace + L"::" + trees[i]->GetRoot()->content) : trees[i]->GetRoot()->content);
 
 			// Delete all the temporary ASTs
 			for (size_t j = 0; j < tempASTTrees.size(); j++) {
 				delete tempASTTrees[j];
 			}
+
+			// Add namespace to current namespace
+			staticChecks.registeredNamespaces[trees[i]->GetRoot()->content] = subSpace;
 
 			// Any compile error?
 			if (COMPILE_ERROR(err)) {
@@ -204,39 +212,30 @@ AAC_CompileErrorMessage AAC::RunStaticOperations(std::vector<AA_AST*> trees, Com
 
 	}
 
-	// For all input trees, register classes
+	// For all input trees, register classes and functions
 	for (size_t i = 0; i < trees.size(); i++) {
 
 		// Make sure it's a class decleration
 		if (trees[i]->GetRoot()->type == AA_AST_NODE_TYPE::classdecl) {
 
 			// Get the class
-			CompiledClass cc = this->RegisterClass(trees[i]->GetRoot());
+			AAClassSignature cc = this->RegisterClass(trees[i]->GetRoot());
 
 			// Register class
 			staticChecks.registeredClasses.Add(cc);
 
+			// Register class methods
 			for (size_t j = 0; j < cc.methods.Size(); j++) {
 
-				AAC::CompiledStaticChecks::SigPointer sP = AAC::CompiledStaticChecks::SigPointer(cc.methods.At(j).sig, cc.methods.At(j).source);
-				sP.procID = cc.methods.At(j).procID;
-
-				staticChecks.registeredFunctions.Add(sP);
+				// Register method
+				staticChecks.registeredFunctions.Add(cc.methods.Apply(j));
 
 			}
 
 			// Add class name to registered types as well
 			staticChecks.registeredTypes.Add(cc.name);
 
-		}
-
-	}
-
-	// For all input trees, register possible functions
-	for (size_t i = 0; i < trees.size(); i++) {
-
-		// Make sure it's a function decleration
-		if (trees[i]->GetRoot()->type == AA_AST_NODE_TYPE::fundecl) {
+		} else if (trees[i]->GetRoot()->type == AA_AST_NODE_TYPE::fundecl) { // Make sure it's a function decleration
 
 			// Register functions
 			staticChecks.registeredFunctions.Add(RegisterFunctions(trees[i]->GetRoot()));
@@ -244,6 +243,9 @@ AAC_CompileErrorMessage AAC::RunStaticOperations(std::vector<AA_AST*> trees, Com
 		}
 
 	}
+
+	// Flatten (namespaces) so everything is visible at type-check
+	FlattenStaticChecks(staticChecks);
 
 	// For all input trees, run static type checker
 	for (size_t i = 0; i < trees.size(); i++) {
@@ -279,10 +281,28 @@ AAC_CompileErrorMessage AAC::RunStaticOperations(std::vector<AA_AST*> trees, Com
 
 }
 
+void AAC::FlattenStaticChecks(CompiledStaticChecks& cInOut) {
+
+	if (cInOut.registeredNamespaces.size() > 0) {
+
+		for (auto subSpaces : cInOut.registeredNamespaces) {
+
+		}
+
+	}
+
+	if (cInOut.parentspace != NULL) {
+
+
+
+	}
+
+}
+
 bool AAC::TypecheckAST(AA_AST* pTree, CompiledStaticChecks staticData, AATypeChecker::Error& typeError) {
 
 	// Currently, we just run a simple type check
-	AATypeChecker checker = AATypeChecker(pTree, staticData.registeredTypes, staticData.GetSignatures(), staticData.registeredClasses);
+	AATypeChecker checker = AATypeChecker(pTree, staticData.registeredTypes, staticData.registeredFunctions, staticData.registeredClasses);
 
 	// ** Apply special stuff here. ** //
 
@@ -304,10 +324,10 @@ bool AAC::TypecheckAST(AA_AST* pTree, CompiledStaticChecks staticData, AATypeChe
 
 }
 
-CompiledClass AAC::RegisterClass(AA_AST_NODE* pNode) {
+AAClassSignature AAC::RegisterClass(AA_AST_NODE* pNode) {
 
 	// Compiled Class data
-	CompiledClass cc;
+	AAClassSignature cc;
 	cc.name = pNode->content;
 	cc.classByteSz = 0;
 
@@ -324,21 +344,18 @@ CompiledClass AAC::RegisterClass(AA_AST_NODE* pNode) {
 				m_classCompiler->RedefineFunDecl(cc.name, pNode->expressions[0]->expressions[i]);
 
 				// Register function
-				CompiledStaticChecks::SigPointer sig = this->RegisterFunction(pNode->expressions[0]->expressions[i]);
-				CompiledClassMethod method;
-				method.sig = sig.funcSig;
-				method.sig.isClassMethod = true;
-				method.source = pNode->expressions[0]->expressions[i];
-				method.procID = sig.procID;
-				method.isCtor = sig.funcSig.name == (cc.name + L"::" + cc.name);
+				AAFuncSignature sig = this->RegisterFunction(pNode->expressions[0]->expressions[i]);
+				sig.isClassMethod = true;
+				sig.node = pNode->expressions[0]->expressions[i];
+				sig.isClassCtor = sig.name == (cc.name + L"::" + cc.name);
 
 				// Update return count in case of a constructor
-				if (method.isCtor) {
+				if (sig.isClassCtor) {
 					pNode->expressions[0]->expressions[i]->tags["returncount"] = 1;
 				}
 
 				// Add method to class definition
-				cc.methods.Add(method);
+				cc.methods.Add(sig);
 
 				if (pNode->expressions[0]->expressions[i]->expressions.size() >= 3) { // make sure it's declared
 					funcBodyNodes.push_back(pNode->expressions[0]->expressions[i]->expressions[2]);
@@ -346,7 +363,7 @@ CompiledClass AAC::RegisterClass(AA_AST_NODE* pNode) {
 
 			} else if (pNode->expressions[0]->expressions[i]->type == AA_AST_NODE_TYPE::vardecl) {
 			
-				CompiledClassField field;
+				AAClassFieldSignature field;
 				field.fieldID = (int)cc.fields.Size();
 				field.name = pNode->expressions[0]->expressions[i]->content;
 				field.type = pNode->expressions[0]->expressions[i]->expressions[0]->content;
@@ -373,16 +390,16 @@ CompiledClass AAC::RegisterClass(AA_AST_NODE* pNode) {
 
 }
 
-aa::list<AAC::CompiledStaticChecks::SigPointer> AAC::RegisterFunctions(AA_AST_NODE* pNode) {
+aa::list<AAFuncSignature> AAC::RegisterFunctions(AA_AST_NODE* pNode) {
 
-	aa::list<AAC::CompiledStaticChecks::SigPointer> signatures;
+	aa::list<AAFuncSignature> signatures;
 	signatures.Add(this->RegisterFunction(pNode));
 
 	return signatures;
 
 }
 
-AAC::CompiledStaticChecks::SigPointer AAC::RegisterFunction(AA_AST_NODE* pNode) {
+AAFuncSignature AAC::RegisterFunction(AA_AST_NODE* pNode) {
 
 	AAFuncSignature sig;
 	sig.name = pNode->content;
@@ -398,12 +415,11 @@ AAC::CompiledStaticChecks::SigPointer AAC::RegisterFunction(AA_AST_NODE* pNode) 
 
 	}
 
-	AAC::CompiledStaticChecks::SigPointer sP = AAC::CompiledStaticChecks::SigPointer(sig, pNode);
-	sP.procID = ++m_currentProcID;
-
 	pNode->tags["returncount"] = this->GetReturnCount(&sig);
 
-	return sP;
+	sig.procID = ++m_currentProcID;
+
+	return sig;
 
 }
 
@@ -1038,8 +1054,8 @@ aa::list<AAC::CompiledAbstractExpression> AAC::HandleCtorCall(AA_AST_NODE* pNode
 
 	aa::list<CompiledAbstractExpression> opList;
 
-	CompiledClass cc = m_classCompiler->FindClassFromCtor(pNode->content, staticData.registeredClasses);
-	CompiledClassMethod ctor = m_classCompiler->FindBestCtor(&cc);
+	AAClassSignature cc = m_classCompiler->FindClassFromCtor(pNode->content, staticData.registeredClasses);
+	AAFuncSignature ctor = m_classCompiler->FindBestCtor(&cc);
 
 	CompiledAbstractExpression newCAE;
 	newCAE.argCount = 1;
@@ -1053,10 +1069,10 @@ aa::list<AAC::CompiledAbstractExpression> AAC::HandleCtorCall(AA_AST_NODE* pNode
 	}
 
 	CompiledAbstractExpression callCAE;
-	callCAE.bc = (ctor.sig.isVMFunc) ? AAByteCode::VMCALL : AAByteCode::CALL;
+	callCAE.bc = (ctor.isVMFunc) ? AAByteCode::VMCALL : AAByteCode::CALL;
 	callCAE.argCount = 2;
 	callCAE.argValues[0] = ctor.procID;
-	callCAE.argValues[1] = (int)ctor.sig.parameters.size();
+	callCAE.argValues[1] = (int)ctor.parameters.size();
 
 	opList.Add(callCAE);
 
@@ -1254,16 +1270,16 @@ int AAC::FindBestFunctionMatch(CompiledStaticChecks staticCheck, AA_AST_NODE* pN
 	std::wstring funcName = pNode->content;
 
 	for (size_t i = 0; i < staticCheck.registeredFunctions.Size(); i++) {
-		AAC::CompiledStaticChecks::SigPointer sig = staticCheck.registeredFunctions.At(i);
-		if (sig.funcSig.name.compare(funcName) == 0) {
-			if (pNode->expressions.size() == sig.funcSig.parameters.size()) {
+		AAFuncSignature sig = staticCheck.registeredFunctions.At(i);
+		if (sig.name.compare(funcName) == 0) {
+			if (pNode->expressions.size() == sig.parameters.size()) {
 				bool isMatch = true; //false;
-				for (AAFuncParam p : sig.funcSig.parameters) {
+				for (AAFuncParam p : sig.parameters) {
 
 				}
 				if (isMatch) {
-					isVMCall = sig.funcSig.isVMFunc;
-					argCount = (int)sig.funcSig.parameters.size();
+					isVMCall = sig.isVMFunc;
+					argCount = (int)sig.parameters.size();
 					return sig.procID;
 				}
 			}
@@ -1278,15 +1294,10 @@ int AAC::FindBestFunctionMatch(CompiledStaticChecks staticCheck, AA_AST_NODE* pN
 
 }
 
-void AAC::AddVMClass(CompiledClass cc) {
+void AAC::AddVMClass(AAClassSignature cc) {
 	m_preregisteredClasses.push_back(cc);
 }
 
-void AAC::AddVMFunction(AAFuncSignature sig, int procID) {
-
-	CompiledStaticChecks::SigPointer sP = CompiledStaticChecks::SigPointer(sig, NULL);
-	sP.procID = procID;
-	
-	m_preregisteredFunctions.push_back(sP);
-
+void AAC::AddVMFunction(AAFuncSignature sig) {
+	m_preregisteredFunctions.push_back(sig);
 }

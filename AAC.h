@@ -6,6 +6,7 @@
 #include "AATypeChecker.h"
 #include "AAFuncSignature.h"
 #include "AAClassCompiler.h"
+#include "AACNamespace.h"
 #include "bstream.h"
 #include "list.h"
 
@@ -44,25 +45,14 @@ public:
 	};
 
 	struct CompiledStaticChecks {
-		struct SigPointer {
-			AAFuncSignature funcSig;
-			AA_AST_NODE* node;
-			int procID;
-			SigPointer(AAFuncSignature s, AA_AST_NODE* n) {
-				funcSig = s;
-				node = n;
-				procID = -1;
-			}
-		};
-		aa::list<SigPointer> registeredFunctions;
-		aa::list<CompiledClass> registeredClasses;
+		CompiledStaticChecks* parentspace;
+		std::wstring parentspacename;
+		std::map<std::wstring, CompiledStaticChecks> registeredNamespaces;
+		aa::list<AAFuncSignature> registeredFunctions;
+		aa::list<AAClassSignature> registeredClasses;
 		aa::list<std::wstring> registeredTypes;
-		aa::list<AAFuncSignature> GetSignatures() {
-			aa::list<AAFuncSignature> sigs;
-			for (size_t i = 0; i < registeredFunctions.Size(); i++) {
-				sigs.Add(registeredFunctions.At(i).funcSig);
-			}
-			return sigs;
+		CompiledStaticChecks() {
+			parentspace = 0;
 		}
 	};
 
@@ -78,8 +68,8 @@ public:
 
 	AAClassCompiler* GetClassCompilerInstance() { return m_classCompiler; }
 
-	void AddVMClass(CompiledClass cc);
-	void AddVMFunction(AAFuncSignature sig, int procID);
+	void AddVMClass(AAClassSignature cc);
+	void AddVMFunction(AAFuncSignature sig);
 
 private:
 
@@ -100,10 +90,11 @@ private:
 	bool TypecheckAST(AA_AST* pTree, CompiledStaticChecks staticData, AATypeChecker::Error& typeError);
 	void CollapseGlobalScope(std::vector<AA_AST*>& trees);
 	
-	aa::list<CompiledStaticChecks::SigPointer> RegisterFunctions(AA_AST_NODE* pNode);
+	aa::list<AAFuncSignature> RegisterFunctions(AA_AST_NODE* pNode);
+	AAFuncSignature RegisterFunction(AA_AST_NODE* pNode);
+	AAClassSignature RegisterClass(AA_AST_NODE* pNode);
 
-	CompiledStaticChecks::SigPointer RegisterFunction(AA_AST_NODE* pNode);
-	CompiledClass RegisterClass(AA_AST_NODE* pNode);
+	void FlattenStaticChecks(CompiledStaticChecks& cInOut);
 
 	/*
 	** AST_NODE -> Bytecode functions
@@ -167,8 +158,8 @@ private:
 	int m_currentProcID;
 	std::wstring m_outfile;
 
-	std::vector<CompiledClass> m_preregisteredClasses;
-	std::vector<CompiledStaticChecks::SigPointer> m_preregisteredFunctions;
+	std::vector<AAClassSignature> m_preregisteredClasses;
+	std::vector<AAFuncSignature> m_preregisteredFunctions;
 
 	AAClassCompiler* m_classCompiler;
 

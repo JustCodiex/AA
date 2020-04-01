@@ -1,4 +1,6 @@
 #pragma once
+#include "AA_AST_NODE.h"
+#include "AAAccessModifier.h"
 #include <string>
 #include <vector>
 
@@ -28,12 +30,23 @@ struct AAFuncSignature {
 	std::vector<AAFuncParam> parameters;
 	bool isVMFunc;
 	bool isClassMethod;
+	bool isClassCtor;
+	AAAccessModifier accessModifier;
+	bool isVirtual;
+
+	AA_AST_NODE* node;
+	int procID;
 
 	AAFuncSignature() {
 		this->returnType = L"void";
 		this->name = L"anonymousfunc000";
 		this->isVMFunc = false;
 		this->isClassMethod = false;
+		this->isClassCtor = false;
+		this->accessModifier = AAAccessModifier::PUBLIC;
+		this->isVirtual = false;
+		this->node = 0;
+		this->procID = -1;
 	}
 
 	AAFuncSignature(std::wstring name) {
@@ -41,6 +54,11 @@ struct AAFuncSignature {
 		this->name = name;
 		this->isVMFunc = false;
 		this->isClassMethod = false;
+		this->isClassCtor = false;
+		this->accessModifier = AAAccessModifier::PUBLIC;
+		this->isVirtual = false;
+		this->node = 0;
+		this->procID = -1;
 	}
 
 	AAFuncSignature(std::wstring name, std::wstring type) {
@@ -48,6 +66,11 @@ struct AAFuncSignature {
 		this->name = name;
 		this->isVMFunc = false;
 		this->isClassMethod = false;
+		this->isClassCtor = false;
+		this->accessModifier = AAAccessModifier::PUBLIC;
+		this->isVirtual = false;
+		this->node = 0;
+		this->procID = -1;
 	}
 
 	AAFuncSignature(std::wstring name, std::wstring type, std::vector<AAFuncParam> params) {
@@ -56,6 +79,11 @@ struct AAFuncSignature {
 		this->parameters = params;
 		this->isVMFunc = false;
 		this->isClassMethod = false;
+		this->isClassCtor = false;
+		this->accessModifier = AAAccessModifier::PUBLIC;
+		this->isVirtual = false;
+		this->node = 0;
+		this->procID = -1;
 	}
 
 	bool operator==(AAFuncSignature other) {

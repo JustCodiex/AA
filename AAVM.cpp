@@ -279,6 +279,10 @@ AAVal AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 			int callProc = AAVM_GetArgument(0);
 			int argCount = AAVM_GetArgument(1);
 
+			if (callProc == -1) {
+				AAVM_ThrowRuntimeErr("FatalCompileError", "Call index " + std::to_string(callProc) + " is out of range!");
+			}
+
 			aa::stack<AAVal> args;
 			for (int i = 0; i < argCount; i++) {
 				args.Push(stack.Pop());
@@ -525,21 +529,23 @@ void AAVM::WriteMsg(const char* msg) {
 
 int AAVM::RegisterFunction(AACSingleFunction funcPtr, AAFuncSignature& funcSig, bool isClassMethod) {
 
+	// Fetch proc ID
+	int procId = (int)m_cppfunctions.size();
+
 	// Create function signature
 	funcSig.name = funcPtr.name;
 	funcSig.returnType = funcPtr.returnType;
 	funcSig.parameters = funcPtr.params;
 	funcSig.isVMFunc = true;
 	funcSig.isClassMethod = isClassMethod;
-
-	// Fetch proc ID
-	int procId = (int)m_cppfunctions.size();
+	funcSig.accessModifier = AAAccessModifier::PUBLIC;
+	funcSig.procID = procId;
 
 	// Push functions
 	m_cppfunctions.push_back(funcPtr);
 
 	// Add VM function so the compiler can recognize it
-	m_compiler->AddVMFunction(funcSig, procId);
+	m_compiler->AddVMFunction(funcSig);
 
 	// Return the proc ID
 	return procId;
@@ -555,7 +561,7 @@ int AAVM::RegisterFunction(AACSingleFunction funcPtr) {
 
 void AAVM::RegisterClass(std::wstring typeName, AACClass cClass) {
 
-	CompiledClass cc;
+	AAClassSignature cc;
 	cc.name = typeName;
 
 	for (auto& func : cClass.classMethods) {
@@ -573,18 +579,11 @@ void AAVM::RegisterClass(std::wstring typeName, AACClass cClass) {
 		func.params.insert(func.params.begin(), AAFuncParam(L"string", L"this"));
 
 		// Register the funcion and get the VMCall procID
-		int procID = this->RegisterFunction(func, sig, true);
-
-		// The actual class method
-		CompiledClassMethod ccm;
-		ccm.sig = sig;
-		ccm.isCtor = isCtor;
-		ccm.isPublic = true;
-		ccm.procID = procID;
-		ccm.source = NULL;
+		this->RegisterFunction(func, sig, true);
+		sig.isClassCtor = true;
 
 		// Add method to class
-		cc.methods.Add(ccm);
+		cc.methods.Add(sig);
 
 	}
 
@@ -605,24 +604,16 @@ void AAVM::RegisterClass(std::wstring typeName, AACClass cClass) {
 		// Register the funcion and get the VMCall procID
 		int procID = this->RegisterFunction(func, sig, true);
 
-		// The actual class method
-		CompiledClassMethod ccm;
-		ccm.sig = sig;
-		ccm.isCtor = false;
-		ccm.isPublic = true;
-		ccm.procID = procID;
-		ccm.source = NULL;
-
 		// Add method to operators list
-		cc.operators.Add(CompiledClassOperator(op.operatorToOverride, ccm));
+		cc.operators.Add(AAClassOperatorSignature(op.operatorToOverride, sig));
 
 	}
 
 	for (auto& field : cClass.classFields) {
 
-		CompiledClassField ccf;
+		AAClassFieldSignature ccf;
 		ccf.fieldID = (int)cc.fields.Size();
-		ccf.isPublic = false;
+		ccf.accessModifier = AAAccessModifier::PUBLIC;
 		ccf.type = field.fieldtype;
 		ccf.name = field.fieldname;
 

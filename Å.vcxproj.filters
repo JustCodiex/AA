@@ -200,5 +200,17 @@
     <ClInclude Include="AA_AST_NODE.h">
       <Filter>Header Files\parser</Filter>
     </ClInclude>
+    <ClInclude Include="AACNamespace.h">
+      <Filter>Header Files\compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="set.h">
+      <Filter>Header Files\util</Filter>
+    </ClInclude>
+    <ClInclude Include="AAClassSignature.h">
+      <Filter>Header Files\compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="AAAccessModifier.h">
+      <Filter>Header Files\compiler</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
