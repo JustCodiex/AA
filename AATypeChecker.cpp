@@ -159,7 +159,6 @@ std::wstring AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 		} else {
 			wprintf(L"Something very unfotunate has happened"); // Very fatal, should never happen
 		}
-		wprintf(L"%s", node->content.c_str());
 		return L"void";
 	}
 	default:
