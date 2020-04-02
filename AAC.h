@@ -112,6 +112,10 @@ private:
 	AAByteCode GetBytecodeFromBinaryOperator(std::wstring ws, AA_AST_NODE_TYPE lhsType);
 	AAByteCode GetBytecodeFromUnaryOperator(std::wstring ws);
 
+	// Check if the stack will return as many values as it says it will 
+	bool VerifyFunctionCallstack(aa::list<CompiledAbstractExpression> body, int expected, int args, AAStaticEnvironment staticData);
+	int CalcStackSzAfterOperation(CompiledAbstractExpression op, AAStaticEnvironment staticData);
+
 	/*
 	** FuncSig to procedure mapper
 	*/

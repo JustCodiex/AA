@@ -51,6 +51,9 @@ struct AAC_CompileResult {
 // Returns true if there was an error message
 #define COMPILE_ERROR(a) (a).errorType != -1
 
+// Returns true if the was no error message
+#define COMPILE_OK(a) !(COMPILE_ERROR(a))
+
 // Did the compiler compile the code sucessfully?
 #define COMPILE_SUCESS(a) a.success
 

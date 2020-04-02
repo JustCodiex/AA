@@ -151,6 +151,7 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileAST(AA_AST_NODE* pNode, Co
 		executionStack.Add(CompileUnaryOperation(pNode, cTable, staticData));
 		break;
 	}
+	case AA_AST_NODE_TYPE::name_space:
 	case AA_AST_NODE_TYPE::block: {
 		for (size_t i = 0; i < pNode->expressions.size(); i++) {
 			executionStack.Add(this->CompileAST(pNode->expressions[i], cTable, staticData));
@@ -946,6 +947,62 @@ int AAC::FindBestFunctionMatch(AAStaticEnvironment staticCheck, AA_AST_NODE* pNo
 	argCount = 0;
 	isVMCall = false;
 	return 0;
+
+}
+
+int AAC::CalcStackSzAfterOperation(AAC::CompiledAbstractExpression op, AAStaticEnvironment staticData) {
+	switch (op.bc) {
+	case AAByteCode::PUSHC:
+	case AAByteCode::PUSHV:
+	case AAByteCode::GETVAR:
+	case AAByteCode::HALLOC:
+	case AAByteCode::SALLOC:
+		return 1; // Increases stack size by one
+	case AAByteCode::ADD:
+	case AAByteCode::SUB:
+	case AAByteCode::MUL:
+	case AAByteCode::MOD:
+	case AAByteCode::SETVAR:
+	case AAByteCode::LEQ:
+	case AAByteCode::GEQ:
+	case AAByteCode::LE:
+	case AAByteCode::GE:
+	case AAByteCode::JMPF:
+	case AAByteCode::JMPT:
+		return -1; // Takes the two elements on top and operates on them, putting the resulting back unto the stack
+	case AAByteCode::SETFIELD:
+		return -2;
+	case AAByteCode::CALL: {
+		int callc = (staticData.availableFunctions.FindFirst([op](AAFuncSignature& sig) { return sig.isVMFunc == false && sig.procID == op.argValues[0]; }).returnType.compare(L"void") == 0) ? 0 : 1;
+		printf("%i", callc);
+		return -op.argValues[1] + callc;
+	}
+	case AAByteCode::VMCALL:
+		return -op.argValues[1] + (m_preregisteredFunctions[op.argValues[0]].returnType.compare(L"void") == 0) ? 0 : 1;
+	case AAByteCode::JMP:
+	case AAByteCode::GETFIELD:
+		return 0;
+	default: // seperated for debugging purposes (eg. detecting non-checked operations)
+		return 0;
+	}
+}
+
+// Obsolete, please let the static analyser do this!!!!
+bool AAC::VerifyFunctionCallstack(aa::list<CompiledAbstractExpression> body, int expected, int args, AAStaticEnvironment staticData) {
+
+	// Stack count
+	int stacksz = 0;
+
+	// Run through all operations
+	body.ForEach([&stacksz, this, staticData](AAC::CompiledAbstractExpression& c) { stacksz += this->CalcStackSzAfterOperation(c, staticData); });
+
+	// Return true iff stacksz is count
+	if (stacksz == expected - args) { // The expected amount (minus args, because setvar subtracts from stack)
+		return true;
+	} else {
+		printf("%i", stacksz);
+		return false;
+	}
 
 }
 

@@ -179,6 +179,21 @@ namespace aa {
 		}
 
 		/// <summary>
+		/// Returns a list of references to all elements in list matching the predicate
+		/// </summary>
+		/// <param name="predicate">Predicate function to test on all elements</param>
+		/// <returns>List of all elements matching predicate conditions</returns>
+		list<T> FindAll(std::function<bool(T&)> predicate) {
+			list<T> ls;
+			for (auto& v : m_vector) {
+				if (predicate(v)) {
+					ls.Add(v);
+				}
+			}
+			return ls;
+		}
+
+		/// <summary>
 		/// Merge two lists into one list
 		/// </summary>
 		/// <param name="a">The first list to merge</param>

@@ -70,6 +70,17 @@ namespace aa {
 		}
 
 		/// <summary>
+		/// Find all elements matching predicate
+		/// </summary>
+		/// <param name="predicate">Predicate to test on all elements in list</param>
+		/// <returns>Set containing all elements matching predicate conditions</returns>
+		set<T> FindAll(std::function<bool(T&)> predicate) {
+			set<T> s;
+			s.FromList(m_list.FindAll(predicate));
+			return s;
+		}
+
+		/// <summary>
 		/// Check if a predicate holds true for all elements in set
 		/// </summary>
 		/// <typeparam name="T"></typeparam>

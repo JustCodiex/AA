@@ -9,6 +9,8 @@ typedef std::wstring AAId;
 typedef std::wstring AAValType;
 typedef std::map<AAId, AAValType> AAVarTypeEnv;
 
+struct AAStaticEnvironment;
+
 class AATypeChecker {
 
 public:
@@ -39,7 +41,7 @@ public:
 
 public:
 
-	AATypeChecker(AA_AST* pTree, aa::list<std::wstring> regTypes, aa::list<AAFuncSignature> sigs, aa::list<AAClassSignature> classes);
+	AATypeChecker(AA_AST* pTree, AAStaticEnvironment* senv);
 
 	bool TypeCheck(); // Run a type-check on the tree
 
@@ -93,15 +95,19 @@ private:
 
 private:
 
+	// Current tree we're working with
 	AA_AST* m_currentTree;
+
+	// Variable type environment
 	AAVarTypeEnv m_vtenv;
-	aa::list<AAValType> m_types;
-	aa::list<AAFuncSignature> m_ftenv;
 
-	// Class Auxiliary Environment
-	aa::list<AAClassSignature> m_caenv;
-
+	// Do we have any errors flag
 	bool m_hasEnyErr;
+
+	// Last error message
 	AATypeChecker::Error m_errMsg;
+
+	// The static environment available while type-checking
+	AAStaticEnvironment* m_senv;
 
 };

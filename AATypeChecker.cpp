@@ -1,5 +1,7 @@
 #include "AATypeChecker.h"
 #include "astring.h"
+#include "AAStaticAnalysis.h"
+#include "set.h"
 
 aa::list<std::wstring> _getdeftypeenv() {
 	aa::list<std::wstring> types;
@@ -17,19 +19,13 @@ std::wstring AATypeChecker::InvalidTypeStr = L"TYPE NOT FOUND";
 
 #define AATC_ERROR(msg, pos) this->SetError(AATypeChecker::Error(msg, __COUNTER__, pos)); return AATypeChecker::InvalidTypeStr
 
-AATypeChecker::AATypeChecker(AA_AST* pTree, aa::list<std::wstring> regTypes, aa::list<AAFuncSignature> sigs, aa::list<AAClassSignature> classes) {
+AATypeChecker::AATypeChecker(AA_AST* pTree, AAStaticEnvironment* senv) {
 	
 	// Set the tree to work with
 	m_currentTree = pTree;
 
-	// Set the registered types
-	m_types = regTypes;
-
-	// Set the function environment
-	m_ftenv = sigs;
-
-	// Set the auxiliary class environment (Needed to typecheck class properties)
-	m_caenv = classes;
+	// Set environment
+	m_senv = senv;
 
 	// We dont have any error to start with
 	m_hasEnyErr = false;
@@ -59,6 +55,7 @@ std::wstring AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 	switch (node->type) {
 	case AA_AST_NODE_TYPE::funcbody:
 	case AA_AST_NODE_TYPE::classbody:
+	case AA_AST_NODE_TYPE::name_space:
 	case AA_AST_NODE_TYPE::block: {
 		std::wstring r = L"";
 		for (size_t i = 0; i < node->expressions.size(); i++) {
@@ -107,17 +104,17 @@ std::wstring AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 	case AA_AST_NODE_TYPE::variable:
 		return m_vtenv[node->content];
 	case AA_AST_NODE_TYPE::typeidentifier:
-		if (m_types.Contains(node->content)) {
+		if (this->IsValidType(node->content)) {
 			return node->content;
 		} else {
-			printf("Invalid type identifier!");
+			wprintf(L"Invalid type identifier '%s'\n", node->content.c_str());
 			break;
 		}
 	case AA_AST_NODE_TYPE::funarg:
-		if (m_types.Contains(node->expressions[0]->content)) {
+		if (this->IsValidType(node->expressions[0]->content)) {
 			return node->expressions[0]->content;
 		} else {
-			printf("Invalid type identifier!");
+			wprintf(L"Invalid type '%s' in argument!\n", node->content.c_str());
 			break;
 		}
 	case AA_AST_NODE_TYPE::ifstatement:
@@ -291,33 +288,23 @@ AAValType AATypeChecker::TypeCheckClassDotFieldAccessorOperation(AA_AST_NODE* pA
 
 AAValType AATypeChecker::TypeCheckCallOperation(AA_AST_NODE* pCallNode) {
 
-	// Loop through all possible functions
-	for (size_t i = 0; i < m_ftenv.Size(); i++) {
+	// Find the first AAFuncSignature matching our conditions
+	aa::set<AAFuncSignature> sigs = m_senv->availableFunctions.FindAll([pCallNode](AAFuncSignature& sig) { return sig.name == pCallNode->content; });
+	AAFuncSignature sig = sigs.FindFirst([this, pCallNode](AAFuncSignature& sig) { return this->IsTypeMatchingFunction(sig, pCallNode); });
 
-		// Does the function contain the name we need?
-		if (m_ftenv.At(i).name == pCallNode->content) {
+	if (!(sig == AAFuncSignature())) {
 
-			// Get the signature
-			AAFuncSignature sig = m_ftenv.At(i);
+		pCallNode->tags["calls"] = (int)sig.procID;
 
-			// Is the function matching to the argument types?
-			if (this->IsTypeMatchingFunction(sig, pCallNode)) {
+		return sig.returnType;
 
-				// Update the call ID
-				pCallNode->tags["calls"] = (int)i;
+	} else {
 
-				// return the returntype
-				return sig.returnType;
+		wprintf(L"Attempt to call undefined function '%s'", pCallNode->content.c_str());
 
-			}
-
-		}
+		return InvalidTypeStr;
 
 	}
-
-	printf("Err: Call to undefined function!");
-
-	return InvalidTypeStr;
 
 }
 
@@ -385,11 +372,11 @@ AAValType AATypeChecker::TypeOfArrayElements(AAValType t) {
 }
 
 bool AATypeChecker::IsValidType(AAValType t) {
-	if (!m_types.Contains(t)) {
+	if (!m_senv->availableTypes.Contains(t)) {
 		if (t.length() > 2 && t.substr(t.length() - 2) == L"[]") {
-			return m_types.Contains(t.substr(0, t.length() - 2));
+			return m_senv->availableTypes.Contains(t.substr(0, t.length() - 2));
 		} else {
-			return false;
+			return t.compare(L"void") == 0;
 		}
 	} else {
 		return true;
@@ -397,11 +384,11 @@ bool AATypeChecker::IsValidType(AAValType t) {
 }
 
 bool AATypeChecker::IsPrimitiveType(AAValType t) {
-	return t == L"int" || t == L"float" || t == L"char" || t == L"boolean";
+	return t.compare(L"int") == 0 || t.compare(L"float") == 0 || t.compare(L"char") == 0 || t.compare(L"bool") == 0;
 }
 
 bool AATypeChecker::IsArrayType(AAValType t) {
-	return (t.length() > 2 && t.substr(t.length() - 2) == L"[]");
+	return (t.length() > 2 && t.substr(t.length() - 2).compare(L"[]") == 0);
 }
 
 bool AATypeChecker::IsMatchingTypes(AAValType tCompare, AAValType tExpected) {
@@ -451,16 +438,19 @@ bool AATypeChecker::IsTypeMatchingFunction(AAFuncSignature sig, AA_AST_NODE* pCa
 
 AAClassSignature AATypeChecker::FindCompiledClassOfType(AAValType type) {
 
-	for (size_t i = 0; i < m_caenv.Size(); i++) {
-		if (m_caenv.At(i).name == type) {
-			return m_caenv.At(i);
-		}
+	try {
+
+		AAClassSignature& cc = m_senv->availableClasses.FindFirst([type](AAClassSignature& sig) { return sig.name == type; });
+		return cc;
+
+	} catch (std::exception e) {
+
+		AAClassSignature no;
+		no.name = InvalidTypeStr;
+
+		return no;
+
 	}
-
-	AAClassSignature cc;
-	cc.name = InvalidTypeStr;
-
-	return cc;
 
 }
 

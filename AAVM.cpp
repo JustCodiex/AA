@@ -328,12 +328,17 @@ AAVal AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 				returnValues.Push(stack.Pop());
 			}
 
-			delete execp.venv;
-			execp = callstack.Pop();
+			if (callstack.Size() > 0) {
+				delete execp.venv;
+				execp = callstack.Pop();
+			} else {
+				AAVM_ThrowRuntimeErr("CallstackCorrupted", std::string("The callstack was unexpectedly corrupted"));
+			}
 
 			for (int i = 0; i < retCount; i++) {
 				stack.Push(returnValues.Pop());
 			}
+
 			break;
 		}
 		case AAByteCode::JMPF: {

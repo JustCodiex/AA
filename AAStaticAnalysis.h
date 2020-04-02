@@ -18,6 +18,10 @@ struct AAStaticEnvironment {
 	aa::set<AAClassSignature> availableClasses;
 	aa::set<std::wstring> availableTypes;
 
+	AAStaticEnvironment() {
+		globalNamespace = 0;
+	}
+
 };
 
 /// <summary>
@@ -55,19 +59,29 @@ public:
 	/// <returns></returns>
 	AAStaticEnvironment GetResult() { return m_lastStaticEnv; }
 
+	/// <summary>
+	/// Verifies if the function's control path is valid, such that the function returns the correct amount of values
+	/// </summary>
+	/// <param name="sig">The function signature to check. Must have a valid <see cref="AA_AST_NODE"/> attached.</param>
+	/// <param name="err">The error message that is filled out IF the method returns false</param>
+	/// <returns>True only if the function is following a valid control structure</returns>
+	bool VerifyFunctionControlPath(AAFuncSignature sig, AAC_CompileErrorMessage& err);
+
 private:
 
 	AAStaticEnvironment NewStaticEnvironment(AACNamespace*& globalDomain);
 
-	void ExtractGlobalScope(std::vector<AA_AST*>& trees);
+	bool ExtractGlobalScope(std::vector<AA_AST*>& trees);
 
 	AAC_CompileErrorMessage FetchStaticDeclerationsFromTrees(std::vector<AA_AST*> trees, AACNamespace* globalDomain, AAStaticEnvironment& senv);
 	AAC_CompileErrorMessage FetchStaticDeclerationsFromASTNode(AA_AST_NODE* pNode, AACNamespace* domain, AAStaticEnvironment& senv);
 
-	AAFuncSignature RegisterFunction(AA_AST_NODE* pNode);
-	AAClassSignature RegisterClass(AA_AST_NODE* pNode);
+	AAC_CompileErrorMessage RegisterFunction(AA_AST_NODE* pNode, AAFuncSignature& sig);
+	AAC_CompileErrorMessage RegisterClass(AA_AST_NODE* pNode, AAClassSignature& sig);
 
 	int GetReturnCount(AAFuncSignature funcSig);
+
+	int VerifyFunctionControlPath(AA_AST_NODE* pNode, AAC_CompileErrorMessage& err);
 
 private:
 
