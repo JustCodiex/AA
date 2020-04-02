@@ -10,6 +10,7 @@ typedef std::wstring AAValType;
 typedef std::map<AAId, AAValType> AAVarTypeEnv;
 
 struct AAStaticEnvironment;
+struct AACNamespace;
 
 class AATypeChecker {
 
@@ -109,5 +110,8 @@ private:
 
 	// The static environment available while type-checking
 	AAStaticEnvironment* m_senv;
+
+	// The current namespace
+	AACNamespace* m_currentnamespace;
 
 };

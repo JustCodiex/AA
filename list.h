@@ -48,6 +48,21 @@ namespace aa {
 		}
 
 		/// <summary>
+		/// Remove all items if they match the predicate
+		/// </summary>
+		/// <param name="predicate">The predicate to check on all elements</param>
+		void RemoveIf(std::function<bool(T&)> predicate) {
+			auto itt = m_vector.begin();
+			while (itt != m_vector.end()) {
+				if (predicate(*itt)) {
+					itt = m_vector.erase(itt);
+				} else {
+					itt++;
+				}
+			}
+		}
+
+		/// <summary>
 		/// 
 		/// </summary>
 		/// <param name="index"></param>

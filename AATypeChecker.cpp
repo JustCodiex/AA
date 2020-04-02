@@ -30,6 +30,9 @@ AATypeChecker::AATypeChecker(AA_AST* pTree, AAStaticEnvironment* senv) {
 	// We dont have any error to start with
 	m_hasEnyErr = false;
 
+	// Set the current namespace to be that of the global namespace
+	m_currentnamespace = m_senv->globalNamespace;
+
 }
 
 bool AATypeChecker::TypeCheck() {
@@ -55,7 +58,6 @@ std::wstring AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 	switch (node->type) {
 	case AA_AST_NODE_TYPE::funcbody:
 	case AA_AST_NODE_TYPE::classbody:
-	case AA_AST_NODE_TYPE::name_space:
 	case AA_AST_NODE_TYPE::block: {
 		std::wstring r = L"";
 		for (size_t i = 0; i < node->expressions.size(); i++) {
@@ -127,6 +129,39 @@ std::wstring AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 		}
 	case AA_AST_NODE_TYPE::index:
 		return this->TypeCheckIndexOperation(node);
+	case AA_AST_NODE_TYPE::name_space: {
+		
+		// Define the matching lambda
+		auto lambda = [node](AACNamespace*& s) { return s->name.compare(node->content) == 0; };
+
+		// Check if the current namespace has the new namespace
+		if (this->m_currentnamespace->childspaces.Contains(lambda)) {
+
+			// Update current namespace
+			this->m_currentnamespace = this->m_currentnamespace->childspaces.FindFirst(lambda);
+
+			// Add new elements
+			this->m_senv->availableClasses = this->m_currentnamespace->classes.Union(this->m_senv->availableClasses);
+			this->m_senv->availableTypes = this->m_currentnamespace->types.Union(this->m_senv->availableTypes);
+			this->m_senv->availableFunctions = this->m_currentnamespace->functions.Union(this->m_senv->availableFunctions);
+
+			// Typecheck all subelements of the namespace
+			for (size_t i = 0; i < node->expressions.size(); i++) {
+				this->TypeCheckNode(node->expressions[i]);
+			}
+
+			// Return to previous namespace			
+			this->m_senv->availableClasses = this->m_currentnamespace->classes.Difference(this->m_senv->availableClasses);
+			this->m_senv->availableTypes = this->m_currentnamespace->types.Difference(this->m_senv->availableTypes);
+			this->m_senv->availableFunctions = this->m_currentnamespace->functions.Difference(this->m_senv->availableFunctions);
+			this->m_currentnamespace = this->m_currentnamespace->parentspace;
+
+		} else {
+			wprintf(L"Something very unfotunate has happened"); // Very fatal, should never happen
+		}
+		wprintf(L"%s", node->content.c_str());
+		return L"void";
+	}
 	default:
 		break;
 	}

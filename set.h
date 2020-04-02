@@ -106,13 +106,24 @@ namespace aa {
 		}
 
 		/// <summary>
-		/// Create a new set representing the union between two unions
+		/// Create a new set representing the union between two sets
 		/// </summary>
 		/// <param name="other">The other union to create new set with</param>
 		/// <returns>New set with all elements from the two lists</returns>
 		set<T> Union(set<T> other) {
-			set<T> s = set<T>(this);
+			set<T> s = set<T>(*this);
 			s.UnionWith(other);
+			return s;
+		}
+
+		/// <summary>
+		/// Create a new set representing the difference between two sets
+		/// </summary>
+		/// <param name="other">The other set to create difference set from</param>
+		/// <returns>New set representing the set difference between the two sets</returns>
+		set<T> Difference(set<T> other) {
+			set<T> s = this->Union(other);
+			s.m_list.RemoveIf([this](T& t) { return this->Contains(t); });
 			return s;
 		}
 
