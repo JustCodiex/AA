@@ -13,7 +13,7 @@ class AAC;
 /// </summary>
 struct AAStaticEnvironment {
 
-	aa::set<AACNamespace> availableNamespaces;
+	AACNamespace* globalNamespace;
 	aa::set<AAFuncSignature> availableFunctions;
 	aa::set<AAClassSignature> availableClasses;
 	aa::set<std::wstring> availableTypes;
@@ -57,11 +57,12 @@ public:
 
 private:
 
-	AAStaticEnvironment NewStaticEnvironment();
+	AAStaticEnvironment NewStaticEnvironment(AACNamespace*& globalDomain);
 
 	void ExtractGlobalScope(std::vector<AA_AST*>& trees);
 
-	AAC_CompileErrorMessage FetchStaticDeclerations(std::vector<AA_AST*> trees);
+	AAC_CompileErrorMessage FetchStaticDeclerationsFromTrees(std::vector<AA_AST*> trees, AACNamespace* globalDomain, AAStaticEnvironment& senv);
+	AAC_CompileErrorMessage FetchStaticDeclerationsFromASTNode(AA_AST_NODE* pNode, AACNamespace* domain, AAStaticEnvironment& senv);
 
 	AAFuncSignature RegisterFunction(AA_AST_NODE* pNode);
 	AAClassSignature RegisterClass(AA_AST_NODE* pNode);

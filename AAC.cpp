@@ -69,7 +69,7 @@ AAC_CompileResult AAC::CompileFromAbstractSyntaxTrees(std::vector<AA_AST*> trees
 				// Make sure it's a function decleration
 				if (trees[i]->GetRoot()->expressions[0]->expressions[j]->type == AA_AST_NODE_TYPE::fundecl) {
 
-					// Compiled AST
+					// Compile the AST
 					compileResults.push_back(this->CompileProcedureFromASTNode(trees[i]->GetRoot()->expressions[0]->expressions[j], senv));
 
 				}

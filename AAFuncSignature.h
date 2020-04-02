@@ -92,6 +92,12 @@ struct AAFuncSignature {
 		this->procID = -1;
 		this->domain = 0;
 	}
+	
+	/// <summary>
+	/// Get the full name of the function (domain name and function name)
+	/// </summary>
+	/// <returns></returns>
+	std::wstring GetFullname(); // Definition in AACNamespace.cpp
 
 	bool operator==(AAFuncSignature other) {
 		if (this->name == other.name) {

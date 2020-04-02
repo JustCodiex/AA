@@ -70,6 +70,15 @@ namespace aa {
 		}
 
 		/// <summary>
+		/// Check if a predicate holds true for all elements in set
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <returns>True if the predicate returned true for all elements</returns>
+		bool ForAll(std::function<bool(T&)> predicate) {
+			return this->m_list.ForAll(predicate);
+		}
+
+		/// <summary>
 		/// Apply function for each element in the set.
 		/// </summary>
 		/// <param name="f">Function to call on all set elements</param>

@@ -108,6 +108,9 @@
     <ClCompile Include="AAStaticAnalysis.cpp">
       <Filter>Source Files\compiler</Filter>
     </ClCompile>
+    <ClCompile Include="AACNamespace.cpp">
+      <Filter>Source Files\compiler</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="list.h">

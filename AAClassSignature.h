@@ -42,13 +42,22 @@ struct AAClassSignature {
 	size_t classByteSz;
 	AAAccessModifier accessModifier;
 	AACNamespace* domain;
+
 	AAClassSignature() {
 		this->name = L"";
 		this->classByteSz = 0;
 		this->accessModifier = AAAccessModifier::PUBLIC;
 		this->domain = 0;
 	}
+	
+	/// <summary>
+	/// Get the full name of the class (domain name and class name)
+	/// </summary>
+	/// <returns></returns>
+	std::wstring GetFullname(); // Definition in AACNamespace.cpp
+
 	bool operator==(AAClassSignature other) {
 		return other.name == this->name /*&& other.domain == this->domain*/;
 	}
+	
 };

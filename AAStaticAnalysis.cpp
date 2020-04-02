@@ -26,44 +26,15 @@ AAC_CompileErrorMessage AAStaticAnalysis::RunStaticAnalysis(std::vector<AA_AST*>
 	// Extract the global scope
 	this->ExtractGlobalScope(trees);
 
+	// The global domain
+	AACNamespace* globalDomain = 0;
+
 	// Get the static environment
-	AAStaticEnvironment senv = this->NewStaticEnvironment();
+	AAStaticEnvironment senv = this->NewStaticEnvironment(globalDomain);
 
-	// For all input trees, register classes and functions
-	for (size_t i = 0; i < trees.size(); i++) {
-
-		// Make sure it's a class decleration
-		if (trees[i]->GetRoot()->type == AA_AST_NODE_TYPE::classdecl) {
-
-			// Get the class
-			AAClassSignature cc = this->RegisterClass(trees[i]->GetRoot());
-
-			// Register class
-			if (!senv.availableClasses.Add(cc)) {
-				err.errorMsg = "Duplicate class definition";
-				err.errorSource = trees[i]->GetRoot()->position;
-				err.errorType = 1;
-				return err;
-			}
-
-			// Register class methods
-			for (size_t j = 0; j < cc.methods.Size(); j++) {
-
-				// Register method
-				senv.availableFunctions.Add(cc.methods.Apply(j));
-
-			}
-
-			// Add class name to registered types as well
-			senv.availableTypes.Add(cc.name);
-
-		} else if (trees[i]->GetRoot()->type == AA_AST_NODE_TYPE::fundecl) { // Make sure it's a function decleration
-
-			// Register functions
-			senv.availableFunctions.Add(RegisterFunction(trees[i]->GetRoot()));
-
-		}
-
+	// Fetch static declerations
+	if (COMPILE_ERROR(err = this->FetchStaticDeclerationsFromTrees(trees, globalDomain, senv))) {
+		return err;
 	}
 
 	// For all input trees, run static type checker
@@ -126,7 +97,10 @@ bool AAStaticAnalysis::RunTypecheckAnalysis(AA_AST* pTree, AAStaticEnvironment s
 
 }
 
-AAStaticEnvironment AAStaticAnalysis::NewStaticEnvironment() {
+AAStaticEnvironment AAStaticAnalysis::NewStaticEnvironment(AACNamespace*& globalDomain) {
+
+	// Create the global domain
+	globalDomain = new AACNamespace(L"", NULL);
 
 	// Static environment
 	AAStaticEnvironment env;
@@ -136,6 +110,10 @@ AAStaticEnvironment AAStaticAnalysis::NewStaticEnvironment() {
 
 	// For all preloaded classes
 	for (size_t i = 0; i < this->m_preregisteredClasses.Size(); i++) {
+
+		// Add class and class type to domain
+		globalDomain->AddClass(this->m_preregisteredClasses.Apply(i));
+		globalDomain->AddType(this->m_preregisteredClasses.Apply(i).name);
 
 		// Add type name
 		env.availableTypes.Add(this->m_preregisteredClasses.Apply(i).name);
@@ -147,6 +125,9 @@ AAStaticEnvironment AAStaticAnalysis::NewStaticEnvironment() {
 
 	// For all preloaded functions
 	for (size_t i = 0; i < this->m_preregisteredFunctions.Size(); i++) {
+
+		// Add function to domain
+		globalDomain->AddFunction(this->m_preregisteredFunctions.Apply(i));
 
 		// Add function
 		env.availableFunctions.Add(this->m_preregisteredFunctions.Apply(i));
@@ -186,7 +167,136 @@ void AAStaticAnalysis::ExtractGlobalScope(std::vector<AA_AST*>& trees) {
 
 }
 
-AAC_CompileErrorMessage AAStaticAnalysis::FetchStaticDeclerations(std::vector<AA_AST*> trees) {
+AAC_CompileErrorMessage AAStaticAnalysis::FetchStaticDeclerationsFromTrees(std::vector<AA_AST*> trees, AACNamespace* globalDomain, AAStaticEnvironment& senv) {
+
+	// Error container
+	AAC_CompileErrorMessage err;
+
+	// Fetch static declerations from all tree roots
+	for (size_t i = 0; i < trees.size(); i++) {
+
+		// Fetch static decleration from node and put it into the global domain. Return compile error if any
+		if (COMPILE_ERROR(err = this->FetchStaticDeclerationsFromASTNode(trees[i]->GetRoot(), globalDomain, senv))) {
+			return err;
+		}
+	}
+
+	// Set the global namespace
+	senv.globalNamespace = globalDomain;
+
+	// no compile error messages
+	return NO_COMPILE_ERROR_MESSAGE;
+
+}
+
+AAC_CompileErrorMessage AAStaticAnalysis::FetchStaticDeclerationsFromASTNode(AA_AST_NODE* pNode, AACNamespace* domain, AAStaticEnvironment& senv) {
+
+	// Error container
+	AAC_CompileErrorMessage err;
+
+	// Get the node type
+	AA_AST_NODE_TYPE rootType = pNode->type;
+
+	// Is it a namespace
+	if (rootType == AA_AST_NODE_TYPE::name_space) {
+
+		// Create domain
+		AACNamespace* subDomain = new AACNamespace(pNode->content, domain);
+		
+		// For all sub-elements of domain
+		for (size_t i = 0; i < pNode->expressions.size(); i++) {
+			// Fetch static decleration from node and put it into the global domain. Return compile error if any
+			if (COMPILE_ERROR(err = this->FetchStaticDeclerationsFromASTNode(pNode->expressions[i], subDomain, senv))) {
+				return err;
+			}
+		}
+
+		// Add subdomain to owning domain
+		domain->childspaces.Add(subDomain);
+
+	} else if (rootType == AA_AST_NODE_TYPE::classdecl) {
+
+		// Get the class
+		AAClassSignature cc = this->RegisterClass(pNode);
+
+		// Add class to domain
+		if (domain->AddClass(cc) && domain->AddType(cc.name)) {
+
+			// Add all methods to domain
+			if (!cc.methods.ForAll([domain](AAFuncSignature& sig) { return domain->AddFunction(sig); })) {
+				err.errorMsg = "Duplicate method definition";
+				err.errorSource = pNode->position;
+				err.errorType = 1;
+				return err;
+			}
+
+			// If in the global space we'll add it directly to the static checks
+			if (domain->IsGlobalSpace()) {
+
+				// Register class and add class name to registered types as well
+				if (senv.availableClasses.Add(cc) && senv.availableTypes.Add(cc.name)) {
+
+					// Register class methods
+					for (size_t j = 0; j < cc.methods.Size(); j++) {
+
+						// Register method
+						if (!senv.availableFunctions.Add(cc.methods.Apply(j))) {
+
+							err.errorMsg = "Duplicate method definition";
+							err.errorSource = pNode->position;
+							err.errorType = 1;
+							return err;
+
+						}
+
+					}
+
+				} else { // Duplicate class detected
+
+					err.errorMsg = "Duplicate class definition";
+					err.errorSource = pNode->position;
+					err.errorType = 1;
+					return err;
+
+				}
+
+			}
+
+		} else { // Duplicate class detected
+
+			err.errorMsg = "Duplicate class definition";
+			err.errorSource = pNode->position;
+			err.errorType = 1;
+			return err;
+
+		}
+
+		wprintf(L"%s\n", cc.GetFullname().c_str());
+
+	} else if (rootType == AA_AST_NODE_TYPE::fundecl) {
+
+		// Get function signature
+		AAFuncSignature func = this->RegisterFunction(pNode);
+
+		// Add function to domain
+		if (domain->AddFunction(func)) {
+
+			// If in the global space we'll add it directly to the static checks
+			if (domain->IsGlobalSpace()) {
+
+				// Register functions
+				senv.availableFunctions.Add(func);
+
+			}
+
+		}
+
+	} else if (rootType == AA_AST_NODE_TYPE::vardecl) {
+
+		wprintf(L"Not implemented. AAStaticAnalysis.Cpp@%i", __LINE__);
+
+	}
+
 
 	return NO_COMPILE_ERROR_MESSAGE;
 
