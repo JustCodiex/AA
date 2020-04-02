@@ -6,12 +6,17 @@
 #include "AATypeChecker.h"
 #include "AA_AST.h"
 
+class AAC;
+
 /// <summary>
 /// A static environment for static data
 /// </summary>
 struct AAStaticEnvironment {
 
-
+	aa::set<AACNamespace> availableNamespaces;
+	aa::set<AAFuncSignature> availableFunctions;
+	aa::set<AAClassSignature> availableClasses;
+	aa::set<std::wstring> availableTypes;
 
 };
 
@@ -22,18 +27,20 @@ class AAStaticAnalysis {
 
 public:
 
+	AAStaticAnalysis(AAC* pCompiler);
+
 	/// <summary>
 	/// Run a static analysis on a list of ASTs
 	/// </summary>
 	/// <param name="trees">Abstract Syntax Trees to perform static analysis on</param>
 	/// <returns></returns>
-	AAC_CompileErrorMessage RunStaticAnalysis(std::vector<AA_AST*> trees);
+	AAC_CompileErrorMessage RunStaticAnalysis(std::vector<AA_AST*>& trees);
 
 	/// <summary>
 	/// 
 	/// </summary>
 	/// <returns></returns>
-	AAC_CompileErrorMessage RunTypecheckAnalysis();
+	bool RunTypecheckAnalysis(AA_AST* pTree, AAStaticEnvironment senv, AATypeChecker::Error& typeError);
 
 	/// <summary>
 	/// Reset the static analyser unit
@@ -42,13 +49,32 @@ public:
 	/// <param name="classes">Preregistered classes</param>
 	void Reset(std::vector<AAFuncSignature> funcs, std::vector<AAClassSignature> classes);
 
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <returns></returns>
+	AAStaticEnvironment GetResult() { return m_lastStaticEnv; }
+
 private:
 
+	AAStaticEnvironment NewStaticEnvironment();
+
+	void ExtractGlobalScope(std::vector<AA_AST*>& trees);
+
 	AAC_CompileErrorMessage FetchStaticDeclerations(std::vector<AA_AST*> trees);
+
+	AAFuncSignature RegisterFunction(AA_AST_NODE* pNode);
+	AAClassSignature RegisterClass(AA_AST_NODE* pNode);
+
+	int GetReturnCount(AAFuncSignature funcSig);
 
 private:
 
 	aa::set<AAClassSignature> m_preregisteredClasses;
 	aa::set<AAFuncSignature> m_preregisteredFunctions;
+
+	AAC* m_compilerPointer;
+
+	AAStaticEnvironment m_lastStaticEnv;
 
 };

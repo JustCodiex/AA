@@ -40,18 +40,6 @@ public:
 		CompiledProcedure() { node = 0; }
 	};
 
-	struct CompiledStaticChecks {
-		CompiledStaticChecks* parentspace;
-		std::wstring parentspacename;
-		std::map<std::wstring, CompiledStaticChecks> registeredNamespaces;
-		aa::list<AAFuncSignature> registeredFunctions;
-		aa::list<AAClassSignature> registeredClasses;
-		aa::list<std::wstring> registeredTypes;
-		CompiledStaticChecks() {
-			parentspace = 0;
-		}
-	};
-
 public:
 
 	AAC();
@@ -66,6 +54,8 @@ public:
 
 	AAClassCompiler* GetClassCompilerInstance() { return m_classCompiler; }
 
+	int GetNextProcID() { return ++m_currentProcID; }
+
 	void AddVMClass(AAClassSignature cc);
 	void AddVMFunction(AAFuncSignature sig);
 
@@ -75,49 +65,40 @@ private:
 	** Private compiler methods
 	*/
 
-	CompiledProcedure CompileProcedureFromAST(AA_AST* pAbstractTree, CompiledStaticChecks staticData);
-	CompiledProcedure CompileProcedureFromASTNode(AA_AST_NODE* pASTNode, CompiledStaticChecks);
-	AAC_Out CompileFromProcedures(std::vector<CompiledProcedure> procedures, CompiledStaticChecks staticCompileData, int entryPoint);
+	CompiledProcedure CompileProcedureFromAST(AA_AST* pAbstractTree, AAStaticEnvironment staticData);
+	CompiledProcedure CompileProcedureFromASTNode(AA_AST_NODE* pASTNode, AAStaticEnvironment staticData);
+	AAC_Out CompileFromProcedures(std::vector<CompiledProcedure> procedures, AAStaticEnvironment staticCompileData, int entryPoint);
 
 	/*
 	** Static checkers
 	*/
 
-	AAC_CompileErrorMessage RunStaticOperations(std::vector<AA_AST*> trees, CompiledStaticChecks& staicData, std::wstring currentnamespace);
-	CompiledStaticChecks NewStaticCheck();
-	bool TypecheckAST(AA_AST* pTree, CompiledStaticChecks staticData, AATypeChecker::Error& typeError);
-	void CollapseGlobalScope(std::vector<AA_AST*>& trees);
+	AAC_CompileErrorMessage RunStaticOperations(std::vector<AA_AST*>& trees, AAStaticEnvironment& staicData);
 	
-	aa::list<AAFuncSignature> RegisterFunctions(AA_AST_NODE* pNode);
-	AAFuncSignature RegisterFunction(AA_AST_NODE* pNode);
-	AAClassSignature RegisterClass(AA_AST_NODE* pNode);
-
-	void FlattenStaticChecks(CompiledStaticChecks& cInOut);
-
 	/*
 	** AST_NODE -> Bytecode functions
 	*/
 
-	aa::list<CompiledAbstractExpression> CompileAST(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData);
-	aa::list<CompiledAbstractExpression> CompileBinaryOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData);
-	aa::list<CompiledAbstractExpression> CompileUnaryOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData);
-	aa::list<CompiledAbstractExpression> CompileAccessorOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData);
-	aa::list<CompiledAbstractExpression> CompileConditionalBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData);
-	aa::list<CompiledAbstractExpression> CompileFunctionCall(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData);
-	aa::list<CompiledAbstractExpression> CompileFuncArgs(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData);
-	aa::list<CompiledAbstractExpression> CompileForBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData);
-	aa::list<CompiledAbstractExpression> CompileWhileBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData);
-	aa::list<CompiledAbstractExpression> CompileDoWhileBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData);
-	aa::list<CompiledAbstractExpression> CompileNewStatement(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData);
+	aa::list<CompiledAbstractExpression> CompileAST(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
+	aa::list<CompiledAbstractExpression> CompileBinaryOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
+	aa::list<CompiledAbstractExpression> CompileUnaryOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
+	aa::list<CompiledAbstractExpression> CompileAccessorOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
+	aa::list<CompiledAbstractExpression> CompileConditionalBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
+	aa::list<CompiledAbstractExpression> CompileFunctionCall(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
+	aa::list<CompiledAbstractExpression> CompileFuncArgs(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
+	aa::list<CompiledAbstractExpression> CompileForBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
+	aa::list<CompiledAbstractExpression> CompileWhileBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
+	aa::list<CompiledAbstractExpression> CompileDoWhileBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
+	aa::list<CompiledAbstractExpression> CompileNewStatement(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
 
-	aa::list<CompiledAbstractExpression> HandleCtorCall(AA_AST_NODE* pNode, CompiledEnviornmentTable& ctable, CompiledStaticChecks staticData);
-	aa::list<CompiledAbstractExpression> HandleStackPush(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode, CompiledStaticChecks staticData);
-	aa::list<CompiledAbstractExpression> HandleMemberCall(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData);
-	aa::list<CompiledAbstractExpression> HandleIndexPush(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, CompiledStaticChecks staticData);
+	aa::list<CompiledAbstractExpression> HandleCtorCall(AA_AST_NODE* pNode, CompiledEnviornmentTable& ctable, AAStaticEnvironment staticData);
+	aa::list<CompiledAbstractExpression> HandleStackPush(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode, AAStaticEnvironment staticData);
+	aa::list<CompiledAbstractExpression> HandleMemberCall(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
+	aa::list<CompiledAbstractExpression> HandleIndexPush(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
 
 	CompiledAbstractExpression HandleConstPush(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode);
 	CompiledAbstractExpression HandleVarPush(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode);
-	CompiledAbstractExpression HandleFieldPush(AA_AST_NODE* pNode, CompiledStaticChecks staticData);
+	CompiledAbstractExpression HandleFieldPush(AA_AST_NODE* pNode, AAStaticEnvironment staticData);
 
 	int HandleDecl(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode);
 
@@ -130,13 +111,12 @@ private:
 	bool IsDecleration(AA_AST_NODE_TYPE type);
 	AAByteCode GetBytecodeFromBinaryOperator(std::wstring ws, AA_AST_NODE_TYPE lhsType);
 	AAByteCode GetBytecodeFromUnaryOperator(std::wstring ws);
-	int GetReturnCount(void* funcSig);
 
 	/*
 	** FuncSig to procedure mapper
 	*/
 
-	int FindBestFunctionMatch(CompiledStaticChecks staticCheck, AA_AST_NODE* pNode, int& argCount, bool& isVMCall);
+	int FindBestFunctionMatch(AAStaticEnvironment staticCheck, AA_AST_NODE* pNode, int& argCount, bool& isVMCall);
 
 	/*
 	** Bytecode functions
