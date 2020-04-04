@@ -10,8 +10,9 @@ enum class AA_AST_NODE_TYPE {
 
 	seperator,
 	//accessor,
-	callaccess,
-	fieldaccess,
+	callaccess, // Call method on object
+	fieldaccess, // Get or set field access
+	memberaccess, // Get class type
 
 	block,
 	funcbody,
@@ -48,11 +49,12 @@ enum class AA_AST_NODE_TYPE {
 	classctorcall,
 
 	typeidentifier,
+	namespaceidentifier,
 
 	name_space,
 
 	vardecl,
-	variable,
+	variable, // variable identifier
 
 	field,
 	index,

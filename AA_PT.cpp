@@ -283,6 +283,15 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 			nodeIndex++;
 
 		} else {
+			int t = nodeIndex;
+			if (t - 1 >= 0 && nodes[t-1]->nodeType == AA_PT_NODE_TYPE::accessor) {
+				if (t + 1 < nodes.size() && nodes[t + 1]->nodeType == AA_PT_NODE_TYPE::binary_operation && nodes[t + 1]->content.compare(L"=") == 0) {
+					nodeIndex--;
+					nodes[nodeIndex] = this->HandleVariableDecleration(nodes, nodeIndex);
+				} else {
+					printf("Something not right, AA_PT.Cpp@%i\n", __LINE__);
+				}
+			}
 			nodeIndex++;
 		}
 		break;

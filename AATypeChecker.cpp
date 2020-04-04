@@ -3,6 +3,9 @@
 #include "AAStaticAnalysis.h"
 #include "set.h"
 
+// Temp solution, replace with const variables later
+static int AATypeCheckerGlobalErrorCounter = 1000;
+
 aa::list<std::wstring> _getdeftypeenv() {
 	aa::list<std::wstring> types;
 	types.Add(L"null");
@@ -17,7 +20,7 @@ aa::list<std::wstring> AATypeChecker::DefaultTypeEnv = _getdeftypeenv();
 
 std::wstring AATypeChecker::InvalidTypeStr = L"TYPE NOT FOUND";
 
-#define AATC_ERROR(msg, pos) this->SetError(AATypeChecker::Error(msg, __COUNTER__, pos)); return AATypeChecker::InvalidTypeStr
+#define AATC_ERROR(msg, pos) this->SetError(AATypeChecker::Error(msg, ++AATypeCheckerGlobalErrorCounter, pos)); return AATypeChecker::InvalidTypeStr
 
 AATypeChecker::AATypeChecker(AA_AST* pTree, AAStaticEnvironment* senv) {
 	
@@ -32,6 +35,9 @@ AATypeChecker::AATypeChecker(AA_AST* pTree, AAStaticEnvironment* senv) {
 
 	// Set the current namespace to be that of the global namespace
 	m_currentnamespace = m_senv->globalNamespace;
+
+	// Set the local statement namespace to 0
+	m_localStatementNamespace = 0;
 
 }
 
@@ -81,6 +87,8 @@ std::wstring AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 		} else {
 			break;
 		}
+	case AA_AST_NODE_TYPE::memberaccess:
+		return this->TypeCheckMemberAccessorOperation(node, node->expressions[0], node->expressions[1]);
 	case AA_AST_NODE_TYPE::classdecl:
 		return this->TypeCheckNode(node->expressions[0]);
 	case AA_AST_NODE_TYPE::fundecl: 
@@ -174,29 +182,32 @@ std::wstring AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 
 std::wstring AATypeChecker::TypeCheckBinaryOperation(AA_AST_NODE* pOpNode, AA_AST_NODE* left, AA_AST_NODE* right) {
 	if (left->type == AA_AST_NODE_TYPE::vardecl) {
-		
-		std::wstring typeRight = this->TypeCheckNode(right);
+		std::wstring typeLeft;
 		if (left->expressions.size() > 0) {
-			m_vtenv[left->content] = left->expressions[0]->content;
+			typeLeft = m_vtenv[left->content] = this->TypeCheckNode(left->expressions[0]);
 		} else {
-			m_vtenv[left->content] = typeRight;
+			typeLeft = m_vtenv[left->content] = this->TypeCheckNode(right);
 		}
-		std::wstring typeLeft = m_vtenv[left->content];
+		std::wstring typeRight = this->TypeCheckNode(right);
+		typeLeft = m_vtenv[left->content];
 		if (typeLeft != typeRight) { 
 
 			// TODO: Actual typecheck (comparing int and float is allowed, string and int not)
 			// TODO: Consider custom operators
 
-			// Set error message
-			this->SetError(
-				AATypeChecker::Error(
-					"Type mismsatch on binary operation '" + string_cast(pOpNode->content) + "', left operand: '" + string_cast(typeLeft) + "' and right operand: '" + string_cast(typeRight) + "'",
-					__COUNTER__, pOpNode->position)
-			); // Compiler Error 1 (Typemismatch on binary operator)
-			return InvalidTypeStr;
+			// Reset local statement
+			m_localStatementNamespace = 0;
 
+			// Set error message
+			AATC_ERROR(
+				"Type mismsatch on binary operation '" + string_cast(pOpNode->content) + "', left operand: '" + string_cast(typeLeft) + "' and right operand: '" + string_cast(typeRight) + "'", 
+				pOpNode->position
+			);
 		}
 		
+		// Reset local statement
+		m_localStatementNamespace = 0;
+
 		return typeLeft;
 
 	} else {
@@ -422,6 +433,25 @@ AAValType AATypeChecker::TypeCheckUsingOperation(AA_AST_NODE* pUseNode) {
 
 	// Will always return void
 	return L"void";
+
+}
+
+AAValType AATypeChecker::TypeCheckMemberAccessorOperation(AA_AST_NODE* pAccessorNode, AA_AST_NODE* left, AA_AST_NODE* right) {
+
+	int i1;
+	if (m_currentnamespace->childspaces.FindFirstIndex([left](AACNamespace*& domain) { return left->content.compare(domain->name); }, i1)) {
+		int i2;
+		if (m_currentnamespace->childspaces.Apply(i1)->classes.FindFirstIndex([right](AAClassSignature& sig) { return right->content.compare(sig.name) == 0; }, i2)) {
+			m_localStatementNamespace = m_currentnamespace->childspaces.Apply(i1);
+			return right->content;
+		} else {
+			AATC_ERROR("Member not found '" + string_cast(right->content) + "'", pAccessorNode->position);
+		}
+	}
+
+	// TODO: Check classes
+
+	return InvalidTypeStr;
 
 }
 

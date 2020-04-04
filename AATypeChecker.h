@@ -56,6 +56,7 @@ private:
 
 	AAValType TypeCheckClassDotCallAccessorOperation(AA_AST_NODE* pAccessorNode, AA_AST_NODE* left, AA_AST_NODE* right);
 	AAValType TypeCheckClassDotFieldAccessorOperation(AA_AST_NODE* pAccessorNode, AA_AST_NODE* left, AA_AST_NODE* right);
+	AAValType TypeCheckMemberAccessorOperation(AA_AST_NODE* pAccessorNode, AA_AST_NODE* left, AA_AST_NODE* right);
 	AAValType TypeCheckBinaryOperation(AA_AST_NODE* pOpNode, AA_AST_NODE* left, AA_AST_NODE* right);
 	AAValType TypeCheckUnaryOperation(AA_AST_NODE* pOpNode, AA_AST_NODE* right);
 	AAValType TypeCheckCallOperation(AA_AST_NODE* pCallNode);
@@ -114,5 +115,8 @@ private:
 
 	// The current namespace
 	AACNamespace* m_currentnamespace;
+
+	// The current, local, namespace for a statement. Warning! Must be properly cleared after use
+	AACNamespace* m_localStatementNamespace;
 
 };

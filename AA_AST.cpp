@@ -58,7 +58,12 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 			return new AA_AST_NODE(pNode->childNodes[1]->content, AA_AST_NODE_TYPE::vardecl, pNode->position);
 		} else { // When a specific type is specified
 			AA_AST_NODE* varDeclType = new AA_AST_NODE(pNode->childNodes[1]->content, AA_AST_NODE_TYPE::vardecl, pNode->position);
-			varDeclType->expressions.push_back(new AA_AST_NODE(pNode->childNodes[0]->content, AA_AST_NODE_TYPE::typeidentifier, pNode->position));
+			if (pNode->childNodes[0]->nodeType == AA_PT_NODE_TYPE::accessor) { // However, it could also be a member accessor (ie. we're trying to access a type in a namespace or a class subtype)
+				AA_AST_NODE* accessNode = this->AbstractNode(pNode->childNodes[0]);
+				varDeclType->expressions.push_back(accessNode);
+			} else { // default is of course a type identifier
+				varDeclType->expressions.push_back(new AA_AST_NODE(pNode->childNodes[0]->content, AA_AST_NODE_TYPE::typeidentifier, pNode->position));
+			}
 			return varDeclType;
 		}
 
@@ -171,12 +176,14 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 		return newkw;
 	}
 	case AA_PT_NODE_TYPE::accessor: {
-		AA_AST_NODE_TYPE nType = (pNode->childNodes[1]->nodeType == AA_PT_NODE_TYPE::identifier) ? AA_AST_NODE_TYPE::fieldaccess : AA_AST_NODE_TYPE::callaccess;
+		AA_AST_NODE_TYPE nType = this->GetASTAccessType(pNode);
 		AA_AST_NODE* accessorNode = new AA_AST_NODE(pNode->content, nType, pNode->position);
 		accessorNode->expressions.push_back(this->AbstractNode(pNode->childNodes[0]));
 		accessorNode->expressions.push_back(this->AbstractNode(pNode->childNodes[1]));
-		if (nType == AA_AST_NODE_TYPE::fieldaccess) {
+		if (nType == AA_AST_NODE_TYPE::fieldaccess) { // TODO: Check if it's a possible function access instead (Might have to do that in the typechecker where more information is available)
 			accessorNode->expressions[1]->type = AA_AST_NODE_TYPE::field;
+		} else if (nType == AA_AST_NODE_TYPE::memberaccess) {
+			accessorNode->expressions[1]->type = AA_AST_NODE_TYPE::typeidentifier;
 		}
 		return accessorNode;
 	}
@@ -247,6 +254,14 @@ AA_AST_NODE_TYPE AA_AST::GetASTBlockType(AA_PT_NODE_TYPE type) {
 	case AA_PT_NODE_TYPE::block:
 	default:
 		return AA_AST_NODE_TYPE::block;
+	}
+}
+
+AA_AST_NODE_TYPE AA_AST::GetASTAccessType(AA_PT_NODE* pNode) {
+	if (pNode->childNodes[1]->nodeType == AA_PT_NODE_TYPE::identifier) {
+		return (pNode->content.compare(L"::") == 0) ? AA_AST_NODE_TYPE::memberaccess : AA_AST_NODE_TYPE::fieldaccess;
+	} else {
+		return AA_AST_NODE_TYPE::callaccess;
 	}
 }
 

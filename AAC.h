@@ -65,9 +65,9 @@ private:
 	** Private compiler methods
 	*/
 
-	CompiledProcedure CompileProcedureFromAST(AA_AST* pAbstractTree, AAStaticEnvironment staticData);
 	CompiledProcedure CompileProcedureFromASTNode(AA_AST_NODE* pASTNode, AAStaticEnvironment staticData);
-	AAC_Out CompileFromProcedures(std::vector<CompiledProcedure> procedures, AAStaticEnvironment staticCompileData, int entryPoint);
+	aa::list<CompiledProcedure> CompileProcedureFromASTRootNode(AA_AST_NODE* pAstRootNode, AAStaticEnvironment staticData);
+	AAC_Out CompileFromProcedures(aa::list<CompiledProcedure> procedures, AAStaticEnvironment staticCompileData, int entryPoint);
 
 	/*
 	** Static checkers
