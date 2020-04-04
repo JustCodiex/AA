@@ -61,6 +61,7 @@ private:
 	AAValType TypeCheckCallOperation(AA_AST_NODE* pCallNode);
 	AAValType TypeCheckConditionalBlock(AA_AST_NODE* pConditionalNode);
 	AAValType TypeCheckIndexOperation(AA_AST_NODE* pIndexNode);
+	AAValType TypeCheckUsingOperation(AA_AST_NODE* pUseNode);
 
 	AAValType TypeCheckNewStatement(AA_AST_NODE* pNewStatement);
 

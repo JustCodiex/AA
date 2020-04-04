@@ -1,0 +1,3 @@
+val lambda = (a) => a*a;
+println(lambda(1));
+println(lambda(2));

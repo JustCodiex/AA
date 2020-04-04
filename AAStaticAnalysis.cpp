@@ -74,7 +74,7 @@ AAC_CompileErrorMessage AAStaticAnalysis::RunStaticAnalysis(std::vector<AA_AST*>
 
 }
 
-bool AAStaticAnalysis::RunTypecheckAnalysis(AA_AST* pTree, AAStaticEnvironment senv, AATypeChecker::Error& typeError) {
+bool AAStaticAnalysis::RunTypecheckAnalysis(AA_AST* pTree, AAStaticEnvironment& senv, AATypeChecker::Error& typeError) {
 
 	// Currently, we just run a simple type check
 	AATypeChecker checker = AATypeChecker(pTree, &senv);

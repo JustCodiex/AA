@@ -41,10 +41,13 @@ public:
 	AAC_CompileErrorMessage RunStaticAnalysis(std::vector<AA_AST*>& trees);
 
 	/// <summary>
-	/// 
+	/// Run a typecheck on a specific <see cref="AA_AST*"/> tree.
 	/// </summary>
-	/// <returns></returns>
-	bool RunTypecheckAnalysis(AA_AST* pTree, AAStaticEnvironment senv, AATypeChecker::Error& typeError);
+	/// <param name="pTree">The AST to run typecheck functions on.</param>
+	/// <param name="senv">The static environment to use when typechecking (Pass by reference, important! will break using statements if not).</param>
+	/// <param name="typeError">Any possible error that the typechecker may have found. Only valid if false is returned.</param>
+	/// <returns>True if the typechecker found no type errors. False if the typechecker found a type-error.</returns>
+	bool RunTypecheckAnalysis(AA_AST* pTree, AAStaticEnvironment& senv, AATypeChecker::Error& typeError);
 
 	/// <summary>
 	/// Reset the static analyser unit

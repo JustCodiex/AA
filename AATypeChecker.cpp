@@ -161,6 +161,9 @@ std::wstring AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 		}
 		return L"void";
 	}
+	case AA_AST_NODE_TYPE::usingspecificstatement:
+	case AA_AST_NODE_TYPE::usingstatement:
+		return this->TypeCheckUsingOperation(node);
 	default:
 		break;
 	}
@@ -371,7 +374,6 @@ AAValType AATypeChecker::TypeCheckNewStatement(AA_AST_NODE* pNewStatement) {
 	}
 
 	AATC_ERROR("Undefined type '" + string_cast(pNewStatement->expressions[0]->content) + "' in new statement", pNewStatement->position);
-	return InvalidTypeStr;
 
 }
 
@@ -384,6 +386,42 @@ AAValType AATypeChecker::TypeCheckIndexOperation(AA_AST_NODE* pIndexNode) {
 	}
 
 	return InvalidTypeStr;
+
+}
+
+AAValType AATypeChecker::TypeCheckUsingOperation(AA_AST_NODE* pUseNode) {
+
+	switch (pUseNode->type) {
+	case AA_AST_NODE_TYPE::usingstatement: {
+
+		break;
+	}
+	case AA_AST_NODE_TYPE::usingspecificstatement: {
+		AAValType import = pUseNode->content;
+		AAValType from = pUseNode->expressions[0]->content;
+		auto findlambda = []() {};
+		int i1;
+		int i2;
+		if (m_currentnamespace->childspaces.FindFirstIndex([from](AACNamespace*& domain) { return domain->name.compare(from) == 0; }, i1)) {
+			if (m_currentnamespace->childspaces.Apply(i1)->classes.FindFirstIndex([import](AAClassSignature& sig) { return sig.name.compare(import) == 0; }, i2)) {
+				this->m_senv->availableTypes.Add(import);
+				this->m_senv->availableClasses.Add(m_currentnamespace->childspaces.Apply(i1)->classes.Apply(i2));
+				printf("");
+			} else {
+				// throw error
+				printf("");
+			}
+		} else {
+			// throw error
+			printf("");
+		}
+		printf("");
+		break;
+	}
+	}
+
+	// Will always return void
+	return L"void";
 
 }
 

@@ -69,8 +69,28 @@ struct AACNamespace {
 		return this->types.Add(type);
 	}
 
+	bool BringTypeToScope(AACNamespace* targetScope, std::wstring type) {
+		int i;
+		if (this->classes.FindFirstIndex([type](AAClassSignature& sig) { return sig.name.compare(type) == 0; }, i)) {
+			return this->BringTypeToScope(targetScope, type, this->classes.Apply(i));
+		} else {
+			return false;
+		}
+	}
+
 	bool operator==(AACNamespace other) {
 		return other.name == this->name;
+	}
+
+private:
+
+	bool BringTypeToScope(AACNamespace* targetScope, std::wstring type, AAClassSignature sig) {
+		if (targetScope->classes.Add(sig)) {
+			targetScope->types.Add(type);
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 };
