@@ -445,8 +445,9 @@ AACType* AATypeChecker::TypeCheckUsingOperation(AA_AST_NODE* pUseNode) {
 		int i2;
 		if (m_currentnamespace->childspaces.FindFirstIndex([from](AACNamespace*& domain) { return domain->name.compare(from) == 0; }, i1)) {
 			if (m_currentnamespace->childspaces.Apply(i1)->classes.FindFirstIndex([import](AAClassSignature*& sig) { return sig->name.compare(import) == 0; }, i2)) {
-				this->m_senv->availableTypes.Add(this->FindType(import));
-				this->m_senv->availableClasses.Add(m_currentnamespace->childspaces.Apply(i1)->classes.Apply(i2));
+				AAClassSignature* imported = m_currentnamespace->childspaces.Apply(i1)->classes.Apply(i2);
+				this->m_senv->availableTypes.Add(imported->type);
+				this->m_senv->availableClasses.Add(imported);
 				wprintf(L"%ws\n", import.c_str());
 			} else {
 				// throw error
