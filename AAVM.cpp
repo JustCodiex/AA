@@ -564,31 +564,31 @@ int AAVM::RegisterFunction(AACSingleFunction funcPtr) {
 
 }
 
-void AAVM::RegisterClass(std::wstring typeName, AACClass cClass) {
+AAClassSignature* AAVM::RegisterClass(std::wstring typeName, AACClass cClass) {
 
-	AAClassSignature cc;
-	cc.name = typeName;
+	// Class signature
+	AAClassSignature* cc = new AAClassSignature(typeName);
 
 	for (auto& func : cClass.classMethods) {
 		
 		// Update function name
-		func.name = cc.name + L"::" + func.name;
+		func.name = cc->name + L"::" + func.name;
 
 		// Check if it's a constructor
-		bool isCtor = func.name == cc.name + L"::.ctor";;
+		bool isCtor = func.name == cc->name + L"::.ctor";;
 
 		// Function signature
 		AAFuncSignature sig;
 
 		// Because it's a class method we always push the 'this' identifier -> Note, should not be the case if static (but not implemented yet)
-		func.params.insert(func.params.begin(), AAFuncParam(L"string", L"this"));
+		func.params.insert(func.params.begin(), AAFuncParam(cc->type, L"this"));
 
 		// Register the funcion and get the VMCall procID
 		this->RegisterFunction(func, sig, true);
 		sig.isClassCtor = true;
 
 		// Add method to class
-		cc.methods.Add(sig);
+		cc->methods.Add(sig);
 
 	}
 
@@ -598,52 +598,66 @@ void AAVM::RegisterClass(std::wstring typeName, AACClass cClass) {
 		AACSingleFunction func = op.funcPtr;
 
 		// Update function name
-		func.name = cc.name + L"::" + func.name;
+		func.name = cc->name + L"::" + func.name;
 
 		// Function signature
 		AAFuncSignature sig;
 
 		// Because it's a class method we always push the 'this' identifier -> Note, should not be the case if static (but not implemented yet)
-		func.params.insert(func.params.begin(), AAFuncParam(L"string", L"this"));
+		func.params.insert(func.params.begin(), AAFuncParam(cc->type, L"this"));
 
 		// Register the funcion and get the VMCall procID
 		int procID = this->RegisterFunction(func, sig, true);
 
 		// Add method to operators list
-		cc.operators.Add(AAClassOperatorSignature(op.operatorToOverride, sig));
+		cc->operators.Add(AAClassOperatorSignature(op.operatorToOverride, sig));
 
 	}
 
 	for (auto& field : cClass.classFields) {
 
 		AAClassFieldSignature ccf;
-		ccf.fieldID = (int)cc.fields.Size();
+		ccf.fieldID = (int)cc->fields.Size();
 		ccf.accessModifier = AAAccessModifier::PUBLIC;
 		ccf.type = field.fieldtype;
 		ccf.name = field.fieldname;
 
-		cc.fields.Add(ccf);
+		cc->fields.Add(ccf);
 
 	}
 
 	// Update class size
-	cc.classByteSz = m_compiler->GetClassCompilerInstance()->CalculateMemoryUse(cc);
+	cc->classByteSz = m_compiler->GetClassCompilerInstance()->CalculateMemoryUse(cc);
 
 	// Add the VM class
 	m_compiler->AddVMClass(cc);
+
+	// Return the class signature
+	return cc;
 
 }
 
 void AAVM::LoadStandardLibrary() {
 
 	// Register println
-	this->RegisterFunction(AACSingleFunction(L"println", &AAConsole_PrintLn, L"void", 1, AAFuncParam(L"Any", L"obj")));
+	this->RegisterFunction(AACSingleFunction(L"println", &AAConsole_PrintLn, AACType::Void, 1, AAFuncParam(AACType::Any, L"obj")));
 
 	AACClass stringClass;
-	stringClass.classMethods.push_back(AACSingleFunction(L"length", &AAString_Length, L"int", 0));
-	stringClass.classOperators.push_back(AACClassOperator(L"+", AACSingleFunction(L"concat", &AAString_Concat, L"string", 1, AAFuncParam(L"string", L"_x"))));
+	stringClass.classMethods.push_back(AACSingleFunction(L"length", &AAString_Length, AACTypeDef::Int32, 0));
+	stringClass.classOperators.push_back(AACClassOperator(L"+", AACSingleFunction(L"concat", &AAString_Concat, AACTypeDef::String, 1, AAFuncParam(AACTypeDef::String, L"_x"))));
 
-	this->RegisterClass(L"string", stringClass);
+	// Register string class and type
+	AAClassSignature* strCls = this->RegisterClass(L"string", stringClass);
+	AACTypeDef::String = strCls->type;
+	this->FixString(strCls);
+
+}
+
+void AAVM::FixString(AAClassSignature* strCls) {
+
+	// Fix the concat operation
+	strCls->operators.Apply(0).method.returnType = AACTypeDef::String;
+	strCls->operators.Apply(0).method.parameters[1].type = AACTypeDef::String;
 
 }
 

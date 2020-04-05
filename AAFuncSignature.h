@@ -1,5 +1,6 @@
 #pragma once
 #include "AA_AST_NODE.h"
+#include "AACType.h"
 #include "AAAccessModifier.h"
 #include <string>
 #include <vector>
@@ -7,13 +8,13 @@
 struct AACNamespace;
 
 struct AAFuncParam {
-	std::wstring type;
+	AACType* type;
 	std::wstring identifier;
 	AAFuncParam() {
-		this->type = L"void";
+		this->type = AACType::Void;
 		this->identifier = L"";
 	}
-	AAFuncParam(std::wstring type, std::wstring identifier) {
+	AAFuncParam(AACType* type, std::wstring identifier) {
 		this->type = type;
 		this->identifier = identifier;
 	}
@@ -27,7 +28,7 @@ struct AAFuncParam {
 
 struct AAFuncSignature {
 
-	std::wstring returnType;
+	AACType* returnType;
 	std::wstring name;
 	std::vector<AAFuncParam> parameters;
 	bool isVMFunc;
@@ -41,7 +42,7 @@ struct AAFuncSignature {
 	int procID;
 
 	AAFuncSignature() {
-		this->returnType = L"void";
+		this->returnType = AACType::Void;
 		this->name = L"anonymousfunc000";
 		this->isVMFunc = false;
 		this->isClassMethod = false;
@@ -54,7 +55,7 @@ struct AAFuncSignature {
 	}
 
 	AAFuncSignature(std::wstring name) {
-		this->returnType = L"void";
+		this->returnType = AACType::Void;
 		this->name = name;
 		this->isVMFunc = false;
 		this->isClassMethod = false;
@@ -66,7 +67,7 @@ struct AAFuncSignature {
 		this->domain = 0;
 	}
 
-	AAFuncSignature(std::wstring name, std::wstring type) {
+	AAFuncSignature(std::wstring name, AACType* type) {
 		this->returnType = type;
 		this->name = name;
 		this->isVMFunc = false;
@@ -80,7 +81,7 @@ struct AAFuncSignature {
 	}
 
 	AAFuncSignature(std::wstring name, std::wstring type, std::vector<AAFuncParam> params) {
-		this->returnType = L"void";
+		this->returnType = AACType::Void;
 		this->name = L"anonymousfunc000";
 		this->parameters = params;
 		this->isVMFunc = false;
@@ -100,7 +101,7 @@ struct AAFuncSignature {
 	std::wstring GetFullname(); // Definition in AACNamespace.cpp
 
 	bool operator==(AAFuncSignature other) {
-		if (this->name == other.name) {
+		if (this->name.compare(other.name) == 0 && this->domain == other.domain) {
 			if (this->parameters.size() == other.parameters.size()) {
 				for (size_t p = 0; p < this->parameters.size(); p++) {
 					if (this->parameters[p] != other.parameters[p]) {

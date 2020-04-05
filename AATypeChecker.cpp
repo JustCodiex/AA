@@ -6,21 +6,7 @@
 // Temp solution, replace with const variables later
 static int AATypeCheckerGlobalErrorCounter = 1000;
 
-aa::list<std::wstring> _getdeftypeenv() {
-	aa::list<std::wstring> types;
-	types.Add(L"null");
-	types.Add(L"int");
-	types.Add(L"float");
-	types.Add(L"bool");
-	types.Add(L"char");
-	return types;
-}
-
-aa::list<std::wstring> AATypeChecker::DefaultTypeEnv = _getdeftypeenv();
-
-std::wstring AATypeChecker::InvalidTypeStr = L"TYPE NOT FOUND";
-
-#define AATC_ERROR(msg, pos) this->SetError(AATypeChecker::Error(msg, ++AATypeCheckerGlobalErrorCounter, pos)); return AATypeChecker::InvalidTypeStr
+#define AATC_ERROR(msg, pos) this->SetError(AATypeChecker::Error(msg, ++AATypeCheckerGlobalErrorCounter, pos)); return AACType::ErrorType
 
 AATypeChecker::AATypeChecker(AA_AST* pTree, AAStaticEnvironment* senv) {
 	
@@ -44,30 +30,29 @@ AATypeChecker::AATypeChecker(AA_AST* pTree, AAStaticEnvironment* senv) {
 bool AATypeChecker::TypeCheck() {
 
 	// Type check root
-	std::wstring ws = this->TypeCheckNode(m_currentTree->GetRoot());
+	AACType* type = this->TypeCheckNode(m_currentTree->GetRoot());
 
 	// Did we get invalid output?
-	if (m_hasEnyErr || ws == InvalidTypeStr) {
+	if (m_hasEnyErr) {
 		return false;
 	} else {
-		if (!this->IsValidType(ws)) {
-			return ws == L"void";
-		} else {
-			return true;
-		}
+		return this->IsValidType(type);
 	}
 
 }
 
-std::wstring AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
+AACType* AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 
 	switch (node->type) {
 	case AA_AST_NODE_TYPE::funcbody:
 	case AA_AST_NODE_TYPE::classbody:
 	case AA_AST_NODE_TYPE::block: {
-		std::wstring r = L"";
+		AACType* r = AACType::ErrorType;
 		for (size_t i = 0; i < node->expressions.size(); i++) {
 			r = this->TypeCheckNode(node->expressions[i]);
+			if (r == AACType::ErrorType) {
+				printf("Detected error type (Ln %i Column %i)\n", node->position.line, node->position.column);
+			}
 		}
 		return r;
 	}
@@ -98,43 +83,49 @@ std::wstring AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 	case AA_AST_NODE_TYPE::newstatement:
 		return this->TypeCheckNewStatement(node);
 	case AA_AST_NODE_TYPE::classctorcall:
-		return node->content; // Node content will match the ctor class type
+		return this->FindType(node->content); // Node content will match the ctor class type
 	case AA_AST_NODE_TYPE::intliteral:
-		return L"int";
+		return AACTypeDef::Int32;
 	case AA_AST_NODE_TYPE::charliteral:
-		return L"char";
+		return AACTypeDef::Char;
 	case AA_AST_NODE_TYPE::floatliteral:
-		return L"float";
+		return AACTypeDef::Float32;
 	case AA_AST_NODE_TYPE::stringliteral:
-		return L"string";
+		return AACTypeDef::String;
 	case AA_AST_NODE_TYPE::boolliteral:
-		return L"bool";
+		return AACTypeDef::Bool;
 	case AA_AST_NODE_TYPE::nullliteral:
-		return L"null";
+		return AACType::Null;
 	case AA_AST_NODE_TYPE::variable:
 		return m_vtenv[node->content];
-	case AA_AST_NODE_TYPE::typeidentifier:
-		if (this->IsValidType(node->content)) {
-			return node->content;
-		} else {
+	case AA_AST_NODE_TYPE::typeidentifier: {
+		AACType* t = this->FindType(node->content);
+		if (t == AACType::ErrorType) {
 			wprintf(L"Invalid type identifier '%s'\n", node->content.c_str());
 			break;
-		}
-	case AA_AST_NODE_TYPE::funarg:
-		if (this->IsValidType(node->expressions[0]->content)) {
-			return node->expressions[0]->content;
 		} else {
+			return t;
+		}
+	}
+	case AA_AST_NODE_TYPE::funarg: {
+		AACType* t = this->FindType(node->expressions[0]->content);
+		if (t == AACType::ErrorType) {
 			wprintf(L"Invalid type '%s' in argument!\n", node->content.c_str());
 			break;
+		} else {
+			return t;
 		}
+	}
 	case AA_AST_NODE_TYPE::ifstatement:
 		return this->TypeCheckConditionalBlock(node);
-	case AA_AST_NODE_TYPE::vardecl:
-		if (this->IsValidType(node->expressions[0]->content)) {
-			return node->expressions[0]->content;
+	case AA_AST_NODE_TYPE::vardecl: {
+		AACType* t = this->FindType(node->expressions[0]->content);
+		if (t == AACType::ErrorType) {
+			AATC_ERROR("Undefined type " + string_cast(node->expressions[0]->content) + "\n", node->position);
 		} else {
-			AATC_ERROR("Undefined type " + string_cast(node->expressions[0]->content), node->position);
+			return t;
 		}
+	}
 	case AA_AST_NODE_TYPE::index:
 		return this->TypeCheckIndexOperation(node);
 	case AA_AST_NODE_TYPE::name_space: {
@@ -165,9 +156,9 @@ std::wstring AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 			this->m_currentnamespace = this->m_currentnamespace->parentspace;
 
 		} else {
-			wprintf(L"Something very unfotunate has happened"); // Very fatal, should never happen
+			wprintf(L"Something very unfotunate has happened\n"); // Very fatal, should never happen
 		}
-		return L"void";
+		return AACType::Void;
 	}
 	case AA_AST_NODE_TYPE::usingspecificstatement:
 	case AA_AST_NODE_TYPE::usingstatement:
@@ -176,44 +167,51 @@ std::wstring AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 		break;
 	}
 
-	return InvalidTypeStr;
+	return AACType::ErrorType;
 
 }
 
-std::wstring AATypeChecker::TypeCheckBinaryOperation(AA_AST_NODE* pOpNode, AA_AST_NODE* left, AA_AST_NODE* right) {
+AACType* AATypeChecker::TypeCheckBinaryOperation(AA_AST_NODE* pOpNode, AA_AST_NODE* left, AA_AST_NODE* right) {
+
+	// Is it a declerative assignment operation?
 	if (left->type == AA_AST_NODE_TYPE::vardecl) {
-		std::wstring typeLeft;
+		
+		// declare left and right type
+		AACType* typeLeft = 0;
+		AACType* typeRight = 0;
+
+		// Does LHS contain a vardecl with a specific type?
 		if (left->expressions.size() > 0) {
 			typeLeft = m_vtenv[left->content] = this->TypeCheckNode(left->expressions[0]);
-		} else {
-			typeLeft = m_vtenv[left->content] = this->TypeCheckNode(right);
+			typeRight = this->TypeCheckNode(right);
+		} else { // Does LHS contain a vardecl without a specific type (eg. var or val)
+			typeRight = typeLeft = m_vtenv[left->content] = this->TypeCheckNode(right);
 		}
-		std::wstring typeRight = this->TypeCheckNode(right);
-		typeLeft = m_vtenv[left->content];
-		if (typeLeft != typeRight) { 
+		
+		// reset local namespace
+		m_localStatementNamespace = 0;
 
-			// TODO: Actual typecheck (comparing int and float is allowed, string and int not)
-			// TODO: Consider custom operators
+		// Do these types match each other?
+		if (this->IsMatchingTypes(typeRight, typeLeft)) {
 
-			// Reset local statement
-			m_localStatementNamespace = 0;
+			// return the left type
+			return typeLeft;
+
+		} else {
 
 			// Set error message
 			AATC_ERROR(
-				"Type mismsatch on binary operation '" + string_cast(pOpNode->content) + "', left operand: '" + string_cast(typeLeft) + "' and right operand: '" + string_cast(typeRight) + "'", 
+				"Type mismsatch on binary operation '" + string_cast(pOpNode->content) + "', left operand: '"
+				+ string_cast(typeLeft->GetFullname()) + "' and right operand: '" + string_cast(typeRight->GetFullname()) + "'",
 				pOpNode->position
 			);
-		}
 		
-		// Reset local statement
-		m_localStatementNamespace = 0;
-
-		return typeLeft;
+		}
 
 	} else {
 
-		AAValType typeLeft = this->TypeCheckNode(left);
-		AAValType typeRight = this->TypeCheckNode(right);
+		AACType* typeLeft = this->TypeCheckNode(left);
+		AACType* typeRight = this->TypeCheckNode(right);
 		
 		if (IsPrimitiveType(typeLeft) && IsPrimitiveType(typeRight)) {
 			pOpNode->tags["useCall"] = false;
@@ -221,9 +219,9 @@ std::wstring AATypeChecker::TypeCheckBinaryOperation(AA_AST_NODE* pOpNode, AA_AS
 		} else {
 
 			std::wstring op = pOpNode->content;
-			AAClassSignature ccLeft = FindCompiledClassOfType(typeLeft);
+			AAClassSignature* ccLeft = FindCompiledClassOfType(typeLeft);
 
-			if (ccLeft.name == InvalidTypeStr) {
+			if (ccLeft->name == AACType::ErrorType->name) {
 				/*this->SetError(
 					AATypeChecker::Error(
 						"Unknown operand type '" + string_cast(typeLeft) + "'",
@@ -244,12 +242,11 @@ std::wstring AATypeChecker::TypeCheckBinaryOperation(AA_AST_NODE* pOpNode, AA_AS
 				return ccop.method.returnType;
 
 			} else {
-				this->SetError(
-					AATypeChecker::Error(
-						"Invalid operator '" + string_cast(op) + "' on left operand type '" + string_cast(typeLeft) + "' and right operand type '" + string_cast(typeRight) + "'",
-						__COUNTER__, pOpNode->position)
-					);
-				return InvalidTypeStr;
+				AATC_ERROR(
+					"Invalid operator '" + string_cast(op) + "' on left operand type '" + string_cast(typeLeft->GetFullname())
+					+ "' and right operand type '" + string_cast(typeRight->GetFullname()) + "'",
+					pOpNode->position
+				);
 			}
 
 		}
@@ -258,7 +255,7 @@ std::wstring AATypeChecker::TypeCheckBinaryOperation(AA_AST_NODE* pOpNode, AA_AS
 
 }
 
-AAValType AATypeChecker::TypeCheckBinaryOperationOnPrimitive(AA_AST_NODE* pOpNode, AAValType typeLeft, AAValType typeRight) {
+AACType* AATypeChecker::TypeCheckBinaryOperationOnPrimitive(AA_AST_NODE* pOpNode, AACType* typeLeft, AACType* typeRight) {
 
 	if (typeLeft != typeRight) {
 		//printf("Incorrect type!"); // TODO: Implement this when function calls have been implemented
@@ -268,51 +265,51 @@ AAValType AATypeChecker::TypeCheckBinaryOperationOnPrimitive(AA_AST_NODE* pOpNod
 
 }
 
-AAValType AATypeChecker::TypeCheckUnaryOperation(AA_AST_NODE* pOpNode, AA_AST_NODE* right) {
+AACType* AATypeChecker::TypeCheckUnaryOperation(AA_AST_NODE* pOpNode, AA_AST_NODE* right) {
 	// TODO: Actually do a type check
 	return this->TypeCheckNode(right);
 }
 
-AAValType AATypeChecker::TypeCheckConditionalBlock(AA_AST_NODE* pConditionalNode) {
+AACType* AATypeChecker::TypeCheckConditionalBlock(AA_AST_NODE* pConditionalNode) {
 
 
 
 	// A conditional block may be part of flow-control system and may not actually return something
 	// Which is perfectly legal
-	return L"void";
+	return AACType::Void;
 
 }
 
-AAValType AATypeChecker::TypeCheckClassDotCallAccessorOperation(AA_AST_NODE* pAccessorNode, AA_AST_NODE* left, AA_AST_NODE* right) {
+AACType* AATypeChecker::TypeCheckClassDotCallAccessorOperation(AA_AST_NODE* pAccessorNode, AA_AST_NODE* left, AA_AST_NODE* right) {
 
 	// Check types on left and right side
-	AAValType l = this->TypeCheckNode(left);
+	AACType* l = this->TypeCheckNode(left);
 	
 	// If the right operator is a function call
 	if (right->type == AA_AST_NODE_TYPE::funcall) {
-		right->content = l + L"::" + right->content;
+		right->content = l->name + L"::" + right->content;
 	} // else ....
 
 	// Get type on the right
-	AAValType r = this->TypeCheckNode(right);
+	AACType* r = this->TypeCheckNode(right);
 
 	// Return whatever we've accessed from the right side
 	return r;
 
 }
 
-AAValType AATypeChecker::TypeCheckClassDotFieldAccessorOperation(AA_AST_NODE* pAccessorNode, AA_AST_NODE* left, AA_AST_NODE* right) {
+AACType* AATypeChecker::TypeCheckClassDotFieldAccessorOperation(AA_AST_NODE* pAccessorNode, AA_AST_NODE* left, AA_AST_NODE* right) {
 
 	// Check types on the left
-	AAValType l = this->TypeCheckNode(left);
+	AACType* l = this->TypeCheckNode(left);
 
 	// Get class from lhs
-	AAClassSignature cc = this->FindCompiledClassOfType(l);
+	AAClassSignature* cc = this->FindCompiledClassOfType(l);
 
 	// Make sure we got a valid class from this
-	if (cc.name == InvalidTypeStr) {
+	if (cc->name == AACType::ErrorType->name) {
 		// Push error
-		return InvalidTypeStr;
+		return AACType::ErrorType;
 	}
 
 	int field;
@@ -322,47 +319,79 @@ AAValType AATypeChecker::TypeCheckClassDotFieldAccessorOperation(AA_AST_NODE* pA
 		right->tags["fieldid"] = field;
 
 		// Return field type
-		return cc.fields.Apply(field).type;
+		return cc->fields.Apply(field).type;
 
 	} else {
 
 		// Push error (invalid field name)
 
-		return InvalidTypeStr;
+		return AACType::ErrorType;
 
 	}
 
 }
 
-AAValType AATypeChecker::TypeCheckCallOperation(AA_AST_NODE* pCallNode) {
+AACType* AATypeChecker::TypeCheckCallOperation(AA_AST_NODE* pCallNode) {
 
 	// Find the first AAFuncSignature matching our conditions
 	aa::set<AAFuncSignature> sigs = m_senv->availableFunctions.FindAll([pCallNode](AAFuncSignature& sig) { return sig.name == pCallNode->content; });
-	AAFuncSignature sig = sigs.FindFirst([this, pCallNode](AAFuncSignature& sig) { return this->IsTypeMatchingFunction(sig, pCallNode); });
 
-	if (!(sig == AAFuncSignature())) {
+	if (sigs.Size() > 0) {
 
-		pCallNode->tags["calls"] = (int)sig.procID;
+		AAFuncSignature sig = sigs.FindFirst([this, pCallNode](AAFuncSignature& sig) { return this->IsTypeMatchingFunction(sig, pCallNode); });
 
-		return sig.returnType;
+		if (!(sig == AAFuncSignature())) {
+
+			pCallNode->tags["calls"] = (int)sig.procID;
+
+			return sig.returnType;
+
+		} else {
+
+			wprintf(L"Attempt to call undefined function '%s'\n", pCallNode->content.c_str());
+
+			return AACType::ErrorType;
+
+		}
 
 	} else {
 
-		wprintf(L"Attempt to call undefined function '%s'", pCallNode->content.c_str());
+		wprintf(L"Attempt to call undefined function '%s'\n", pCallNode->content.c_str());
 
-		return InvalidTypeStr;
+		return AACType::ErrorType;
 
 	}
 
 }
 
-AAValType AATypeChecker::TypeCheckFuncDecl(AA_AST_NODE* pDeclNode) {
+AACType* AATypeChecker::TypeCheckFuncDecl(AA_AST_NODE* pDeclNode) {
 
 	// Do we have a body that also needs type verification/checking?
 	if (pDeclNode->expressions.size() >= 3) {
 		
+		// Make a copy of the current variable environment
+		AAVarTypeEnv vtenv = AAVarTypeEnv(m_vtenv);
+
+		// For all arguments
+		for (size_t i = 0; i < pDeclNode->expressions[1]->expressions.size(); i++) {
+
+			// Typecheck argument
+			AACType* argType = this->TypeCheckNode(pDeclNode->expressions[1]->expressions[i]);
+
+			// Set variable type in environment
+			if (argType != AACType::ErrorType) {
+				m_vtenv[pDeclNode->expressions[1]->expressions[i]->content] = argType;
+			} else {
+				printf("Arg type error\n");
+			}
+
+		}
+
 		// Type verify body
 		this->TypeCheckNode(pDeclNode->expressions[2]);
+
+		// Reset variable types
+		m_vtenv = vtenv;
 
 	}
 
@@ -371,16 +400,17 @@ AAValType AATypeChecker::TypeCheckFuncDecl(AA_AST_NODE* pDeclNode) {
 
 }
 
-AAValType AATypeChecker::TypeCheckNewStatement(AA_AST_NODE* pNewStatement) {
+AACType* AATypeChecker::TypeCheckNewStatement(AA_AST_NODE* pNewStatement) {
 
 	if (pNewStatement->expressions[0]->type == AA_AST_NODE_TYPE::classctorcall) {
-		if (this->IsValidType(pNewStatement->expressions[0]->content)) {
-			return this->TypeCheckNode(pNewStatement->expressions[0]);
+		AACType* type = this->FindType(pNewStatement->expressions[0]->content);
+		if (type != AACType::ErrorType) {
+			return type;
 		}
 	} else if (pNewStatement->expressions[0]->type == AA_AST_NODE_TYPE::index) {
-		AAValType tp = pNewStatement->expressions[0]->expressions[0]->content;
+		AACType* tp = this->FindType(pNewStatement->expressions[0]->expressions[0]->content + L"[]"); // Put an additional [] on, such that it picks up the correct type
 		if (this->IsValidType(tp)) {
-			return tp + L"[]";
+			return tp;
 		}
 	}
 
@@ -388,19 +418,19 @@ AAValType AATypeChecker::TypeCheckNewStatement(AA_AST_NODE* pNewStatement) {
 
 }
 
-AAValType AATypeChecker::TypeCheckIndexOperation(AA_AST_NODE* pIndexNode) {
+AACType* AATypeChecker::TypeCheckIndexOperation(AA_AST_NODE* pIndexNode) {
 
-	AAValType arrType = this->TypeOf(pIndexNode->expressions[0]->content);
+	AACType* arrType = this->TypeOf(pIndexNode->expressions[0]->content);
 
-	if (IsValidType(arrType) && IsArrayType(arrType)) {
-		return this->TypeOfArrayElements(arrType);
+	if (arrType != AACType::ErrorType && arrType->isArrayType) {
+		return arrType;
 	}
 
-	return InvalidTypeStr;
+	return AACType::ErrorType;
 
 }
 
-AAValType AATypeChecker::TypeCheckUsingOperation(AA_AST_NODE* pUseNode) {
+AACType* AATypeChecker::TypeCheckUsingOperation(AA_AST_NODE* pUseNode) {
 
 	switch (pUseNode->type) {
 	case AA_AST_NODE_TYPE::usingstatement: {
@@ -408,42 +438,41 @@ AAValType AATypeChecker::TypeCheckUsingOperation(AA_AST_NODE* pUseNode) {
 		break;
 	}
 	case AA_AST_NODE_TYPE::usingspecificstatement: {
-		AAValType import = pUseNode->content;
-		AAValType from = pUseNode->expressions[0]->content;
+		std::wstring import = pUseNode->content;
+		std::wstring from = pUseNode->expressions[0]->content;
 		auto findlambda = []() {};
 		int i1;
 		int i2;
 		if (m_currentnamespace->childspaces.FindFirstIndex([from](AACNamespace*& domain) { return domain->name.compare(from) == 0; }, i1)) {
-			if (m_currentnamespace->childspaces.Apply(i1)->classes.FindFirstIndex([import](AAClassSignature& sig) { return sig.name.compare(import) == 0; }, i2)) {
-				this->m_senv->availableTypes.Add(import);
+			if (m_currentnamespace->childspaces.Apply(i1)->classes.FindFirstIndex([import](AAClassSignature*& sig) { return sig->name.compare(import) == 0; }, i2)) {
+				this->m_senv->availableTypes.Add(this->FindType(import));
 				this->m_senv->availableClasses.Add(m_currentnamespace->childspaces.Apply(i1)->classes.Apply(i2));
-				printf("");
+				wprintf(L"%ws\n", import.c_str());
 			} else {
 				// throw error
-				printf("");
+				wprintf(L"Class '%ws' not found\n", import.c_str());
 			}
 		} else {
 			// throw error
-			printf("");
+			printf("Namespace '%ws' not found\n", from.c_str());
 		}
-		printf("");
 		break;
 	}
 	}
 
 	// Will always return void
-	return L"void";
+	return AACType::Void;
 
 }
 
-AAValType AATypeChecker::TypeCheckMemberAccessorOperation(AA_AST_NODE* pAccessorNode, AA_AST_NODE* left, AA_AST_NODE* right) {
+AACType* AATypeChecker::TypeCheckMemberAccessorOperation(AA_AST_NODE* pAccessorNode, AA_AST_NODE* left, AA_AST_NODE* right) {
 
 	int i1;
 	if (m_currentnamespace->childspaces.FindFirstIndex([left](AACNamespace*& domain) { return left->content.compare(domain->name); }, i1)) {
 		int i2;
-		if (m_currentnamespace->childspaces.Apply(i1)->classes.FindFirstIndex([right](AAClassSignature& sig) { return right->content.compare(sig.name) == 0; }, i2)) {
+		if (m_currentnamespace->childspaces.Apply(i1)->classes.FindFirstIndex([right](AAClassSignature*& sig) { return right->content.compare(sig->name) == 0; }, i2)) {
 			m_localStatementNamespace = m_currentnamespace->childspaces.Apply(i1);
-			return right->content;
+			return this->FindType(right->content);
 		} else {
 			AATC_ERROR("Member not found '" + string_cast(right->content) + "'", pAccessorNode->position);
 		}
@@ -451,58 +480,75 @@ AAValType AATypeChecker::TypeCheckMemberAccessorOperation(AA_AST_NODE* pAccessor
 
 	// TODO: Check classes
 
-	return InvalidTypeStr;
+	return AACType::ErrorType;
 
 }
 
-AAValType AATypeChecker::TypeOf(AAId var) {
+AACType* AATypeChecker::TypeOf(AAId var) {
 
 	if (this->m_vtenv.find(var) != this->m_vtenv.end()) {
 		return this->m_vtenv[var];
 	} else {
-		return InvalidTypeStr;
+		return AACType::ErrorType;
 	}
 
 }
 
-AAValType AATypeChecker::TypeOfArrayElements(AAValType t) {
-	if (t.length() > 2) {
-		return t.substr(0, t.length() - 2);
-	} else {
-		return InvalidTypeStr;
-	}
-}
-
-bool AATypeChecker::IsValidType(AAValType t) {
+bool AATypeChecker::IsValidType(AACType* t) {
 	if (!m_senv->availableTypes.Contains(t)) {
-		if (t.length() > 2 && t.substr(t.length() - 2) == L"[]") {
-			return m_senv->availableTypes.Contains(t.substr(0, t.length() - 2));
-		} else {
-			return t.compare(L"void") == 0;
-		}
+		return t == AACType::Void;
 	} else {
 		return true;
 	}	
 }
 
-bool AATypeChecker::IsPrimitiveType(AAValType t) {
-	return t.compare(L"int") == 0 || t.compare(L"float") == 0 || t.compare(L"char") == 0 || t.compare(L"bool") == 0;
+bool AATypeChecker::IsPrimitiveType(AACType* t) {
+	return !t->isRefType;
 }
 
-bool AATypeChecker::IsArrayType(AAValType t) {
-	return (t.length() > 2 && t.substr(t.length() - 2).compare(L"[]") == 0);
-}
+bool AATypeChecker::IsMatchingTypes(AACType* tCompare, AACType* tExpected) {
 
-bool AATypeChecker::IsMatchingTypes(AAValType tCompare, AAValType tExpected) {
-
-	if (tCompare.compare(tExpected) == 0) {
+	if (tCompare == tExpected) {
 		return true;
 	} else {
-		if (tExpected.compare(L"Any") == 0) {
+		if (tExpected == AACType::Any) {
 			return true;
 		} else {
 			return false; // TODO: Check inheritance
 		}
+	}
+
+}
+
+AACType* AATypeChecker::FindType(std::wstring t) {
+
+	// Is it void type?
+	if (t.compare(L"void") == 0) {
+		return AACType::Void;
+	} else if (t.compare(L"Any") == 0) { // Or is it the any type?
+		return AACType::Any;
+	}
+
+	int i;
+	if (m_senv->availableTypes.FindFirstIndex([t](AACType*& type) { return type->name.compare(t) == 0; }, i)) {
+		return m_senv->availableTypes.Apply(i);
+	} else {
+
+		// Is it an array type then?
+		if (t.substr(t.length() - 2).compare(L"[]") == 0) {
+			std::wstring subtype = t.substr(0, t.length() - 2);
+			AACType* t = this->FindType(subtype);
+			if (t != AACType::ErrorType && t != AACType::Any && t != AACType::Void) {
+				AACType* arrType = t->AsArrayType();
+				m_senv->availableTypes.Add(arrType); // add type (for recursive reasons)
+				return arrType;
+			} else {
+				return AACType::ErrorType;
+			}
+		} else {
+			return AACType::ErrorType;
+		}
+
 	}
 
 }
@@ -538,17 +584,17 @@ bool AATypeChecker::IsTypeMatchingFunction(AAFuncSignature sig, AA_AST_NODE* pCa
 
 }
 
-AAClassSignature AATypeChecker::FindCompiledClassOfType(AAValType type) {
+AAClassSignature* AATypeChecker::FindCompiledClassOfType(AACType* type) {
 
 	try {
 
-		AAClassSignature& cc = m_senv->availableClasses.FindFirst([type](AAClassSignature& sig) { return sig.name == type; });
+		AAClassSignature* cc = m_senv->availableClasses.FindFirst([type](AAClassSignature*& sig) { return sig == type->classSignature; });
 		return cc;
 
 	} catch (std::exception e) {
 
-		AAClassSignature no;
-		no.name = InvalidTypeStr;
+		AAClassSignature* no = new AAClassSignature;
+		no->name = AACType::ErrorType->name;
 
 		return no;
 
@@ -556,10 +602,10 @@ AAClassSignature AATypeChecker::FindCompiledClassOfType(AAValType type) {
 
 }
 
-bool AATypeChecker::FindCompiledClassOperation(AAClassSignature cc, std::wstring operatorType, AAValType right, AAClassOperatorSignature& op) {
+bool AATypeChecker::FindCompiledClassOperation(AAClassSignature* cc, std::wstring operatorType, AACType* right, AAClassOperatorSignature& op) {
 
 	// Find the first operator matching the condition
-	op = cc.operators.FindFirst([operatorType, right](AAClassOperatorSignature& sig) { return sig.op.compare(operatorType) == 0 && sig.method.parameters[1].type.compare(right) == 0; });
+	op = cc->operators.FindFirst([operatorType, right](AAClassOperatorSignature& sig) { return sig.op.compare(operatorType) == 0 && sig.method.parameters[1].type == right; });
 
 	// Return true if the operator is not a default operator
 	return !(op == AAClassOperatorSignature());

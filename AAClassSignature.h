@@ -20,12 +20,12 @@ struct AAClassOperatorSignature {
 
 struct AAClassFieldSignature {
 	std::wstring name;
-	std::wstring type;
+	AACType* type;
 	int fieldID;
 	AAAccessModifier accessModifier;
 	AAClassFieldSignature() {
 		this->name = L"";
-		this->type = L"";
+		this->type = AACType::ErrorType;
 		this->fieldID = -1;
 		this->accessModifier = AAAccessModifier::PUBLIC;
 	}
@@ -35,21 +35,34 @@ struct AAClassFieldSignature {
 };
 
 struct AAClassSignature {
+	
 	std::wstring name;
 	aa::set<AAFuncSignature> methods;
 	aa::set<AAClassOperatorSignature> operators;
 	aa::set<AAClassFieldSignature> fields;
+	
 	size_t classByteSz;
+	
 	AAAccessModifier accessModifier;
 	AACNamespace* domain;
+	AACType* type;
 
 	AAClassSignature() {
 		this->name = L"";
 		this->classByteSz = 0;
 		this->accessModifier = AAAccessModifier::PUBLIC;
 		this->domain = 0;
+		this->type = new AACType(this);
 	}
 	
+	AAClassSignature(std::wstring name) {
+		this->name = name;
+		this->classByteSz = 0;
+		this->accessModifier = AAAccessModifier::PUBLIC;
+		this->domain = 0;
+		this->type = new AACType(this);
+	}
+
 	/// <summary>
 	/// Get the full name of the class (domain name and class name)
 	/// </summary>
@@ -57,7 +70,7 @@ struct AAClassSignature {
 	std::wstring GetFullname(); // Definition in AACNamespace.cpp
 
 	bool operator==(AAClassSignature other) {
-		return other.name == this->name /*&& other.domain == this->domain*/;
+		return other.name.compare(this->name) == 0 && other.domain == this->domain;
 	}
 	
 };

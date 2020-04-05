@@ -35,15 +35,15 @@ void AAClassCompiler::RedefineFunDecl(std::wstring className, AA_AST_NODE* pFunc
 
 }
 
-AAClassSignature AAClassCompiler::FindClassFromCtor(std::wstring ctorname, aa::list<AAClassSignature> classes) {
+AAClassSignature* AAClassCompiler::FindClassFromCtor(std::wstring ctorname, aa::list<AAClassSignature*> classes) {
 
 	for (size_t i = 0; i < classes.Size(); i++) {
-		if (classes.At(i).name == ctorname) {
+		if (classes.At(i)->name == ctorname) {
 			return classes.At(i);
 		}
 	}
 
-	return AAClassSignature();
+	return 0;
 
 }
 
@@ -54,13 +54,13 @@ AAFuncSignature AAClassCompiler::FindBestCtor(AAClassSignature* pCC) {
 
 }
 
-size_t AAClassCompiler::CalculateMemoryUse(AAClassSignature cc) {
+size_t AAClassCompiler::CalculateMemoryUse(AAClassSignature* cc) {
 
 	// Total size of class in memory
 	size_t total = 0;
 
 	// Right now we just have to account for fields
-	total += cc.fields.Size() * sizeof(AAVal);
+	total += cc->fields.Size() * sizeof(AAVal);
 
 	// Return total
 	return total;
@@ -94,7 +94,7 @@ void AAClassCompiler::CorrectFuncFieldReferences(AA_AST_NODE* pNode, AAClassSign
 	case AA_AST_NODE_TYPE::variable: {
 
 		int fID; // If we have a field in the class with specified variable (TODO: Check function params - because then the this word must be explicit)
-		if (HasField(*cc, pNode->content, fID)) {
+		if (HasField(cc, pNode->content, fID)) {
 
 			// Update the identiffier to be a member access operation
 			this->UpdateIdentifierToThisFieldReference(pNode, fID);
@@ -117,6 +117,6 @@ void AAClassCompiler::UpdateIdentifierToThisFieldReference(AA_AST_NODE* pNode, i
 
 }
 
-bool AAClassCompiler::HasField(AAClassSignature cc, std::wstring fieldname, int& fieldID) {
-	return cc.fields.FindFirstIndex([fieldname](AAClassFieldSignature& sig) { return sig.name == fieldname; }, fieldID);
+bool AAClassCompiler::HasField(AAClassSignature* cc, std::wstring fieldname, int& fieldID) {
+	return cc->fields.FindFirstIndex([fieldname](AAClassFieldSignature& sig) { return sig.name == fieldname; }, fieldID);
 }

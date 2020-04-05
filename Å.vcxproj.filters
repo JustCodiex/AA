@@ -111,6 +111,9 @@
     <ClCompile Include="AACNamespace.cpp">
       <Filter>Source Files\compiler</Filter>
     </ClCompile>
+    <ClCompile Include="AACType.cpp">
+      <Filter>Source Files\compiler</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="list.h">
@@ -219,6 +222,9 @@
       <Filter>Header Files\compiler</Filter>
     </ClInclude>
     <ClInclude Include="AAStaticAnalysis.h">
+      <Filter>Header Files\compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="AACType.h">
       <Filter>Header Files\compiler</Filter>
     </ClInclude>
   </ItemGroup>

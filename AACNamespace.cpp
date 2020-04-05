@@ -1,9 +1,17 @@
 #include "AACNamespace.h"
 
 std::wstring AAClassSignature::GetFullname() {
-	return this->domain->GetNamePath() + L"::" + this->name;
+	if (this->domain) {
+		return this->domain->GetNamePath() + L"::" + this->name;
+	} else {
+		return this->name;
+	}
 }
 
 std::wstring AAFuncSignature::GetFullname() {
-	return this->domain->GetNamePath() + L"::" + this->name;
+	if (this->domain) {
+		return this->domain->GetNamePath() + L"::" + this->name;
+	} else {
+		return this->name;
+	}
 }

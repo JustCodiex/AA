@@ -1,6 +1,15 @@
 #include "AAStaticAnalysis.h"
 #include "AAC.h"
 
+aa::list<AACType*> _getdeftypeenv() {
+	aa::list<AACType*> types;
+	types.Add(AACTypeDef::Bool);
+	types.Add(AACTypeDef::Char);
+	types.Add(AACTypeDef::Float32);
+	types.Add(AACTypeDef::Int32);
+	return types;
+}
+
 AAStaticAnalysis::AAStaticAnalysis(AAC* pCompiler) {
 
 	// Set pointer to compiler
@@ -8,7 +17,7 @@ AAStaticAnalysis::AAStaticAnalysis(AAC* pCompiler) {
 
 }
 
-void AAStaticAnalysis::Reset(std::vector<AAFuncSignature> funcs, std::vector<AAClassSignature> classes) {
+void AAStaticAnalysis::Reset(std::vector<AAFuncSignature> funcs, std::vector<AAClassSignature*> classes) {
 
 	// Copy functions
 	m_preregisteredFunctions.FromVector(funcs);
@@ -106,17 +115,21 @@ AAStaticEnvironment AAStaticAnalysis::NewStaticEnvironment(AACNamespace*& global
 	AAStaticEnvironment env;
 
 	// Static function checks
-	env.availableTypes.FromList(AATypeChecker::DefaultTypeEnv);
+	env.availableTypes.FromList(_getdeftypeenv());
+
+	// Add all available types to the global domain
+	if (!env.availableTypes.ForAll([globalDomain](AACType*& type) { return globalDomain->AddType(type); })) {
+		throw std::exception("Failed to add primitive types to the global domain!");
+	}
 
 	// For all preloaded classes
 	for (size_t i = 0; i < this->m_preregisteredClasses.Size(); i++) {
 
 		// Add class and class type to domain
 		globalDomain->AddClass(this->m_preregisteredClasses.Apply(i));
-		globalDomain->AddType(this->m_preregisteredClasses.Apply(i).name);
 
 		// Add type name
-		env.availableTypes.Add(this->m_preregisteredClasses.Apply(i).name);
+		env.availableTypes.Add(this->m_preregisteredClasses.Apply(i)->type);
 
 		// Add the class
 		env.availableClasses.Add(this->m_preregisteredClasses.Apply(i));
@@ -175,6 +188,15 @@ AAC_CompileErrorMessage AAStaticAnalysis::FetchStaticDeclerationsFromTrees(std::
 	// Error container
 	AAC_CompileErrorMessage err;
 
+	// Fetch static declerations from all tree roots, register (but do not verify) their types
+	for (size_t i = 0; i < trees.size(); i++) {
+
+		// Fetch static decleration from node and put it into the global domain. Return compile error if any
+		if (COMPILE_ERROR(err = this->PreregisterTypes(trees[i]->GetRoot(), globalDomain, senv))) {
+			return err;
+		}
+	}
+
 	// Fetch static declerations from all tree roots
 	for (size_t i = 0; i < trees.size(); i++) {
 
@@ -192,7 +214,7 @@ AAC_CompileErrorMessage AAStaticAnalysis::FetchStaticDeclerationsFromTrees(std::
 
 }
 
-AAC_CompileErrorMessage AAStaticAnalysis::FetchStaticDeclerationsFromASTNode(AA_AST_NODE* pNode, AACNamespace* domain, AAStaticEnvironment& senv) {
+AAC_CompileErrorMessage AAStaticAnalysis::PreregisterTypes(AA_AST_NODE* pNode, AACNamespace* domain, AAStaticEnvironment& senv) {
 
 	// Error container
 	AAC_CompileErrorMessage err;
@@ -205,11 +227,11 @@ AAC_CompileErrorMessage AAStaticAnalysis::FetchStaticDeclerationsFromASTNode(AA_
 
 		// Create domain
 		AACNamespace* subDomain = new AACNamespace(pNode->content, domain);
-		
+
 		// For all sub-elements of domain
 		for (size_t i = 0; i < pNode->expressions.size(); i++) {
 			// Fetch static decleration from node and put it into the global domain. Return compile error if any
-			if (COMPILE_ERROR(err = this->FetchStaticDeclerationsFromASTNode(pNode->expressions[i], subDomain, senv))) {
+			if (COMPILE_ERROR(err = this->PreregisterTypes(pNode->expressions[i], subDomain, senv))) {
 				return err;
 			}
 		}
@@ -219,47 +241,85 @@ AAC_CompileErrorMessage AAStaticAnalysis::FetchStaticDeclerationsFromASTNode(AA_
 
 	} else if (rootType == AA_AST_NODE_TYPE::classdecl) {
 
+		// Create a barebone class signature (will be modified later)
+		AAClassSignature* classSig = new AAClassSignature(pNode->content);
+		
+		// Add to domain
+		if (domain->AddClass(classSig)) {
+
+			if (domain->IsGlobalSpace()) {
+				senv.availableClasses.Add(classSig);
+				senv.availableTypes.Add(classSig->type);
+			}
+
+		} else { // Already exists in domain -> redefinition NOT allowed
+
+			err.errorMsg = "Duplicate class definition found";
+			err.errorSource = pNode->position;
+			err.errorType = 1;
+			return err;
+
+		}
+
+	} else if (rootType == AA_AST_NODE_TYPE::vardecl) {
+
+		wprintf(L"Not implemented. AAStaticAnalysis.Cpp@%i", __LINE__);
+
+	}
+
+	// No compile errors
+	return NO_COMPILE_ERROR_MESSAGE;
+
+}
+
+AAC_CompileErrorMessage AAStaticAnalysis::FetchStaticDeclerationsFromASTNode(AA_AST_NODE* pNode, AACNamespace* domain, AAStaticEnvironment& senv) {
+
+	// Error container
+	AAC_CompileErrorMessage err;
+
+	// Get the node type
+	AA_AST_NODE_TYPE rootType = pNode->type;
+
+	// Is it a namespace
+	if (rootType == AA_AST_NODE_TYPE::name_space) {
+
+		// Create domain
+		AACNamespace* subDomain = domain->childspaces.FindFirst([pNode](AACNamespace*& d) { return d->name.compare(pNode->content) == 0; });
+		
+		// For all sub-elements of domain
+		for (size_t i = 0; i < pNode->expressions.size(); i++) {
+			// Fetch static decleration from node and put it into the global domain. Return compile error if any
+			if (COMPILE_ERROR(err = this->FetchStaticDeclerationsFromASTNode(pNode->expressions[i], subDomain, senv))) {
+				return err;
+			}
+		}
+
+	} else if (rootType == AA_AST_NODE_TYPE::classdecl) {
+
 		// Get the class
-		AAClassSignature cc;
+		AAClassSignature* cc;
 		
 		// Register class and make sure it compiles OK
-		if (COMPILE_OK(err = this->RegisterClass(pNode, cc))) {
+		if (COMPILE_OK(err = this->RegisterClass(pNode, cc, domain, senv))) {
 
-			// Add class to domain
-			if (domain->AddClass(cc) && domain->AddType(cc.name)) {
+			// Add all methods to domain
+			if (!cc->methods.ForAll([domain](AAFuncSignature& sig) { return domain->AddFunction(sig); })) {
+				err.errorMsg = "Duplicate method definition found";
+				err.errorSource = pNode->position;
+				err.errorType = 1;
+				return err;
+			}
 
-				// Add all methods to domain
-				if (!cc.methods.ForAll([domain](AAFuncSignature& sig) { return domain->AddFunction(sig); })) {
-					err.errorMsg = "Duplicate method definition";
-						err.errorSource = pNode->position;
-						err.errorType = 1;
-						return err;
-				}
+			// If in the global space we'll add it directly to the static checks
+			if (domain->IsGlobalSpace()) {
 
-				// If in the global space we'll add it directly to the static checks
-				if (domain->IsGlobalSpace()) {
+				// Register class methods into static environment as well
+				for (size_t j = 0; j < cc->methods.Size(); j++) {
 
-					// Register class and add class name to registered types as well
-					if (senv.availableClasses.Add(cc) && senv.availableTypes.Add(cc.name)) {
+					// Register method
+					if (!senv.availableFunctions.Add(cc->methods.Apply(j))) {
 
-						// Register class methods
-						for (size_t j = 0; j < cc.methods.Size(); j++) {
-
-							// Register method
-							if (!senv.availableFunctions.Add(cc.methods.Apply(j))) {
-
-								err.errorMsg = "Duplicate method definition";
-								err.errorSource = pNode->position;
-								err.errorType = 1;
-								return err;
-
-							}
-
-						}
-
-					} else { // Duplicate class detected
-
-						err.errorMsg = "Duplicate class definition";
+						err.errorMsg = "Duplicate method definition";
 						err.errorSource = pNode->position;
 						err.errorType = 1;
 						return err;
@@ -267,13 +327,6 @@ AAC_CompileErrorMessage AAStaticAnalysis::FetchStaticDeclerationsFromASTNode(AA_
 					}
 
 				}
-
-			} else { // Duplicate class detected
-
-				err.errorMsg = "Duplicate class definition";
-				err.errorSource = pNode->position;
-				err.errorType = 1;
-				return err;
 
 			}
 
@@ -292,7 +345,7 @@ AAC_CompileErrorMessage AAStaticAnalysis::FetchStaticDeclerationsFromASTNode(AA_
 		AAC_CompileErrorMessage err;
 
 		// Register the function (and make sure no compiler error occured)
-		if (COMPILE_OK(err = this->RegisterFunction(pNode, func))) {
+		if (COMPILE_OK(err = this->RegisterFunction(pNode, func, domain, senv))) {
 
 			// Add function to domain
 			if (domain->AddFunction(func)) {
@@ -320,38 +373,50 @@ AAC_CompileErrorMessage AAStaticAnalysis::FetchStaticDeclerationsFromASTNode(AA_
 
 	}
 
-
+	// No compile errors
 	return NO_COMPILE_ERROR_MESSAGE;
 
 }
 
-AAC_CompileErrorMessage AAStaticAnalysis::RegisterClass(AA_AST_NODE* pNode, AAClassSignature& cc) {
+AAC_CompileErrorMessage AAStaticAnalysis::RegisterClass(AA_AST_NODE* pNode, AAClassSignature*& cc, AACNamespace* domain, AAStaticEnvironment& senv) {
 
 	// Potential compiler error container
 	AAC_CompileErrorMessage err;
 
-	// Compiled Class data
-	cc.name = pNode->content;
-	cc.classByteSz = 0;
+	int classId;
+	if (!domain->classes.FindFirstIndex([pNode](AAClassSignature*& sig) { return sig->name.compare(pNode->content) == 0; }, classId)) {
+		printf("fatal error");
+	}
+
+	// Fetch the class from domain
+	cc = domain->classes.Apply(classId);
+
+	// Compiled Class data size
+	cc->classByteSz = 0;
 
 	// Function bodies to correct
 	std::vector<AA_AST_NODE*> funcBodyNodes;
 
+	// Make sure we have a class body to work with
 	if (pNode->expressions.size() == 1 && pNode->expressions[0]->type == AA_AST_NODE_TYPE::classbody) {
 
+		// For all elements in class body
 		for (size_t i = 0; i < pNode->expressions[0]->expressions.size(); i++) {
 
+			// If function
 			if (pNode->expressions[0]->expressions[i]->type == AA_AST_NODE_TYPE::fundecl) {
 
 				// We need to push a "this" into the method params list
-				m_compilerPointer->GetClassCompilerInstance()->RedefineFunDecl(cc.name, pNode->expressions[0]->expressions[i]);
+				m_compilerPointer->GetClassCompilerInstance()->RedefineFunDecl(cc->name, pNode->expressions[0]->expressions[i]);
 
 				// Register function
 				AAFuncSignature sig;
-				if (COMPILE_OK(err = this->RegisterFunction(pNode->expressions[0]->expressions[i], sig))) {
+				if (COMPILE_OK(err = this->RegisterFunction(pNode->expressions[0]->expressions[i], sig, domain, senv))) {
+
+					// Update signature data
 					sig.isClassMethod = true;
 					sig.node = pNode->expressions[0]->expressions[i];
-					sig.isClassCtor = sig.name == (cc.name + L"::" + cc.name);
+					sig.isClassCtor = sig.name == (cc->name + L"::" + cc->name);
 
 					// Update return count in case of a constructor
 					if (sig.isClassCtor) {
@@ -359,7 +424,7 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterClass(AA_AST_NODE* pNode, AACl
 					}
 
 					// Add method to class definition
-					cc.methods.Add(sig);
+					cc->methods.Add(sig);
 
 					if (pNode->expressions[0]->expressions[i]->expressions.size() >= 3) { // make sure it's declared
 						funcBodyNodes.push_back(pNode->expressions[0]->expressions[i]->expressions[2]);
@@ -372,11 +437,11 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterClass(AA_AST_NODE* pNode, AACl
 			} else if (pNode->expressions[0]->expressions[i]->type == AA_AST_NODE_TYPE::vardecl) {
 
 				AAClassFieldSignature field;
-				field.fieldID = (int)cc.fields.Size();
+				field.fieldID = (int)cc->fields.Size();
 				field.name = pNode->expressions[0]->expressions[i]->content;
-				field.type = pNode->expressions[0]->expressions[i]->expressions[0]->content;
+				field.type = this->GetTypeFromName(pNode->expressions[0]->expressions[i]->expressions[0]->content, domain, senv);
 
-				cc.fields.Add(field);
+				cc->fields.Add(field);
 
 			} else {
 
@@ -389,20 +454,21 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterClass(AA_AST_NODE* pNode, AACl
 	}
 
 	// Correct incorrect references (eg. field access)
-	m_compilerPointer->GetClassCompilerInstance()->CorrectReferences(&cc, funcBodyNodes);
+	m_compilerPointer->GetClassCompilerInstance()->CorrectReferences(cc, funcBodyNodes);
 
 	// Calculate the class size in memory
-	cc.classByteSz = m_compilerPointer->GetClassCompilerInstance()->CalculateMemoryUse(cc);
+	cc->classByteSz = m_compilerPointer->GetClassCompilerInstance()->CalculateMemoryUse(cc);
 
+	// Return no errors
 	return NO_COMPILE_ERROR_MESSAGE;
 
 }
 
-AAC_CompileErrorMessage AAStaticAnalysis::RegisterFunction(AA_AST_NODE* pNode, AAFuncSignature& sig) {
+AAC_CompileErrorMessage AAStaticAnalysis::RegisterFunction(AA_AST_NODE* pNode, AAFuncSignature& sig, AACNamespace* domain, AAStaticEnvironment& senv) {
 
 	// Set basic function data
 	sig.name = pNode->content;
-	sig.returnType = pNode->expressions[0]->content;
+	sig.returnType = this->GetTypeFromName(pNode->expressions[0]->content, domain, senv);
 	sig.node = pNode;
 
 	// Setup parameters
@@ -410,7 +476,7 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterFunction(AA_AST_NODE* pNode, A
 
 		AAFuncParam param;
 		param.identifier = arg->content;
-		param.type = arg->expressions[0]->content;
+		param.type = this->GetTypeFromName(arg->expressions[0]->content, domain, senv);
 
 		sig.parameters.push_back(param);
 
@@ -436,7 +502,7 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterFunction(AA_AST_NODE* pNode, A
 
 int AAStaticAnalysis::GetReturnCount(AAFuncSignature funcSig) {
 
-	if (funcSig.returnType == L"void") {
+	if (funcSig.returnType == AACType::Void) {
 		return 0;
 	} else {
 		return 1;
@@ -542,5 +608,21 @@ int AAStaticAnalysis::VerifyFunctionControlPath(AA_AST_NODE* pNode, AAC_CompileE
 	}
 
 	return 0;
+
+}
+
+AACType* AAStaticAnalysis::GetTypeFromName(std::wstring tName, AACNamespace* domain, AAStaticEnvironment& senv) {
+
+	// If the type is void, simply return that
+	if (tName.compare(L"void") == 0) {
+		return AACType::Void;
+	}
+
+	int i;
+	if (senv.availableTypes.FindFirstIndex([tName](AACType*& type) { return type->name.compare(tName) == 0; }, i)) { // Todo: more checks
+		return senv.availableTypes.Apply(i);
+	}
+
+	return AACType::ErrorType;
 
 }

@@ -1,10 +1,7 @@
 #pragma once
-#include "AAFuncSignature.h"
 #include "AAClassCompiler.h"
-#include "AACNamespace.h"
 #include "AAC_Structs.h"
 #include "AATypeChecker.h"
-#include "AA_AST.h"
 
 class AAC;
 
@@ -15,8 +12,8 @@ struct AAStaticEnvironment {
 
 	AACNamespace* globalNamespace;
 	aa::set<AAFuncSignature> availableFunctions;
-	aa::set<AAClassSignature> availableClasses;
-	aa::set<std::wstring> availableTypes;
+	aa::set<AAClassSignature*> availableClasses;
+	aa::set<AACType*> availableTypes;
 
 	AAStaticEnvironment() {
 		globalNamespace = 0;
@@ -54,7 +51,7 @@ public:
 	/// </summary>
 	/// <param name="funcs">Preregistered functions</param>
 	/// <param name="classes">Preregistered classes</param>
-	void Reset(std::vector<AAFuncSignature> funcs, std::vector<AAClassSignature> classes);
+	void Reset(std::vector<AAFuncSignature> funcs, std::vector<AAClassSignature*> classes);
 
 	/// <summary>
 	/// 
@@ -76,11 +73,15 @@ private:
 
 	bool ExtractGlobalScope(std::vector<AA_AST*>& trees);
 
+	AAC_CompileErrorMessage PreregisterTypes(AA_AST_NODE* pNode, AACNamespace* domain, AAStaticEnvironment& senv);
+
 	AAC_CompileErrorMessage FetchStaticDeclerationsFromTrees(std::vector<AA_AST*> trees, AACNamespace* globalDomain, AAStaticEnvironment& senv);
 	AAC_CompileErrorMessage FetchStaticDeclerationsFromASTNode(AA_AST_NODE* pNode, AACNamespace* domain, AAStaticEnvironment& senv);
 
-	AAC_CompileErrorMessage RegisterFunction(AA_AST_NODE* pNode, AAFuncSignature& sig);
-	AAC_CompileErrorMessage RegisterClass(AA_AST_NODE* pNode, AAClassSignature& sig);
+	AAC_CompileErrorMessage RegisterFunction(AA_AST_NODE* pNode, AAFuncSignature& sig, AACNamespace* domain, AAStaticEnvironment& senv);
+	AAC_CompileErrorMessage RegisterClass(AA_AST_NODE* pNode, AAClassSignature*& sig, AACNamespace* domain, AAStaticEnvironment& senv);
+
+	AACType* GetTypeFromName(std::wstring tName, AACNamespace* domain, AAStaticEnvironment& senv);
 
 	int GetReturnCount(AAFuncSignature funcSig);
 
@@ -88,7 +89,7 @@ private:
 
 private:
 
-	aa::set<AAClassSignature> m_preregisteredClasses;
+	aa::set<AAClassSignature*> m_preregisteredClasses;
 	aa::set<AAFuncSignature> m_preregisteredFunctions;
 
 	AAC* m_compilerPointer;

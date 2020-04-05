@@ -14,15 +14,15 @@ typedef void(*AACFunctionPtr)(AAVM*, aa::stack<AAVal>, aa::stack<AAVal>&);
 struct AACSingleFunction {
 
 	std::wstring name;
-	std::wstring returnType;
+	AACType* returnType;
 	std::vector<AAFuncParam> params;
 	AACFunctionPtr fPtr;
 	AACSingleFunction() {
 		this->name = L"";
-		this->returnType = L"";
+		this->returnType = AACType::ErrorType;
 		this->fPtr = 0;
 	}
-	AACSingleFunction(std::wstring name, AACFunctionPtr ptr, std::wstring rt, int n_args, ...) {
+	AACSingleFunction(std::wstring name, AACFunctionPtr ptr, AACType* rt, int n_args, ...) {
 		this->name = name;
 		this->fPtr = ptr;
 		this->returnType = rt;

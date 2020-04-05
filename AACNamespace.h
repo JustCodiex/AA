@@ -1,20 +1,18 @@
 #pragma once
-#include "set.h"
 #include "AAClassSignature.h"
-#include <string>
 
 struct AACNamespace {
 
 	std::wstring name;
 	AACNamespace* parentspace;
 	aa::set<AACNamespace*> childspaces;
-	aa::set<AAClassSignature> classes;
+	aa::set<AAClassSignature*> classes;
 	aa::set<AAFuncSignature> functions;
-	aa::set<std::wstring> types;
+	aa::set<AACType*> types;
 
 	AACNamespace() {
 		this->name = L"INVALID SPACE";
-		this->parentspace = (AACNamespace*)0xfffffff;
+		this->parentspace = 0;
 	}
 
 	AACNamespace(std::wstring name, AACNamespace* parent) {
@@ -29,9 +27,9 @@ struct AACNamespace {
 	bool IsGlobalSpace() { return parentspace == 0 && name == L""; }
 
 	/// <summary>
-	/// 
+	/// Get the full name of the namespace
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>Full name path of namespace</returns>
 	std::wstring GetNamePath() {
 		if (parentspace == 0) {
 			return name;
@@ -44,53 +42,26 @@ struct AACNamespace {
 		}
 	}
 
-	/// <summary>
-	/// Moves the entire namespace into the given namespace
-	/// </summary>
-	/// <param name="otherspace">The other space to move to</param>
-	void UsingNamespace(AACNamespace* otherspace) {
-		
-		// For all types in our namespace, "copy" them into the otherspace
-		//this->types.ForEach([otherspace](std::wstring t) { otherspace->types.Add(t); });
-
-	}
-
 	bool AddFunction(AAFuncSignature& sig) {
 		sig.domain = this;
 		return this->functions.Add(sig);
 	}
 
-	bool AddClass(AAClassSignature& sig) {
-		sig.domain = this;
-		return this->classes.Add(sig);
-	}
-
-	bool AddType(std::wstring type) {
-		return this->types.Add(type);
-	}
-
-	bool BringTypeToScope(AACNamespace* targetScope, std::wstring type) {
-		int i;
-		if (this->classes.FindFirstIndex([type](AAClassSignature& sig) { return sig.name.compare(type) == 0; }, i)) {
-			return this->BringTypeToScope(targetScope, type, this->classes.Apply(i));
+	bool AddClass(AAClassSignature* sig) {
+		sig->domain = this;
+		if (this->AddType(sig->type)) {
+			return this->classes.Add(sig);
 		} else {
 			return false;
 		}
+	}
+
+	bool AddType(AACType* type) {
+		return this->types.Add(type);
 	}
 
 	bool operator==(AACNamespace other) {
 		return other.name == this->name;
-	}
-
-private:
-
-	bool BringTypeToScope(AACNamespace* targetScope, std::wstring type, AAClassSignature sig) {
-		if (targetScope->classes.Add(sig)) {
-			targetScope->types.Add(type);
-			return true;
-		} else {
-			return false;
-		}
 	}
 
 };

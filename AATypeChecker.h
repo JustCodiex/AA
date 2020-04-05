@@ -1,13 +1,13 @@
 #pragma once
 #include "AAClassCompiler.h"
+#include "AACNamespace.h"
 #include "AA_AST.h"
 #include "list.h"
 #include <vector>
 #include <map>
 
 typedef std::wstring AAId;
-typedef std::wstring AAValType;
-typedef std::map<AAId, AAValType> AAVarTypeEnv;
+typedef std::map<AAId, AACType*> AAVarTypeEnv;
 
 struct AAStaticEnvironment;
 struct AACNamespace;
@@ -46,55 +46,51 @@ public:
 
 	bool TypeCheck(); // Run a type-check on the tree
 
-	AAValType TypeCheckNode(AA_AST_NODE* node);
+	AACType* TypeCheckNode(AA_AST_NODE* node);
 
 	AATypeChecker::Error GetErrorMessage() { return m_errMsg; }
 
-	static aa::list<std::wstring> DefaultTypeEnv;
-
 private:
 
-	AAValType TypeCheckClassDotCallAccessorOperation(AA_AST_NODE* pAccessorNode, AA_AST_NODE* left, AA_AST_NODE* right);
-	AAValType TypeCheckClassDotFieldAccessorOperation(AA_AST_NODE* pAccessorNode, AA_AST_NODE* left, AA_AST_NODE* right);
-	AAValType TypeCheckMemberAccessorOperation(AA_AST_NODE* pAccessorNode, AA_AST_NODE* left, AA_AST_NODE* right);
-	AAValType TypeCheckBinaryOperation(AA_AST_NODE* pOpNode, AA_AST_NODE* left, AA_AST_NODE* right);
-	AAValType TypeCheckUnaryOperation(AA_AST_NODE* pOpNode, AA_AST_NODE* right);
-	AAValType TypeCheckCallOperation(AA_AST_NODE* pCallNode);
-	AAValType TypeCheckConditionalBlock(AA_AST_NODE* pConditionalNode);
-	AAValType TypeCheckIndexOperation(AA_AST_NODE* pIndexNode);
-	AAValType TypeCheckUsingOperation(AA_AST_NODE* pUseNode);
+	AACType* TypeCheckClassDotCallAccessorOperation(AA_AST_NODE* pAccessorNode, AA_AST_NODE* left, AA_AST_NODE* right);
+	AACType* TypeCheckClassDotFieldAccessorOperation(AA_AST_NODE* pAccessorNode, AA_AST_NODE* left, AA_AST_NODE* right);
+	AACType* TypeCheckMemberAccessorOperation(AA_AST_NODE* pAccessorNode, AA_AST_NODE* left, AA_AST_NODE* right);
+	AACType* TypeCheckBinaryOperation(AA_AST_NODE* pOpNode, AA_AST_NODE* left, AA_AST_NODE* right);
+	AACType* TypeCheckUnaryOperation(AA_AST_NODE* pOpNode, AA_AST_NODE* right);
+	AACType* TypeCheckCallOperation(AA_AST_NODE* pCallNode);
+	AACType* TypeCheckConditionalBlock(AA_AST_NODE* pConditionalNode);
+	AACType* TypeCheckIndexOperation(AA_AST_NODE* pIndexNode);
+	AACType* TypeCheckUsingOperation(AA_AST_NODE* pUseNode);
 
-	AAValType TypeCheckNewStatement(AA_AST_NODE* pNewStatement);
+	AACType* TypeCheckNewStatement(AA_AST_NODE* pNewStatement);
 
-	AAValType TypeCheckFuncDecl(AA_AST_NODE* pDeclNode);
+	AACType* TypeCheckFuncDecl(AA_AST_NODE* pDeclNode);
 
-	AAValType TypeOf(AAId var);
-	AAValType TypeOfArrayElements(AAValType t);
+	AACType* TypeOf(AAId var);
 
 	/*
 	** Primitive helper functions
 	*/
 
-	AAValType TypeCheckBinaryOperationOnPrimitive(AA_AST_NODE* pOpNode, AAValType typeLeft, AAValType typeRight);
+	AACType* TypeCheckBinaryOperationOnPrimitive(AA_AST_NODE* pOpNode, AACType* typeLeft, AACType* typeRight);
 
 	/*
 	** Helper functions
 	*/
 
-	bool IsValidType(AAValType t);
-	bool IsPrimitiveType(AAValType t);
-	bool IsArrayType(AAValType t);
+	bool IsValidType(AACType* t);
+	bool IsPrimitiveType(AACType* t);
+
+	AACType* FindType(std::wstring t);
 
 	bool IsTypeMatchingFunction(AAFuncSignature sig, AA_AST_NODE* pCallNode);
-	bool IsMatchingTypes(AAValType tCompare, AAValType tExpected);
+	bool IsMatchingTypes(AACType* tCompare, AACType* tExpected);
 
-	AAClassSignature FindCompiledClassOfType(AAValType type);
-	bool FindCompiledClassOperation(AAClassSignature cc, std::wstring operatorType, AAValType right, AAClassOperatorSignature& op);
+	AAClassSignature* FindCompiledClassOfType(AACType* type);
+	bool FindCompiledClassOperation(AAClassSignature* cc, std::wstring operatorType, AACType* right, AAClassOperatorSignature& op);
 
 	// Sets the last error if not set
 	void SetError(AATypeChecker::Error err) { if (!m_hasEnyErr) { m_errMsg = err; m_hasEnyErr = true; } }
-
-	static AAValType InvalidTypeStr;
 
 private:
 

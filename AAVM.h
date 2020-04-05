@@ -69,7 +69,7 @@ public:
 	bool IsTopStackLoggingEnabled() { return m_logTopOfStackAfterExec; }
 
 	int RegisterFunction(AACSingleFunction funcPtr);
-	void RegisterClass(std::wstring typeName, AACClass cClass);
+	AAClassSignature* RegisterClass(std::wstring typeName, AACClass cClass);
 
 	static AAVM* CreateNewVM(bool logExecuteTime, bool logCompiler, bool logTopStack);
 
@@ -96,6 +96,8 @@ private:
 	void LoadStandardLibrary();
 
 	void StopAndLogCompile();
+
+	void FixString(AAClassSignature* strCls);
 
 private:
 
