@@ -83,7 +83,7 @@ AACType* AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 	case AA_AST_NODE_TYPE::newstatement:
 		return this->TypeCheckNewStatement(node);
 	case AA_AST_NODE_TYPE::classctorcall:
-		return this->FindType(node->content); // Node content will match the ctor class type
+		return this->TypeCheckClassCtorCall(node);
 	case AA_AST_NODE_TYPE::intliteral:
 		return AACTypeDef::Int32;
 	case AA_AST_NODE_TYPE::charliteral:
@@ -364,6 +364,72 @@ AACType* AATypeChecker::TypeCheckCallOperation(AA_AST_NODE* pCallNode) {
 
 }
 
+AACType* AATypeChecker::TypeCheckClassCtorCall(AA_AST_NODE* pCallNode) {
+
+	// Is there a local statement space defined?
+	if (m_localStatementNamespace) {
+
+		// Class index
+		int cIndex;
+
+		// Can we find the class in the namespace?
+		if (m_localStatementNamespace->classes.FindFirstIndex([pCallNode](AAClassSignature*& sig) {
+			return sig->name.compare(pCallNode->content) == 0;
+			}, cIndex)) {
+
+			// Constructor name to look for
+			std::wstring ctorname = pCallNode->content + L"::" + pCallNode->content;
+
+			// All signatures where the function name is matching
+			aa::set<AAFuncSignature> sigs = m_localStatementNamespace->functions.FindAll([ctorname](AAFuncSignature& sig) { return ctorname.compare(sig.name) == 0; });
+
+			// Did we find any signatures?
+			if (sigs.Size() > 0) {
+
+				// Get the first type-matching signature
+				AAFuncSignature sig = sigs.FindFirst([this, pCallNode](AAFuncSignature& sig) { return this->IsTypeMatchingFunction(sig, pCallNode); });
+
+				// Is it valid?
+				if (!(sig == AAFuncSignature())) {
+
+					// Set call ID
+					pCallNode->tags["calls"] = (int)sig.procID;
+					
+					// Return the proper type
+					return sig.returnType;
+
+				} else {
+
+					// Log compile error
+					wprintf(L"Attempt to call undefined function '%ws'\n", pCallNode->content.c_str());
+					return AACType::ErrorType;
+
+				}
+
+			} else {
+
+				// Log the compile error
+				wprintf(L"Attempt to call undefined function '%ws'\n", pCallNode->content.c_str());
+				return AACType::ErrorType;
+
+			}
+		}
+		
+		// Error, not able to find the type in the local space ==> does absolutely not exist
+		return AACType::ErrorType;
+
+	} else {
+
+		// Node content should match the ctor class type
+		return this->FindType(pCallNode->content);
+	
+	}
+
+	// Return the error type
+	return AACType::ErrorType;
+
+}
+
 AACType* AATypeChecker::TypeCheckFuncDecl(AA_AST_NODE* pDeclNode) {
 
 	// Do we have a body that also needs type verification/checking?
@@ -403,7 +469,7 @@ AACType* AATypeChecker::TypeCheckFuncDecl(AA_AST_NODE* pDeclNode) {
 AACType* AATypeChecker::TypeCheckNewStatement(AA_AST_NODE* pNewStatement) {
 
 	if (pNewStatement->expressions[0]->type == AA_AST_NODE_TYPE::classctorcall) {
-		AACType* type = this->FindType(pNewStatement->expressions[0]->content);
+		AACType* type = this->TypeCheckNode(pNewStatement->expressions[0]);
 		if (type != AACType::ErrorType) {
 			return type;
 		}
@@ -448,7 +514,6 @@ AACType* AATypeChecker::TypeCheckUsingOperation(AA_AST_NODE* pUseNode) {
 				AAClassSignature* imported = m_currentnamespace->childspaces.Apply(i1)->classes.Apply(i2);
 				this->m_senv->availableTypes.Add(imported->type);
 				this->m_senv->availableClasses.Add(imported);
-				wprintf(L"%ws\n", import.c_str());
 			} else {
 				// throw error
 				wprintf(L"Class '%ws' not found\n", import.c_str());
@@ -469,11 +534,11 @@ AACType* AATypeChecker::TypeCheckUsingOperation(AA_AST_NODE* pUseNode) {
 AACType* AATypeChecker::TypeCheckMemberAccessorOperation(AA_AST_NODE* pAccessorNode, AA_AST_NODE* left, AA_AST_NODE* right) {
 
 	int i1;
-	if (m_currentnamespace->childspaces.FindFirstIndex([left](AACNamespace*& domain) { return left->content.compare(domain->name); }, i1)) {
+	if (m_currentnamespace->childspaces.FindFirstIndex([left](AACNamespace*& domain) { return left->content.compare(domain->name) == 0; }, i1)) {
 		int i2;
 		if (m_currentnamespace->childspaces.Apply(i1)->classes.FindFirstIndex([right](AAClassSignature*& sig) { return right->content.compare(sig->name) == 0; }, i2)) {
 			m_localStatementNamespace = m_currentnamespace->childspaces.Apply(i1);
-			return this->FindType(right->content);
+			return m_localStatementNamespace->classes.Apply(i2)->type;
 		} else {
 			AATC_ERROR("Member not found '" + string_cast(right->content) + "'", pAccessorNode->position);
 		}

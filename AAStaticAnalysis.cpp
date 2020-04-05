@@ -1,4 +1,5 @@
 #include "AAStaticAnalysis.h"
+#include "astring.h"
 #include "AAC.h"
 
 aa::list<AACType*> _getdeftypeenv() {
@@ -341,9 +342,6 @@ AAC_CompileErrorMessage AAStaticAnalysis::FetchStaticDeclerationsFromASTNode(AA_
 		// Get function signature
 		AAFuncSignature func;
 		
-		// Potential error container
-		AAC_CompileErrorMessage err;
-
 		// Register the function (and make sure no compiler error occured)
 		if (COMPILE_OK(err = this->RegisterFunction(pNode, func, domain, senv))) {
 
@@ -436,11 +434,21 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterClass(AA_AST_NODE* pNode, AACl
 
 			} else if (pNode->expressions[0]->expressions[i]->type == AA_AST_NODE_TYPE::vardecl) {
 
+				// Create field signature
 				AAClassFieldSignature field;
 				field.fieldID = (int)cc->fields.Size();
 				field.name = pNode->expressions[0]->expressions[i]->content;
 				field.type = this->GetTypeFromName(pNode->expressions[0]->expressions[i]->expressions[0]->content, domain, senv);
 
+				// Did we get an invalid field?
+				if (field.type == AACType::ErrorType) {
+					err.errorMsg = ("Undefined field type '" + string_cast(pNode->expressions[0]->content) + "'").c_str();
+					err.errorSource = pNode->expressions[0]->position;
+					err.errorType = 0;
+					return err;
+				}
+
+				// Add field to class fields
 				cc->fields.Add(field);
 
 			} else {
@@ -466,10 +474,21 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterClass(AA_AST_NODE* pNode, AACl
 
 AAC_CompileErrorMessage AAStaticAnalysis::RegisterFunction(AA_AST_NODE* pNode, AAFuncSignature& sig, AACNamespace* domain, AAStaticEnvironment& senv) {
 
+	// Potential compiler error container
+	AAC_CompileErrorMessage err;
+
 	// Set basic function data
 	sig.name = pNode->content;
 	sig.returnType = this->GetTypeFromName(pNode->expressions[0]->content, domain, senv);
 	sig.node = pNode;
+
+	// Did the function return the error type?
+	if (sig.returnType == AACType::ErrorType) {
+		err.errorMsg = ("Undefined return type '" + string_cast(pNode->expressions[0]->content) + "'").c_str();
+		err.errorSource = pNode->expressions[0]->position;
+		err.errorType = 0;
+		return err;
+	}
 
 	// Setup parameters
 	for (AA_AST_NODE* arg : pNode->expressions[1]->expressions) {
@@ -477,6 +496,14 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterFunction(AA_AST_NODE* pNode, A
 		AAFuncParam param;
 		param.identifier = arg->content;
 		param.type = this->GetTypeFromName(arg->expressions[0]->content, domain, senv);
+
+		// Did the function return the error type?
+		if (param.type == AACType::ErrorType) {
+			err.errorMsg = ("Undefined argument type '" + string_cast(arg->expressions[0]->content) + "'").c_str();
+			err.errorSource = pNode->expressions[0]->position;
+			err.errorType = 0;
+			return err;
+		}
 
 		sig.parameters.push_back(param);
 
@@ -487,9 +514,6 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterFunction(AA_AST_NODE* pNode, A
 
 	// Get the next procedure ID
 	sig.procID = this->m_compilerPointer->GetNextProcID();
-
-	// Potential compiler error container
-	AAC_CompileErrorMessage err;
 
 	// Verify function control structure
 	if (!this->VerifyFunctionControlPath(sig, err)) {
@@ -618,11 +642,20 @@ AACType* AAStaticAnalysis::GetTypeFromName(std::wstring tName, AACNamespace* dom
 		return AACType::Void;
 	}
 
+	// Index of matching type
 	int i;
+
+	// We look in the domain first
+	if (domain->types.FindFirstIndex([tName](AACType*& type) { return type->name.compare(tName) == 0; }, i)) { // Todo: more checks
+		return domain->types.Apply(i);
+	}
+
+	// Then we look in the global scope
 	if (senv.availableTypes.FindFirstIndex([tName](AACType*& type) { return type->name.compare(tName) == 0; }, i)) { // Todo: more checks
 		return senv.availableTypes.Apply(i);
 	}
 
+	// Found nothing => Error type
 	return AACType::ErrorType;
 
 }
