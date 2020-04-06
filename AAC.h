@@ -57,7 +57,7 @@ public:
 	int GetNextProcID() { return ++m_currentProcID; }
 
 	void AddVMClass(AAClassSignature* cc);
-	void AddVMFunction(AAFuncSignature sig);
+	void AddVMFunction(AAFuncSignature* sig);
 
 private:
 
@@ -141,7 +141,7 @@ private:
 	std::wstring m_outfile;
 
 	std::vector<AAClassSignature*> m_preregisteredClasses;
-	std::vector<AAFuncSignature> m_preregisteredFunctions;
+	std::vector<AAFuncSignature*> m_preregisteredFunctions;
 
 	AAClassCompiler* m_classCompiler;
 	AAStaticAnalysis* m_staticAnalyser;

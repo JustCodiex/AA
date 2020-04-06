@@ -63,6 +63,8 @@ private:
 	AACType* TypeCheckIndexOperation(AA_AST_NODE* pIndexNode);
 	AACType* TypeCheckUsingOperation(AA_AST_NODE* pUseNode);
 
+	AACType* TypeCheckCtorAndFindBestMatch(AACNamespace* pDomain, AA_AST_NODE* pCallNode);
+
 	AACType* TypeCheckNewStatement(AA_AST_NODE* pNewStatement);
 
 	AACType* TypeCheckFuncDecl(AA_AST_NODE* pDeclNode);
@@ -84,7 +86,7 @@ private:
 
 	AACType* FindType(std::wstring t);
 
-	bool IsTypeMatchingFunction(AAFuncSignature sig, AA_AST_NODE* pCallNode);
+	bool IsTypeMatchingFunction(AAFuncSignature* sig, AA_AST_NODE* pCallNode);
 	bool IsMatchingTypes(AACType* tCompare, AACType* tExpected);
 
 	AAClassSignature* FindCompiledClassOfType(AACType* type);

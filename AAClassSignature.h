@@ -4,12 +4,12 @@
 
 struct AAClassOperatorSignature {
 	std::wstring op;
-	AAFuncSignature method;
+	AAFuncSignature* method;
 	AAClassOperatorSignature() {
 		this->op = L"";
-		this->method = AAFuncSignature();
+		this->method = 0;
 	}
-	AAClassOperatorSignature(std::wstring op, AAFuncSignature method) {
+	AAClassOperatorSignature(std::wstring op, AAFuncSignature* method) {
 		this->op = op;
 		this->method = method;
 	}
@@ -37,7 +37,7 @@ struct AAClassFieldSignature {
 struct AAClassSignature {
 	
 	std::wstring name;
-	aa::set<AAFuncSignature> methods;
+	aa::set<AAFuncSignature*> methods;
 	aa::set<AAClassOperatorSignature> operators;
 	aa::set<AAClassFieldSignature> fields;
 	

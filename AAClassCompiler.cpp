@@ -47,10 +47,10 @@ AAClassSignature* AAClassCompiler::FindClassFromCtor(std::wstring ctorname, aa::
 
 }
 
-AAFuncSignature AAClassCompiler::FindBestCtor(AAClassSignature* pCC) {
+AAFuncSignature* AAClassCompiler::FindBestCtor(AAClassSignature* pCC) {
 
 	// TODO: Fix this so we may have multiple ctors
-	return pCC->methods.FindFirst([](AAFuncSignature& sig) { return sig.isClassCtor; });
+	return pCC->methods.FindFirst([](AAFuncSignature*& sig) { return sig->isClassCtor; });
 
 }
 

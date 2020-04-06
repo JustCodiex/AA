@@ -7,7 +7,7 @@ struct AACNamespace {
 	AACNamespace* parentspace;
 	aa::set<AACNamespace*> childspaces;
 	aa::set<AAClassSignature*> classes;
-	aa::set<AAFuncSignature> functions;
+	aa::set<AAFuncSignature*> functions;
 	aa::set<AACType*> types;
 
 	AACNamespace() {
@@ -42,8 +42,8 @@ struct AACNamespace {
 		}
 	}
 
-	bool AddFunction(AAFuncSignature& sig) {
-		sig.domain = this;
+	bool AddFunction(AAFuncSignature* sig) {
+		sig->domain = this;
 		return this->functions.Add(sig);
 	}
 
@@ -58,6 +58,19 @@ struct AACNamespace {
 
 	bool AddType(AACType* type) {
 		return this->types.Add(type);
+	}
+
+	AACNamespace* TemporaryDomain(aa::set<AACType*> types, aa::set<AAClassSignature*> classes, aa::set<AAFuncSignature*> functions) {
+		
+		// New domain
+		AACNamespace* domain = new AACNamespace;
+		domain->functions = this->functions.Union(functions);
+		domain->classes = this->classes.Union(classes);
+		domain->types = this->types.Union(types);
+		
+		// Return the new domain
+		return domain;
+
 	}
 
 	bool operator==(AACNamespace other) {

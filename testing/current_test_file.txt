@@ -39,7 +39,7 @@ OPERATIONS:
 	[1]	CALL, 1, 1
 	[2]	SETVAR, 0
 	[3]	HALLOC, 0
-	[4]	CALL, 1, 1
+	[4]	CALL, 2, 1
 	[5]	SETVAR, 1
 	[6]	PUSHC, 0
 	[7]	RET, 1

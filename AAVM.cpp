@@ -532,19 +532,22 @@ void AAVM::WriteMsg(const char* msg) {
 
 }
 
-int AAVM::RegisterFunction(AACSingleFunction funcPtr, AAFuncSignature& funcSig, bool isClassMethod) {
+int AAVM::RegisterFunction(AACSingleFunction funcPtr, AAFuncSignature*& funcSig, bool isClassMethod) {
+
+	// Create the new function signature
+	funcSig = new AAFuncSignature;
 
 	// Fetch proc ID
 	int procId = (int)m_cppfunctions.size();
 
 	// Create function signature
-	funcSig.name = funcPtr.name;
-	funcSig.returnType = funcPtr.returnType;
-	funcSig.parameters = funcPtr.params;
-	funcSig.isVMFunc = true;
-	funcSig.isClassMethod = isClassMethod;
-	funcSig.accessModifier = AAAccessModifier::PUBLIC;
-	funcSig.procID = procId;
+	funcSig->name = funcPtr.name;
+	funcSig->returnType = funcPtr.returnType;
+	funcSig->parameters = funcPtr.params;
+	funcSig->isVMFunc = true;
+	funcSig->isClassMethod = isClassMethod;
+	funcSig->accessModifier = AAAccessModifier::PUBLIC;
+	funcSig->procID = procId;
 
 	// Push functions
 	m_cppfunctions.push_back(funcPtr);
@@ -559,7 +562,7 @@ int AAVM::RegisterFunction(AACSingleFunction funcPtr, AAFuncSignature& funcSig, 
 
 int AAVM::RegisterFunction(AACSingleFunction funcPtr) {
 
-	AAFuncSignature dcSig;
+	AAFuncSignature* dcSig;
 	return this->RegisterFunction(funcPtr, dcSig);
 
 }
@@ -578,14 +581,14 @@ AAClassSignature* AAVM::RegisterClass(std::wstring typeName, AACClass cClass) {
 		bool isCtor = func.name == cc->name + L"::.ctor";;
 
 		// Function signature
-		AAFuncSignature sig;
+		AAFuncSignature* sig;
 
 		// Because it's a class method we always push the 'this' identifier -> Note, should not be the case if static (but not implemented yet)
 		func.params.insert(func.params.begin(), AAFuncParam(cc->type, L"this"));
 
 		// Register the funcion and get the VMCall procID
 		this->RegisterFunction(func, sig, true);
-		sig.isClassCtor = true;
+		sig->isClassCtor = true;
 
 		// Add method to class
 		cc->methods.Add(sig);
@@ -601,7 +604,7 @@ AAClassSignature* AAVM::RegisterClass(std::wstring typeName, AACClass cClass) {
 		func.name = cc->name + L"::" + func.name;
 
 		// Function signature
-		AAFuncSignature sig;
+		AAFuncSignature* sig;
 
 		// Because it's a class method we always push the 'this' identifier -> Note, should not be the case if static (but not implemented yet)
 		func.params.insert(func.params.begin(), AAFuncParam(cc->type, L"this"));
@@ -656,8 +659,8 @@ void AAVM::LoadStandardLibrary() {
 void AAVM::FixString(AAClassSignature* strCls) {
 
 	// Fix the concat operation
-	strCls->operators.Apply(0).method.returnType = AACTypeDef::String;
-	strCls->operators.Apply(0).method.parameters[1].type = AACTypeDef::String;
+	strCls->operators.Apply(0).method->returnType = AACTypeDef::String;
+	strCls->operators.Apply(0).method->parameters[1].type = AACTypeDef::String;
 
 }
 

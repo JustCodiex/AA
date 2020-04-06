@@ -18,7 +18,7 @@ AAStaticAnalysis::AAStaticAnalysis(AAC* pCompiler) {
 
 }
 
-void AAStaticAnalysis::Reset(std::vector<AAFuncSignature> funcs, std::vector<AAClassSignature*> classes) {
+void AAStaticAnalysis::Reset(std::vector<AAFuncSignature*> funcs, std::vector<AAClassSignature*> classes) {
 
 	// Copy functions
 	m_preregisteredFunctions.FromVector(funcs);
@@ -304,7 +304,7 @@ AAC_CompileErrorMessage AAStaticAnalysis::FetchStaticDeclerationsFromASTNode(AA_
 		if (COMPILE_OK(err = this->RegisterClass(pNode, cc, domain, senv))) {
 
 			// Add all methods to domain
-			if (!cc->methods.ForAll([domain](AAFuncSignature& sig) { return domain->AddFunction(sig); })) {
+			if (!cc->methods.ForAll([domain](AAFuncSignature*& sig) { return domain->AddFunction(sig); })) {
 				err.errorMsg = "Duplicate method definition found";
 				err.errorSource = pNode->position;
 				err.errorType = 1;
@@ -340,7 +340,7 @@ AAC_CompileErrorMessage AAStaticAnalysis::FetchStaticDeclerationsFromASTNode(AA_
 	} else if (rootType == AA_AST_NODE_TYPE::fundecl) {
 
 		// Get function signature
-		AAFuncSignature func;
+		AAFuncSignature* func;
 		
 		// Register the function (and make sure no compiler error occured)
 		if (COMPILE_OK(err = this->RegisterFunction(pNode, func, domain, senv))) {
@@ -408,16 +408,16 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterClass(AA_AST_NODE* pNode, AACl
 				m_compilerPointer->GetClassCompilerInstance()->RedefineFunDecl(cc->name, pNode->expressions[0]->expressions[i]);
 
 				// Register function
-				AAFuncSignature sig;
+				AAFuncSignature* sig;
 				if (COMPILE_OK(err = this->RegisterFunction(pNode->expressions[0]->expressions[i], sig, domain, senv))) {
 
 					// Update signature data
-					sig.isClassMethod = true;
-					sig.node = pNode->expressions[0]->expressions[i];
-					sig.isClassCtor = sig.name == (cc->name + L"::" + cc->name);
+					sig->isClassMethod = true;
+					sig->node = pNode->expressions[0]->expressions[i];
+					sig->isClassCtor = sig->name == (cc->name + L"::" + cc->name);
 
 					// Update return count in case of a constructor
-					if (sig.isClassCtor) {
+					if (sig->isClassCtor) {
 						pNode->expressions[0]->expressions[i]->tags["returncount"] = 1;
 					}
 
@@ -472,18 +472,21 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterClass(AA_AST_NODE* pNode, AACl
 
 }
 
-AAC_CompileErrorMessage AAStaticAnalysis::RegisterFunction(AA_AST_NODE* pNode, AAFuncSignature& sig, AACNamespace* domain, AAStaticEnvironment& senv) {
+AAC_CompileErrorMessage AAStaticAnalysis::RegisterFunction(AA_AST_NODE* pNode, AAFuncSignature*& sig, AACNamespace* domain, AAStaticEnvironment& senv) {
 
 	// Potential compiler error container
 	AAC_CompileErrorMessage err;
 
+	// Create new function signature
+	sig = new AAFuncSignature;
+
 	// Set basic function data
-	sig.name = pNode->content;
-	sig.returnType = this->GetTypeFromName(pNode->expressions[0]->content, domain, senv);
-	sig.node = pNode;
+	sig->name = pNode->content;
+	sig->returnType = this->GetTypeFromName(pNode->expressions[0]->content, domain, senv);
+	sig->node = pNode;
 
 	// Did the function return the error type?
-	if (sig.returnType == AACType::ErrorType) {
+	if (sig->returnType == AACType::ErrorType) {
 		err.errorMsg = ("Undefined return type '" + string_cast(pNode->expressions[0]->content) + "'").c_str();
 		err.errorSource = pNode->expressions[0]->position;
 		err.errorType = 0;
@@ -505,7 +508,7 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterFunction(AA_AST_NODE* pNode, A
 			return err;
 		}
 
-		sig.parameters.push_back(param);
+		sig->parameters.push_back(param);
 
 	}
 
@@ -513,7 +516,7 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterFunction(AA_AST_NODE* pNode, A
 	pNode->tags["returncount"] = this->GetReturnCount(sig);
 
 	// Get the next procedure ID
-	sig.procID = this->m_compilerPointer->GetNextProcID();
+	sig->procID = this->m_compilerPointer->GetNextProcID();
 
 	// Verify function control structure
 	if (!this->VerifyFunctionControlPath(sig, err)) {
@@ -524,9 +527,9 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterFunction(AA_AST_NODE* pNode, A
 
 }
 
-int AAStaticAnalysis::GetReturnCount(AAFuncSignature funcSig) {
+int AAStaticAnalysis::GetReturnCount(AAFuncSignature* funcSig) {
 
-	if (funcSig.returnType == AACType::Void) {
+	if (funcSig->returnType == AACType::Void) {
 		return 0;
 	} else {
 		return 1;
@@ -534,15 +537,15 @@ int AAStaticAnalysis::GetReturnCount(AAFuncSignature funcSig) {
 
 }
 
-bool AAStaticAnalysis::VerifyFunctionControlPath(AAFuncSignature sig, AAC_CompileErrorMessage& err) {
+bool AAStaticAnalysis::VerifyFunctionControlPath(AAFuncSignature* sig, AAC_CompileErrorMessage& err) {
 
 	// If it's a VM function, this will be handled by the C++ compiler
-	if (sig.isVMFunc) {
+	if (sig->isVMFunc) {
 		return true;
 	}
 
 	// No node to run test on
-	if (sig.node == 0) {
+	if (sig->node == 0) {
 		return false;
 	}
 
@@ -550,7 +553,7 @@ bool AAStaticAnalysis::VerifyFunctionControlPath(AAFuncSignature sig, AAC_Compil
 	int expectedReturncount = this->GetReturnCount(sig);
 
 	// Get the highest return count detected
-	int highestReturncount = this->VerifyFunctionControlPath(sig.node->expressions[2], err);
+	int highestReturncount = this->VerifyFunctionControlPath(sig->node->expressions[2], err);
 
 	// Does the function not return the expected amount?
 	if (expectedReturncount != highestReturncount) {
@@ -566,7 +569,7 @@ bool AAStaticAnalysis::VerifyFunctionControlPath(AAFuncSignature sig, AAC_Compil
 			}
 
 			// Set error source and type
-			err.errorSource = sig.node->position;
+			err.errorSource = sig->node->position;
 			err.errorType = 24;
 
 		}

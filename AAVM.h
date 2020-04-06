@@ -91,7 +91,7 @@ private:
 
 	void WriteMsg(const char* msg);
 
-	int RegisterFunction(AACSingleFunction funcPtr, AAFuncSignature& funcSig, bool isClassMethod = false);
+	int RegisterFunction(AACSingleFunction funcPtr, AAFuncSignature*& funcSig, bool isClassMethod = false);
 
 	void LoadStandardLibrary();
 

@@ -235,11 +235,11 @@ AACType* AATypeChecker::TypeCheckBinaryOperation(AA_AST_NODE* pOpNode, AA_AST_NO
 
 				// Tag the operator node with the procID
 				pOpNode->tags["useCall"] = true;
-				pOpNode->tags["operatorProcID"] = ccop.method.procID;
-				pOpNode->tags["operatorIsVM"] = ccop.method.isVMFunc;
+				pOpNode->tags["operatorProcID"] = ccop.method->procID;
+				pOpNode->tags["operatorIsVM"] = ccop.method->isVMFunc;
 
 				// Return the type of whatever the operator will return
-				return ccop.method.returnType;
+				return ccop.method->returnType;
 
 			} else {
 				AATC_ERROR(
@@ -334,17 +334,17 @@ AACType* AATypeChecker::TypeCheckClassDotFieldAccessorOperation(AA_AST_NODE* pAc
 AACType* AATypeChecker::TypeCheckCallOperation(AA_AST_NODE* pCallNode) {
 
 	// Find the first AAFuncSignature matching our conditions
-	aa::set<AAFuncSignature> sigs = m_senv->availableFunctions.FindAll([pCallNode](AAFuncSignature& sig) { return sig.name == pCallNode->content; });
+	aa::set<AAFuncSignature*> sigs = m_senv->availableFunctions.FindAll([pCallNode](AAFuncSignature*& sig) { return sig->name == pCallNode->content; });
 
 	if (sigs.Size() > 0) {
 
-		AAFuncSignature sig = sigs.FindFirst([this, pCallNode](AAFuncSignature& sig) { return this->IsTypeMatchingFunction(sig, pCallNode); });
+		AAFuncSignature* sig = sigs.FindFirst([this, pCallNode](AAFuncSignature*& sig) { return this->IsTypeMatchingFunction(sig, pCallNode); });
 
-		if (!(sig == AAFuncSignature())) {
+		if (sig != 0) {
 
-			pCallNode->tags["calls"] = (int)sig.procID;
+			pCallNode->tags["calls"] = (int)sig->procID;
 
-			return sig.returnType;
+			return sig->returnType;
 
 		} else {
 
@@ -369,63 +369,88 @@ AACType* AATypeChecker::TypeCheckClassCtorCall(AA_AST_NODE* pCallNode) {
 	// Is there a local statement space defined?
 	if (m_localStatementNamespace) {
 
-		// Class index
-		int cIndex;
+		// The loc type
+		AACType* pLocType = 0;
 
-		// Can we find the class in the namespace?
-		if (m_localStatementNamespace->classes.FindFirstIndex([pCallNode](AAClassSignature*& sig) {
-			return sig->name.compare(pCallNode->content) == 0;
-			}, cIndex)) {
+		// Run standard typecheck using local namespace, if that fails, try with current namespace
+		if ((pLocType = this->TypeCheckCtorAndFindBestMatch(m_localStatementNamespace, pCallNode)) != AACType::ErrorType) {
+			return pLocType;
+		} else {
+			return this->TypeCheckCtorAndFindBestMatch(m_currentnamespace, pCallNode);
+		}
 
-			// Constructor name to look for
-			std::wstring ctorname = pCallNode->content + L"::" + pCallNode->content;
+	} else {
 
-			// All signatures where the function name is matching
-			aa::set<AAFuncSignature> sigs = m_localStatementNamespace->functions.FindAll([ctorname](AAFuncSignature& sig) { return ctorname.compare(sig.name) == 0; });
+		// Create the domain
+		AACNamespace* tempDomain = m_currentnamespace->TemporaryDomain(m_senv->availableTypes, m_senv->availableClasses, m_senv->availableFunctions);
 
-			// Did we find any signatures?
-			if (sigs.Size() > 0) {
+		// Get type
+		AACType* pType = this->TypeCheckCtorAndFindBestMatch(tempDomain, pCallNode);;
 
-				// Get the first type-matching signature
-				AAFuncSignature sig = sigs.FindFirst([this, pCallNode](AAFuncSignature& sig) { return this->IsTypeMatchingFunction(sig, pCallNode); });
+		// Get rid of temporary domain
+		delete tempDomain;
 
-				// Is it valid?
-				if (!(sig == AAFuncSignature())) {
+		// Return found type
+		return pType;
 
-					// Set call ID
-					pCallNode->tags["calls"] = (int)sig.procID;
-					
-					// Return the proper type
-					return sig.returnType;
+	}
 
-				} else {
+	// Return the error type
+	return AACType::ErrorType;
 
-					// Log compile error
-					wprintf(L"Attempt to call undefined function '%ws'\n", pCallNode->content.c_str());
-					return AACType::ErrorType;
+}
 
-				}
+AACType* AATypeChecker::TypeCheckCtorAndFindBestMatch(AACNamespace* pDomain, AA_AST_NODE* pCallNode) {
+
+	// Class index
+	int cIndex;
+
+	// Can we find the class in the namespace?
+	if (pDomain->classes.FindFirstIndex([pCallNode](AAClassSignature*& sig) {
+		return sig->name.compare(pCallNode->content) == 0;
+		}, cIndex)) {
+
+		// Constructor name to look for
+		std::wstring ctorname = pCallNode->content + L"::" + pCallNode->content;
+
+		// All signatures where the function name is matching
+		aa::set<AAFuncSignature*> sigs = pDomain->functions.FindAll([ctorname](AAFuncSignature*& sig) { return ctorname.compare(sig->name) == 0; });
+
+		// Did we find any signatures?
+		if (sigs.Size() > 0) {
+
+			// Get the first type-matching signature
+			AAFuncSignature* sig = sigs.FindFirst([this, pCallNode](AAFuncSignature*& sig) { return this->IsTypeMatchingFunction(sig, pCallNode); });
+
+			// Is it valid?
+			if (sig != 0) {
+
+				// Set call ID
+				pCallNode->tags["calls"] = (int)sig->procID;
+				pCallNode->tags["isVM"] = sig->isVMFunc;
+				pCallNode->tags["args"] = (int)sig->parameters.size();
+
+				// Return the proper type
+				return sig->returnType;
 
 			} else {
 
-				// Log the compile error
+				// Log compile error
 				wprintf(L"Attempt to call undefined function '%ws'\n", pCallNode->content.c_str());
 				return AACType::ErrorType;
 
 			}
+
+		} else {
+
+			// Log the compile error
+			wprintf(L"Attempt to call undefined function '%ws'\n", pCallNode->content.c_str());
+			return AACType::ErrorType;
+
 		}
-		
-		// Error, not able to find the type in the local space ==> does absolutely not exist
-		return AACType::ErrorType;
-
-	} else {
-
-		// Node content should match the ctor class type
-		return this->FindType(pCallNode->content);
-	
 	}
 
-	// Return the error type
+	// Error, not able to find the type in the local space ==> does absolutely not exist
 	return AACType::ErrorType;
 
 }
@@ -514,6 +539,7 @@ AACType* AATypeChecker::TypeCheckUsingOperation(AA_AST_NODE* pUseNode) {
 				AAClassSignature* imported = m_currentnamespace->childspaces.Apply(i1)->classes.Apply(i2);
 				this->m_senv->availableTypes.Add(imported->type);
 				this->m_senv->availableClasses.Add(imported);
+				imported->methods.ForEach([this](AAFuncSignature*& sig) { this->m_senv->availableFunctions.Add(sig); });
 			} else {
 				// throw error
 				wprintf(L"Class '%ws' not found\n", import.c_str());
@@ -619,22 +645,22 @@ AACType* AATypeChecker::FindType(std::wstring t) {
 
 }
 
-bool AATypeChecker::IsTypeMatchingFunction(AAFuncSignature sig, AA_AST_NODE* pCallNode) {
+bool AATypeChecker::IsTypeMatchingFunction(AAFuncSignature* sig, AA_AST_NODE* pCallNode) {
 
 	// Parameter offset
-	size_t paramOffset = sig.isClassMethod ? 1 : 0;
+	size_t paramOffset = sig->isClassMethod ? 1 : 0;
 
 	// Is this the correct function to call?
-	if (pCallNode->expressions.size() == sig.parameters.size() - paramOffset) {
+	if (pCallNode->expressions.size() == sig->parameters.size() - paramOffset) {
 
 		// Flag to make sure the argument types are valid
 		bool isMatchingArgTypes = true;
 
 		// For all params
-		for (size_t j = paramOffset; j < sig.parameters.size(); j++) {
+		for (size_t j = paramOffset; j < sig->parameters.size(); j++) {
 
 			// If they're not a type match, break
-			if (!this->IsMatchingTypes(this->TypeCheckNode(pCallNode->expressions[j - paramOffset]), sig.parameters[j].type)) {
+			if (!this->IsMatchingTypes(this->TypeCheckNode(pCallNode->expressions[j - paramOffset]), sig->parameters[j].type)) {
 				isMatchingArgTypes = false;
 				break;
 			}
@@ -671,7 +697,7 @@ AAClassSignature* AATypeChecker::FindCompiledClassOfType(AACType* type) {
 bool AATypeChecker::FindCompiledClassOperation(AAClassSignature* cc, std::wstring operatorType, AACType* right, AAClassOperatorSignature& op) {
 
 	// Find the first operator matching the condition
-	op = cc->operators.FindFirst([operatorType, right](AAClassOperatorSignature& sig) { return sig.op.compare(operatorType) == 0 && sig.method.parameters[1].type == right; });
+	op = cc->operators.FindFirst([operatorType, right](AAClassOperatorSignature& sig) { return sig.op.compare(operatorType) == 0 && sig.method->parameters[1].type == right; });
 
 	// Return true if the operator is not a default operator
 	return !(op == AAClassOperatorSignature());

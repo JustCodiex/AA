@@ -786,8 +786,23 @@ aa::list<AAC::CompiledAbstractExpression> AAC::HandleCtorCall(AA_AST_NODE* pNode
 
 	aa::list<CompiledAbstractExpression> opList;
 
+	// Getting the two lines below is now done by the typechecker
 	AAClassSignature* cc = m_classCompiler->FindClassFromCtor(pNode->content, staticData.availableClasses.ToList());
-	AAFuncSignature ctor = m_classCompiler->FindBestCtor(cc);
+
+	int procID = -1;
+	if (pNode->HasTag("calls")) {
+		procID = pNode->tags["calls"];
+	}
+
+	int args = 0;
+	if (pNode->HasTag("args")) {
+		args = pNode->tags["args"];
+	}
+
+	bool isVmCll = false;
+	if (pNode->HasTag("isVM")) {
+		isVmCll = pNode->tags["isVM"];
+	}
 
 	CompiledAbstractExpression newCAE;
 	newCAE.argCount = 1;
@@ -801,10 +816,10 @@ aa::list<AAC::CompiledAbstractExpression> AAC::HandleCtorCall(AA_AST_NODE* pNode
 	}
 
 	CompiledAbstractExpression callCAE;
-	callCAE.bc = (ctor.isVMFunc) ? AAByteCode::VMCALL : AAByteCode::CALL;
+	callCAE.bc = (isVmCll) ? AAByteCode::VMCALL : AAByteCode::CALL;
 	callCAE.argCount = 2;
-	callCAE.argValues[0] = ctor.procID;
-	callCAE.argValues[1] = (int)ctor.parameters.size();
+	callCAE.argValues[0] = procID;
+	callCAE.argValues[1] = args;
 
 	opList.Add(callCAE);
 
@@ -955,17 +970,17 @@ int AAC::FindBestFunctionMatch(AAStaticEnvironment staticCheck, AA_AST_NODE* pNo
 	std::wstring funcName = pNode->content;
 
 	for (size_t i = 0; i < staticCheck.availableFunctions.Size(); i++) {
-		AAFuncSignature sig = staticCheck.availableFunctions.Apply(i);
-		if (sig.name.compare(funcName) == 0) {
-			if (pNode->expressions.size() == sig.parameters.size()) {
+		AAFuncSignature* sig = staticCheck.availableFunctions.Apply(i);
+		if (sig->name.compare(funcName) == 0) {
+			if (pNode->expressions.size() == sig->parameters.size()) {
 				bool isMatch = true; //false;
-				for (AAFuncParam p : sig.parameters) {
+				for (AAFuncParam p : sig->parameters) {
 
 				}
 				if (isMatch) {
-					isVMCall = sig.isVMFunc;
-					argCount = (int)sig.parameters.size();
-					return sig.procID;
+					isVMCall = sig->isVMFunc;
+					argCount = (int)sig->parameters.size();
+					return sig->procID;
 				}
 			}
 		}
@@ -1002,12 +1017,12 @@ int AAC::CalcStackSzAfterOperation(AAC::CompiledAbstractExpression op, AAStaticE
 	case AAByteCode::SETFIELD:
 		return -2;
 	case AAByteCode::CALL: {
-		int callc = (staticData.availableFunctions.FindFirst([op](AAFuncSignature& sig) { return sig.isVMFunc == false && sig.procID == op.argValues[0]; }).returnType == AACType::Void) ? 0 : 1;
+		int callc = (staticData.availableFunctions.FindFirst([op](AAFuncSignature*& sig) { return sig->isVMFunc == false && sig->procID == op.argValues[0]; })->returnType == AACType::Void) ? 0 : 1;
 		printf("%i", callc);
 		return -op.argValues[1] + callc;
 	}
 	case AAByteCode::VMCALL:
-		return -op.argValues[1] + (m_preregisteredFunctions[op.argValues[0]].returnType == AACType::Void) ? 0 : 1;
+		return -op.argValues[1] + (m_preregisteredFunctions[op.argValues[0]]->returnType == AACType::Void) ? 0 : 1;
 	case AAByteCode::JMP:
 	case AAByteCode::GETFIELD:
 		return 0;
@@ -1039,6 +1054,6 @@ void AAC::AddVMClass(AAClassSignature* cc) {
 	m_preregisteredClasses.push_back(cc);
 }
 
-void AAC::AddVMFunction(AAFuncSignature sig) {
+void AAC::AddVMFunction(AAFuncSignature* sig) {
 	m_preregisteredFunctions.push_back(sig);
 }

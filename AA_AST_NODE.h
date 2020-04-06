@@ -83,4 +83,5 @@ struct AA_AST_NODE {
 		this->content = content;
 		this->position = pos;
 	}
+	bool HasTag(const char* tag) { return tags.find(tag) != tags.end(); }
 };
