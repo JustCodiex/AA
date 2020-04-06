@@ -16,7 +16,7 @@ bool executeOutput = false; // Should we execute our output
 bool logCompileTime = false; // Should compile time be logged
 bool logExecuteTime = false; // Should execute time be logged
 bool printOutput = true; // Should execution output be logged
-bool pauseOnComplete = true; // Should we pause execution when VM is released?
+bool pauseOnComplete = false; // Should we pause execution when VM is released?
 
 ///////////////////
 // Global Strings
@@ -137,7 +137,7 @@ int wmain(int argc, wchar_t** argv) {
 
     } else {
 
-        wprintf(L"Functionality not implemented!\n");
+        wprintf(L"Functionality not implemented! (Run code without compiling)\n");
 
     }
 

@@ -48,17 +48,53 @@ struct AACType {
 		return !(*this == other);
 	}
 
+	/// <summary>
+	/// Void type (Not a real type)
+	/// </summary>
 	static AACType* Void;
+	
+	/// <summary>
+	/// Null type (Not a real type)
+	/// </summary>
 	static AACType* Null;
+	
+	/// <summary>
+	/// Any type is allowed
+	/// </summary>
 	static AACType* Any;
+	
+	/// <summary>
+	/// Error type - returned when the type is incorrect (Abort ASAP when detected)
+	/// </summary>
 	static AACType* ErrorType;
 	
 };
 
 struct AACTypeDef {
+
+	/// <summary>
+	/// Integer (32-bit AKA 4 byte) primitive type
+	/// </summary>
 	static AACType* Int32;
+
+	/// <summary>
+	/// Boolean type
+	/// </summary>
 	static AACType* Bool;
+
+	/// <summary>
+	/// Float (32-bit AKA 4 byte) primitive type
+	/// </summary>
 	static AACType* Float32;
+
+	/// <summary>
+	/// Unsigned char, 8-bit (1 byte)
+	/// </summary>
 	static AACType* Char;
+
+	/// <summary>
+	/// String type (Definition in AAVM.Cpp)
+	/// </summary>
 	static AACType* String;
+
 };

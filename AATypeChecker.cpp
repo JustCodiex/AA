@@ -101,8 +101,7 @@ AACType* AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 	case AA_AST_NODE_TYPE::typeidentifier: {
 		AACType* t = this->FindType(node->content);
 		if (t == AACType::ErrorType) {
-			wprintf(L"Invalid type identifier '%s'\n", node->content.c_str());
-			break;
+			AATC_ERROR("Invalid type identifier '" + string_cast(node->expressions[0]->content) + "'", node->position);
 		} else {
 			return t;
 		}
@@ -110,8 +109,7 @@ AACType* AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 	case AA_AST_NODE_TYPE::funarg: {
 		AACType* t = this->FindType(node->expressions[0]->content);
 		if (t == AACType::ErrorType) {
-			wprintf(L"Invalid type '%s' in argument!\n", node->content.c_str());
-			break;
+			AATC_ERROR("Invalid type  '" + string_cast(node->expressions[0]->content) + "' in argument", node->position);
 		} else {
 			return t;
 		}
@@ -121,7 +119,7 @@ AACType* AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 	case AA_AST_NODE_TYPE::vardecl: {
 		AACType* t = this->FindType(node->expressions[0]->content);
 		if (t == AACType::ErrorType) {
-			AATC_ERROR("Undefined type " + string_cast(node->expressions[0]->content) + "\n", node->position);
+			AATC_ERROR("Undefined type '" + string_cast(node->expressions[0]->content) + "'", node->position);
 		} else {
 			return t;
 		}
