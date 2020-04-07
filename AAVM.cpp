@@ -651,6 +651,9 @@ AAClassSignature* AAVM::RegisterClass(std::wstring typeName, AACClass cClass) {
 	// Update class size
 	cc->classByteSz = m_compiler->GetClassCompilerInstance()->CalculateMemoryUse(cc);
 
+	// Fix all references to ourselves
+	this->FixSelfReferences(cc);
+
 	// Add the VM class
 	m_compiler->AddVMClass(cc);
 
@@ -664,22 +667,57 @@ void AAVM::LoadStandardLibrary() {
 	// Register println
 	this->RegisterFunction(AACSingleFunction(L"println", &AAConsole_PrintLn, AACType::Void, 1, AAFuncParam(AACType::Any, L"obj")));
 
+	// Create string class
 	AACClass stringClass;
 	stringClass.classMethods.push_back(AACSingleFunction(L"length", &AAString_Length, AACTypeDef::Int32, 0));
-	stringClass.classOperators.push_back(AACClassOperator(L"+", AACSingleFunction(L"concat", &AAString_Concat, AACTypeDef::String, 1, AAFuncParam(AACTypeDef::String, L"_x"))));
+	stringClass.classOperators.push_back(AACClassOperator(L"+", AACSingleFunction(L"concat", &AAString_Concat, AACType::ExportReferenceType, 1, AAFuncParam(AACType::ExportReferenceType, L"_x"))));
 
 	// Register string class and type
 	AAClassSignature* strCls = this->RegisterClass(L"string", stringClass);
 	AACTypeDef::String = strCls->type;
-	this->FixString(strCls);
+
+
 
 }
 
-void AAVM::FixString(AAClassSignature* strCls) {
+void AAVM::FixSelfReferences(AAClassSignature* signature) {
 
-	// Fix the concat operation
-	strCls->operators.Apply(0).method->returnType = AACTypeDef::String;
-	strCls->operators.Apply(0).method->parameters[1].type = AACTypeDef::String;
+	// Fix all method references
+	signature->methods.ForEach(
+		[signature]( AAFuncSignature*& sig ) {
+			if (sig->returnType == AACType::ExportReferenceType) {
+				sig->returnType = signature->type;
+			}
+			for (auto& param : sig->parameters) {
+				if (param.type == AACType::ExportReferenceType) {
+					param.type = signature->type;
+				}
+			}
+		}
+	);
+
+	// Fix all field references
+	signature->fields.ForEach(
+		[signature](AAClassFieldSignature& field) {
+			if (field.type == AACType::ExportReferenceType) {
+				field.type = signature->type;
+			}
+		}
+	);
+
+	// Fix all operator references
+	signature->operators.ForEach(
+		[signature](AAClassOperatorSignature& op) {
+			if (op.method->returnType == AACType::ExportReferenceType) {
+				op.method->returnType = signature->type;
+			}
+			for (auto& param : op.method->parameters) {
+				if (param.type == AACType::ExportReferenceType) {
+					param.type = signature->type;
+				}
+			}
+		}
+	);
 
 }
 

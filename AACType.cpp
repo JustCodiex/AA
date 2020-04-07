@@ -6,6 +6,7 @@ AACType* AACType::Void = new AACType(L"void");
 AACType* AACType::Null = new AACType(L"null");
 AACType* AACType::Any = new AACType(L"Any");
 AACType* AACType::ErrorType = new AACType(L"ErrType");
+AACType* AACType::ExportReferenceType = new AACType(L"ExportReferenceType");
 
 AACType* AACTypeDef::Int32 = new AACType(L"int");
 AACType* AACTypeDef::Bool = new AACType(L"bool");

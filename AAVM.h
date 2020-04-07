@@ -97,13 +97,16 @@ private:
 
 	void WriteMsg(const char* msg);
 
+	// Register function in the internal register
 	int RegisterFunction(AACSingleFunction funcPtr, AAFuncSignature*& funcSig, bool isClassMethod = false);
 
+	// Fix any parts of the class that references self (typewise)
+	void FixSelfReferences(AAClassSignature* signature);
+
+	// Load the standard library
 	void LoadStandardLibrary();
 
 	void StopAndLogCompile();
-
-	void FixString(AAClassSignature* strCls);
 
 private:
 

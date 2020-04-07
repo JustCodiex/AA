@@ -68,6 +68,11 @@ struct AACType {
 	/// </summary>
 	static AACType* ErrorType;
 	
+	/// <summary>
+	/// Type used to mark a reference to self in an exported context (See AAVM.Cpp for use)
+	/// </summary>
+	static AACType* ExportReferenceType;
+
 };
 
 struct AACTypeDef {
