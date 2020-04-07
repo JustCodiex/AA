@@ -33,7 +33,7 @@ void AAC::ResetCompilerInternals() {
 	m_currentProcID = 0;
 
 	// Reset registered types and other static configurations
-	m_staticAnalyser->Reset(m_preregisteredFunctions, m_preregisteredClasses);
+	m_staticAnalyser->Reset(m_preregisteredFunctions, m_preregisteredClasses, m_preregisteredNamespaces);
 
 }
 
@@ -1059,4 +1059,8 @@ void AAC::AddVMClass(AAClassSignature* cc) {
 
 void AAC::AddVMFunction(AAFuncSignature* sig) {
 	m_preregisteredFunctions.push_back(sig);
+}
+
+void AAC::AddVMNamespace(AACNamespace* dom) {
+	m_preregisteredNamespaces.push_back(dom);
 }

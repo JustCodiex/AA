@@ -69,6 +69,7 @@ public:
 	bool IsTopStackLoggingEnabled() { return m_logTopOfStackAfterExec; }
 
 	int RegisterFunction(AACSingleFunction funcPtr);
+	int RegisterFunction(AACSingleFunction funcPtr, AACNamespace* domain);
 	AAClassSignature* RegisterClass(std::wstring typeName, AACClass cClass);
 
 	bool HasCompileError() { return !m_lastCompileResult.success; }
@@ -98,7 +99,7 @@ private:
 	void WriteMsg(const char* msg);
 
 	// Register function in the internal register
-	int RegisterFunction(AACSingleFunction funcPtr, AAFuncSignature*& funcSig, bool isClassMethod = false);
+	int RegisterFunction(AACSingleFunction funcPtr, AAFuncSignature*& funcSig, AACNamespace* domain, bool isClassMethod = false);
 
 	// Fix any parts of the class that references self (typewise)
 	void FixSelfReferences(AAClassSignature* signature);

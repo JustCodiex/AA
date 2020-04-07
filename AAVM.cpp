@@ -3,6 +3,7 @@
 #include "astring.h"
 #include "AAString.h"
 #include "AAConsole.h"
+#include "AAstdiolib.h"
 
 AAVM* AAVM::CreateNewVM(bool logExecuteTime, bool logCompiler, bool logTopStack) {
 	AAVM* vm = new AAVM();
@@ -551,7 +552,16 @@ void AAVM::WriteMsg(const char* msg) {
 
 }
 
-int AAVM::RegisterFunction(AACSingleFunction funcPtr, AAFuncSignature*& funcSig, bool isClassMethod) {
+int AAVM::RegisterFunction(AACSingleFunction funcPtr) {
+	return this->RegisterFunction(funcPtr, NULL);
+}
+
+int AAVM::RegisterFunction(AACSingleFunction funcPtr, AACNamespace* domain) {
+	AAFuncSignature* dcSig;
+	return this->RegisterFunction(funcPtr, dcSig, domain);
+}
+
+int AAVM::RegisterFunction(AACSingleFunction funcPtr, AAFuncSignature*& funcSig, AACNamespace* domain, bool isClassMethod) {
 
 	// Create the new function signature
 	funcSig = new AAFuncSignature;
@@ -571,18 +581,21 @@ int AAVM::RegisterFunction(AACSingleFunction funcPtr, AAFuncSignature*& funcSig,
 	// Push functions
 	m_cppfunctions.push_back(funcPtr);
 
-	// Add VM function so the compiler can recognize it
-	m_compiler->AddVMFunction(funcSig);
+	// Do we have a domain to add this function to?
+	if (domain) {
+		
+		// Add to domain
+		domain->AddFunction(funcSig);
+
+	} else {
+
+		// Add VM function so the compiler can recognize it
+		m_compiler->AddVMFunction(funcSig);
+
+	}
 
 	// Return the proc ID
 	return procId;
-
-}
-
-int AAVM::RegisterFunction(AACSingleFunction funcPtr) {
-
-	AAFuncSignature* dcSig;
-	return this->RegisterFunction(funcPtr, dcSig);
 
 }
 
@@ -591,13 +604,24 @@ AAClassSignature* AAVM::RegisterClass(std::wstring typeName, AACClass cClass) {
 	// Class signature
 	AAClassSignature* cc = new AAClassSignature(typeName);
 
+	// For each class method
 	for (auto& func : cClass.classMethods) {
-		
-		// Update function name
-		func.name = cc->name + L"::" + func.name;
 
 		// Check if it's a constructor
-		bool isCtor = func.name == cc->name + L"::.ctor";;
+		bool isCtor = func.name == L".ctor";
+
+		// Not the constructor
+		if (!isCtor) {
+
+			// Update function name
+			func.name = cc->name + L"::" + func.name;
+
+		} else {
+
+			// Update constructor name
+			func.name = cc->name + L"::" + cc->name;
+
+		}
 
 		// Function signature
 		AAFuncSignature* sig;
@@ -606,7 +630,7 @@ AAClassSignature* AAVM::RegisterClass(std::wstring typeName, AACClass cClass) {
 		func.params.insert(func.params.begin(), AAFuncParam(cc->type, L"this"));
 
 		// Register the funcion and get the VMCall procID
-		this->RegisterFunction(func, sig, true);
+		this->RegisterFunction(func, sig, cClass.domain, true);
 		sig->isClassCtor = true;
 
 		// Add method to class
@@ -614,6 +638,7 @@ AAClassSignature* AAVM::RegisterClass(std::wstring typeName, AACClass cClass) {
 
 	}
 
+	// For each operator overload
 	for (auto& op : cClass.classOperators) {
 
 		// Get the actual function
@@ -629,13 +654,14 @@ AAClassSignature* AAVM::RegisterClass(std::wstring typeName, AACClass cClass) {
 		func.params.insert(func.params.begin(), AAFuncParam(cc->type, L"this"));
 
 		// Register the funcion and get the VMCall procID
-		int procID = this->RegisterFunction(func, sig, true);
+		int procID = this->RegisterFunction(func, sig, cClass.domain, true);
 
 		// Add method to operators list
 		cc->operators.Add(AAClassOperatorSignature(op.operatorToOverride, sig));
 
 	}
 
+	// For each class field
 	for (auto& field : cClass.classFields) {
 
 		AAClassFieldSignature ccf;
@@ -654,8 +680,18 @@ AAClassSignature* AAVM::RegisterClass(std::wstring typeName, AACClass cClass) {
 	// Fix all references to ourselves
 	this->FixSelfReferences(cc);
 
-	// Add the VM class
-	m_compiler->AddVMClass(cc);
+	// Do we have domain to work with?
+	if (cClass.domain) {
+		
+		// Add class to domain
+		cClass.domain->AddClass(cc);
+
+	} else {
+
+		// Add the VM class
+		m_compiler->AddVMClass(cc);
+
+	}
 
 	// Return the class signature
 	return cc;
@@ -676,7 +712,25 @@ void AAVM::LoadStandardLibrary() {
 	AAClassSignature* strCls = this->RegisterClass(L"string", stringClass);
 	AACTypeDef::String = strCls->type;
 
+	// Create standard namespaces
+	AACNamespace* __std = new AACNamespace(L"std", NULL);
+	AACNamespace* __stdio = new AACNamespace(L"io", __std);
 
+	// Create filestream class
+	AACClass stdio_filestream;
+	stdio_filestream.domain = __stdio;
+	stdio_filestream.classMethods.push_back(AACSingleFunction(L".ctor", &AAFileStream_Open, AACType::ExportReferenceType, 1, AAFuncParam(AACTypeDef::String, L"_filepath")));
+
+	// Register the filestream class
+	this->RegisterClass(L"FileStream", stdio_filestream);
+
+	// Add more classes here
+
+	// Register std::io in std
+	__std->childspaces.Add(__stdio);
+
+	// Add namespace
+	this->m_compiler->AddVMNamespace(__std);
 
 }
 

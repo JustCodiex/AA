@@ -18,13 +18,16 @@ AAStaticAnalysis::AAStaticAnalysis(AAC* pCompiler) {
 
 }
 
-void AAStaticAnalysis::Reset(std::vector<AAFuncSignature*> funcs, std::vector<AAClassSignature*> classes) {
+void AAStaticAnalysis::Reset(std::vector<AAFuncSignature*> funcs, std::vector<AAClassSignature*> classes, std::vector<AACNamespace*> namespaces) {
 
 	// Copy functions
 	m_preregisteredFunctions.FromVector(funcs);
 
 	// Copy classes
 	m_preregisteredClasses.FromVector(classes);
+
+	// Copy namespaces
+	m_preregisteredNamespaces.FromVector(namespaces);
 
 }
 
@@ -111,6 +114,9 @@ AAStaticEnvironment AAStaticAnalysis::NewStaticEnvironment(AACNamespace*& global
 
 	// Create the global domain
 	globalDomain = new AACNamespace(L"", NULL);
+
+	// Add preregistered namespaces to the global namespace's subspaces
+	globalDomain->childspaces.UnionWith(m_preregisteredNamespaces);
 
 	// Static environment
 	AAStaticEnvironment env;

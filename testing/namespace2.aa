@@ -1,4 +1,5 @@
-// This namespace is inlined into the full namespace
+// This namespace contains the full name of the namespace inlined into the top namespace decleration
+// kind of like writing "namespace inlined { namespace domain { namespace fullon { <... content ...> } } }"
 namespace inlined::domain::fullon {
     class example {
         example() {

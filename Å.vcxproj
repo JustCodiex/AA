@@ -193,6 +193,7 @@
     <ClInclude Include="AAP.h" />
     <ClInclude Include="AAProgram.h" />
     <ClInclude Include="AAStaticAnalysis.h" />
+    <ClInclude Include="AAstdiolib.h" />
     <ClInclude Include="AAString.h" />
     <ClInclude Include="AATypeChecker.h" />
     <ClInclude Include="AAVal.h" />

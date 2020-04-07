@@ -227,5 +227,8 @@
     <ClInclude Include="AACType.h">
       <Filter>Header Files\compiler</Filter>
     </ClInclude>
+    <ClInclude Include="AAstdiolib.h">
+      <Filter>Header Files\VM\builtin</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

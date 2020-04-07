@@ -493,6 +493,13 @@ void RunNamespaceTests(AAVM* pAAVM, int& s, int& f) {
 		s++;
 	}
 
+	// Nested namespace testing + simple 'using' directive
+	if (!RunFileTest(pAAVM, L"testing\\namespace2.aa", L"out\\bin\\namespace2.aab", L"out\\op\\namespace2.txt", L"42")) {
+		f++;
+	} else {
+		s++;
+	}
+
 }
 
 bool RunRegressionTests(AAVM* pAAVM) {

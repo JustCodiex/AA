@@ -1,6 +1,8 @@
 #pragma once
 #include "AACFunction.h"
 
+struct AACNamespace;
+
 struct AACClassField {
 	std::wstring fieldname;
 	AACType* fieldtype;
@@ -29,5 +31,11 @@ struct AACClass {
 	std::vector<AACClassField> classFields;
 	std::vector<AACSingleFunction> classMethods;
 	std::vector<AACClassOperator> classOperators;
+
+	AACNamespace* domain;
+
+	AACClass() {
+		domain = 0;
+	}
 
 };

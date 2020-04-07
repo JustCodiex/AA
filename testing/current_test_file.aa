@@ -1,40 +1,20 @@
-// This namespace contains the full name of the namespace inlined into the top namespace decleration
-// kind of like writing "namespace inlined { namespace domain { namespace fullon { <... content ...> } } }"
-namespace inlined::domain::fullon {
-    class example {
-        example() {
-            println("Foo");
-        }
-    }
-};
+// Using the io library
+using std::io;
 
-// Here we explicitly write the namespace inside the namespace
-namespace nested {
-    namespace dom {
-        class coo {
-            coo() {
-                println("Fee");
-            }
-        }
-    };
-};
-
-// The "simple" using directive
-using inlined::domain::fullon;
-
-// Our main function
+// The main method
 int main() {
 
-    // Create example class from the inlined::domain::fullon namespace
-    example t = new example();
+    // Create new file stream and write a messsage
+    FileStream fs = new FileStream("test.txt");
+    //fs << "Hello File from Å";
 
-    // Create the coo class from the nested::dom namespace
-    nested::dom::coo c = new coo();
+    // We remember to close it
+    //fs.close();
 
-    // Gotta return something (yay 42)
-    42;
+    // Return 0
+    0;
 
-};
+}
 
-// Call the main function
+// Call main
 main();

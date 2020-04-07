@@ -52,7 +52,7 @@ public:
 	/// </summary>
 	/// <param name="funcs">Preregistered functions</param>
 	/// <param name="classes">Preregistered classes</param>
-	void Reset(std::vector<AAFuncSignature*> funcs, std::vector<AAClassSignature*> classes);
+	void Reset(std::vector<AAFuncSignature*> funcs, std::vector<AAClassSignature*> classes, std::vector<AACNamespace*> namespaces);
 
 	/// <summary>
 	/// 
@@ -92,6 +92,7 @@ private:
 
 	aa::set<AAClassSignature*> m_preregisteredClasses;
 	aa::set<AAFuncSignature*> m_preregisteredFunctions;
+	aa::set<AACNamespace*> m_preregisteredNamespaces;
 
 	AAC* m_compilerPointer;
 

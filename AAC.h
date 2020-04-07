@@ -58,6 +58,7 @@ public:
 
 	void AddVMClass(AAClassSignature* cc);
 	void AddVMFunction(AAFuncSignature* sig);
+	void AddVMNamespace(AACNamespace* dom);
 
 private:
 
@@ -142,6 +143,7 @@ private:
 
 	std::vector<AAClassSignature*> m_preregisteredClasses;
 	std::vector<AAFuncSignature*> m_preregisteredFunctions;
+	std::vector<AACNamespace*> m_preregisteredNamespaces;
 
 	AAClassCompiler* m_classCompiler;
 	AAStaticAnalysis* m_staticAnalyser;
