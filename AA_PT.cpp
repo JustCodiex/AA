@@ -285,7 +285,7 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 		} else {
 			int t = nodeIndex;
 			if (t - 1 >= 0 && nodes[t-1]->nodeType == AA_PT_NODE_TYPE::accessor) {
-				if (t + 1 < nodes.size() && nodes[t + 1]->nodeType == AA_PT_NODE_TYPE::binary_operation && nodes[t + 1]->content.compare(L"=") == 0) {
+				if (t + 1 < (int)nodes.size() && nodes[t + 1]->nodeType == AA_PT_NODE_TYPE::binary_operation && nodes[t + 1]->content.compare(L"=") == 0) {
 					nodeIndex--;
 					nodes[nodeIndex] = this->HandleVariableDecleration(nodes, nodeIndex);
 				} else {
@@ -421,19 +421,27 @@ void AA_PT::HandleKeywordCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex
 
 	} else if (nodes[nodeIndex]->content == L"using") {
 
-		if (nodeIndex + 1 < nodes.size() && nodes[nodeIndex + 1]->nodeType == AA_PT_NODE_TYPE::identifier) {
+		AA_PT_NODE_TYPE useType = nodes[nodeIndex + 1]->nodeType;
+		bool isIdentifier = useType == AA_PT_NODE_TYPE::identifier;
+
+		if (nodeIndex + 1 < nodes.size() && (isIdentifier || useType == AA_PT_NODE_TYPE::accessor)) {
 
 			if (nodeIndex + 2 < nodes.size() && nodes[nodeIndex + 2]->nodeType == AA_PT_NODE_TYPE::keyword) {
 
-				if (nodes[nodeIndex + 2]->content == L"from") {
+				if (nodes[nodeIndex + 2]->content == L"from" && isIdentifier) {
 
-					if (nodeIndex + 3 < nodes.size() && nodes[nodeIndex + 3]->nodeType == AA_PT_NODE_TYPE::identifier) {
+					if (nodeIndex + 3 < nodes.size() && nodes[nodeIndex + 3]->nodeType == AA_PT_NODE_TYPE::identifier || nodes[nodeIndex + 3]->nodeType == AA_PT_NODE_TYPE::accessor) {
 
+						// Make the using statement
 						nodes[nodeIndex]->nodeType = AA_PT_NODE_TYPE::usingstatement;
 						nodes[nodeIndex]->content = nodes[nodeIndex + 1]->content;
+
+						// Make the from statement
 						nodes[nodeIndex + 2]->nodeType = AA_PT_NODE_TYPE::fromstatement;
 						nodes[nodeIndex + 2]->content = nodes[nodeIndex + 3]->content;
+						nodes[nodeIndex + 2]->childNodes.push_back(nodes[nodeIndex + 3]);
 
+						// Add form statement as substatement to the using statement
 						nodes[nodeIndex]->childNodes.push_back(nodes[nodeIndex + 2]);
 
 						nodes.erase(nodes.begin() + nodeIndex + 1, nodes.begin() + nodeIndex + 4);
@@ -452,10 +460,12 @@ void AA_PT::HandleKeywordCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex
 
 			} else {
 
+				// Create using directive and add namespace as child element
 				nodes[nodeIndex]->nodeType = AA_PT_NODE_TYPE::usingstatement;
 				nodes[nodeIndex]->content = nodes[nodeIndex + 1]->content;
+				nodes[nodeIndex]->childNodes.push_back(nodes[nodeIndex + 1]);
 
-				nodes.erase(nodes.begin() + nodeIndex + 1, nodes.begin() + nodeIndex + 2);
+				nodes.erase(nodes.begin() + nodeIndex + 1);
 
 			}
 
@@ -464,8 +474,6 @@ void AA_PT::HandleKeywordCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex
 			nodeIndex = AA_PT_NODE_OUT_OF_BOUNDS_INDEX;
 			return;
 		}
-
-		printf("");
 
 	}
 
@@ -726,11 +734,44 @@ AA_PT_NODE* AA_PT::CreateNamespaceDecl(std::vector<AA_PT_NODE*>& nodes, size_t f
 			return NULL;
 		}
 
+	} else if (from + 1 < nodes.size() && nodes[from + 1]->nodeType == AA_PT_NODE_TYPE::accessor) {
+	
+		if (from + 2 >= nodes.size() || nodes[from + 2]->nodeType != AA_PT_NODE_TYPE::block) {
+			SetError(AA_PT::Error("Expected namespace content", 0, nodes[from]->position));
+			return NULL;
+		}
+
+		AA_PT_NODE* n = nodes[from + 1]->childNodes[0];
+		std::vector<AA_PT_NODE*> subnodes;
+		subnodes.push_back(nodes[from]);
+		subnodes.push_back(n);
+
+		AA_PT_NODE* body = new AA_PT_NODE(n->position);
+		body->nodeType = AA_PT_NODE_TYPE::block;
+
+		AA_PT_NODE* subnamespace = new AA_PT_NODE(n->position);
+		subnamespace->nodeType = AA_PT_NODE_TYPE::keyword;
+		subnamespace->content = L"namespace";
+
+		AA_PT_NODE* spacename = new AA_PT_NODE(n->position);
+		spacename->nodeType = AA_PT_NODE_TYPE::identifier;
+		spacename->content = nodes[from + 1]->childNodes[1]->content;
+
+		body->childNodes.push_back(subnamespace);
+		body->childNodes.push_back(spacename);
+		body->childNodes.push_back(nodes[from + 2]);
+
+		subnodes.push_back(body);
+
+		nodes[from + 2] = this->CreateNamespaceDecl(subnodes, 0);
+		nodes.erase(nodes.begin() + from + 1, nodes.begin() + from + 3);
+
 	} else {
 		SetError(AA_PT::Error("Expected namespace identifier", 0, nodes[from]->position));
 		return NULL;
 	}
 
+	// Return the namespace decleration
 	return nodes[from];
 
 }

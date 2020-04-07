@@ -6,8 +6,8 @@ OPERATIONS:
 	[0]	CALL, 3, 0
 END PROCEDURE;
 
-START PROCEDURE 1 (StringList::StringList):
-CONSTANTS:	[UTF-8, "Hello World..."]
+START PROCEDURE 1 (example::example):
+CONSTANTS:	[UTF-8, "Foo"]
 IDENTIFIERS: 
 	this;
 OPERATIONS: 
@@ -18,8 +18,8 @@ OPERATIONS:
 	[4]	RET, 1
 END PROCEDURE;
 
-START PROCEDURE 2 (StringList::StringList):
-CONSTANTS:	[UTF-8, "Goodbye World"]
+START PROCEDURE 2 (coo::coo):
+CONSTANTS:	[UTF-8, "Fee"]
 IDENTIFIERS: 
 	this;
 OPERATIONS: 
@@ -33,7 +33,7 @@ END PROCEDURE;
 START PROCEDURE 3 (main):
 CONSTANTS:	[I32, 42]
 IDENTIFIERS: 
-	a;	b;
+	t;	c;
 OPERATIONS: 
 	[0]	HALLOC, 0
 	[1]	CALL, 1, 1

@@ -1,26 +1,40 @@
-namespace spaceA {
-    class StringList {
-        StringList() {
-            println("Hello World...");
+// This namespace contains the full name of the namespace inlined into the top namespace decleration
+// kind of like writing "namespace inlined { namespace domain { namespace fullon { <... content ...> } } }"
+namespace inlined::domain::fullon {
+    class example {
+        example() {
+            println("Foo");
         }
     }
-}; // Note the semicolon!
+};
 
-namespace spaceB {
-    class StringList {
-        StringList() {
-            println("Goodbye World");
+// Here we explicitly write the namespace inside the namespace
+namespace nested {
+    namespace dom {
+        class coo {
+            coo() {
+                println("Fee");
+            }
         }
-    }
-}; // Note the semicolon!
+    };
+};
 
-// Whenever we see X (StringList) we're to read it as spaceA::StringList, unless otherwise is specified.
-using StringList from spaceA;
+// The "simple" using directive
+using inlined::domain::fullon;
 
+// Our main function
 int main() {
-    StringList a = new StringList();
-    spaceB::StringList b = new StringList();
-    42;
-}; // Global scope, remember the semicolon! (This is kind of a bug)
 
+    // Create example class from the inlined::domain::fullon namespace
+    example t = new example();
+
+    // Create the coo class from the nested::dom namespace
+    nested::dom::coo c = new coo();
+
+    // Gotta return something (yay 42)
+    42;
+
+};
+
+// Call the main function
 main();

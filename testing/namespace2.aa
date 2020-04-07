@@ -1,28 +1,39 @@
-namespace nested::domain {
+// This namespace is inlined into the full namespace
+namespace inlined::domain::fullon {
     class example {
         example() {
             println("Foo");
         }
     }
-}
+};
 
-namespace next::dom {
-    class coo() {
-        coo() {
-            println("Fee");
+// Here we explicitly write the namespace inside the namespace
+namespace nested {
+    namespace dom {
+        class coo {
+            coo() {
+                println("Fee");
+            }
         }
-    }
-}
+    };
+};
 
-using nested::domain;
+// The "simple" using directive
+using inlined::domain::fullon;
 
+// Our main function
 int main() {
 
+    // Create example class from the inlined::domain::fullon namespace
     example t = new example();
-    next::dom::coo c = new coo();
 
+    // Create the coo class from the nested::dom namespace
+    nested::dom::coo c = new coo();
+
+    // Gotta return something (yay 42)
     42;
 
-}
+};
 
+// Call the main function
 main();

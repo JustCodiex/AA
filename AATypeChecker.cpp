@@ -408,6 +408,9 @@ AACType* AATypeChecker::TypeCheckCtorAndFindBestMatch(AACNamespace* pDomain, AA_
 		return sig->name.compare(pCallNode->content) == 0;
 		}, cIndex)) {
 
+		// Class found
+		AAClassSignature* classSig = pDomain->classes.Apply(cIndex);
+
 		// Constructor name to look for
 		std::wstring ctorname = pCallNode->content + L"::" + pCallNode->content;
 
@@ -427,6 +430,7 @@ AACType* AATypeChecker::TypeCheckCtorAndFindBestMatch(AACNamespace* pDomain, AA_
 				pCallNode->tags["calls"] = (int)sig->procID;
 				pCallNode->tags["isVM"] = sig->isVMFunc;
 				pCallNode->tags["args"] = (int)sig->parameters.size();
+				pCallNode->tags["allocsz"] = (int)classSig->classByteSz;
 
 				// Return the proper type
 				return sig->returnType;
@@ -524,27 +528,39 @@ AACType* AATypeChecker::TypeCheckUsingOperation(AA_AST_NODE* pUseNode) {
 	switch (pUseNode->type) {
 	case AA_AST_NODE_TYPE::usingstatement: {
 
+		std::wstring from = this->FlattenNamespacePath(pUseNode->expressions[0]);
+		AACNamespace* domain = this->FindNamespaceFromFlattenedPath(m_currentnamespace, from);
+
+		if (domain != NULL) {
+
+			this->m_senv->availableClasses.UnionWith(domain->classes);
+			this->m_senv->availableTypes.UnionWith(domain->types);
+			this->m_senv->availableFunctions.UnionWith(domain->functions);
+
+		} else {
+			AATC_ERROR("Undefined namespace '" + string_cast(from) + "' in using directive", pUseNode->position);
+		}
+
 		break;
 	}
 	case AA_AST_NODE_TYPE::usingspecificstatement: {
+		
 		std::wstring import = pUseNode->content;
-		std::wstring from = pUseNode->expressions[0]->content;
-		auto findlambda = []() {};
+		std::wstring from = this->FlattenNamespacePath(pUseNode->expressions[0]->expressions[0]);
+		AACNamespace* domain = this->FindNamespaceFromFlattenedPath(m_currentnamespace, from);
+		
 		int i1;
-		int i2;
-		if (m_currentnamespace->childspaces.FindFirstIndex([from](AACNamespace*& domain) { return domain->name.compare(from) == 0; }, i1)) {
-			if (m_currentnamespace->childspaces.Apply(i1)->classes.FindFirstIndex([import](AAClassSignature*& sig) { return sig->name.compare(import) == 0; }, i2)) {
-				AAClassSignature* imported = m_currentnamespace->childspaces.Apply(i1)->classes.Apply(i2);
+		if (domain != NULL) {
+			if (domain->classes.FindFirstIndex([import](AAClassSignature*& sig) { return sig->name.compare(import) == 0; }, i1)) {
+				AAClassSignature* imported = domain->classes.Apply(i1);
 				this->m_senv->availableTypes.Add(imported->type);
 				this->m_senv->availableClasses.Add(imported);
 				imported->methods.ForEach([this](AAFuncSignature*& sig) { this->m_senv->availableFunctions.Add(sig); });
 			} else {
-				// throw error
-				wprintf(L"Class '%ws' not found\n", import.c_str());
+				AATC_ERROR("Undefined class '" + string_cast(import) + "' in namespace '" + string_cast(from) + "'", pUseNode->position);
 			}
 		} else {
-			// throw error
-			printf("Namespace '%ws' not found\n", from.c_str());
+			AATC_ERROR("Undefined namespace '" + string_cast(from) + "' in using directive", pUseNode->position);
 		}
 		break;
 	}
@@ -557,18 +573,33 @@ AACType* AATypeChecker::TypeCheckUsingOperation(AA_AST_NODE* pUseNode) {
 
 AACType* AATypeChecker::TypeCheckMemberAccessorOperation(AA_AST_NODE* pAccessorNode, AA_AST_NODE* left, AA_AST_NODE* right) {
 
-	int i1;
-	if (m_currentnamespace->childspaces.FindFirstIndex([left](AACNamespace*& domain) { return left->content.compare(domain->name) == 0; }, i1)) {
-		int i2;
-		if (m_currentnamespace->childspaces.Apply(i1)->classes.FindFirstIndex([right](AAClassSignature*& sig) { return right->content.compare(sig->name) == 0; }, i2)) {
-			m_localStatementNamespace = m_currentnamespace->childspaces.Apply(i1);
-			return m_localStatementNamespace->classes.Apply(i2)->type;
-		} else {
-			AATC_ERROR("Member not found '" + string_cast(right->content) + "'", pAccessorNode->position);
+	// Attempt 1: Find in namespace
+	{
+
+		// Get the flattened name and get the namespace from that
+		std::wstring flattened = this->FlattenNamespacePath(left);
+		AACNamespace* domain = this->FindNamespaceFromFlattenedPath(m_currentnamespace, flattened);
+
+		// Make sure we got it, otherwise we failed this attempt
+		if (domain != NULL) {
+
+			// Attempt 1.1: Find class
+			int classID;
+			if (domain->classes.FindFirstIndex([right](AAClassSignature*& sig) { return right->content.compare(sig->name) == 0; }, classID)) {
+
+				// Update the local namespace
+				m_localStatementNamespace = domain;
+
+				// Return type
+				return domain->classes.Apply(classID)->type;
+
+			}
+
 		}
+
 	}
 
-	// TODO: Check classes
+	// TODO: Check classes (attempt 2)
 
 	return AACType::ErrorType;
 
@@ -699,5 +730,44 @@ bool AATypeChecker::FindCompiledClassOperation(AAClassSignature* cc, std::wstrin
 
 	// Return true if the operator is not a default operator
 	return !(op == AAClassOperatorSignature());
+
+}
+
+std::wstring AATypeChecker::FlattenNamespacePath(AA_AST_NODE* pNode) {
+
+	if (pNode->type == AA_AST_NODE_TYPE::memberaccess) {
+		return this->FlattenNamespacePath(pNode->expressions[0]) + L"::" + this->FlattenNamespacePath(pNode->expressions[1]);
+	} else {
+		return pNode->content;
+	}
+
+}
+
+AACNamespace* AATypeChecker::FindNamespaceFromFlattenedPath(AACNamespace* root, std::wstring path) {
+
+	size_t pos;
+	if ((pos = path.find(L"::")) != std::wstring::npos) {
+
+		std::wstring name = path.substr(0, pos);
+		std::wstring subpath = path.substr(pos + 2);
+
+		int i;
+		if (root->childspaces.FindFirstIndex([name](AACNamespace*& domain) { return domain->name.compare(name) == 0; }, i)) {
+			return this->FindNamespaceFromFlattenedPath(root->childspaces.Apply(i), subpath);
+		} else {
+			return NULL;
+		}
+
+	} else {
+
+
+		int i;
+		if (root->childspaces.FindFirstIndex([path](AACNamespace*& domain) { return domain->name.compare(path) == 0; }, i)) {
+			return root->childspaces.Apply(i);
+		} else {
+			return NULL;
+		}
+
+	}
 
 }

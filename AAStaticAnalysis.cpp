@@ -528,13 +528,7 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterFunction(AA_AST_NODE* pNode, A
 }
 
 int AAStaticAnalysis::GetReturnCount(AAFuncSignature* funcSig) {
-
-	if (funcSig->returnType == AACType::Void) {
-		return 0;
-	} else {
-		return 1;
-	}
-
+	return (funcSig->returnType == AACType::Void) ? 0 : 1;
 }
 
 bool AAStaticAnalysis::VerifyFunctionControlPath(AAFuncSignature* sig, AAC_CompileErrorMessage& err) {

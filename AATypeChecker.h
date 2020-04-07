@@ -92,6 +92,9 @@ private:
 	AAClassSignature* FindCompiledClassOfType(AACType* type);
 	bool FindCompiledClassOperation(AAClassSignature* cc, std::wstring operatorType, AACType* right, AAClassOperatorSignature& op);
 
+	std::wstring FlattenNamespacePath(AA_AST_NODE* pNode);
+	AACNamespace* FindNamespaceFromFlattenedPath(AACNamespace* root, std::wstring path);
+
 	// Sets the last error if not set
 	void SetError(AATypeChecker::Error err) { if (!m_hasEnyErr) { m_errMsg = err; m_hasEnyErr = true; } }
 

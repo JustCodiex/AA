@@ -784,10 +784,8 @@ aa::list<AAC::CompiledAbstractExpression> AAC::HandleStackPush(CompiledEnviornme
 
 aa::list<AAC::CompiledAbstractExpression> AAC::HandleCtorCall(AA_AST_NODE* pNode, CompiledEnviornmentTable& ctable, AAStaticEnvironment staticData) {
 
+	// List containing the operations generated
 	aa::list<CompiledAbstractExpression> opList;
-
-	// Getting the two lines below is now done by the typechecker
-	AAClassSignature* cc = m_classCompiler->FindClassFromCtor(pNode->content, staticData.availableClasses.ToList());
 
 	int procID = -1;
 	if (pNode->HasTag("calls")) {
@@ -804,9 +802,14 @@ aa::list<AAC::CompiledAbstractExpression> AAC::HandleCtorCall(AA_AST_NODE* pNode
 		isVmCll = pNode->tags["isVM"];
 	}
 
+	size_t allocSize = 0;
+	if (pNode->HasTag("allocsz")) {
+		allocSize = (size_t)pNode->tags["allocsz"]; // Hopefully, a temporary solution
+	}
+
 	CompiledAbstractExpression newCAE;
 	newCAE.argCount = 1;
-	newCAE.argValues[0] = cc->classByteSz;
+	newCAE.argValues[0] = allocSize;
 	newCAE.bc = AAByteCode::HALLOC;
 
 	opList.Add(newCAE);

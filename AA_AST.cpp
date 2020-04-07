@@ -201,12 +201,19 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 		return namespacedeclNode;
 	}
 	case AA_PT_NODE_TYPE::usingstatement: {
-		if (pNode->childNodes.size() == 0) {
-			return new AA_AST_NODE(pNode->content, AA_AST_NODE_TYPE::usingstatement, pNode->position);
-		} else {
+		if (pNode->childNodes.size() == 1 && pNode->childNodes[0]->nodeType != AA_PT_NODE_TYPE::fromstatement) {
+			AA_AST_NODE* useNode = new AA_AST_NODE(pNode->content, AA_AST_NODE_TYPE::usingstatement, pNode->position);
+			useNode->expressions.push_back(this->AbstractNode(pNode->childNodes[0])); // Actual name of namespace to use from (incase it's an accessor)
+			return useNode;
+		} else if (pNode->childNodes.size() == 1 && pNode->childNodes[0]->nodeType == AA_PT_NODE_TYPE::fromstatement) {
 			AA_AST_NODE* usefromNode = new AA_AST_NODE(pNode->content, AA_AST_NODE_TYPE::usingspecificstatement, pNode->position);
-			usefromNode->expressions.push_back(new AA_AST_NODE(pNode->childNodes[0]->content, AA_AST_NODE_TYPE::name_space, pNode->position));
+			AA_AST_NODE* fromNode = new AA_AST_NODE(pNode->childNodes[0]->content, AA_AST_NODE_TYPE::name_space, pNode->position);
+			fromNode->expressions.push_back(this->AbstractNode(pNode->childNodes[0]->childNodes[0])); // Add actual name of namespace to import from
+			usefromNode->expressions.push_back(fromNode);
 			return usefromNode;
+		} else {
+			throw std::exception("FIX THIS!");
+			break;
 		}
 	}
 	case AA_PT_NODE_TYPE::intliteral:
