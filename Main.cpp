@@ -144,6 +144,8 @@ int wmain(int argc, wchar_t** argv) {
     // Run regression tests
     if (enableRegTests) {
         if (!RunRegressionTests(VM)) {
+            wprintf(L"One or more regression tests failed!\n");
+            system("pause");
             return -1;
         }
     }
@@ -155,7 +157,7 @@ int wmain(int argc, wchar_t** argv) {
     if (pauseOnComplete) {
 
         // Allow user to see output
-        system("pause");
+        system("pause"); // Todo: Make cross-platform
 
     }
 

@@ -71,6 +71,12 @@ public:
 	int RegisterFunction(AACSingleFunction funcPtr);
 	AAClassSignature* RegisterClass(std::wstring typeName, AACClass cClass);
 
+	bool HasCompileError() { return !m_lastCompileResult.success; }
+	bool HasRuntimeError() { return m_hasRuntimeError; }
+
+	AAC_CompileErrorMessage GetCompileError() { return m_lastCompileResult.firstMsg; }
+	AAVM_RuntimeError GetRuntimeError() { return m_lastRuntimeError; }
+
 	static AAVM* CreateNewVM(bool logExecuteTime, bool logCompiler, bool logTopStack);
 
 private:
@@ -111,6 +117,11 @@ private:
 	bool m_logTopOfStackAfterExec;
 
 	std::vector<AACSingleFunction> m_cppfunctions;
+
+	bool m_hasRuntimeError;
+	AAVM_RuntimeError m_lastRuntimeError;
+
+	AAC_CompileResult m_lastCompileResult;
 
 	clock_t m_startCompile;
 

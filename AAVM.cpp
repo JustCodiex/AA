@@ -30,6 +30,9 @@ AAVM::AAVM() {
 	m_logCompileMessages = false;
 	m_logExecTime = false;
 
+	// Nothing has been run yet, thus we couldn't have a runtime error
+	m_hasRuntimeError = false;
+
 }
 
 void AAVM::Release() {
@@ -138,6 +141,9 @@ AAVal AAVM::CompileAndRun(AAP_ParseResult result, std::wstring binaryoutputfile,
 			// Cleanup trees
 			m_parser->ClearTrees(result.result);
 
+			// Update last compile result
+			m_lastCompileResult = compileResult;
+
 			// Execute the bytecode
 			return this->Execute(compileResult.result);
 
@@ -186,6 +192,9 @@ AAVal AAVM::Execute(unsigned char* bytes, unsigned long long len) {
 }
 
 AAVal AAVM::Run(AAProgram* pProg) {
+
+	// Clear last runtime flag
+	m_hasRuntimeError = false;
 
 	// Get entry point
 	int entryPoint = pProg->GetEntryPoint();
@@ -487,6 +496,10 @@ void AAVM::WriteCompilerError(AAC_CompileErrorMessage errMsg) {
 
 	}
 
+	// Update result
+	this->m_lastCompileResult.success = false;
+	this->m_lastCompileResult.firstMsg = errMsg;
+
 }
 
 void AAVM::WriteSyntaxError(AAP_SyntaxErrorMessage errMsg) {
@@ -517,6 +530,12 @@ void AAVM::WriteRuntimeError(AAVM_RuntimeError err) {
 		this->WriteMsg(runtimeErrMsg.c_str());
 
 	}
+
+	// Update runtime error flag
+	m_hasRuntimeError = true;
+
+	// Set last runtime error
+	m_lastRuntimeError = err;
 
 }
 

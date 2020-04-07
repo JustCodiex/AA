@@ -1,0 +1,28 @@
+namespace nested::domain {
+    class example {
+        example() {
+            println("Foo");
+        }
+    }
+}
+
+namespace next::dom {
+    class coo() {
+        coo() {
+            println("Fee");
+        }
+    }
+}
+
+using nested::domain;
+
+int main() {
+
+    example t = new example();
+    next::dom::coo c = new coo();
+
+    42;
+
+}
+
+main();
