@@ -52,6 +52,8 @@ enum class AAByteCode : unsigned char {
 	THROW, // ---
 	BRK, // (Break, 0 args)
 
+	POP, // (Pops top element of stack, 0 arguments)
+
 	CASTI2F, // i32 => f32
 	CASTF2I, // f32 => i32
 	CASTS2I, // i16 => f32

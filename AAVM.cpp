@@ -323,8 +323,25 @@ AAVal AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 				args.Push(stack.Pop());
 			}
 
-			// Call the native function
+			// Call the native function (The native function is also responsible for handling the return
 			this->m_cppfunctions[callProc].fPtr(this, args, stack);
+
+			// Did the call cause a runtime error?
+			if (this->m_hasRuntimeError) {
+				
+				// Update runtime environment
+				m_lastRuntimeError.errEnv = execp;
+
+				// Update callstack
+				m_lastRuntimeError.callStack = callstack;
+
+				// Write error
+				this->WriteRuntimeError(m_lastRuntimeError); 
+				
+				// Stop execution
+				return AAVal::Null;
+
+			}
 
 			// Goto next cmd
 			AAVM_OPI++;
@@ -414,6 +431,9 @@ AAVal AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 			AAVM_OPI++;
 			break;
 		}
+		case AAByteCode::POP:
+			stack.Pop();
+			break;
 		case AAByteCode::NOP:
 		default:
 			AAVM_OPI++;
@@ -537,6 +557,16 @@ void AAVM::WriteRuntimeError(AAVM_RuntimeError err) {
 
 	// Set last runtime error
 	m_lastRuntimeError = err;
+
+}
+
+void AAVM::ThrowExternalError(AAVM_RuntimeError externalErr) {
+
+	// Set the runtime error flag
+	this->m_hasRuntimeError = true;
+
+	// Update last runtime error
+	this->m_lastRuntimeError = externalErr;
 
 }
 
@@ -720,6 +750,9 @@ void AAVM::LoadStandardLibrary() {
 	AACClass stdio_filestream;
 	stdio_filestream.domain = __stdio;
 	stdio_filestream.classMethods.push_back(AACSingleFunction(L".ctor", &AAFileStream_Open, AACType::ExportReferenceType, 1, AAFuncParam(AACTypeDef::String, L"_filepath")));
+	stdio_filestream.classMethods.push_back(AACSingleFunction(L"close", &AAFileStream_Close, AACType::Void, 0));
+	stdio_filestream.classOperators.push_back(AACClassOperator(L"<<", AACSingleFunction(L"writetofile", &AAFileStream_Write, AACType::ExportReferenceType, 1, AAFuncParam(AACType::Any, L"_content"))));
+	stdio_filestream.classFields.push_back(AACClassField(AACTypeDef::Int32, L"_fptr"));
 
 	// Register the filestream class
 	this->RegisterClass(L"FileStream", stdio_filestream);

@@ -8,6 +8,7 @@ enum class AALiteralType : unsigned char {
 	Float,
 	Boolean,
 	Null,
+	IntPtr,
 };
 
 struct AA_NullLiteral {};
@@ -108,6 +109,22 @@ struct AA_BoolLiteral {
 	}
 };
 
+struct AA_IntPtr {
+	void* ptr;
+	AA_IntPtr(void* ptr) {
+		this->ptr = ptr;
+	}
+	AA_IntPtr() {
+		this->ptr = 0;
+	}
+	bool operator==(AA_IntPtr b) {
+		return this->ptr == b.ptr;
+	}
+	bool operator!=(AA_IntPtr b) {
+		return this->ptr != b.ptr;
+	}
+};
+
 union AA_AnyLiteral {
 	AA_IntLiteral i;
 	AA_BoolLiteral b;
@@ -115,6 +132,7 @@ union AA_AnyLiteral {
 	AA_FloatLiteral f;
 	AA_NullLiteral n;
 	AA_CharLiteral c;
+	AA_IntPtr ptr;
 	AA_AnyLiteral() {
 		memset(this, 0, sizeof(AA_AnyLiteral));
 	}

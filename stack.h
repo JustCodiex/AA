@@ -28,6 +28,10 @@ namespace aa {
 			return m_len;
 		}
 
+		void Clear() {
+			m_stack.clear();
+		}
+
 	private:
 
 		std::vector<T> m_stack;

@@ -20,6 +20,11 @@ struct AAVM_RuntimeError {
 		this->errName = 0;
 		this->errEnv = AARuntimeEnvironment();
 	}
+	AAVM_RuntimeError(const char* eType, const char* eMsg) {
+		this->errName = eType;
+		this->errMsg = eMsg;
+		this->errEnv = AARuntimeEnvironment();
+	}
 	AAVM_RuntimeError(const char* eType, const char* eMsg, AARuntimeEnvironment env, aa::stack<AARuntimeEnvironment> cstack) {
 		this->errName = eType;
 		this->errMsg = eMsg;
@@ -77,6 +82,8 @@ public:
 
 	AAC_CompileErrorMessage GetCompileError() { return m_lastCompileResult.firstMsg; }
 	AAVM_RuntimeError GetRuntimeError() { return m_lastRuntimeError; }
+
+	void ThrowExternalError(AAVM_RuntimeError externalErr);
 
 	static AAVM* CreateNewVM(bool logExecuteTime, bool logCompiler, bool logTopStack);
 

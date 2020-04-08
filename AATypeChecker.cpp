@@ -725,8 +725,15 @@ AAClassSignature* AATypeChecker::FindCompiledClassOfType(AACType* type) {
 
 bool AATypeChecker::FindCompiledClassOperation(AAClassSignature* cc, std::wstring operatorType, AACType* right, AAClassOperatorSignature& op) {
 
-	// Find the first operator matching the condition
-	op = cc->operators.FindFirst([operatorType, right](AAClassOperatorSignature& sig) { return sig.op.compare(operatorType) == 0 && sig.method->parameters[1].type == right; });
+	// Try and find the operator
+	try {
+
+		// Find the first operator matching the condition
+		op = cc->operators.FindFirst([operatorType, right, this](AAClassOperatorSignature& sig) { return sig.op.compare(operatorType) == 0 && IsMatchingTypes(right, sig.method->parameters[1].type); });
+
+	} catch (std::exception exec) {
+		return false;
+	}
 
 	// Return true if the operator is not a default operator
 	return !(op == AAClassOperatorSignature());

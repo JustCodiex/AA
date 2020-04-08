@@ -294,6 +294,26 @@ void AALexer::Join(std::vector<AALexicalResult>& results) {
 
 					results.erase(results.begin() + i + 1, results.begin() + i + 3);
 
+				} else if (i + 3 < results.size() && results[i + 3].content == L"'") {
+					if (results[i + 1].content == L"\\") {
+
+						wchar_t other = results[i + 2].content[0];
+
+						if (other == 't') {
+							results[i].content = L"\t";
+						} else if (other == 'n') {
+							results[i].content = L"\n";
+						} // Add more cases here
+						else {
+							wprintf(L"Invalid escape sequence detected!");
+						}
+
+						results[i].token = AAToken::charlit;
+						results.erase(results.begin() + i + 1, results.begin() + i + 4);
+
+					} else {
+						wprintf(L"Invalid char literal detected!");
+					}
 				} else {
 					wprintf(L"Invalid char literal detected!");
 				}
@@ -379,6 +399,10 @@ bool AALexer::IsValidJointOperator(std::wstring ws) {
 	} else if (ws == L"!=") {
 		return true;
 	} else if (ws == L"::") {
+		return true;
+	} else if (ws == L"<<") {
+		return true;
+	} else if (ws == L">>") {
 		return true;
 	} else {
 		return false;
