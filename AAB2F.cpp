@@ -128,6 +128,9 @@ namespace aa {
 		case AAByteCode::VMCALL:
 			output = L"VMCALL";
 			break;
+		case AAByteCode::POP:
+			output = L"POP";
+			break;
 		default:
 			break;
 		}
@@ -167,7 +170,13 @@ namespace aa {
 		case AALiteralType::Boolean:
 			return (l.lit.b.val == true)?L"T":L"F";
 		case AALiteralType::Char:
-			return std::wstring(1, l.lit.c.val);
+			if (l.lit.c.val == '\n') {
+				return L"\\n";
+			} else if (l.lit.c.val == '\t') {
+				return L"\\t";
+			} else {
+				return std::wstring(1, l.lit.c.val);
+			}
 		case AALiteralType::Null:
 			return L"";
 		default:

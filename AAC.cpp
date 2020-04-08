@@ -181,16 +181,16 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileAST(AA_AST_NODE* pNode, Co
 		executionStack.Add(CompileUnaryOperation(pNode, cTable, staticData));
 		break;
 	}
+	case AA_AST_NODE_TYPE::funcbody:
 	case AA_AST_NODE_TYPE::block: {
 		for (size_t i = 0; i < pNode->expressions.size(); i++) {
 			executionStack.Add(this->CompileAST(pNode->expressions[i], cTable, staticData));
+			if (i < pNode->expressions.size() - 1) {
+				if (pNode->expressions[i]->type == AA_AST_NODE_TYPE::binop && pNode->expressions[i]->content != L"=") {
+					executionStack.Add(CompiledAbstractExpression(AAByteCode::POP, 0, 0));
+				}
+			}
 		}
-		break;
-	}
-	case AA_AST_NODE_TYPE::funcbody: {
-		for (size_t i = 0; i < pNode->expressions.size(); i++) {			
-			executionStack.Add(this->CompileAST(pNode->expressions[i], cTable, staticData));
-		}		
 		break;
 	}
 	case AA_AST_NODE_TYPE::fundecl: {

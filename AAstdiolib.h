@@ -5,7 +5,7 @@
 
 #pragma region io
 
-#include <iostream>
+#include "AAFileStream.h"
 
 #pragma region filestream 
 
@@ -20,7 +20,8 @@ void AAFileStream_Open(AAVM* pAAVm, aa::stack<AAVal> args, aa::stack<AAVal>& sta
 	self.obj->values[0].litVal.lit.ptr.ptr = 0;
 
 	// Open file
-	FILE* fptr = _wfopen(argl.Last().litVal.lit.s.val, L"w");
+	AAFileStream* fptr = new AAFileStream();
+	fptr->OpenWrite(argl.Last().litVal.lit.s.val);
 
 	// Did we manage to open the file?
 	if (fptr) {
@@ -51,7 +52,7 @@ void AAFileStream_Close(AAVM* pAAVm, aa::stack<AAVal> args, aa::stack<AAVal>& st
 	AAVal self = argl.First();
 
 	// Close the file
-	int r = fclose((FILE*)self.obj->values[0].litVal.lit.ptr.ptr);
+	int r = ((AAFileStream*)self.obj->values[0].litVal.lit.ptr.ptr)->CloseStream();
 
 	// Did we somehow fail to close?
 	if (r != 0) {
@@ -75,16 +76,13 @@ void AAFileStream_Write(AAVM* pAAVm, aa::stack<AAVal> args, aa::stack<AAVal>& st
 	AAVal self = argl.First();
 
 	// Get the file pointer
-	FILE* fPtr = (FILE*)self.obj->values[0].litVal.lit.ptr.ptr;
+	AAFileStream* fPtr = (AAFileStream*)self.obj->values[0].litVal.lit.ptr.ptr;
 
 	// Make sure the file is valid
 	if (fPtr) {
 
-		// Convert to string
-		std::string s = string_cast(argl.Last().ToString().c_str());
-
 		// Write msg
-		fwrite(s.c_str(), sizeof(char), s.length(), fPtr);
+		fPtr->WriteString(argl.Last().ToString());
 
 		// Push ourselves back onto the stack
 		stack.Push(self);

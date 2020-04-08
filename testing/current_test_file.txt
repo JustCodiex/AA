@@ -7,8 +7,7 @@ OPERATIONS:
 END PROCEDURE;
 
 START PROCEDURE 1 (main):
-CONSTANTS:	[UTF-8, "test.txt"]	[UTF-8, "Hello File from Å"]	[C, 
-]	[UTF-8, "Goodbye from Å"]	[I32, 0]
+CONSTANTS:	[UTF-8, "test.txt"]	[UTF-8, "Hello File from Å"]	[C, \n]	[UTF-8, "Goodbye from Å"]	[I32, 0]
 IDENTIFIERS: 
 	fs;
 OPERATIONS: 
@@ -19,15 +18,18 @@ OPERATIONS:
 	[4]	GETVAR, 0
 	[5]	PUSHC, 1
 	[6]	VMCALL, 5, 2
-	[7]	GETVAR, 0
-	[8]	PUSHC, 2
-	[9]	VMCALL, 5, 2
-	[10]	GETVAR, 0
-	[11]	PUSHC, 3
-	[12]	VMCALL, 5, 2
-	[13]	GETVAR, 0
-	[14]	VMCALL, 4, 1
-	[15]	PUSHC, 4
-	[16]	RET, 1
+	[7]	POP
+	[8]	GETVAR, 0
+	[9]	PUSHC, 2
+	[10]	VMCALL, 5, 2
+	[11]	POP
+	[12]	GETVAR, 0
+	[13]	PUSHC, 3
+	[14]	VMCALL, 5, 2
+	[15]	POP
+	[16]	GETVAR, 0
+	[17]	VMCALL, 4, 1
+	[18]	PUSHC, 4
+	[19]	RET, 1
 END PROCEDURE;
 

@@ -55,6 +55,18 @@
     <Filter Include="Source Files\VM\builtin">
       <UniqueIdentifier>{603a04d6-da5e-4f17-a455-a2d85c02c30f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\VM\builtin\std">
+      <UniqueIdentifier>{b040ad27-a03e-464d-8064-bbb65b546320}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\VM\builtin\std\io">
+      <UniqueIdentifier>{23154147-0fd1-4807-9cc6-34d2fd45a059}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\VM\builtin\std">
+      <UniqueIdentifier>{2a50334e-94bc-41e4-a4dc-bffdf277bb78}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\VM\builtin\std\io">
+      <UniqueIdentifier>{d7ce23a5-e779-4e76-bf78-1334c8e5f8fb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -113,6 +125,9 @@
     </ClCompile>
     <ClCompile Include="AACType.cpp">
       <Filter>Source Files\compiler</Filter>
+    </ClCompile>
+    <ClCompile Include="AAFileStream.cpp">
+      <Filter>Source Files\VM\builtin\std\io</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -229,6 +244,9 @@
     </ClInclude>
     <ClInclude Include="AAstdiolib.h">
       <Filter>Header Files\VM\builtin</Filter>
+    </ClInclude>
+    <ClInclude Include="AAFileStream.h">
+      <Filter>Header Files\VM\builtin\std\io</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

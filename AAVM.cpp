@@ -432,7 +432,10 @@ AAVal AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 			break;
 		}
 		case AAByteCode::POP:
-			stack.Pop();
+			if (stack.Size() > 0) {
+				stack.Pop();
+			}
+			AAVM_OPI++;
 			break;
 		case AAByteCode::NOP:
 		default:
@@ -752,7 +755,7 @@ void AAVM::LoadStandardLibrary() {
 	stdio_filestream.classMethods.push_back(AACSingleFunction(L".ctor", &AAFileStream_Open, AACType::ExportReferenceType, 1, AAFuncParam(AACTypeDef::String, L"_filepath")));
 	stdio_filestream.classMethods.push_back(AACSingleFunction(L"close", &AAFileStream_Close, AACType::Void, 0));
 	stdio_filestream.classOperators.push_back(AACClassOperator(L"<<", AACSingleFunction(L"writetofile", &AAFileStream_Write, AACType::ExportReferenceType, 1, AAFuncParam(AACType::Any, L"_content"))));
-	stdio_filestream.classFields.push_back(AACClassField(AACTypeDef::Int32, L"_fptr"));
+	stdio_filestream.classFields.push_back(AACClassField(AACTypeDef::Int32, L"_selfptr"));
 
 	// Register the filestream class
 	this->RegisterClass(L"FileStream", stdio_filestream);

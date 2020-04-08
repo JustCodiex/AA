@@ -1,2 +1,2 @@
-Hello File from Ã
-Goodbye from Ã
+Hello File from Å
+Goodbye from Å

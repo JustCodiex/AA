@@ -157,6 +157,7 @@
     <ClCompile Include="AAClassCompiler.cpp" />
     <ClCompile Include="AACNamespace.cpp" />
     <ClCompile Include="AACType.cpp" />
+    <ClCompile Include="AAFileStream.cpp" />
     <ClCompile Include="AALanguageRegressionTest.cpp" />
     <ClCompile Include="AALexer.cpp" />
     <ClCompile Include="AAP.cpp" />
@@ -184,6 +185,7 @@
     <ClInclude Include="AAConsole.h" />
     <ClInclude Include="AACType.h" />
     <ClInclude Include="AAC_Structs.h" />
+    <ClInclude Include="AAFileStream.h" />
     <ClInclude Include="AALanguageRegressionTest.h" />
     <ClInclude Include="AARuntimeEnvironment.h" />
     <ClInclude Include="AACodePosition.h" />

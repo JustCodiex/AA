@@ -7,6 +7,8 @@ int main() {
     // Create new file stream and write a messsage
     FileStream fs = new FileStream("test.txt");
     fs << "Hello File from Å";
+    fs << '\n';
+    fs << "Goodbye from Å";
 
     // We remember to close it
     fs.close();
@@ -14,7 +16,7 @@ int main() {
     // Return 0
     0;
 
-}
+};
 
 // Call main
 main();
