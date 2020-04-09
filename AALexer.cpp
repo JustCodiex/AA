@@ -26,6 +26,10 @@ std::map<wchar_t, AAToken> singleTokens = {
 	{ '<', AAToken::OP },
 	{ '>', AAToken::OP },
 	{ '&', AAToken::OP },
+	{ '~', AAToken::OP },
+	{ '^', AAToken::OP },
+	{ '#', AAToken::OP },
+	{ '$', AAToken::OP },
 };
 
 std::vector<wchar_t> whitespaceCharacters = {
@@ -38,12 +42,13 @@ std::vector<std::wstring> keywords = {
 	
 	// Inferred value type keyword (var => variable, typechecker will solve this)
 	L"var",
+	//L"val", // <-- contextualise
 	
 	// Boolean values (true and false)
 	L"true",
 	L"false",
 
-	// Void-Types (Null, Void, Any)
+	// Void-Types (null, void, Any)
 	L"null",
 	L"void",
 	L"Any",
@@ -60,17 +65,22 @@ std::vector<std::wstring> keywords = {
 	L"break",
 	L"return",
 	L"continue",
+	L"yield", // <-- contextualise
 
 	// Conditions and conversions
-	L"when",
-	L"as",
-	L"is",
+	L"when", // <-- contextualise
+	L"as", // <-- contextualise
+	L"is", // <-- contextualise
 	
 	// Class keywords
 	L"class",
 	L"new",
 	L"this",
+	L"base",
 	
+	// Enum keyword
+	L"enum",
+
 	// Try-catch keywords
 	L"try",
 	L"catch",
@@ -78,25 +88,40 @@ std::vector<std::wstring> keywords = {
 	
 	// Use statements
 	L"using",
-	L"from",
+	L"from", // <-- contextualise
 	L"namespace",
 
 	// Access modifiers
 	L"public",
 	L"private",
 	L"protected",
+	L"static",
+
+	// Storage modifiers
 	L"abstract",
 	L"interface",
+	L"light", // <-- Contextualise
 	L"sealed",
 
 	// Linkage modifiers
 	L"external",
 	L"internal",
 
+	// Method modifiers
+	L"virtual",
+	L"override",
+
 	// Pre-processing
-	L"define",
+	/*L"macro",
+	L"def",
+	L"ifdef",
+	L"ifndef",
+	L"undef",*/
 
 };
+
+// Small note: Keywords marked with contextualise means thier context should be considered when evaluating them
+// such that the identifier 'light' has more precedence over the keyword iff it's not followed be the class keyword
 
 std::vector<AALexicalResult> AALexer::Analyse(std::wistream& input) {
 
@@ -403,6 +428,8 @@ bool AALexer::IsValidJointOperator(std::wstring ws) {
 	} else if (ws == L"<<") {
 		return true;
 	} else if (ws == L">>") {
+		return true;
+	} else if (ws == L"=>") {
 		return true;
 	} else {
 		return false;

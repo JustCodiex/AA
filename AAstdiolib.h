@@ -1,5 +1,6 @@
 #pragma once
 #include "AAVM.h"
+#include "AAMemoryStore.h"
 
 #pragma region std
 
@@ -15,9 +16,9 @@ void AAFileStream_Open(AAVM* pAAVm, aa::stack<AAVal> args, aa::stack<AAVal>& sta
 	aa::list<AAVal> argl = aa::ToArgumentList(args);
 
 	// Get the self argument
-	AAVal self = argl.First();
-	self.obj->values[0].litVal.tp = AALiteralType::IntPtr;
-	self.obj->values[0].litVal.lit.ptr.ptr = 0;
+	AAObject* self = pAAVm->GetHeap()->operator[](argl.First().ptr);
+	self->values[0].litVal.tp = AALiteralType::IntPtr;
+	self->values[0].litVal.lit.ptr.ptr = 0;
 
 	// Open file
 	AAFileStream* fptr = new AAFileStream();
@@ -27,10 +28,10 @@ void AAFileStream_Open(AAVM* pAAVm, aa::stack<AAVal> args, aa::stack<AAVal>& sta
 	if (fptr) {
 
 		// Assign pointer
-		self.obj->values[0].litVal.lit.ptr.ptr = (void*)fptr;
+		self->values[0].litVal.lit.ptr.ptr = (void*)fptr;
 
-		// Push self (this)
-		stack.Push(self);
+		// Push (the pointer to) self (this) unto the stack (because this acts as the .ctor
+		stack.Push(argl.First().ptr);
 
 	} else {
 		
@@ -49,10 +50,10 @@ void AAFileStream_Close(AAVM* pAAVm, aa::stack<AAVal> args, aa::stack<AAVal>& st
 	aa::list<AAVal> argl = aa::ToArgumentList(args);
 
 	// Get the self argument
-	AAVal self = argl.First();
+	AAObject* self = pAAVm->GetHeap()->operator[](argl.First().ptr);
 
 	// Close the file
-	int r = ((AAFileStream*)self.obj->values[0].litVal.lit.ptr.ptr)->CloseStream();
+	int r = ((AAFileStream*)self->values[0].litVal.lit.ptr.ptr)->CloseStream();
 
 	// Did we somehow fail to close?
 	if (r != 0) {
@@ -73,10 +74,10 @@ void AAFileStream_Write(AAVM* pAAVm, aa::stack<AAVal> args, aa::stack<AAVal>& st
 	aa::list<AAVal> argl = aa::ToArgumentList(args);
 
 	// Get the self argument
-	AAVal self = argl.First();
+	AAObject* self = pAAVm->GetHeap()->operator[](argl.First().ptr);
 
 	// Get the file pointer
-	AAFileStream* fPtr = (AAFileStream*)self.obj->values[0].litVal.lit.ptr.ptr;
+	AAFileStream* fPtr = (AAFileStream*)self->values[0].litVal.lit.ptr.ptr;
 
 	// Make sure the file is valid
 	if (fPtr) {
@@ -84,8 +85,8 @@ void AAFileStream_Write(AAVM* pAAVm, aa::stack<AAVal> args, aa::stack<AAVal>& st
 		// Write msg
 		fPtr->WriteString(argl.Last().ToString());
 
-		// Push ourselves back onto the stack
-		stack.Push(self);
+		// Push (the pointer to) ourselves back onto the stack
+		stack.Push(argl.First().ptr);
 
 	} else {
 

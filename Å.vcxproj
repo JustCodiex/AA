@@ -158,8 +158,10 @@
     <ClCompile Include="AACNamespace.cpp" />
     <ClCompile Include="AACType.cpp" />
     <ClCompile Include="AAFileStream.cpp" />
+    <ClCompile Include="AAGarbageCollector.cpp" />
     <ClCompile Include="AALanguageRegressionTest.cpp" />
     <ClCompile Include="AALexer.cpp" />
+    <ClCompile Include="AAMemoryStore.cpp" />
     <ClCompile Include="AAP.cpp" />
     <ClCompile Include="AAProgram.cpp" />
     <ClCompile Include="AAStaticAnalysis.cpp" />
@@ -186,7 +188,10 @@
     <ClInclude Include="AACType.h" />
     <ClInclude Include="AAC_Structs.h" />
     <ClInclude Include="AAFileStream.h" />
+    <ClInclude Include="AAGarbageCollector.h" />
     <ClInclude Include="AALanguageRegressionTest.h" />
+    <ClInclude Include="AAMemory.h" />
+    <ClInclude Include="AAMemoryStore.h" />
     <ClInclude Include="AARuntimeEnvironment.h" />
     <ClInclude Include="AACodePosition.h" />
     <ClInclude Include="AAFuncSignature.h" />

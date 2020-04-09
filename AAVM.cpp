@@ -4,6 +4,7 @@
 #include "AAString.h"
 #include "AAConsole.h"
 #include "AAstdiolib.h"
+#include "AAMemoryStore.h"
 
 AAVM* AAVM::CreateNewVM(bool logExecuteTime, bool logCompiler, bool logTopStack) {
 	AAVM* vm = new AAVM();
@@ -26,6 +27,8 @@ AAVM::AAVM() {
 	m_outStream = 0;
 
 	m_startCompile = 0;
+
+	m_heapMemory = 0;
 
 	m_logTopOfStackAfterExec = false;
 	m_logCompileMessages = false;
@@ -232,6 +235,9 @@ AAVal AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 	aa::stack<AAVal> stack;
 	aa::stack<AARuntimeEnvironment> callstack;
 
+	// Represents the VM's heap memory (We allocate this on the heap as well). We do this every time a program is executed
+	m_heapMemory = new AAMemoryStore(256);
+
 	AARuntimeEnvironment execp;
 	execp.opPointer = 0;
 	execp.procPointer = entry;
@@ -390,43 +396,63 @@ AAVal AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 		}
 		case AAByteCode::HALLOC: {
 			int allocsz = AAVM_GetArgument(0);
-			AAVal allocobj = AAVal(AllocAAO((size_t)allocsz));
+			AAVal allocobj = AAVal(m_heapMemory->Alloc(allocsz));
 			stack.Push(allocobj);
 			AAVM_OPI++;
 			break;
 		}
 		case AAByteCode::GETFIELD: {
-			AAVal o = stack.Pop();
-			stack.Push(o.obj->values[AAVM_GetArgument(0)]);
+			AAVal oPtr = stack.Pop();
+			AAObject* o = m_heapMemory->operator[](oPtr.ptr);
+			if (o) {
+				stack.Push(o->values[AAVM_GetArgument(0)]);
+			} else {
+				AAVM_ThrowRuntimeErr("NullPointerException", "Null value at address '" + std::to_string(oPtr.ptr.val) + "'");
+			}
 			AAVM_OPI++;
 			break;
 		}
 		case AAByteCode::SETFIELD: {
 			AAVal rhs = stack.Pop();
-			AAVal o = stack.Pop();
-			o.obj->values[AAVM_GetArgument(0)] = rhs;
+			AAVal oPtr = stack.Pop();
+			AAObject* o = m_heapMemory->operator[](oPtr.ptr);
+			if (o) {
+				o->values[AAVM_GetArgument(0)] = rhs;
+			} else {
+				AAVM_ThrowRuntimeErr("NullPointerException", "Null value at address '" + std::to_string(oPtr.ptr.val) + "'");
+			}
 			AAVM_OPI++;
 			break;
 		}
 		case AAByteCode::GETELEM: {
-			int i = stack.Pop().litVal.lit.i.val;
-			AAVal e = stack.Pop();
-			if (i >= 0 && i < e.obj->valCount) {
-				stack.Push(e.obj->values[i]);
+			int i = stack.Pop().litVal.lit.i.val; // index
+			AAVal arrayPtr = stack.Pop(); // Ptr to array
+			AAObject* arrObj = m_heapMemory->operator[](arrayPtr.ptr); // Actual array object
+			if (arrObj) {
+				if (i >= 0 && i < arrObj->valCount) {
+					stack.Push(arrObj->values[i]);
+				} else {
+					AAVM_ThrowRuntimeErr("IndexOutOfRange", "Index " + std::to_string(i) + " is out of range!");
+				}
 			} else {
-				AAVM_ThrowRuntimeErr("IndexOutOfRange", "Index " + std::to_string(i) + " is out of range!");
+				AAVM_ThrowRuntimeErr("NullPointerException", "Null value at address '" + std::to_string(arrayPtr.ptr.val) + "'");
 			}
 			AAVM_OPI++;
 			break;
 		}
 		case AAByteCode::SETELEM: {
-			AAVal v = stack.Pop();
-			int i = stack.Pop().litVal.lit.i.val;
-			AAVal e = stack.Pop();
-			if (i >= 0 && i < e.obj->valCount) {
-				e.obj->values[i] = v;
+			AAVal v = stack.Pop(); // Value to set (RHS)
+			int i = stack.Pop().litVal.lit.i.val; // index
+			AAVal arrayPtr = stack.Pop(); // Ptr to array
+			AAObject* arrObj = m_heapMemory->operator[](arrayPtr.ptr); // Actual array object
+			if (arrObj) {
+				if (i >= 0 && i < arrObj->valCount) {
+					arrObj->values[i] = v;
+				} else {
+					AAVM_ThrowRuntimeErr("IndexOutOfRange", "Index " + std::to_string(i) + " is out of range!");
+				}
 			} else {
-				AAVM_ThrowRuntimeErr("IndexOutOfRange", "Index " + std::to_string(i) + " is out of range!");
+				AAVM_ThrowRuntimeErr("NullPointerException", "Null value at address '" + std::to_string(arrayPtr.ptr.val) + "'");
 			}
 			AAVM_OPI++;
 			break;
@@ -444,6 +470,9 @@ AAVal AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 		}
 
 	}
+
+	// Release all allocated memory (No longer used)
+	m_heapMemory->Release();
 
 	// Return whatever's on top of the stack
 	return this->ReportStack(stack);
@@ -501,6 +530,10 @@ AAVal AAVM::ReportStack(aa::stack<AAVal> stack) {
 		}
 		return v;
 	} else {
+		if (stack.Size() > 1) {
+			const char* msg = "<Warning!> More than one element remained on the stack!";
+			m_outStream->write(msg, strlen(msg));
+		}
 		return AAVal::Null;
 	}
 
@@ -642,9 +675,10 @@ AAClassSignature* AAVM::RegisterClass(std::wstring typeName, AACClass cClass) {
 
 		// Check if it's a constructor
 		bool isCtor = func.name == L".ctor";
+		bool isDtor = func.name == L".dtor";
 
 		// Not the constructor
-		if (!isCtor) {
+		if (!isCtor && !isDtor) {
 
 			// Update function name
 			func.name = cc->name + L"::" + func.name;
@@ -664,7 +698,8 @@ AAClassSignature* AAVM::RegisterClass(std::wstring typeName, AACClass cClass) {
 
 		// Register the funcion and get the VMCall procID
 		this->RegisterFunction(func, sig, cClass.domain, true);
-		sig->isClassCtor = true;
+		sig->isClassCtor = isCtor;
+		sig->isClassDtor = isDtor;
 
 		// Add method to class
 		cc->methods.Add(sig);

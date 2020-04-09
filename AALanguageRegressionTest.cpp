@@ -502,6 +502,17 @@ void RunNamespaceTests(AAVM* pAAVM, int& s, int& f) {
 
 }
 
+void RunIOTests(AAVM* pAAVM, int& s, int& f) {
+
+	// Test namespaces are fetched correctly (Including the 'using X from Y' directive)
+	if (!RunFileTest(pAAVM, L"testing\\io1.aa", L"out\\bin\\io1.aab", L"out\\op\\io1.txt", L"0")) {
+		f++;
+	} else {
+		s++;
+	}
+
+}
+
 bool RunRegressionTests(AAVM* pAAVM) {
 
 	bool cmplog, execlog, stacklog;
@@ -553,6 +564,9 @@ bool RunRegressionTests(AAVM* pAAVM) {
 
 	// Run namespace tests
 	RunNamespaceTests(pAAVM, successes, fails);
+
+	// Run IO tests
+	RunIOTests(pAAVM, successes, fails);
 
 	// Log regression test results
 	std::wcout << L"Regression test report:" << std::endl;

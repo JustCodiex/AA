@@ -1,0 +1,34 @@
+enum department {
+    ComputerScience,
+    Maths,
+    Physics,
+    Chemistry,
+    PoliticalScience,
+    Psychology
+
+    // A custom string method
+    string GetString() {
+        this match { // pattern match on this (this being of the type 'department')
+            case ComputerScience => "Computer Science", // Case where 'this' = ComputerScience
+            case PoliticalScience => "Political Science", // Case where 'this' = PoliticalScience
+            case _ => this.ToString(),
+        }
+    }
+
+};
+
+// Main function
+int main() {
+
+    // Get the computer science department
+    department testDep = department::ComputerScience;
+
+    // Print the nice name
+    println(testDep.GetString());
+
+    // Return 0
+    0;
+
+};
+
+main();

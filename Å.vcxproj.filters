@@ -67,6 +67,18 @@
     <Filter Include="Source Files\VM\builtin\std\io">
       <UniqueIdentifier>{d7ce23a5-e779-4e76-bf78-1334c8e5f8fb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\VM\Memory">
+      <UniqueIdentifier>{0d0b4884-4b90-459d-bf55-57a3d653ca5e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\VM\Memory\GC">
+      <UniqueIdentifier>{016d0bac-11bf-488b-ab6f-8eec73294e13}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\VM\Memory">
+      <UniqueIdentifier>{d7d06d66-0704-43db-9892-bf2d35a70cbe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\VM\Memory\GC">
+      <UniqueIdentifier>{f8da15d9-178e-4ced-bee9-f1d4c22b89b9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -128,6 +140,12 @@
     </ClCompile>
     <ClCompile Include="AAFileStream.cpp">
       <Filter>Source Files\VM\builtin\std\io</Filter>
+    </ClCompile>
+    <ClCompile Include="AAGarbageCollector.cpp">
+      <Filter>Source Files\VM\Memory\GC</Filter>
+    </ClCompile>
+    <ClCompile Include="AAMemoryStore.cpp">
+      <Filter>Source Files\VM\Memory</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -247,6 +265,15 @@
     </ClInclude>
     <ClInclude Include="AAFileStream.h">
       <Filter>Header Files\VM\builtin\std\io</Filter>
+    </ClInclude>
+    <ClInclude Include="AAGarbageCollector.h">
+      <Filter>Header Files\VM\Memory\GC</Filter>
+    </ClInclude>
+    <ClInclude Include="AAMemoryStore.h">
+      <Filter>Header Files\VM\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="AAMemory.h">
+      <Filter>Source Files\VM\Memory</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

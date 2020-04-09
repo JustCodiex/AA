@@ -34,6 +34,7 @@ struct AAFuncSignature {
 	bool isVMFunc;
 	bool isClassMethod;
 	bool isClassCtor;
+	bool isClassDtor;
 	AAAccessModifier accessModifier;
 	bool isVirtual;
 	AACNamespace* domain;
@@ -47,6 +48,7 @@ struct AAFuncSignature {
 		this->isVMFunc = false;
 		this->isClassMethod = false;
 		this->isClassCtor = false;
+		this->isClassDtor = false;
 		this->accessModifier = AAAccessModifier::PUBLIC;
 		this->isVirtual = false;
 		this->node = 0;
@@ -60,6 +62,7 @@ struct AAFuncSignature {
 		this->isVMFunc = false;
 		this->isClassMethod = false;
 		this->isClassCtor = false;
+		this->isClassDtor = false;
 		this->accessModifier = AAAccessModifier::PUBLIC;
 		this->isVirtual = false;
 		this->node = 0;
@@ -73,6 +76,7 @@ struct AAFuncSignature {
 		this->isVMFunc = false;
 		this->isClassMethod = false;
 		this->isClassCtor = false;
+		this->isClassDtor = false;
 		this->accessModifier = AAAccessModifier::PUBLIC;
 		this->isVirtual = false;
 		this->node = 0;
@@ -87,6 +91,7 @@ struct AAFuncSignature {
 		this->isVMFunc = false;
 		this->isClassMethod = false;
 		this->isClassCtor = false;
+		this->isClassDtor = false;
 		this->accessModifier = AAAccessModifier::PUBLIC;
 		this->isVirtual = false;
 		this->node = 0;
@@ -99,6 +104,10 @@ struct AAFuncSignature {
 	/// </summary>
 	/// <returns></returns>
 	std::wstring GetFullname(); // Definition in AACNamespace.cpp
+
+	bool Equals(AAFuncSignature* other) {
+		return *this == *other;
+	}
 
 	bool operator==(AAFuncSignature other) {
 		if (this->name.compare(other.name) == 0 && this->domain == other.domain) {

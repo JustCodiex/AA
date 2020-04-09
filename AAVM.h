@@ -33,6 +33,8 @@ struct AAVM_RuntimeError {
 	}
 };
 
+class AAMemoryStore;
+
 class AAVM {
 
 public:
@@ -85,6 +87,12 @@ public:
 
 	void ThrowExternalError(AAVM_RuntimeError externalErr);
 
+	/// <summary>
+	/// Get the current instance of the heap (Note: This is only valid while running a program)
+	/// </summary>
+	/// <returns>The currently used heap</returns>
+	AAMemoryStore* GetHeap() { return m_heapMemory; }
+
 	static AAVM* CreateNewVM(bool logExecuteTime, bool logCompiler, bool logTopStack);
 
 private:
@@ -128,6 +136,8 @@ private:
 	bool m_logTopOfStackAfterExec;
 
 	std::vector<AACSingleFunction> m_cppfunctions;
+
+	AAMemoryStore* m_heapMemory;
 
 	bool m_hasRuntimeError;
 	AAVM_RuntimeError m_lastRuntimeError;

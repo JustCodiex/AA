@@ -1,0 +1,35 @@
+START PROCEDURE 0 (<GlobalScope>):
+CONSTANTS:
+IDENTIFIERS: 
+
+OPERATIONS: 
+	[0]	CALL, 1, 0
+END PROCEDURE;
+
+START PROCEDURE 1 (main):
+CONSTANTS:	[UTF-8, "test.txt"]	[UTF-8, "Hello File from Å"]	[C, \n]	[UTF-8, "Goodbye from Å"]	[I32, 0]
+IDENTIFIERS: 
+	fs;
+OPERATIONS: 
+	[0]	HALLOC, 16
+	[1]	PUSHC, 0
+	[2]	VMCALL, 3, 2
+	[3]	SETVAR, 0
+	[4]	GETVAR, 0
+	[5]	PUSHC, 1
+	[6]	VMCALL, 5, 2
+	[7]	POP
+	[8]	GETVAR, 0
+	[9]	PUSHC, 2
+	[10]	VMCALL, 5, 2
+	[11]	POP
+	[12]	GETVAR, 0
+	[13]	PUSHC, 3
+	[14]	VMCALL, 5, 2
+	[15]	POP
+	[16]	GETVAR, 0
+	[17]	VMCALL, 4, 1
+	[18]	PUSHC, 4
+	[19]	RET, 1
+END PROCEDURE;
+

@@ -1,0 +1,33 @@
+// Using the io library
+using std::io;
+
+// Main method
+int main() {
+
+    // Create the filestream
+    FileStream writeStream = new FileStream("io2.txt", FileMode::write);
+    writeStream << "Hello World";
+    writeStream.close();
+
+    // Create the reading stream
+    FileStream readStream = new FileStream("io2.txt", FileMode::read);
+
+    // Declare read variable
+    string read;
+
+    // Read input
+    readStream >> read;
+
+    // print what was read
+    println(read);
+
+    // Close the readstream
+    readStream.close();
+
+    // Return 0
+    0;
+
+}
+
+// Call the main function
+main();
