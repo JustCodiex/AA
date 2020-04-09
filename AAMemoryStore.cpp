@@ -9,7 +9,10 @@ AAMemoryStore::AAMemoryStore(int chunksz) {
 
 void AAMemoryStore::Release() {
 
-	// Destroy stuff here
+	auto itt = this->m_slots.begin(); // I just dont want to lookup the type...
+	while ((itt = this->m_slots.begin()) != this->m_slots.end()) {
+		this->DeleteAt((*itt).first);
+	}
 
 	delete this;
 
@@ -19,13 +22,35 @@ size_t AAMemoryStore::NextPointer() {
 	return ++m_nextPtr;
 }
 
+void AAMemoryStore::DeleteAt(AAMemoryPtr ptr) {
+
+	// Find it
+	auto slot = this->m_slots.find(ptr);
+	if (slot != this->m_slots.end()) {
+
+		// Delete the object
+		AAObject* obj = (*slot).second.obj;
+		
+		// Delete all values
+		delete[] obj->values;
+
+		// Delete the object itself
+		delete obj;
+
+		// Get rid of the element
+		this->m_slots.erase(slot);
+
+	}
+
+}
+
 void AAMemoryStore::Reference(AAMemoryPtr ptr) {
 	this->m_slots[ptr].refcount++;
 }
 
 bool AAMemoryStore::Dereference(AAMemoryPtr ptr) {
 	this->m_slots[ptr].refcount--;
-	return this->m_slots[ptr].refcount == 0;
+	return this->m_slots[ptr].refcount == 0; // Return true if object has been dereferenced
 }
 
 AAMemoryPtr AAMemoryStore::Alloc(size_t sz) {

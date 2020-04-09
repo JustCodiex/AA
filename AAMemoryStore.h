@@ -36,6 +36,8 @@ private:
 
 	size_t NextPointer();
 
+	void DeleteAt(AAMemoryPtr ptr);
+
 private:
 
 	int m_chunksz;

@@ -17,26 +17,39 @@ void AAFileStream_Open(AAVM* pAAVm, aa::stack<AAVal> args, aa::stack<AAVal>& sta
 
 	// Get the self argument
 	AAObject* self = pAAVm->GetHeap()->operator[](argl.First().ptr);
-	self->values[0].litVal.tp = AALiteralType::IntPtr;
-	self->values[0].litVal.lit.ptr.ptr = 0;
 
-	// Open file
-	AAFileStream* fptr = new AAFileStream();
-	fptr->OpenWrite(argl.Last().litVal.lit.s.val);
+	// Did we manage to get pointer to ourselves?
+	if (self) {
 
-	// Did we manage to open the file?
-	if (fptr) {
+		self->values[0].litVal.tp = AALiteralType::IntPtr;
+		self->values[0].litVal.lit.ptr.ptr = 0;
 
-		// Assign pointer
-		self->values[0].litVal.lit.ptr.ptr = (void*)fptr;
+		// Open file
+		AAFileStream* fptr = new AAFileStream();
+		fptr->OpenWrite(argl.Last().litVal.lit.s.val);
 
-		// Push (the pointer to) self (this) unto the stack (because this acts as the .ctor
-		stack.Push(argl.First().ptr);
+		// Did we manage to open the file?
+		if (fptr) {
+
+			// Assign pointer
+			self->values[0].litVal.lit.ptr.ptr = (void*)fptr;
+
+			// Push (the pointer to) self (this) unto the stack (because this acts as the .ctor
+			stack.Push(argl.First().ptr);
+
+		} else {
+
+			// Throw runtime error
+			pAAVm->ThrowExternalError(AAVM_RuntimeError("IOException", "Failed to open file"));
+
+			return;
+
+		}
 
 	} else {
-		
+
 		// Throw runtime error
-		pAAVm->ThrowExternalError(AAVM_RuntimeError("IOException", "Failed to open file"));
+		pAAVm->ThrowExternalError(AAVM_RuntimeError("NullPointerException", ("Null value at address '" + std::to_string(argl.First().ptr.val) + "'").c_str()));
 
 		return;
 
@@ -52,16 +65,28 @@ void AAFileStream_Close(AAVM* pAAVm, aa::stack<AAVal> args, aa::stack<AAVal>& st
 	// Get the self argument
 	AAObject* self = pAAVm->GetHeap()->operator[](argl.First().ptr);
 
-	// Close the file
-	int r = ((AAFileStream*)self->values[0].litVal.lit.ptr.ptr)->CloseStream();
+	// Did we manage to get pointer to ourselves?
+	if (self) {
 
-	// Did we somehow fail to close?
-	if (r != 0) {
+		// Close the file
+		int r = ((AAFileStream*)self->values[0].litVal.lit.ptr.ptr)->CloseStream();
 
-		// Throw error
-		pAAVm->ThrowExternalError(AAVM_RuntimeError("IOException", "Failed to close file"));
+		// Did we somehow fail to close?
+		if (r != 0) {
 
-		// Return
+			// Throw error
+			pAAVm->ThrowExternalError(AAVM_RuntimeError("IOException", "Failed to close file"));
+
+			// Return
+			return;
+
+		}
+
+	} else {
+
+		// Throw runtime error
+		pAAVm->ThrowExternalError(AAVM_RuntimeError("NullPointerException", ("Null value at address '" + std::to_string(argl.First().ptr.val) + "'").c_str()));
+
 		return;
 
 	}
@@ -76,24 +101,36 @@ void AAFileStream_Write(AAVM* pAAVm, aa::stack<AAVal> args, aa::stack<AAVal>& st
 	// Get the self argument
 	AAObject* self = pAAVm->GetHeap()->operator[](argl.First().ptr);
 
-	// Get the file pointer
-	AAFileStream* fPtr = (AAFileStream*)self->values[0].litVal.lit.ptr.ptr;
+	// Did we manage to get pointer to ourselves?
+	if (self) {
 
-	// Make sure the file is valid
-	if (fPtr) {
+		// Get the file pointer
+		AAFileStream* fPtr = (AAFileStream*)self->values[0].litVal.lit.ptr.ptr;
 
-		// Write msg
-		fPtr->WriteString(argl.Last().ToString());
+		// Make sure the file is valid
+		if (fPtr) {
 
-		// Push (the pointer to) ourselves back onto the stack
-		stack.Push(argl.First().ptr);
+			// Write msg
+			fPtr->WriteString(argl.Last().ToString());
+
+			// Push (the pointer to) ourselves back onto the stack
+			stack.Push(argl.First().ptr);
+
+		} else {
+
+			// Throw error
+			pAAVm->ThrowExternalError(AAVM_RuntimeError("IOException", "File not open"));
+
+			// Return
+			return;
+
+		}
 
 	} else {
 
-		// Throw error
-		pAAVm->ThrowExternalError(AAVM_RuntimeError("IOException", "File not open"));
+		// Throw runtime error
+		pAAVm->ThrowExternalError(AAVM_RuntimeError("NullPointerException", ("Null value at address '" + std::to_string(argl.First().ptr.val) + "'").c_str()));
 
-		// Return
 		return;
 
 	}
