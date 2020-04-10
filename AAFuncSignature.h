@@ -105,6 +105,14 @@ struct AAFuncSignature {
 	/// <returns></returns>
 	std::wstring GetFullname(); // Definition in AACNamespace.cpp
 
+	std::wstring GetName() {
+		if (isClassMethod) {
+			return this->name.substr(this->name.find_last_of(':') + 1);
+		} else {
+			return this->name;
+		}
+	}
+
 	bool Equals(AAFuncSignature* other) {
 		return *this == *other;
 	}

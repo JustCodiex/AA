@@ -1,4 +1,6 @@
+// Department enum (Simulating a university department)
 enum department {
+
     ComputerScience,
     Maths,
     Physics,

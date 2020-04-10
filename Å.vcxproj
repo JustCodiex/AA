@@ -180,6 +180,7 @@
     <ClInclude Include="AAByteCode.h" />
     <ClInclude Include="AAC.h" />
     <ClInclude Include="AACClass.h" />
+    <ClInclude Include="AACEnum.h" />
     <ClInclude Include="AACFunction.h" />
     <ClInclude Include="AAClassSignature.h" />
     <ClInclude Include="AAClassCompiler.h" />

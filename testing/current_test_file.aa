@@ -1,22 +1,41 @@
-// Using the io library
-using std::io;
+// UniversityDepartment enum (Simulating a university department)
+enum UniversityDepartment {
 
-// The main method
+    ComputerScience,
+    Maths,
+    Physics,
+    Chemistry,
+    PoliticalScience,
+    Psychology,
+    History,
+    Engineering,
+    Medicine,
+    FineArts // Be careful to not add a comma here (Currently a bug where it would then include 'string')
+
+    // A custom string method
+    string GetString() {
+        this match { // pattern match on this (this being of the type 'UniversityDepartment')
+            case ComputerScience => "Computer Science", // Case where 'this' = ComputerScience
+            case PoliticalScience => "Political Science", // Case where 'this' = PoliticalScience
+            case FineArts => "Fine Arts", // Case where 'this' = FineArts
+            case _ => this.ToString()
+        }
+    }
+
+};
+
+// Main function
 int main() {
 
-    // Create new file stream and write a messsage
-    FileStream fs = new FileStream("test.txt");
-    fs << "Hello File from Å";
-    fs << '\n';
-    fs << "Goodbye from Å";
+    // Get the computer science department
+    UniversityDepartment testDep = UniversityDepartment::ComputerScience;
 
-    // We remember to close it
-    fs.close();
+    // Print the nice name
+    println(testDep.GetString());
 
     // Return 0
     0;
 
 };
 
-// Call main
 main();

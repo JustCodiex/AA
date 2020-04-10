@@ -15,3 +15,11 @@ std::wstring AAFuncSignature::GetFullname() {
 		return this->name;
 	}
 }
+
+std::wstring AACEnumSignature::GetFullname() {
+	if (this->domain) {
+		return this->domain->GetNamePath() + L"::" + this->name;
+	} else {
+		return this->name;
+	}
+}

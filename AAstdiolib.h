@@ -35,7 +35,7 @@ void AAFileStream_Open(AAVM* pAAVm, aa::stack<AAVal> args, aa::stack<AAVal>& sta
 			self->values[0].litVal.lit.ptr.ptr = (void*)fptr;
 
 			// Push (the pointer to) self (this) unto the stack (because this acts as the .ctor
-			stack.Push(argl.First().ptr);
+			stack.Push(argl.First());
 
 		} else {
 
@@ -114,7 +114,7 @@ void AAFileStream_Write(AAVM* pAAVm, aa::stack<AAVal> args, aa::stack<AAVal>& st
 			fPtr->WriteString(argl.Last().ToString());
 
 			// Push (the pointer to) ourselves back onto the stack
-			stack.Push(argl.First().ptr);
+			stack.Push(argl.First());
 
 		} else {
 

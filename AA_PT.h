@@ -105,6 +105,7 @@ private:
 	AA_PT_NODE* CreateFunctionDecl(std::vector<AA_PT_NODE*>& nodes, size_t from);
 	AA_PT_NODE* CreateConstructorDecl(std::vector<AA_PT_NODE*>& nodes, size_t from);
 	AA_PT_NODE* CreateNamespaceDecl(std::vector<AA_PT_NODE*>& nodes, size_t from);
+	AA_PT_NODE* CreateEnumDecl(std::vector<AA_PT_NODE*>& nodes, size_t from);
 
 	AA_PT_NODE* CreateConditionBlock(std::vector<AA_PT_NODE*>& nodes, size_t from);
 	AA_PT_NODE* CreateIfStatement(std::vector<AA_PT_NODE*>& nodes, size_t from);
@@ -112,6 +113,10 @@ private:
 	AA_PT_NODE* CreateWhileStatement(std::vector<AA_PT_NODE*>& nodes, size_t from);
 	AA_PT_NODE* CreateDoWhileStatement(std::vector<AA_PT_NODE*>& nodes, size_t from);
 	
+	AA_PT_NODE* CreatePatternMatchBlock(std::vector<AA_PT_NODE*>& nodes, size_t from);
+	AA_PT_NODE* CreatePatternCase(std::vector<AA_PT_NODE*> nodes);
+	std::vector<AA_PT_NODE*> CreatePatternCases(AA_PT_NODE* pBlockNode);
+
 	std::vector<AA_PT_NODE*> CreateArgumentTree(AA_PT_NODE* pExpNode);
 	
 	inline void HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& index);
@@ -123,6 +128,7 @@ private:
 	inline AA_PT_NODE* HandleVariableDecleration(std::vector<AA_PT_NODE*>& nodes, size_t& from);
 
 	AA_PT_NODE* CreateFunctionArgList(AA_PT_NODE* pExpNode);
+	AA_PT_NODE* CreateEnumValueList(AA_PT_NODE* pBlockNode);
 
 	/*
 	** To tree helper functions
@@ -139,6 +145,8 @@ private:
 	static void ApplyUnaryBindings(std::vector<AA_PT_NODE*>& nodes);
 	static void ApplyArithemticRules(std::vector<AA_PT_NODE*>& nodes);
 	static void ApplyAssignmentOrder(std::vector<AA_PT_NODE*>& nodes);
+
+	static bool CanTreatKeywordAsIdentifier(AA_PT_NODE* node);
 
 	/*
 	** Flow control parsing

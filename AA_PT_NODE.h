@@ -16,6 +16,8 @@ enum class AA_PT_NODE_TYPE {
 
 	funcbody,
 	classbody,
+	enumbody,
+	lambdabody,
 
 	expression,
 	condition,
@@ -38,7 +40,8 @@ enum class AA_PT_NODE_TYPE {
 
 	newstatement,
 
-	matchsatement,
+	matchstatement,
+	matchcaselist,
 	matchcasestatement,
 
 	parenthesis_start,
@@ -58,6 +61,9 @@ enum class AA_PT_NODE_TYPE {
 	fundecleration,
 	classdecleration,
 	namespacedecleration,
+	enumdecleration,
+
+	enumvallist,
 
 	funccall,
 	funarg,

@@ -330,7 +330,7 @@ AAVal AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 			}
 
 			// Call the native function (The native function is also responsible for handling the return
-			this->m_cppfunctions[callProc].fPtr(this, args, stack);
+			this->m_cppfunctions.Apply(callProc).fPtr(this, args, stack);
 
 			// Did the call cause a runtime error?
 			if (this->m_hasRuntimeError) {
@@ -632,8 +632,17 @@ int AAVM::RegisterFunction(AACSingleFunction funcPtr, AAFuncSignature*& funcSig,
 	// Create the new function signature
 	funcSig = new AAFuncSignature;
 
-	// Fetch proc ID
-	int procId = (int)m_cppfunctions.size();
+	// Is it a new function?
+	bool isNewFunction = false;
+
+	int procID = 0;
+	if (!m_cppfunctions.FindFirstIndex([funcPtr](AACSingleFunction& func) { return func.equals(funcPtr); }, procID)) {
+
+		// Fetch next proc ID
+		procID = (int)m_cppfunctions.Size();
+		isNewFunction = true;
+
+	}
 
 	// Create function signature
 	funcSig->name = funcPtr.name;
@@ -642,14 +651,19 @@ int AAVM::RegisterFunction(AACSingleFunction funcPtr, AAFuncSignature*& funcSig,
 	funcSig->isVMFunc = true;
 	funcSig->isClassMethod = isClassMethod;
 	funcSig->accessModifier = AAAccessModifier::PUBLIC;
-	funcSig->procID = procId;
+	funcSig->procID = procID;
 
-	// Push functions
-	m_cppfunctions.push_back(funcPtr);
+	// Add only if new function
+	if (isNewFunction) {
+
+		// Push functions
+		m_cppfunctions.Add(funcPtr);
+
+	}
 
 	// Do we have a domain to add this function to?
 	if (domain) {
-		
+
 		// Add to domain
 		domain->AddFunction(funcSig);
 
@@ -661,11 +675,28 @@ int AAVM::RegisterFunction(AACSingleFunction funcPtr, AAFuncSignature*& funcSig,
 	}
 
 	// Return the proc ID
-	return procId;
+	return procID;
 
 }
 
 AAClassSignature* AAVM::RegisterClass(std::wstring typeName, AACClass cClass) {
+
+	// Is string defined?
+	if (AACTypeDef::String != 0) {
+
+		bool any = true;
+
+		for (auto& method : cClass.classMethods) {
+			if (method.name == L"ToString" && method.params.size() == 0) {
+				any = false;
+			}
+		}
+
+		if (any) {
+			cClass.classMethods.push_back(AACSingleFunction(L"ToString", &AAO_ToString, AACTypeDef::String, 0));
+		}
+		
+	}
 
 	// Class signature
 	AAClassSignature* cc = new AAClassSignature(typeName);
@@ -779,6 +810,10 @@ void AAVM::LoadStandardLibrary() {
 	// Register string class and type
 	AAClassSignature* strCls = this->RegisterClass(L"string", stringClass);
 	AACTypeDef::String = strCls->type;
+
+	// Create object class
+	AACClass objectClass;
+	this->RegisterClass(L"object", objectClass); // IDEA: Rename to Any
 
 	// Create standard namespaces
 	AACNamespace* __std = new AACNamespace(L"std", NULL);

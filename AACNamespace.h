@@ -1,5 +1,6 @@
 #pragma once
 #include "AAClassSignature.h"
+#include "AACEnum.h"
 
 struct AACNamespace {
 
@@ -8,6 +9,7 @@ struct AACNamespace {
 	aa::set<AACNamespace*> childspaces;
 	aa::set<AAClassSignature*> classes;
 	aa::set<AAFuncSignature*> functions;
+	aa::set<AACEnumSignature*> enums;
 	aa::set<AACType*> types;
 
 	AACNamespace() {
@@ -56,17 +58,27 @@ struct AACNamespace {
 		}
 	}
 
+	bool AddEnum(AACEnumSignature* sig) {
+		sig->domain = this;
+		if (this->AddType(sig->type)) {
+			return this->enums.Add(sig);
+		} else {
+			return false;
+		}
+	}
+
 	bool AddType(AACType* type) {
 		return this->types.Add(type);
 	}
 
-	AACNamespace* TemporaryDomain(aa::set<AACType*> types, aa::set<AAClassSignature*> classes, aa::set<AAFuncSignature*> functions) {
+	AACNamespace* TemporaryDomain(aa::set<AACType*> types, aa::set<AAClassSignature*> classes, aa::set<AAFuncSignature*> functions, aa::set<AACEnumSignature*> enums) {
 		
 		// New domain
 		AACNamespace* domain = new AACNamespace;
 		domain->functions = this->functions.Union(functions);
 		domain->classes = this->classes.Union(classes);
 		domain->types = this->types.Union(types);
+		domain->enums = this->enums.Union(enums);
 		
 		// Return the new domain
 		return domain;

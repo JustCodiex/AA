@@ -1,6 +1,7 @@
 #pragma once
 #include "AA_literals.h"
 #include "AAMemory.h"
+#include "stack.h"
 
 struct AAObject;
 
@@ -74,3 +75,6 @@ struct AAObject {
 };
 
 AAObject* AllocAAO(size_t sz);
+
+class AAVM;
+void AAO_ToString(AAVM* pAAVm, aa::stack<AAVal> args, aa::stack<AAVal>& stack);

@@ -1,6 +1,7 @@
 #include "AAVal.h"
 #include <sstream>
 #include <iomanip>
+#include "AAVM.h"
 
 AAVal AAVal::Null = AAVal(AA_Literal(AA_AnyLiteral::AA_AnyLiteral(), AALiteralType::Null));
 
@@ -41,5 +42,11 @@ AAObject* AllocAAO(size_t sz) {
 
 	// Return the object
 	return aao;
+
+}
+
+void AAO_ToString(AAVM* pAAVm, aa::stack<AAVal> args, aa::stack<AAVal>& stack) {
+
+	printf("");
 
 }

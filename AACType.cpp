@@ -1,5 +1,6 @@
 #include "AACType.h"
 #include "AACNamespace.h"
+#include "AACEnum.h"
 #include "AAClassSignature.h"
 
 AACType* AACType::Void = new AACType(L"void");
@@ -18,26 +19,41 @@ AACType::AACType() {
 	this->name = L"ErrType";
 	this->isRefType = false;
 	this->isArrayType = false;
+	this->isEnum = false;
 	this->encapsulatedType = 0;
 	this->classSignature = 0;
+	this->enumSignature = 0;
 }
 
 AACType::AACType(AAClassSignature* sig) {
 	this->name = sig->name;
 	this->isRefType = true;
 	this->isArrayType = false;
+	this->isEnum = false;
 	this->encapsulatedType = 0;
 	this->classSignature = sig;
+	this->enumSignature = 0;
 }
 
 AACType::AACType(std::wstring name) {
 	this->name = name;
 	this->isRefType = false;
 	this->isArrayType = false;
+	this->isEnum = false;
 	this->encapsulatedType = 0;
 	this->classSignature = 0;
+	this->enumSignature = 0;
 }
 
+AACType::AACType(AACEnumSignature* enumSignature) {
+	this->name = enumSignature->name;
+	this->isRefType = false;
+	this->isArrayType = false;
+	this->isEnum = true;
+	this->encapsulatedType = 0;
+	this->classSignature = 0;
+	this->enumSignature = enumSignature;
+}
 
 std::wstring AACType::GetFullname() {
 	if (this->classSignature && this->classSignature->domain) {
@@ -52,6 +68,7 @@ AACType* AACType::AsArrayType() {
 	t->isArrayType = true;
 	t->encapsulatedType = this;
 	t->isRefType = true;
+	t->isEnum = false;
 	return t;
 }
 

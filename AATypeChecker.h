@@ -62,10 +62,13 @@ private:
 	AACType* TypeCheckConditionalBlock(AA_AST_NODE* pConditionalNode);
 	AACType* TypeCheckIndexOperation(AA_AST_NODE* pIndexNode);
 	AACType* TypeCheckUsingOperation(AA_AST_NODE* pUseNode);
+	AACType* TypeCheckNewStatement(AA_AST_NODE* pNewStatement);
+
+	AACType* TypeCheckPatternMatchBlock(AA_AST_NODE* pMatchNode);
+	AACType* TypeCheckPatternMatchCase(AA_AST_NODE* pCaseNode, AACType* conditionType);
+	AACType* TypeCheckPatternMatchCaseCondition(AA_AST_NODE* pConditionNode);
 
 	AACType* TypeCheckCtorAndFindBestMatch(AACNamespace* pDomain, AA_AST_NODE* pCallNode);
-
-	AACType* TypeCheckNewStatement(AA_AST_NODE* pNewStatement);
 
 	AACType* TypeCheckFuncDecl(AA_AST_NODE* pDeclNode);
 

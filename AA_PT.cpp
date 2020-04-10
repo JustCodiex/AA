@@ -63,7 +63,7 @@ std::vector<AA_PT_NODE*> AA_PT::ToNodes(std::vector<AALexicalResult> lexResult) 
 		case AAToken::keyword:
 			if (IsBoolKeyword(lexResult[i].content)) {
 				node->nodeType = AA_PT_NODE_TYPE::booliterral;
-			} else if (lexResult[i].content == L"null") {
+			} else if (lexResult[i].content.compare(L"null") == 0) {
 				node->nodeType = AA_PT_NODE_TYPE::nullliteral;
 			} else {
 				node->nodeType = AA_PT_NODE_TYPE::keyword;
@@ -331,41 +331,58 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 
 void AA_PT::HandleKeywordCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 
-	if (nodes[nodeIndex]->content == L"var") {
+	if (nodes[nodeIndex]->content.compare(L"var") == 0) {
 
 		nodes[nodeIndex] = this->HandleVariableDecleration(nodes, nodeIndex);
 
-	} else if (nodes[nodeIndex]->content == L"class") {
+	} else if (nodes[nodeIndex]->content.compare(L"val") == 0) {
+
+		if (nodeIndex + 1 < nodes.size() && nodes[nodeIndex + 1]->nodeType == AA_PT_NODE_TYPE::identifier) {
+			nodes[nodeIndex] = this->HandleVariableDecleration(nodes, nodeIndex);
+		} else {
+			nodes[nodeIndex]->nodeType = AA_PT_NODE_TYPE::identifier;
+		}
+
+	} else if (nodes[nodeIndex]->content.compare(L"class") == 0) {
 	
 		nodes[nodeIndex] = this->CreateClassDecl(nodes, nodeIndex);
 
-	} else if (nodes[nodeIndex]->content == L"namespace") {
+	} else if (nodes[nodeIndex]->content.compare(L"namespace") == 0) {
 	
 		nodes[nodeIndex] = this->CreateNamespaceDecl(nodes, nodeIndex);
 
-	} else if (nodes[nodeIndex]->content == L"void") {
+	} else if (nodes[nodeIndex]->content.compare(L"enum") == 0) {
+
+		nodes[nodeIndex] = this->CreateEnumDecl(nodes, nodeIndex);
+
+	} else if (nodes[nodeIndex]->content.compare(L"void") == 0) {
 		
 		AA_PT_NODE* funcDeclNode = this->CreateFunctionDecl(nodes, nodeIndex);
 		if (funcDeclNode) {
 			nodes[nodeIndex] = funcDeclNode;
 		}
 
-	} else if (nodes[nodeIndex]->content == L"if") {
+	} else if (nodes[nodeIndex]->content.compare(L"Any") == 0) {
+	
+		// Make it be an identifier instead
+		nodes[nodeIndex]->nodeType = AA_PT_NODE_TYPE::identifier;
+
+	} else if (nodes[nodeIndex]->content.compare(L"if") == 0) {
 		
 		// Create conditional block (This automatically includes following else-if and else statements
 		nodes[nodeIndex] = this->CreateConditionBlock(nodes, nodeIndex);
 
-	} else if (nodes[nodeIndex]->content == L"for") {
+	} else if (nodes[nodeIndex]->content.compare(L"for") == 0) {
 
 		// Create for block
 		nodes[nodeIndex] = this->CreateForStatement(nodes, nodeIndex);
 
-	} else if (nodes[nodeIndex]->content == L"while") {
+	} else if (nodes[nodeIndex]->content.compare(L"while") == 0) {
 
 		// Create while block
 		nodes[nodeIndex] = this->CreateWhileStatement(nodes, nodeIndex);
 
-	} else if (nodes[nodeIndex]->content == L"do") {
+	} else if (nodes[nodeIndex]->content.compare(L"do") == 0) {
 
 		// Is it a do-while loop?
 		if (nodeIndex + 2 < nodes.size() && nodes[nodeIndex + 2]->nodeType == AA_PT_NODE_TYPE::keyword && nodes[nodeIndex + 2]->content == L"while") {
@@ -375,7 +392,7 @@ void AA_PT::HandleKeywordCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex
 
 		}
 
-	} else if (nodes[nodeIndex]->content == L"new") {
+	} else if (nodes[nodeIndex]->content.compare(L"new") == 0) {
 
 		if (nodeIndex + 2 < nodes.size() && (nodes[nodeIndex + 2]->nodeType == AA_PT_NODE_TYPE::expression || nodes[nodeIndex + 2]->nodeType == AA_PT_NODE_TYPE::indexing)) {
 
@@ -419,7 +436,7 @@ void AA_PT::HandleKeywordCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex
 
 		}
 
-	} else if (nodes[nodeIndex]->content == L"using") {
+	} else if (nodes[nodeIndex]->content.compare(L"using") == 0) {
 
 		AA_PT_NODE_TYPE useType = nodes[nodeIndex + 1]->nodeType;
 		bool isIdentifier = useType == AA_PT_NODE_TYPE::identifier;
@@ -474,6 +491,11 @@ void AA_PT::HandleKeywordCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex
 			nodeIndex = AA_PT_NODE_OUT_OF_BOUNDS_INDEX;
 			return;
 		}
+
+	} else if (nodes[nodeIndex]->content.compare(L"match") == 0) {
+
+		// Create pattern matching block (Note! we take whatever was before this lement and pattern matches with it, therefore we must assign to the previous element)
+		nodes[nodeIndex-1] = this->CreatePatternMatchBlock(nodes, nodeIndex);
 
 	}
 
@@ -556,11 +578,24 @@ std::vector<AA_PT_NODE*> AA_PT::CreateArgumentTree(AA_PT_NODE* pExpNode) {
 	this->ApplyStatementBindings(pExpNode->childNodes);
 
 	for (size_t i = 0; i < pExpNode->childNodes.size(); i++) {
+		
 		std::vector<AA_PT_NODE*> argElements;
+		
 		for (AA_PT_NODE* n : pExpNode->childNodes[i]->childNodes) {
 			argElements.push_back(n);
 		}
-		nodes.push_back(this->CreateTree(argElements, 0));
+
+		ApplySyntaxRules(argElements);
+
+		AA_PT_NODE* arg = this->CreateTree(argElements, 0);
+
+		// For some reason we get some problems with expressions in accessors here => so we have to add in this. TODO: Fix later
+		if (arg->nodeType == AA_PT_NODE_TYPE::accessor && arg->childNodes[1]->nodeType == AA_PT_NODE_TYPE::expression) {
+			arg->childNodes[1] = this->CreateTree(arg->childNodes[1]->childNodes, 0);
+		}
+
+		nodes.push_back(arg);
+
 	}
 
 	return nodes;
@@ -773,6 +808,197 @@ AA_PT_NODE* AA_PT::CreateNamespaceDecl(std::vector<AA_PT_NODE*>& nodes, size_t f
 
 	// Return the namespace decleration
 	return nodes[from];
+
+}
+
+AA_PT_NODE* AA_PT::CreateEnumDecl(std::vector<AA_PT_NODE*>& nodes, size_t from) {
+
+	if (from + 2 < nodes.size() && nodes[from + 1]->nodeType == AA_PT_NODE_TYPE::identifier && nodes[from + 2]->nodeType == AA_PT_NODE_TYPE::block) {
+
+		// Define this as an enum decleration
+		nodes[from]->nodeType = AA_PT_NODE_TYPE::enumdecleration;
+		nodes[from]->content = nodes[from + 1]->content;
+
+		// Get enum values
+		AA_PT_NODE* pValListNode = this->CreateEnumValueList(nodes[from + 2]);
+		nodes[from]->childNodes.push_back(pValListNode);
+
+		// Create enum body
+		AA_PT_NODE* pEnumBodyNode = new AA_PT_NODE(nodes[from + 2]->position);
+		pEnumBodyNode->nodeType = AA_PT_NODE_TYPE::enumbody;
+		pEnumBodyNode->childNodes = this->CreateDeclerativeBody(nodes[from + 2]->childNodes);
+
+		// Add enum body
+		nodes[from]->childNodes.push_back(pEnumBodyNode);
+
+		// Remove modified elements
+		nodes.erase(nodes.begin() + from + 1, nodes.begin() + from + 3);
+
+	} else {
+		SetError(AA_PT::Error("Expected namespace identifier", 0, nodes[from]->position));
+		return NULL;
+	}
+
+	return nodes[from];
+
+}
+
+AA_PT_NODE* AA_PT::CreateEnumValueList(AA_PT_NODE* pBlockNode) {
+
+	// Create the new node
+	AA_PT_NODE* pValListNode = new AA_PT_NODE(pBlockNode->position);
+	pValListNode->nodeType = AA_PT_NODE_TYPE::enumvallist;
+
+	// For all subelements
+	size_t i = 0;
+	while (i < pBlockNode->childNodes.size()) {
+
+		if (i + 1 < pBlockNode->childNodes.size()) {
+			if (pBlockNode->childNodes[i+1]->nodeType == AA_PT_NODE_TYPE::seperator && pBlockNode->childNodes[i+1]->content.compare(L",") == 0) {
+				if (pBlockNode->childNodes[i]->nodeType == AA_PT_NODE_TYPE::identifier) {
+					pValListNode->childNodes.push_back(pBlockNode->childNodes[i]);
+					pBlockNode->childNodes.erase(pBlockNode->childNodes.begin() + i, pBlockNode->childNodes.begin() + i + 2);
+				} else {
+					i++;
+				}
+			} else {
+				if (pBlockNode->childNodes[i]->nodeType == AA_PT_NODE_TYPE::identifier) {
+					pValListNode->childNodes.push_back(pBlockNode->childNodes[i]);
+					pBlockNode->childNodes.erase(pBlockNode->childNodes.begin() + i);
+					break;
+				} else {
+					break;
+				}
+			}
+		} else {
+			if (pBlockNode->childNodes[i]->nodeType == AA_PT_NODE_TYPE::identifier) {
+				pValListNode->childNodes.push_back(pBlockNode->childNodes[i]);
+				pBlockNode->childNodes.erase(pBlockNode->childNodes.begin() + i);
+				break;
+			} else {
+				i++;
+			}
+		}
+
+	}
+	 // TODO: Throw error if we have to identifiers following each other
+	return pValListNode;
+
+}
+
+AA_PT_NODE* AA_PT::CreatePatternMatchBlock(std::vector<AA_PT_NODE*>& nodes, size_t from) { // TODO: Make so we don't replace the previous statement (because we could be pattern matching different things)
+
+	// Make sure there's an identifier to work with
+	if (from == 0) {
+		SetError(AA_PT::Error("Expected identifier to pattern match", 0, nodes[from]->position));
+		return NULL;
+	}
+
+	// Create match statement and add match target
+	AA_PT_NODE* matchStatement = new AA_PT_NODE(nodes[from]->position);
+	matchStatement->nodeType = AA_PT_NODE_TYPE::matchstatement;
+	matchStatement->childNodes.push_back(nodes[from - 1]);
+
+	// Remove match statement
+	nodes.erase(nodes.begin() + from);
+
+	// Create match case list
+	AA_PT_NODE* matchblock = new AA_PT_NODE(nodes[from-1]->position);
+	matchblock->nodeType = AA_PT_NODE_TYPE::matchcaselist;
+	matchblock->childNodes = this->CreatePatternCases(nodes[from]);
+
+	// Erase the block
+	nodes.erase(nodes.begin() + from);
+
+	// Add matchblock to match statement
+	matchStatement->childNodes.push_back(matchblock);
+
+	// Update previous statement
+	nodes[from - 1] = matchStatement;
+
+	// Return the match case
+	return nodes[from-1];
+
+}
+
+std::vector<AA_PT_NODE*> AA_PT::CreatePatternCases(AA_PT_NODE* pBlockNode) {
+
+	std::vector<AA_PT_NODE*> cases;
+
+	for (size_t i = 0; i < pBlockNode->childNodes.size(); i++) {
+
+		if (pBlockNode->childNodes[i]->nodeType == AA_PT_NODE_TYPE::keyword && pBlockNode->childNodes[i]->content.compare(L"case") == 0) {
+
+			std::vector<AA_PT_NODE*> subnodes;
+
+			while (i < pBlockNode->childNodes.size() && (pBlockNode->childNodes[i]->nodeType != AA_PT_NODE_TYPE::seperator && pBlockNode->childNodes[i]->content.compare(L",") != 0)) {
+				subnodes.push_back(pBlockNode->childNodes[i]);
+				i++;
+			}
+
+			cases.push_back(this->CreatePatternCase(subnodes));
+
+		} else {
+
+			// Write out error
+			this->SetError(AA_PT::Error("Expected 'case' keyword", 0, pBlockNode->childNodes[i]->position));
+
+			// Return empty list
+			return std::vector<AA_PT_NODE*>();
+
+		}
+
+	}
+
+	return cases;
+
+}
+
+AA_PT_NODE* AA_PT::CreatePatternCase(std::vector<AA_PT_NODE*> nodes) {
+
+	AA_PT_NODE* pCaseNode = new AA_PT_NODE(nodes[0]->position);
+	pCaseNode->nodeType = AA_PT_NODE_TYPE::matchcasestatement;
+
+	std::vector<AA_PT_NODE*> condition;
+	std::vector<AA_PT_NODE*> expression;
+
+	bool isReadingCondition = true;
+
+	for (size_t i = 1; i < nodes.size(); i++) {
+
+		if (nodes[i]->nodeType == AA_PT_NODE_TYPE::binary_operation && nodes[i]->content.compare(L"=>") == 0) {
+			isReadingCondition = false;
+		} else {
+			if (isReadingCondition) {
+				condition.push_back(nodes[i]);
+			} else {
+				expression.push_back(nodes[i]);
+			}
+		}
+
+	}
+
+	// Create condition node
+	AA_PT_NODE* pConditionNode = new AA_PT_NODE(condition[0]->position);
+	pConditionNode->nodeType = AA_PT_NODE_TYPE::condition;
+	pConditionNode->childNodes.push_back(this->CreateTree(condition, 0));
+
+	// Create expression node
+	AA_PT_NODE* pExpressionNode = new AA_PT_NODE(expression[0]->position);
+	pExpressionNode->nodeType = AA_PT_NODE_TYPE::block; // Technically speaking, it's an expression, but the AST'fier rejects those
+	pExpressionNode->childNodes.push_back(this->CreateTree(expression, 0));
+
+	// For some reason we get some problems with expressions in accessors here => so we have to add in this. TODO: Fix later
+	if (pExpressionNode->childNodes[0]->nodeType == AA_PT_NODE_TYPE::accessor && pExpressionNode->childNodes[0]->childNodes[1]->nodeType == AA_PT_NODE_TYPE::expression) {
+		pExpressionNode->childNodes[0]->childNodes[1] = this->CreateTree(pExpressionNode->childNodes[0]->childNodes[1]->childNodes, 0);
+	}
+
+	// Add two sub elements to case node
+	pCaseNode->childNodes.push_back(pConditionNode);
+	pCaseNode->childNodes.push_back(pExpressionNode);
+
+	// Return case node
+	return pCaseNode;
 
 }
 
@@ -992,6 +1218,14 @@ void AA_PT::ApplyGroupings(std::vector<AA_PT_NODE*>& nodes) {
 
 }
 
+bool AA_PT::CanTreatKeywordAsIdentifier(AA_PT_NODE* node) {
+	if (node->nodeType == AA_PT_NODE_TYPE::keyword) {
+		return node->content.compare(L"this") == 0 || node->content.compare(L"base") == 0;
+	} else {
+		return false;
+	}
+}
+
 void AA_PT::ApplyAccessorBindings(std::vector<AA_PT_NODE*>& nodes) {
 
 	int i = 0;
@@ -999,7 +1233,7 @@ void AA_PT::ApplyAccessorBindings(std::vector<AA_PT_NODE*>& nodes) {
 
 		if (nodes[i]->nodeType == AA_PT_NODE_TYPE::accessor) {
 
-			if (i - 1 >= 0 && (nodes[i-1]->nodeType == AA_PT_NODE_TYPE::identifier || nodes[i-1]->nodeType == AA_PT_NODE_TYPE::accessor)) {
+			if (i - 1 >= 0 && (nodes[i-1]->nodeType == AA_PT_NODE_TYPE::identifier || nodes[i-1]->nodeType == AA_PT_NODE_TYPE::accessor || CanTreatKeywordAsIdentifier(nodes[i-1]))) {
 
 				if (i + 1 < (int)nodes.size() && nodes[i + 1]->nodeType == AA_PT_NODE_TYPE::identifier) {
 

@@ -13,10 +13,13 @@ enum class AA_AST_NODE_TYPE {
 	callaccess, // Call method on object
 	fieldaccess, // Get or set field access
 	memberaccess, // Get class type
+	enumvalueaccess, // Get enum value access (warning => will use memberaccess until typechecker corrects it)
 
 	block,
 	funcbody,
 	classbody,
+	enumbody,
+	lambdabody,
 
 	condition,
 	ifstatement,
@@ -32,7 +35,8 @@ enum class AA_AST_NODE_TYPE {
 	continuestatement,
 	returnstatement,
 
-	matchsatement,
+	matchstatement,
+	matchcaselist,
 	matchcasestatement,
 
 	newstatement,
@@ -62,6 +66,10 @@ enum class AA_AST_NODE_TYPE {
 	funcall,
 	funarg,
 	funarglist,
+
+	enumdecleration,
+	enumvallist,
+	enumidentifier,
 
 	intliteral,
 	floatliteral,

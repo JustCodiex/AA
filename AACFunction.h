@@ -34,6 +34,14 @@ struct AACSingleFunction {
 		va_end(ap);
 	}
 
+	bool equals(AACSingleFunction other) {
+		return this->fPtr == other.fPtr;
+	}
+
+	bool operator==(AACSingleFunction other) {
+		return other.equals(*this);
+	}
+
 };
 
 namespace aa {

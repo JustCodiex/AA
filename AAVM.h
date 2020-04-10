@@ -135,7 +135,7 @@ private:
 	bool m_logCompileMessages;
 	bool m_logTopOfStackAfterExec;
 
-	std::vector<AACSingleFunction> m_cppfunctions;
+	aa::set<AACSingleFunction> m_cppfunctions;
 
 	AAMemoryStore* m_heapMemory;
 

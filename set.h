@@ -117,6 +117,28 @@ namespace aa {
 		}
 
 		/// <summary>
+		/// Merges with another set where a merge predicate is executed on all elements in the other set. If it holds true a merge function is executed on element before it's added
+		/// </summary>
+		/// <param name="other">Other set to merge with</param>
+		/// <param name="mergePredicate">The predicate that an element must pass for it to be included</param>
+		/// <param name="mergeAction">The action to perform on the element</param>
+		/// <returns>The amount of elements that was merged</returns>
+		int Merge(set<T> other, std::function<bool(T)> mergePredicate, std::function<T(T)> mergeFunc) {
+			int merged = 0;
+			other.ForEach([&merged, this, mergePredicate, mergeFunc] (T& elem)
+				{
+					if (mergePredicate(elem)) {
+						T sub = mergeFunc(elem);
+						if (this->Add(sub)) {
+							merged++;
+						}
+					}
+				}
+			);
+			return merged;
+		}
+
+		/// <summary>
 		/// Create a new set representing the difference between two sets
 		/// </summary>
 		/// <param name="other">The other set to create difference set from</param>

@@ -23,6 +23,7 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 	switch (pNode->nodeType) {
 	case AA_PT_NODE_TYPE::funcbody:
 	case AA_PT_NODE_TYPE::classbody:
+	case AA_PT_NODE_TYPE::enumbody:
 	case AA_PT_NODE_TYPE::block: {
 
 		AA_AST_NODE* blockNode = new AA_AST_NODE(L"{<block>}", this->GetASTBlockType(pNode->nodeType), pNode->position);
@@ -33,6 +34,12 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 
 		return blockNode;
 
+	}
+	case AA_PT_NODE_TYPE::keyword: {
+		if (pNode->content.compare(L"this") == 0) {
+			return new AA_AST_NODE(L"this", AA_AST_NODE_TYPE::variable, pNode->position);
+		}
+		break;
 	}
 	case AA_PT_NODE_TYPE::binary_operation: {
 
@@ -215,6 +222,38 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 			throw std::exception("FIX THIS!");
 			break;
 		}
+	}
+	case AA_PT_NODE_TYPE::enumdecleration: {
+		AA_AST_NODE* enumDeclNode = new AA_AST_NODE(pNode->content, AA_AST_NODE_TYPE::enumdecleration, pNode->position);
+		enumDeclNode->expressions.push_back(this->AbstractNode(pNode->childNodes[0]));
+		enumDeclNode->expressions.push_back(this->AbstractNode(pNode->childNodes[1]));
+		return enumDeclNode;
+	}
+	case AA_PT_NODE_TYPE::enumvallist: {
+		AA_AST_NODE* pEnumValListNode = new AA_AST_NODE(pNode->content, AA_AST_NODE_TYPE::enumvallist, pNode->position);
+		for (size_t i = 0; i < pNode->childNodes.size(); i++) {
+			pEnumValListNode->expressions.push_back(new AA_AST_NODE(pNode->childNodes[i]->content, AA_AST_NODE_TYPE::enumidentifier, pNode->childNodes[i]->position));
+		}
+		return pEnumValListNode;
+	}
+	case AA_PT_NODE_TYPE::matchcaselist: {
+		AA_AST_NODE* pCaseList = new AA_AST_NODE(L"", AA_AST_NODE_TYPE::matchcaselist, pNode->position);
+		for (size_t i = 0; i < pNode->childNodes.size(); i++) {
+			pCaseList->expressions.push_back(this->AbstractNode(pNode->childNodes[i]));
+		}
+		return pCaseList;
+	} 
+	case AA_PT_NODE_TYPE::matchcasestatement: {
+		AA_AST_NODE* pMatchStatement = new AA_AST_NODE(pNode->content, AA_AST_NODE_TYPE::matchcasestatement, pNode->position);
+		pMatchStatement->expressions.push_back(this->AbstractNode(pNode->childNodes[0]));
+		pMatchStatement->expressions.push_back(this->AbstractNode(pNode->childNodes[1]));
+		return pMatchStatement;
+	}
+	case AA_PT_NODE_TYPE::matchstatement: {
+		AA_AST_NODE* pMatchNode = new AA_AST_NODE(pNode->content, AA_AST_NODE_TYPE::matchstatement, pNode->position);
+		pMatchNode->expressions.push_back(this->AbstractNode(pNode->childNodes[0])); // match target
+		pMatchNode->expressions.push_back(this->AbstractNode(pNode->childNodes[1])); // match cases
+		return pMatchNode;
 	}
 	case AA_PT_NODE_TYPE::intliteral:
 	case AA_PT_NODE_TYPE::charliteral:

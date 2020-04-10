@@ -301,12 +301,10 @@ void AALexer::Join(std::vector<AALexicalResult>& results) {
 			int j;
 			if (FirstNonWhitespaceBefore(results, i, j) == AAToken::keyword) {
 				AALexicalResult lR = AALexicalResult(results[j].content + results[i].content, AAToken::keyword, results[j].position);
-				if (IsValidJointKeyword(lR.content)) {
+				if (IsValidJointKeyword(lR.content)) { // If the formed keyword is valid, we join it
 					results.erase(results.begin() + j, results.begin() + i + 1);
 					results.insert(results.begin() + j, lR);
-				} else {
-					wprintf(L"Invalid joint keyword detected '%s'", lR.content.c_str());
-				}
+				} // otherwise it might just be certain keywords put in sequence (eg. "this match ..." or "public void")
 			}
 		} else if (results[i].token == AAToken::quote) {
 

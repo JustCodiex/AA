@@ -3,18 +3,22 @@
 
 struct AACNamespace;
 struct AAClassSignature;
+struct AACEnumSignature;
 
 struct AACType {
 
 	std::wstring name;
 	bool isRefType;
 	bool isArrayType;
+	bool isEnum;
 	AACType* encapsulatedType;
 	AAClassSignature* classSignature;
+	AACEnumSignature* enumSignature;
 
 	AACType();
 	AACType(std::wstring name);
 	AACType(AAClassSignature* classSignature);
+	AACType(AACEnumSignature* enumSignature);
 
 	/// <summary>
 	/// 

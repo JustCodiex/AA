@@ -1,6 +1,7 @@
 #include "AAStaticAnalysis.h"
 #include "astring.h"
 #include "AAC.h"
+#include "AAVal.h"
 
 aa::list<AACType*> _getdeftypeenv() {
 	aa::list<AACType*> types;
@@ -15,6 +16,9 @@ AAStaticAnalysis::AAStaticAnalysis(AAC* pCompiler) {
 
 	// Set pointer to compiler
 	this->m_compilerPointer = pCompiler;
+
+	// Point to null until defined
+	this->m_objectInheritFrom = NULL;
 
 }
 
@@ -132,14 +136,24 @@ AAStaticEnvironment AAStaticAnalysis::NewStaticEnvironment(AACNamespace*& global
 	// For all preloaded classes
 	for (size_t i = 0; i < this->m_preregisteredClasses.Size(); i++) {
 
+		AAClassSignature* cc = this->m_preregisteredClasses.Apply(i);
+
 		// Add class and class type to domain
-		globalDomain->AddClass(this->m_preregisteredClasses.Apply(i));
+		globalDomain->AddClass(cc);
 
 		// Add type name
-		env.availableTypes.Add(this->m_preregisteredClasses.Apply(i)->type);
+		env.availableTypes.Add(cc->type);
 
 		// Add the class
-		env.availableClasses.Add(this->m_preregisteredClasses.Apply(i));
+		env.availableClasses.Add(cc);
+
+		// The object
+		if (cc->name.compare(L"object") == 0) {
+
+			// Set object
+			this->m_objectInheritFrom = cc;
+
+		}
 
 	}
 
@@ -153,6 +167,8 @@ AAStaticEnvironment AAStaticAnalysis::NewStaticEnvironment(AACNamespace*& global
 		env.availableFunctions.Add(this->m_preregisteredFunctions.Apply(i));
 
 	}
+
+	// TODO: Add preloaded enums
 
 	// Return static environment
 	return env;
@@ -168,7 +184,7 @@ bool AAStaticAnalysis::ExtractGlobalScope(std::vector<AA_AST*>& trees) {
 
 		AA_AST_NODE_TYPE nodeType = trees[i]->GetRoot()->type;
 
-		if (nodeType != AA_AST_NODE_TYPE::fundecl && nodeType != AA_AST_NODE_TYPE::classdecl &&
+		if (nodeType != AA_AST_NODE_TYPE::fundecl && nodeType != AA_AST_NODE_TYPE::classdecl && nodeType != AA_AST_NODE_TYPE::enumdecleration && // Handle declerations for themselves
 			nodeType != AA_AST_NODE_TYPE::usingspecificstatement && nodeType != AA_AST_NODE_TYPE::usingstatement && // Using statements need to preserve their position in code
 			nodeType != AA_AST_NODE_TYPE::name_space) { // namespaces are per definition not part of the global namespace/scope
 
@@ -181,6 +197,7 @@ bool AAStaticAnalysis::ExtractGlobalScope(std::vector<AA_AST*>& trees) {
 
 	}
 
+	// Add global scope iff it's not empty
 	if (pGlobalScope->expressions.size() > 0) {
 		trees.insert(trees.begin(), new AA_AST(pGlobalScope));
 	}
@@ -271,6 +288,28 @@ AAC_CompileErrorMessage AAStaticAnalysis::PreregisterTypes(AA_AST_NODE* pNode, A
 	} else if (rootType == AA_AST_NODE_TYPE::vardecl) {
 
 		wprintf(L"Not implemented. AAStaticAnalysis.Cpp@%i", __LINE__);
+
+	} else if (rootType == AA_AST_NODE_TYPE::enumdecleration) {
+
+		// Create the new enum signature
+		AACEnumSignature* enumSig = new AACEnumSignature(pNode->content);
+
+		// Can we add the enum signature
+		if (domain->AddEnum(enumSig)) {
+
+			if (domain->IsGlobalSpace()) {
+				senv.availableEnums.Add(enumSig);
+				senv.availableTypes.Add(enumSig->type);
+			}
+
+		} else {
+
+			err.errorMsg = "Duplicate enum definition found";
+			err.errorSource = pNode->position;
+			err.errorType = 1;
+			return err;
+
+		}
 
 	}
 
@@ -375,9 +414,118 @@ AAC_CompileErrorMessage AAStaticAnalysis::FetchStaticDeclerationsFromASTNode(AA_
 
 		wprintf(L"Not implemented. AAStaticAnalysis.Cpp@%i", __LINE__);
 
+	} else if (rootType == AA_AST_NODE_TYPE::enumdecleration) {
+
+		// Get the enum
+		AACEnumSignature* sig;
+
+		if (COMPILE_OK(err = this->RegisterEnum(pNode, sig, domain, senv))) {
+
+			// Add all methods to domain
+			if (!sig->functions.ForAll([domain](AAFuncSignature*& sig) { return domain->AddFunction(sig); })) {
+				err.errorMsg = "Duplicate method definition found";
+				err.errorSource = pNode->position;
+				err.errorType = 1;
+				return err;
+			}
+
+			// If in the global space we'll add it directly to the static checks
+			if (domain->IsGlobalSpace()) {
+
+				// Register class methods into static environment as well
+				for (size_t j = 0; j < sig->functions.Size(); j++) {
+
+					// Register method
+					if (!senv.availableFunctions.Add(sig->functions.Apply(j))) {
+
+						err.errorMsg = "Duplicate method definition";
+						err.errorSource = pNode->position;
+						err.errorType = 1;
+						return err;
+
+					}
+
+				}
+
+			}
+
+		} else {
+
+			// Return error
+			return err;
+
+		}
+
 	}
 
 	// No compile errors
+	return NO_COMPILE_ERROR_MESSAGE;
+
+}
+
+AAC_CompileErrorMessage AAStaticAnalysis::RegisterEnum(AA_AST_NODE* pNode, AACEnumSignature*& enumSig, AACNamespace* domain, AAStaticEnvironment& senv) {
+
+	// Potential compiler error container
+	AAC_CompileErrorMessage err;
+
+	int enumID;
+	if (!domain->enums.FindFirstIndex([pNode](AACEnumSignature*& sig) { return sig->name.compare(pNode->content) == 0; }, enumID)) {
+		printf("fatal error");
+	}
+
+	// Fetch the enum from domain
+	enumSig = domain->enums.Apply(enumID);
+
+	// TODO: Set enum val type here
+
+	// For all enum values
+	for (size_t i = 0; i < pNode->expressions[0]->expressions.size(); i++) {
+
+		// TODO: Evaluate constants here DIRECTLY (Everything must be known at compile time)
+
+		// Create a default variable
+		enumSig->values.Add(AACEnumValue(pNode->expressions[0]->expressions[i]->content, i));
+
+	}
+
+	// Inherit from object
+	this->HandleObjectInheritance(enumSig, senv);
+
+	// Keep track of function bodies
+	std::vector<AA_AST_NODE*> funcBodyNodes;
+
+	for (size_t i = 0; i < pNode->expressions[1]->expressions.size(); i++) {
+
+		// If function
+		if (pNode->expressions[1]->expressions[i]->type == AA_AST_NODE_TYPE::fundecl) {
+
+			// We need to push a "this" into the method params list
+			m_compilerPointer->GetClassCompilerInstance()->RedefineFunDecl(enumSig->name, pNode->expressions[1]->expressions[i]);
+
+			// Register function
+			AAFuncSignature* sig;
+			if (COMPILE_OK(err = this->RegisterFunction(pNode->expressions[1]->expressions[i], sig, domain, senv))) {
+
+				// Update signature data
+				sig->isClassMethod = true;
+				sig->node = pNode->expressions[1]->expressions[i];
+
+				// Add method to class definition
+				enumSig->functions.Add(sig);
+
+				if (pNode->expressions[1]->expressions[i]->expressions.size() >= 3) { // make sure it's declared
+					funcBodyNodes.push_back(pNode->expressions[1]->expressions[i]->expressions[2]);
+				}
+
+			} else {
+				return err;
+			}
+
+		}
+
+	}
+
+	// No error, return AOK
 	return NO_COMPILE_ERROR_MESSAGE;
 
 }
@@ -397,6 +545,9 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterClass(AA_AST_NODE* pNode, AACl
 
 	// Compiled Class data size
 	cc->classByteSz = 0;
+
+	// Inherit from object
+	this->HandleObjectInheritance(cc, senv);
 
 	// Function bodies to correct
 	std::vector<AA_AST_NODE*> funcBodyNodes;
@@ -533,6 +684,56 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterFunction(AA_AST_NODE* pNode, A
 
 }
 
+AAC_CompileErrorMessage AAStaticAnalysis::HandleObjectInheritance(AAClassSignature* sig, AAStaticEnvironment& senv) {
+	return this->HandleInheritanceFrom(sig, m_objectInheritFrom, senv);
+}
+
+AAC_CompileErrorMessage AAStaticAnalysis::HandleObjectInheritance(AACEnumSignature* sig, AAStaticEnvironment& senv) {
+	return this->HandleInheritanceFrom(sig, m_objectInheritFrom, senv);
+}
+
+AAC_CompileErrorMessage AAStaticAnalysis::HandleInheritanceFrom(AAClassSignature* child, AAClassSignature* super, AAStaticEnvironment& senv) {
+
+	// Merge functions
+	int merged = child->methods.Merge(super->methods,
+		[child](AAFuncSignature* sig) { return !child->methods.Contains(sig); },
+		[child, &senv](AAFuncSignature* sig) {
+			AAFuncSignature* nSig = new AAFuncSignature(*sig);
+			nSig->name = child->name + L"::" + nSig->GetName();
+			child->methods.Add(nSig);
+			/*child->domain->AddFunction(nSig);
+			if (child->domain->IsGlobalSpace()) {
+				senv.availableFunctions.Add(nSig);
+			}*/
+			return nSig;
+		}
+	);
+
+	return NO_COMPILE_ERROR_MESSAGE;
+
+}
+
+AAC_CompileErrorMessage AAStaticAnalysis::HandleInheritanceFrom(AACEnumSignature* child, AAClassSignature* super, AAStaticEnvironment& senv) {
+
+	// Merge functions
+	int merged = child->functions.Merge(super->methods,
+		[child](AAFuncSignature* sig) { return !child->functions.Contains(sig); },
+		[child, &senv](AAFuncSignature* sig) {
+			AAFuncSignature* nSig = new AAFuncSignature(*sig);
+			nSig->name = child->name + L"::" + nSig->GetName();
+			child->functions.Add(nSig);
+			/*child->domain->AddFunction(nSig);
+			if (child->domain->IsGlobalSpace()) {
+				senv.availableFunctions.Add(nSig);
+			}*/
+			return nSig;
+		}
+	);
+
+	return NO_COMPILE_ERROR_MESSAGE;
+
+}
+
 int AAStaticAnalysis::GetReturnCount(AAFuncSignature* funcSig) {
 	return (funcSig->returnType == AACType::Void) ? 0 : 1;
 }
@@ -630,6 +831,8 @@ int AAStaticAnalysis::VerifyFunctionControlPath(AA_AST_NODE* pNode, AAC_CompileE
 		}
 		return c;
 	}
+	case AA_AST_NODE_TYPE::matchstatement: // NEEDS PROPER CHECKING
+		return 1;
 	default:
 		break;
 	}

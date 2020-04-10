@@ -15,6 +15,7 @@ struct AAStaticEnvironment {
 	aa::set<AAFuncSignature*> availableFunctions;
 	aa::set<AAClassSignature*> availableClasses;
 	aa::set<AACType*> availableTypes;
+	aa::set<AACEnumSignature*> availableEnums;
 
 	AAStaticEnvironment() {
 		globalNamespace = 0;
@@ -81,6 +82,13 @@ private:
 
 	AAC_CompileErrorMessage RegisterFunction(AA_AST_NODE* pNode, AAFuncSignature*& sig, AACNamespace* domain, AAStaticEnvironment& senv);
 	AAC_CompileErrorMessage RegisterClass(AA_AST_NODE* pNode, AAClassSignature*& sig, AACNamespace* domain, AAStaticEnvironment& senv);
+	AAC_CompileErrorMessage RegisterEnum(AA_AST_NODE* pNode, AACEnumSignature*& sig, AACNamespace* domain, AAStaticEnvironment& senv);
+
+	AAC_CompileErrorMessage HandleObjectInheritance(AAClassSignature* sig, AAStaticEnvironment& senv);
+	AAC_CompileErrorMessage HandleObjectInheritance(AACEnumSignature* sig, AAStaticEnvironment& senv);
+
+	AAC_CompileErrorMessage HandleInheritanceFrom(AAClassSignature* child, AAClassSignature* super, AAStaticEnvironment& senv);
+	AAC_CompileErrorMessage HandleInheritanceFrom(AACEnumSignature* child, AAClassSignature* super, AAStaticEnvironment& senv);
 
 	AACType* GetTypeFromName(std::wstring tName, AACNamespace* domain, AAStaticEnvironment& senv);
 
@@ -89,6 +97,9 @@ private:
 	int VerifyFunctionControlPath(AA_AST_NODE* pNode, AAC_CompileErrorMessage& err);
 
 private:
+
+	// The object all other objects must inherit from (Keep in mind inheritance has not been implemented yet, 10/04/20)
+	AAClassSignature* m_objectInheritFrom;
 
 	aa::set<AAClassSignature*> m_preregisteredClasses;
 	aa::set<AAFuncSignature*> m_preregisteredFunctions;
