@@ -3,7 +3,9 @@
 #include <iostream>
 #include <Windows.h>
 #include "AAVM.h"
+#ifdef _DEBUG
 #include "AALanguageRegressionTest.h"
+#endif
 
 ///////////////////
 // Global Flags
@@ -72,7 +74,7 @@ int wmain(int argc, wchar_t** argv) {
     setupenvironment();
 
     // Print VM data
-    printf("Å Virtual Machine. V1.0\n");
+    wprintf(L"Å Virtual Machine. V1.0\n");
 
     // index
     int i = 1;
@@ -91,7 +93,11 @@ int wmain(int argc, wchar_t** argv) {
         } else if (wcscmp(argv[i], L"-pause") == 0) {
             pauseOnComplete = true;
         } else if (wcscmp(argv[i], L"-test_regressive") == 0) {
+#if _DEBUG
             enableRegTests = true;
+#else
+            wprintf(L"Reggression tests not available");
+#endif
         } else if (wcscmp(argv[i], L"-c") == 0) {
             isCompileInput = true;
             if (i + 1 < argc && argv[i+1][0] != '-') {
@@ -141,6 +147,8 @@ int wmain(int argc, wchar_t** argv) {
 
     }
 
+#if _DEBUG
+
     // Run regression tests
     if (enableRegTests) {
         if (!RunRegressionTests(VM)) {
@@ -149,6 +157,8 @@ int wmain(int argc, wchar_t** argv) {
             return -1;
         }
     }
+
+#endif
 
     // Release the virtual machine
     VM->Release();
