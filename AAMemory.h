@@ -17,6 +17,9 @@ struct AAMemoryPtr {
 	bool operator==(const int& i) const {
 		return this->val == i;
 	}
+	bool operator!=(const int& i) const {
+		return !(this->val == i);
+	}
 };
 
 template <>

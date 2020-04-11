@@ -2,29 +2,29 @@
 #include <sstream>
 #include <iomanip>
 #include "AAVM.h"
+#include "astring.h"
+#include "AAMemoryStore.h"
 
 AAVal AAVal::Null = AAVal(AA_Literal(AA_AnyLiteral::AA_AnyLiteral(), AALiteralType::Null));
 
 std::wstring AAVal::ToString() {
 	if (this->ptr.val) {
-		size_t addr = this->ptr.val;
-		std::wstringstream ws;
-		ws << L"0x" << std::setfill((wchar_t)'0') << std::setw(sizeof(int) * 2) << std::hex << addr;
-		return ws.str();
-	}
-	switch (this->litVal.tp) {
-	case AALiteralType::Boolean:
-		return (this->litVal.lit.b.val) ? L"true" : L"false";
-	case AALiteralType::Float:
-		return std::to_wstring(this->litVal.lit.f.val);
-	case AALiteralType::Int:
-		return std::to_wstring(this->litVal.lit.i.val);
-	case AALiteralType::String:
-		return std::wstring(this->litVal.lit.s.val);
-	case AALiteralType::Char:
-		return std::wstring(1, this->litVal.lit.c.val);
-	default:
-		return L"Null";
+		return aa::wstring_hex(this->ptr.val);
+	} else {
+		switch (this->litVal.tp) {
+		case AALiteralType::Boolean:
+			return (this->litVal.lit.b.val) ? L"true" : L"false";
+		case AALiteralType::Float:
+			return std::to_wstring(this->litVal.lit.f.val);
+		case AALiteralType::Int:
+			return std::to_wstring(this->litVal.lit.i.val);
+		case AALiteralType::String:
+			return std::wstring(this->litVal.lit.s.val);
+		case AALiteralType::Char:
+			return std::wstring(1, this->litVal.lit.c.val);
+		default:
+			return L"Null";
+		}
 	}
 } 
 
@@ -46,7 +46,21 @@ AAObject* AllocAAO(size_t sz) {
 }
 
 void AAO_ToString(AAVM* pAAVm, aa::stack<AAVal> args, aa::stack<AAVal>& stack) {
+	
+	// Convert to argument list
+	aa::list<AAVal> argl = aa::ToArgumentList(args);
 
-	printf("");
+	// Is it a pointer value
+	if (argl.First().ptr != 0) {
+
+		// Push hexadecimal string representation of memory address onto pointer (Not the actual memory address)
+		stack.Push(AAVal(aa::wstring_hex(argl.First().ptr.val)));
+
+	} else {
+
+		// Push string representation of primitive unto stack
+		stack.Push(AAVal(argl.First().ToString()));
+
+	}
 
 }

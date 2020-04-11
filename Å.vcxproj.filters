@@ -272,11 +272,11 @@
     <ClInclude Include="AAMemoryStore.h">
       <Filter>Header Files\VM\Memory</Filter>
     </ClInclude>
-    <ClInclude Include="AAMemory.h">
-      <Filter>Source Files\VM\Memory</Filter>
-    </ClInclude>
     <ClInclude Include="AACEnum.h">
       <Filter>Header Files\compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="AAMemory.h">
+      <Filter>Header Files\VM\Memory</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
