@@ -3,22 +3,27 @@ Yep, it's yet another programming language, which probably has nothing new to ad
 ## What's it like?
 The language is heavily influenced by the C languages (and it's also written in C++).
 One of the goals with the language is to introduce a more clean and, hopefully, more intuitive language.
+## Why?
+Because designing programming languages is a fun and learnful experience.
+## How does it work?
+Currently the language is parsed from a string into a parse tree, which is then compiled into Å's bytecode system (Using bytes to represent operations and arguments in a simple format).
+That code can then be executed by the AAVM, taking the bytecode as input.
 ### The state of the language (With Small Examples):
 #### Arithmetic and variables
 It's currently possible to write statements like these:
 ```
-{ 
-    var x = (5+5)*5-2; 
-    var y = 20; 
-    x - y; 
+{
+    var x = (5+5)*5-2;
+    var y = 20;
+    x - y;
 }
 ```
-Which will be evaluated to 28 (Because the language does abide by a standard order of operations ruleset). Note the implicit return from the last statement. While there's a simple var keyword for variable declerations, we can directly specify the type.
+Which will be evaluated to 28 (Because the language does abide by a standard order of operations ruleset). Note the implicit return from the last statement. While there's a simple var keyword for variable declarations, we can directly specify the type.
 ```
-{ 
-    int x = 5; 
-    x = x + 5; 
-    x; 
+{
+    int x = 5;
+    x = x + 5;
+    x;
 }
 ```
 Above code will, as expected, output 10. A small note for the current state of the language; types are not enforced (but checked at compile time). Additionally, variable scopes are not properly defined at the moment. Meaning the language is currently using a dynamic scope system.
@@ -34,7 +39,7 @@ int foo() {
 }
 foo();
 ```
-[For-Loop.aa](examples/for-loop.aa)  
+[For-Loop.aa](examples/for-loop.aa)
 ```
 int foo() {
     var i = 0;
@@ -45,7 +50,7 @@ int foo() {
 }
 foo();
 ```
-[While-Loop.aa](examples/while-loop.aa)  
+[While-Loop.aa](examples/while-loop.aa)
 ```
 int foo() {
     var i = 0;
@@ -56,7 +61,7 @@ int foo() {
 }
 foo();
 ```
-[Do-While-Loop.aa](examples/dowhile-loop.aa)  
+[Do-While-Loop.aa](examples/dowhile-loop.aa)
 The three examples above are the only three loops currently supported. A `foreach` loop is planned, but is only really useful when arrays and iterators have been implemented.
 #### Functions
 ```
@@ -67,11 +72,11 @@ int test() {
 }
 test();
 ```
-Functions can be defined as expected. Since there's no real conecpt of files, access modifiers are currently not applicable (but planned). The code sample above will run the test function and return 28. We note that the language currently works with a loose concept of a global execution scope. Functions are excluded from this scope, meaning the `test();` statement is considered to be part of the global scope and is executed during runtime. Meanwhile the definition of test is NOT considered part of the global execution scope and will, therefore, not execute by itself.
+Functions can be defined as expected. Since there's no real concept of files, access modifiers are currently not applicable (but planned). The code sample above will run the test function and return 28. We note that the language currently works with a loose concept of a global execution scope. Functions are excluded from this scope, meaning the `test();` statement is considered to be part of the global scope and is executed during runtime. Meanwhile the definition of test is NOT considered part of the global execution scope and will, therefore, not execute by itself.
 ```
-int par(int x, int y) { 
-    x - y; 
-} 
+int par(int x, int y) {
+    x - y;
+}
 par(10, 5);
 ```
 The `par` function defined above takes two parameters `x` and `y` and then returns the resulting subtraction of `y` from `x`. We note again that the return statement is implied. Lastly, recursion is possible with the language.
@@ -85,11 +90,43 @@ int factorial(int n) {
 }
 factorial(4);
 ```
-[Recursion.aa](examples/recursion.aa)  
+(Source: [Recursion.aa](examples/recursion.aa))
 ---
 We can here see, using if-statements that it's possible to calculate the factorial of a number through recursion.
-## Why?
-Because designing programming languages is a fun and learnful experience.
-## How does it work?
-Currently the language is parsed from a string into a parse tree, which is then compiled into Å's bytecode system (Using bytes to represent operations and arguments in a simple format).
-That code can then be executed by the AAVM, taking the bytecode as input.
+#### Classes
+The language will (hopefully) be a nice mix of functional and object-oriented programming (Yes, it's another multi-paradigm programming language!). Which naturally means we have classes.
+Classes work as expected (though there's no inheritance yet). A full example of planned OOP features can be found in [Class.aa](examples/class.å) and [Inheritance.aa](examples/inheritance.å).
+For now, classes may be defined and contain methods and public fields. Such as:
+```
+class Teacher {
+    int age;
+    Teacher(int a) {
+        age = a;
+    }
+}
+
+class SingleClass {
+
+    int level;
+    Teacher teacher;
+
+    SingleClass() {
+        teacher = new Teacher(40);
+    }
+
+    Teacher GetTeacher() {
+        teacher;
+    }
+
+}
+
+int main() {
+    SingleClass s = new SingleClass();
+    s.GetTeacher().age;
+}
+
+main();
+```
+(Source: [Class4.aa](testing/class4.aa))
+---
+Here we see the definition of two classes (and how they can reference each other). Additionally, we note that it's possible to call methods on classes and access fields of classes. Because access modifiers have not been implemented yet, everything in this example is public. Additionally, a class must, for the time being, explicitly write a constructor, as the compiler expects a constructor method in the 'new' statement. Which the compiler does not generate by itself. There's currently no destructors (but they're planned).
