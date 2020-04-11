@@ -1,19 +1,24 @@
-// Department enum (Simulating a university department)
-enum department {
+// UniversityDepartment enum (Simulating a university department)
+enum UniversityDepartment {
 
     ComputerScience,
     Maths,
     Physics,
     Chemistry,
     PoliticalScience,
-    Psychology
+    Psychology,
+    History,
+    Engineering,
+    Medicine,
+    FineArts // Be careful to not add a comma here (Currently a bug where it would then include 'string')
 
     // A custom string method
     string GetString() {
-        this match { // pattern match on this (this being of the type 'department')
+        this match { // pattern match on this (this being of the type 'UniversityDepartment')
             case ComputerScience => "Computer Science", // Case where 'this' = ComputerScience
             case PoliticalScience => "Political Science", // Case where 'this' = PoliticalScience
-            case _ => this.ToString(),
+            case FineArts => "Fine Arts", // Case where 'this' = FineArts
+            case _ => this.ToString()
         }
     }
 
@@ -23,7 +28,7 @@ enum department {
 int main() {
 
     // Get the computer science department
-    department testDep = department::ComputerScience;
+    UniversityDepartment testDep = UniversityDepartment::ComputerScience;
 
     // Print the nice name
     println(testDep.GetString());

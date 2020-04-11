@@ -1,0 +1,56 @@
+START PROCEDURE 0 (<GlobalScope>):
+CONSTANTS:
+IDENTIFIERS: 
+
+OPERATIONS: 
+	[0]	CALL, 2, 0
+END PROCEDURE;
+
+START PROCEDURE 1 (UniversityDepartment::GetString):
+CONSTANTS:	[I32, 0]	[UTF-8, "Computer Science"]	[I32, 4]	[UTF-8, "Political Science"]	[I32, 9]	[UTF-8, "Fine Arts"]	[B, T]
+IDENTIFIERS: 
+	this;
+OPERATIONS: 
+	[0]	SETVAR, 0
+	[1]	GETVAR, 0
+	[2]	PUSHC, 0
+	[3]	CMPE
+	[4]	JMPT, 12
+	[5]	GETVAR, 0
+	[6]	PUSHC, 2
+	[7]	CMPE
+	[8]	JMPT, 10
+	[9]	GETVAR, 0
+	[10]	PUSHC, 4
+	[11]	CMPE
+	[12]	JMPT, 8
+	[13]	GETVAR, 0
+	[14]	PUSHC, 6
+	[15]	CMPE
+	[16]	JMPT, 6
+	[17]	PUSHC, 1
+	[18]	JMP, 7
+	[19]	PUSHC, 3
+	[20]	JMP, 5
+	[21]	PUSHC, 5
+	[22]	JMP, 3
+	[23]	GETVAR, 0
+	[24]	VMCALL, 3, 1
+	[25]	JMP, 0
+	[26]	RET, 1
+END PROCEDURE;
+
+START PROCEDURE 2 (main):
+CONSTANTS:	[I32, 0]
+IDENTIFIERS: 
+	testDep;
+OPERATIONS: 
+	[0]	PUSHC, 0
+	[1]	SETVAR, 0
+	[2]	GETVAR, 0
+	[3]	CALL, 1, 1
+	[4]	VMCALL, 0, 1
+	[5]	PUSHC, 0
+	[6]	RET, 1
+END PROCEDURE;
+

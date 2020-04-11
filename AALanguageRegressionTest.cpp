@@ -504,8 +504,19 @@ void RunNamespaceTests(AAVM* pAAVM, int& s, int& f) {
 
 void RunIOTests(AAVM* pAAVM, int& s, int& f) {
 
-	// Test namespaces are fetched correctly (Including the 'using X from Y' directive)
+	// IO functionality (and the using std::io) system
 	if (!RunFileTest(pAAVM, L"testing\\io1.aa", L"out\\bin\\io1.aab", L"out\\op\\io1.txt", L"0")) {
+		f++;
+	} else {
+		s++;
+	}
+
+}
+
+void RunEnumTests(AAVM* pAAVM, int& s, int& f) {
+
+	// Test if enums with functions can work
+	if (!RunFileTest(pAAVM, L"testing\\enum1.aa", L"out\\bin\\enum1.aab", L"out\\op\\enum1.txt", L"0")) {
 		f++;
 	} else {
 		s++;
@@ -567,6 +578,9 @@ bool RunRegressionTests(AAVM* pAAVM) {
 
 	// Run IO tests
 	RunIOTests(pAAVM, successes, fails);
+
+	// Run enum tests
+	RunEnumTests(pAAVM, successes, fails);
 
 	// Log regression test results
 	std::wcout << L"Regression test report:" << std::endl;
