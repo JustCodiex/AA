@@ -64,3 +64,13 @@ void AAO_ToString(AAVM* pAAVm, aa::stack<AAVal> args, aa::stack<AAVal>& stack) {
 	}
 
 }
+
+void AAO_NewObject(AAVM* pAAVm, aa::stack<AAVal> args, aa::stack<AAVal>& stack) {
+
+	// Convert to argument list
+	aa::list<AAVal> argl = aa::ToArgumentList(args);
+
+	// Push string representation of primitive unto stack
+	//stack.Push(argl.First());
+
+}

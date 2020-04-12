@@ -15,6 +15,9 @@ public:
 
 	size_t CalculateMemoryUse(AAClassSignature* cc);
 
+	bool AddInheritanceCall(AAClassSignature* cc, AA_AST_NODE* pCtorDeclNode);
+	bool AddInheritanceCallNode(AAFuncSignature* ctor, AA_AST_NODE* pCtorDeclNode);
+
 	static bool HasField(AAClassSignature* cc, std::wstring fieldname, int& fieldID);
 
 private:

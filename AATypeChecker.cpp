@@ -146,6 +146,8 @@ AACType* AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 	}
 	case AA_AST_NODE_TYPE::ifstatement:
 		return this->TypeCheckConditionalBlock(node);
+	case AA_AST_NODE_TYPE::elsestatement:
+		return this->TypeCheckNode(node->expressions[0]);
 	case AA_AST_NODE_TYPE::vardecl: {
 		AACType* t = this->FindType(node->expressions[0]->content);
 		if (t == AACType::ErrorType) {
@@ -302,7 +304,49 @@ AACType* AATypeChecker::TypeCheckUnaryOperation(AA_AST_NODE* pOpNode, AA_AST_NOD
 
 AACType* AATypeChecker::TypeCheckConditionalBlock(AA_AST_NODE* pConditionalNode) {
 
+	// Condition verification variables
+	AACType* conditionType = AACType::ErrorType;
+	AA_AST_NODE* pConditionNode = pConditionalNode->expressions[0];
 
+	// Verify condition
+	for (size_t i = 0; i < pConditionNode->expressions.size(); i++) {
+		AACType* t = this->TypeCheckNode(pConditionNode->expressions[i]);
+		if (t == AACTypeDef::Bool || this->IsNumericType(t)) {
+			conditionType = AACTypeDef::Bool;
+		} else {
+			conditionType = t; // and will not pass
+			break;
+		}
+	}
+
+	// Make sure it's valid a valid condition type
+	if (conditionType != AACTypeDef::Bool) {
+		if (conditionType != AACType::ErrorType) {
+			AATC_ERROR(
+				"Invalid evaluation of condition type. Type of '" + string_cast(conditionType->GetFullname()) + "' is an invalid conditional type.",
+				pConditionalNode->position
+			);
+		} else {
+			AATC_ERROR(
+				"Undefined type in condition",
+				pConditionalNode->position
+			);
+		}
+	}
+
+	// Typecheck other statements in block (Only done in if-statement, this section is ignored by other else and elseif statements)
+	for (size_t i = 1; i < pConditionalNode->expressions.size(); i++) {
+		if (pConditionalNode->expressions[i]->type == AA_AST_NODE_TYPE::elseifstatement) {
+			if (this->TypeCheckConditionalBlock(pConditionalNode->expressions[i]) == AACType::ErrorType) {
+				return AACType::ErrorType;
+			}
+		} else {
+			// Typecheck body (Don't care about the body return type, unless it's an error type)
+			if (this->TypeCheckNode(pConditionalNode->expressions[i]) == AACType::ErrorType) {
+				return AACType::ErrorType;
+			}
+		}
+	}
 
 	// A conditional block may be part of flow-control system and may not actually return something
 	// Which is perfectly legal
@@ -373,6 +417,8 @@ AACType* AATypeChecker::TypeCheckCallOperation(AA_AST_NODE* pCallNode) {
 		if (sig != 0) {
 
 			pCallNode->tags["calls"] = (int)sig->procID;
+			pCallNode->tags["isVM"] = sig->isVMFunc;
+			pCallNode->tags["args"] = (int)sig->parameters.size();
 
 			return sig->returnType;
 
@@ -395,6 +441,12 @@ AACType* AATypeChecker::TypeCheckCallOperation(AA_AST_NODE* pCallNode) {
 }
 
 AACType* AATypeChecker::TypeCheckClassCtorCall(AA_AST_NODE* pCallNode) {
+
+	// Does the node contain a inheritance call tag => Void
+	if (pCallNode->HasTag("inheritance_call")) {
+		pCallNode->type = AA_AST_NODE_TYPE::funcall;
+		return AACType::Void;
+	}
 
 	// Is there a local statement space defined?
 	if (m_localStatementNamespace) {
@@ -765,6 +817,10 @@ bool AATypeChecker::IsPrimitiveType(AACType* t) {
 	} else {
 		return false;
 	}
+}
+
+bool AATypeChecker::IsNumericType(AACType* t) {
+	return t == AACTypeDef::Int32;
 }
 
 bool AATypeChecker::IsMatchingTypes(AACType* tCompare, AACType* tExpected) {

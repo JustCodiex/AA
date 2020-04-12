@@ -340,13 +340,13 @@ AA_AST_NODE* AA_AST::SimplifyNode(AA_AST_NODE* pNode) {
 	case AA_AST_NODE_TYPE::fundecl:
 		if (pNode->expressions.size() >= 3) {
 			size_t i = 0;
-			while (i < pNode->expressions[2]->expressions.size()) {
-				AA_AST_NODE* expNode = this->SimplifyNode(pNode->expressions[2]->expressions[i]);
+			while (i < pNode->expressions[AA_NODE_FUNNODE_BODY]->expressions.size()) {
+				AA_AST_NODE* expNode = this->SimplifyNode(pNode->expressions[AA_NODE_FUNNODE_BODY]->expressions[i]);
 				if (expNode) {
-					pNode->expressions[2]->expressions[i] = expNode;
+					pNode->expressions[AA_NODE_FUNNODE_BODY]->expressions[i] = expNode;
 					i++;
 				} else {
-					pNode->expressions[2]->expressions.erase(pNode->expressions[2]->expressions.begin() + i);
+					pNode->expressions[AA_NODE_FUNNODE_BODY]->expressions.erase(pNode->expressions[AA_NODE_FUNNODE_BODY]->expressions.begin() + i);
 				}
 			}
 		}

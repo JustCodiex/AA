@@ -122,12 +122,6 @@ private:
 	int CalcStackSzAfterOperation(CompiledAbstractExpression op, AAStaticEnvironment staticData);
 
 	/*
-	** FuncSig to procedure mapper
-	*/
-
-	int FindBestFunctionMatch(AAStaticEnvironment staticCheck, AA_AST_NODE* pNode, int& argCount, bool& isVMCall);
-
-	/*
 	** Bytecode functions
 	*/
 

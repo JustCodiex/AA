@@ -115,6 +115,50 @@ void AAClassCompiler::UpdateIdentifierToThisFieldReference(AA_AST_NODE* pNode, i
 	pNode->expressions.push_back(new AA_AST_NODE(L"this", AA_AST_NODE_TYPE::variable, pNode->position));
 	pNode->expressions.push_back(new AA_AST_NODE(pNode->content, AA_AST_NODE_TYPE::field, pNode->position));
 	pNode->expressions[pNode->expressions.size() - 1]->tags["fieldid"] = fieldId;
+	pNode->tags["compiler_generated"] = true;
+
+}
+
+bool AAClassCompiler::AddInheritanceCall(AAClassSignature* cc, AA_AST_NODE* pCtorDeclNode) {
+
+	return cc->extends.ForAll(
+		[pCtorDeclNode, this](AAClassSignature*& sig) {
+			AAFuncSignature* ctor = this->FindBestCtor(sig);
+			if (ctor) {
+				return this->AddInheritanceCallNode(ctor, pCtorDeclNode);
+			} else {
+				return false;
+			}
+		}
+	);
+
+}
+
+bool AAClassCompiler::AddInheritanceCallNode(AAFuncSignature* ctor, AA_AST_NODE* pCtorDeclNode) {
+
+	if (ctor) {
+
+		AA_AST_NODE* pCallNode = new AA_AST_NODE(ctor->name, AA_AST_NODE_TYPE::classctorcall, pCtorDeclNode->position);
+		pCallNode->tags["compiler_generated"] = true;
+		pCallNode->tags["inheritance_call"] = true;
+		pCallNode->tags["calls"] = (int)ctor->procID;
+		pCallNode->tags["isVM"] = ctor->isVMFunc;
+		pCallNode->tags["args"] = (int)ctor->parameters.size();
+
+		AA_AST_NODE* pThisArgNode = new AA_AST_NODE(L"this", AA_AST_NODE_TYPE::variable, pCtorDeclNode->position);
+		pThisArgNode->tags["compiler_generated"] = true;
+		pCallNode->expressions.push_back(pThisArgNode);
+
+		// Add inheritance call node to start
+		pCtorDeclNode->expressions[AA_NODE_FUNNODE_BODY]->expressions.insert(pCtorDeclNode->expressions[AA_NODE_FUNNODE_BODY]->expressions.begin(), pCallNode);
+
+		return true;
+
+	} else {
+
+		return false;
+
+	}
 
 }
 

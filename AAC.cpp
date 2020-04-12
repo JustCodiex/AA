@@ -406,11 +406,22 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileFunctionCall(AA_AST_NODE* 
 
 	aa::list<CompiledAbstractExpression> opList;
 
-	int progArgs = 0; // Going real safe here
-	bool progIsVmCall = false; // Hopefully we can make a little use of C++ functions as possible, so this should be the default
-	int procID = this->FindBestFunctionMatch(staticData, pNode, progArgs, progIsVmCall);
+	int procID = -1;
+	if (pNode->HasTag("calls")) {
+		procID = pNode->tags["calls"];
+	}
 
-	if (progArgs > 0) {
+	int args = 0;
+	if (pNode->HasTag("args")) {
+		args = pNode->tags["args"];
+	}
+
+	bool isVmCll = false;
+	if (pNode->HasTag("isVM")) {
+		isVmCll = pNode->tags["isVM"];
+	}
+
+	if (args > 0) {
 		for (AA_AST_NODE* pArg : pNode->expressions) {
 			opList.Add(this->HandleStackPush(cTable, pArg, staticData));
 		}
@@ -418,9 +429,9 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileFunctionCall(AA_AST_NODE* 
 
 	CompiledAbstractExpression callCAE;
 	callCAE.argCount = 2;
-	callCAE.bc = (progIsVmCall) ? AAByteCode::VMCALL : AAByteCode::CALL;
+	callCAE.bc = (isVmCll) ? AAByteCode::VMCALL : AAByteCode::CALL;
 	callCAE.argValues[0] = procID;
-	callCAE.argValues[1] = progArgs;
+	callCAE.argValues[1] = args;
 
 	opList.Add(callCAE);
 
@@ -998,6 +1009,7 @@ aa::list<AAC::CompiledAbstractExpression> AAC::HandleMemberCall(AA_AST_NODE* pNo
 	AA_AST_NODE* tempNode = new AA_AST_NODE(pNode->expressions[1]->content, AA_AST_NODE_TYPE::funcall, pNode->expressions[0]->position);
 	tempNode->expressions = pNode->expressions[1]->expressions;
 	tempNode->expressions.insert(tempNode->expressions.begin(), pNode->expressions[0]);
+	tempNode->tags = pNode->expressions[1]->tags;
 
 	// Call member
 	opList = this->CompileFunctionCall(tempNode, cTable, staticData);
@@ -1126,35 +1138,6 @@ AAC_Out AAC::CompileFromProcedures(aa::list<CompiledProcedure> procedures, AASta
 
 	// Return the resulting bytecode
 	return compileBytecodeResult;
-
-}
-
-int AAC::FindBestFunctionMatch(AAStaticEnvironment staticCheck, AA_AST_NODE* pNode, int& argCount, bool& isVMCall) { // TODO: Make the typechecker do this
-
-	std::wstring funcName = pNode->content;
-
-	for (size_t i = 0; i < staticCheck.availableFunctions.Size(); i++) {
-		AAFuncSignature* sig = staticCheck.availableFunctions.Apply(i);
-		if (sig->name.compare(funcName) == 0) {
-			if (pNode->expressions.size() == sig->parameters.size()) {
-				bool isMatch = true; //false;
-				for (AAFuncParam p : sig->parameters) {
-
-				}
-				if (isMatch) {
-					isVMCall = sig->isVMFunc;
-					argCount = (int)sig->parameters.size();
-					return sig->procID;
-				}
-			}
-		}
-	}
-
-	//wprintf(L"Unknown function! %s", funcName.c_str());
-
-	argCount = 0;
-	isVMCall = false;
-	return 0;
 
 }
 

@@ -86,6 +86,7 @@ private:
 
 	bool IsValidType(AACType* t);
 	bool IsPrimitiveType(AACType* t);
+	bool IsNumericType(AACType* t);
 
 	AACType* FindType(std::wstring t);
 

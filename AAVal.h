@@ -78,3 +78,4 @@ AAObject* AllocAAO(size_t sz);
 
 class AAVM;
 void AAO_ToString(AAVM* pAAVm, aa::stack<AAVal> args, aa::stack<AAVal>& stack);
+void AAO_NewObject(AAVM* pAAVm, aa::stack<AAVal> args, aa::stack<AAVal>& stack);

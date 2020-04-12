@@ -531,7 +531,7 @@ AAVal AAVM::ReportStack(aa::stack<AAVal> stack) {
 		return v;
 	} else {
 		if (stack.Size() > 1) {
-			const char* msg = "<Warning!> More than one element remained on the stack!";
+			const char* msg = "<Warning!> More than one element remained on the stack!\n";
 			m_outStream->write(msg, strlen(msg));
 		}
 		return AAVal::Null;
@@ -813,6 +813,7 @@ void AAVM::LoadStandardLibrary() {
 
 	// Create object class
 	AACClass objectClass;
+	objectClass.classMethods.push_back(AACSingleFunction(L".ctor", &AAO_NewObject, AACType::ExportReferenceType, 0));
 	this->RegisterClass(L"object", objectClass); // IDEA: Rename to Any
 
 	// Create standard namespaces

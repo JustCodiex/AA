@@ -1017,14 +1017,40 @@ AAC_CompileErrorMessage AAStaticAnalysis::ApplyInheritance(AACNamespace* domain,
 
 AAC_CompileErrorMessage AAStaticAnalysis::ApplyInheritance(AAClassSignature* classSig, AAStaticEnvironment& senv) {
 
-	// TODO: Something smarter then simply merging (eg. create an actual inheritance tree)
+	// TODO: Something smarter than simply merging (eg. create an actual inheritance tree)
 
 	// Possible error message
 	AAC_CompileErrorMessage err;
 
+	// Inject calls to super class in constructors
+	AAFuncSignature* errSrc;
+	if (!classSig->methods.ForAll([&errSrc, classSig, this](AAFuncSignature*& sig) 
+		{ 
+			if (sig->isClassCtor && !sig->isVMFunc) {
+				if (!this->m_compilerPointer->GetClassCompilerInstance()->AddInheritanceCall(classSig, sig->node)) {
+					errSrc = sig;
+					return false;
+				} else {
+					return true;
+				}
+			} else {
+				return true;
+			}
+		})) {
+
+		// Return error
+		err.errorMsg = "Constructor unable to call method";
+		err.errorSource = errSrc->node->position;
+		err.errorType = 0;
+		return err;
+
+	}
+
+
 	if (!classSig->extends.ForAll([&err, &senv, classSig, this](AAClassSignature*& sig) { return COMPILE_OK(err = this->HandleInheritanceFrom(classSig, sig, senv)); })) {
 		return err;
 	}
+
 
 	// Return no compile error
 	return NO_COMPILE_ERROR_MESSAGE;
