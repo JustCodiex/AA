@@ -11,6 +11,75 @@ struct AAC_Out {
 	}
 };
 
+#pragma region AAC Compile Error Types
+
+namespace aa {
+	namespace compiler_err {
+
+		/// <summary>
+		/// The error type is currently not classified (in the type checker)
+		/// </summary>
+		const int C_Unclassified_Type = 42;
+
+		/// <summary>
+		/// Invalid Type Error
+		/// (Not valid in context)
+		/// </summary>
+		const int C_Invalid_Type = 100;
+
+		/// <summary>
+		/// Invalid Type Error
+		/// (Not valid in condition)
+		/// </summary>
+		const int C_Invalid_Condition_Type = 101;
+
+		/// <summary>
+		/// Type is not defined
+		/// (Not Found within scope)
+		/// </summary>
+		const int C_Undefined_Type = 102;
+
+		/// <summary>
+		/// Type is not defined
+		/// (Not Found within scope)
+		/// </summary>
+		const int C_Undefined_Class = 103;
+
+		/// <summary>
+		/// Types are not matching
+		/// </summary>
+		const int C_Mismatching_Types = 200;
+
+		/// <summary>
+		/// Types don't have a compatible operation
+		/// </summary>
+		const int C_Invalid_Binary_Operator = 201;
+
+		/// <summary>
+		/// The function being called is undefined
+		/// </summary>
+		const int C_Undefined_Function = 311;
+
+		/// <summary>
+		/// The constructor being called is undefined
+		/// </summary>
+		const int C_Undefined_Constructor = 312;
+
+		/// <summary>
+		/// There exists no function overload matching argument list
+		/// </summary>
+		const int C_Undefined_Function_Overload = 321;
+
+		/// <summary>
+		/// There exists no constructor overload matching argument list
+		/// </summary>
+		const int C_Undefined_Constructor_Overload = 322;
+
+	}
+}
+
+#pragma endregion
+
 // Error message
 struct AAC_CompileErrorMessage {
 	int errorType;

@@ -6,7 +6,8 @@
 // Temp solution, replace with const variables later
 static int AATypeCheckerGlobalErrorCounter = 1000;
 
-#define AATC_ERROR(msg, pos) this->SetError(AATypeChecker::Error(msg, ++AATypeCheckerGlobalErrorCounter, pos)); return AACType::ErrorType
+#define AATC_W_ERROR(__msg, __pos, __err) this->SetError(AATypeChecker::Error(__msg, __err, __pos)); return AACType::ErrorType
+#define AATC_ERROR(__msg, __pos) AATC_W_ERROR((__msg), (__pos), (aa::compiler_err::C_Unclassified_Type))
 
 AATypeChecker::AATypeChecker(AA_AST* pTree, AAStaticEnvironment* senv) {
 	
@@ -131,7 +132,7 @@ AACType* AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 	case AA_AST_NODE_TYPE::typeidentifier: {
 		AACType* t = this->FindType(node->content);
 		if (t == AACType::ErrorType) {
-			AATC_ERROR("Invalid type identifier '" + string_cast(node->content) + "'", node->position);
+			AATC_W_ERROR("Undefined type identifier '" + string_cast(node->content) + "'", node->position, aa::compiler_err::C_Invalid_Type);
 		} else {
 			return t;
 		}
@@ -139,7 +140,7 @@ AACType* AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 	case AA_AST_NODE_TYPE::funarg: {
 		AACType* t = this->FindType(node->expressions[0]->content);
 		if (t == AACType::ErrorType) {
-			AATC_ERROR("Invalid type  '" + string_cast(node->expressions[0]->content) + "' in argument", node->position);
+			AATC_W_ERROR("Undefined type  '" + string_cast(node->expressions[0]->content) + "' in argument", node->position, aa::compiler_err::C_Invalid_Type);
 		} else {
 			return t;
 		}
@@ -151,7 +152,7 @@ AACType* AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 	case AA_AST_NODE_TYPE::vardecl: {
 		AACType* t = this->FindType(node->expressions[0]->content);
 		if (t == AACType::ErrorType) {
-			AATC_ERROR("Undefined type '" + string_cast(node->expressions[0]->content) + "'", node->position);
+			AATC_W_ERROR("Undefined type '" + string_cast(node->expressions[0]->content) + "'", node->position, aa::compiler_err::C_Invalid_Type);
 		} else {
 			return t;
 		}
@@ -232,10 +233,11 @@ AACType* AATypeChecker::TypeCheckBinaryOperation(AA_AST_NODE* pOpNode, AA_AST_NO
 		} else {
 
 			// Set error message
-			AATC_ERROR(
+			AATC_W_ERROR(
 				"Type mismsatch on binary operation '" + string_cast(pOpNode->content) + "', left operand: '"
 				+ string_cast(typeLeft->GetFullname()) + "' and right operand: '" + string_cast(typeRight->GetFullname()) + "'",
-				pOpNode->position
+				pOpNode->position,
+				aa::compiler_err::C_Mismatching_Types
 			);
 		
 		}
@@ -247,7 +249,17 @@ AACType* AATypeChecker::TypeCheckBinaryOperation(AA_AST_NODE* pOpNode, AA_AST_NO
 		
 		if (IsPrimitiveType(typeLeft) && IsPrimitiveType(typeRight)) {
 			pOpNode->tags["useCall"] = false;
-			return this->TypeCheckBinaryOperationOnPrimitive(pOpNode, typeLeft, typeRight);
+			AACType* resultType = this->TypeCheckBinaryOperationOnPrimitive(pOpNode, typeLeft, typeRight);
+			/*if (resultType == AACType::ErrorType) {
+				AATC_W_ERROR(
+					"Type mismsatch on binary operation '" + string_cast(pOpNode->content) + "', left operand: '"
+					+ string_cast(typeLeft->GetFullname()) + "' and right operand: '" + string_cast(typeRight->GetFullname()) + "'",
+					pOpNode->position,
+					aa::compiler_err::C_Mismatching_Types
+				);
+			} else {*/
+				return resultType; // Reenable once typechecking on field access and such has been implemented
+			//}
 		} else {
 
 			std::wstring op = pOpNode->content;
@@ -256,10 +268,10 @@ AACType* AATypeChecker::TypeCheckBinaryOperation(AA_AST_NODE* pOpNode, AA_AST_NO
 			if (ccLeft->name == AACType::ErrorType->name) {
 				/*this->SetError(
 					AATypeChecker::Error(
-						"Unknown operand type '" + string_cast(typeLeft) + "'",
+						"Unknown operand type '" + string_cast(typeLeft->GetFullname()) + "'",
 						__COUNTER__, pOpNode->position)
 				);
-				return InvalidTypeStr;*/ return typeLeft; // TODO: Reenable this when function parameter type checking has been enabled
+				return AACType::ErrorType;/*/ return typeLeft; // TODO: Reenable this when array checking has been improved AND class field checking is possible
 			}
 
 			AAClassOperatorSignature ccop;
@@ -274,10 +286,11 @@ AACType* AATypeChecker::TypeCheckBinaryOperation(AA_AST_NODE* pOpNode, AA_AST_NO
 				return ccop.method->returnType;
 
 			} else {
-				AATC_ERROR(
+				AATC_W_ERROR(
 					"Invalid operator '" + string_cast(op) + "' on left operand type '" + string_cast(typeLeft->GetFullname())
 					+ "' and right operand type '" + string_cast(typeRight->GetFullname()) + "'",
-					pOpNode->position
+					pOpNode->position,
+					aa::compiler_err::C_Invalid_Binary_Operator
 				);
 			}
 
@@ -324,12 +337,14 @@ AACType* AATypeChecker::TypeCheckConditionalBlock(AA_AST_NODE* pConditionalNode)
 		if (conditionType != AACType::ErrorType) {
 			AATC_ERROR(
 				"Invalid evaluation of condition type. Type of '" + string_cast(conditionType->GetFullname()) + "' is an invalid conditional type.",
-				pConditionalNode->position
+				pConditionalNode->position,
+				aa::compiler_err::C_Invalid_Condition_Type
 			);
 		} else {
-			AATC_ERROR(
+			AATC_W_ERROR(
 				"Undefined type in condition",
-				pConditionalNode->position
+				pConditionalNode->position,
+				aa::compiler_err::C_Undefined_Type
 			);
 		}
 	}
@@ -422,20 +437,25 @@ AACType* AATypeChecker::TypeCheckCallOperation(AA_AST_NODE* pCallNode) {
 			pCallNode->tags["returns"] = (sig->returnType == AACType::Void) ? 0 : 1;
 
 			return sig->returnType;
-
 		} else {
 
-			wprintf(L"Attempt to call undefined function '%s'\n", pCallNode->content.c_str());
-
-			return AACType::ErrorType;
+			// No function overload was found matching argument list
+			AATC_W_ERROR(
+				"No function '" + string_cast(pCallNode->content) + "' overload found matching argument list",
+				pCallNode->position,
+				aa::compiler_err::C_Undefined_Function_Overload
+			);
 
 		}
 
 	} else {
 
-		wprintf(L"Attempt to call undefined function '%s'\n", pCallNode->content.c_str());
-
-		return AACType::ErrorType;
+		// The function does not even exist
+		AATC_W_ERROR(
+			"Attempt to call undefined function '" + string_cast(pCallNode->content) + "'",
+			pCallNode->position,
+			aa::compiler_err::C_Undefined_Function
+		);
 
 	}
 
@@ -459,7 +479,8 @@ AACType* AATypeChecker::TypeCheckClassCtorCall(AA_AST_NODE* pCallNode) {
 		if ((pLocType = this->TypeCheckCtorAndFindBestMatch(m_localStatementNamespace, pCallNode)) != AACType::ErrorType) {
 			return pLocType;
 		} else {
-			return this->TypeCheckCtorAndFindBestMatch(m_currentnamespace, pCallNode);
+			pLocType = this->TypeCheckCtorAndFindBestMatch(m_currentnamespace, pCallNode);
+			return pLocType;
 		}
 
 	} else {
@@ -523,23 +544,33 @@ AACType* AATypeChecker::TypeCheckCtorAndFindBestMatch(AACNamespace* pDomain, AA_
 
 			} else {
 
-				// Log compile error
-				wprintf(L"Attempt to call undefined function '%ws'\n", pCallNode->content.c_str());
-				return AACType::ErrorType;
+				// No function overload was found matching argument list
+				AATC_W_ERROR(
+					"No constructor '" + string_cast(pCallNode->content) + "' overload found matching argument list",
+					pCallNode->position,
+					aa::compiler_err::C_Undefined_Constructor_Overload
+				);
 
 			}
 
 		} else {
 
-			// Log the compile error
-			wprintf(L"Attempt to call undefined function '%ws'\n", pCallNode->content.c_str());
-			return AACType::ErrorType;
+			// The function does not even exist
+			AATC_W_ERROR(
+				"No constructor '" + string_cast(pCallNode->content) + "' overload found matching argument list",
+				pCallNode->position,
+				aa::compiler_err::C_Undefined_Constructor_Overload
+			);
 
 		}
 	}
 
 	// Error, not able to find the type in the local space ==> does absolutely not exist
-	return AACType::ErrorType;
+	AATC_W_ERROR(
+		"Undefined class type '" + string_cast(pCallNode->content) + "'",
+		pCallNode->position,
+		aa::compiler_err::C_Undefined_Class
+	);
 
 }
 
@@ -561,7 +592,10 @@ AACType* AATypeChecker::TypeCheckFuncDecl(AA_AST_NODE* pDeclNode) {
 			if (argType != AACType::ErrorType) {
 				m_vtenv[pDeclNode->expressions[AA_NODE_FUNNODE_ARGLIST]->expressions[i]->content] = argType;
 			} else {
-				printf("Arg type error\n");
+				AATC_W_ERROR(
+					"Undefined type  '" + string_cast(pDeclNode->expressions[AA_NODE_FUNNODE_ARGLIST]->expressions[i]->content) + "' in argument", 
+					pDeclNode->expressions[AA_NODE_FUNNODE_ARGLIST]->expressions[i]->position, aa::compiler_err::C_Invalid_Type
+				);
 			}
 
 		}
@@ -593,7 +627,7 @@ AACType* AATypeChecker::TypeCheckNewStatement(AA_AST_NODE* pNewStatement) {
 		}
 	}
 
-	AATC_ERROR("Undefined type '" + string_cast(pNewStatement->expressions[0]->content) + "' in new statement", pNewStatement->position);
+	AATC_W_ERROR("Undefined type '" + string_cast(pNewStatement->expressions[0]->content) + "' in new statement", pNewStatement->position, aa::compiler_err::C_Invalid_Type);
 
 }
 

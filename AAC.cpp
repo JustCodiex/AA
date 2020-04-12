@@ -209,7 +209,7 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileAST(AA_AST_NODE* pNode, Co
 				if (pNode->expressions[i]->type == AA_AST_NODE_TYPE::binop && pNode->expressions[i]->content != L"=") {
 					executionStack.Add(CompiledAbstractExpression(AAByteCode::POP, 0, 0));
 				} else if (pNode->expressions[i]->type == AA_AST_NODE_TYPE::funcall && pNode->expressions[i]->HasTag("returns")) {
-					if (pNode->expressions[i]->tags["returns"] != 0) { // Calling a function that returns something (BUT, we're only interested in the side-effects)
+					if (pNode->expressions[i]->tags["returns"] != 0) { // Calling a function that returns something (BUT, we're only interested in side-effects, thus, we also can't simplify this away)
 						executionStack.Add(CompiledAbstractExpression(AAByteCode::POP, 0, 0));
 					}
 				}

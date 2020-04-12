@@ -784,7 +784,7 @@ AAC_CompileErrorMessage AAStaticAnalysis::HandleInheritanceFrom(AAClassSignature
 
 	// Merge functions
 	int merged = child->methods.Merge(super->methods,
-		[child](AAFuncSignature* sig) { return !child->methods.Contains(sig); },
+		[child](AAFuncSignature* sig) { return !sig->isClassCtor && !child->methods.Contains(sig); },
 		[child, &senv](AAFuncSignature* sig) {
 			AAFuncSignature* nSig = new AAFuncSignature(*sig);
 			nSig->name = child->name + L"::" + nSig->GetName();
@@ -1046,11 +1046,10 @@ AAC_CompileErrorMessage AAStaticAnalysis::ApplyInheritance(AAClassSignature* cla
 
 	}
 
-
+	// Inherit stuff
 	if (!classSig->extends.ForAll([&err, &senv, classSig, this](AAClassSignature*& sig) { return COMPILE_OK(err = this->HandleInheritanceFrom(classSig, sig, senv)); })) {
 		return err;
 	}
-
 
 	// Return no compile error
 	return NO_COMPILE_ERROR_MESSAGE;
