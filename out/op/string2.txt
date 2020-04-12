@@ -1,11 +1,11 @@
 START PROCEDURE 0 (<GlobalScope>):
 CONSTANTS:	[UTF-8, "Hello"]
-IDENTIFIERS: 
+IDENTIFIERS:
 	s;
-OPERATIONS: 
+OPERATIONS:
 	[0]	PUSHC, 0
 	[1]	SETVAR, 0
 	[2]	GETVAR, 0
-	[3]	VMCALL, 1, 1
+	[3]	VMCALL, 1, 1		;; Calls: string::length
 END PROCEDURE;
 

@@ -1,16 +1,16 @@
 START PROCEDURE 0 (<GlobalScope>):
 CONSTANTS:
-IDENTIFIERS: 
+IDENTIFIERS:
 
-OPERATIONS: 
-	[0]	CALL, 2, 0
+OPERATIONS:
+	[0]	CALL, 2, 0		;; Calls: main
 END PROCEDURE;
 
 START PROCEDURE 1 (UniversityDepartment::GetString):
 CONSTANTS:	[I32, 0]	[UTF-8, "Computer Science"]	[I32, 4]	[UTF-8, "Political Science"]	[I32, 9]	[UTF-8, "Fine Arts"]	[B, T]
-IDENTIFIERS: 
+IDENTIFIERS:
 	this;
-OPERATIONS: 
+OPERATIONS:
 	[0]	SETVAR, 0
 	[1]	GETVAR, 0
 	[2]	PUSHC, 0
@@ -35,21 +35,21 @@ OPERATIONS:
 	[21]	PUSHC, 5
 	[22]	JMP, 3
 	[23]	GETVAR, 0
-	[24]	VMCALL, 4, 1
+	[24]	VMCALL, 4, 1		;; Calls: object::ToString
 	[25]	JMP, 0
 	[26]	RET, 1
 END PROCEDURE;
 
 START PROCEDURE 2 (main):
 CONSTANTS:	[I32, 0]
-IDENTIFIERS: 
+IDENTIFIERS:
 	testDep;
-OPERATIONS: 
+OPERATIONS:
 	[0]	PUSHC, 0
 	[1]	SETVAR, 0
 	[2]	GETVAR, 0
-	[3]	CALL, 1, 1
-	[4]	VMCALL, 0, 1
+	[3]	CALL, 1, 1		;; Calls: UniversityDepartment::GetString
+	[4]	VMCALL, 0, 1		;; Calls: println
 	[5]	PUSHC, 0
 	[6]	RET, 1
 END PROCEDURE;

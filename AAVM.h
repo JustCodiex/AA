@@ -87,6 +87,8 @@ public:
 
 	void ThrowExternalError(AAVM_RuntimeError externalErr);
 
+	const AACSingleFunction GetBuiltinFuncByIndex(const size_t i) { return m_cppfunctions.Apply(i); }
+
 	/// <summary>
 	/// Get the current instance of the heap (Note: This is only valid while running a program)
 	/// </summary>

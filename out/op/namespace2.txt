@@ -1,49 +1,49 @@
 START PROCEDURE 0 (<GlobalScope>):
 CONSTANTS:
-IDENTIFIERS: 
+IDENTIFIERS:
 
-OPERATIONS: 
-	[0]	CALL, 3, 0
+OPERATIONS:
+	[0]	CALL, 3, 0		;; Calls: main
 END PROCEDURE;
 
 START PROCEDURE 1 (example::example):
 CONSTANTS:	[UTF-8, "Foo"]
-IDENTIFIERS: 
+IDENTIFIERS:
 	this;
-OPERATIONS: 
+OPERATIONS:
 	[0]	SETVAR, 0
 	[1]	GETVAR, 0
-	[2]	VMCALL, 3, 1
+	[2]	VMCALL, 3, 1		;; Calls: object::object
 	[3]	PUSHC, 0
-	[4]	VMCALL, 0, 1
+	[4]	VMCALL, 0, 1		;; Calls: println
 	[5]	GETVAR, 0
 	[6]	RET, 1
 END PROCEDURE;
 
 START PROCEDURE 2 (coo::coo):
 CONSTANTS:	[UTF-8, "Fee"]
-IDENTIFIERS: 
+IDENTIFIERS:
 	this;
-OPERATIONS: 
+OPERATIONS:
 	[0]	SETVAR, 0
 	[1]	GETVAR, 0
-	[2]	VMCALL, 3, 1
+	[2]	VMCALL, 3, 1		;; Calls: object::object
 	[3]	PUSHC, 0
-	[4]	VMCALL, 0, 1
+	[4]	VMCALL, 0, 1		;; Calls: println
 	[5]	GETVAR, 0
 	[6]	RET, 1
 END PROCEDURE;
 
 START PROCEDURE 3 (main):
 CONSTANTS:	[I32, 42]
-IDENTIFIERS: 
+IDENTIFIERS:
 	t;	c;
-OPERATIONS: 
+OPERATIONS:
 	[0]	HALLOC, 0
-	[1]	CALL, 1, 1
+	[1]	CALL, 1, 1		;; Calls: example::example
 	[2]	SETVAR, 0
 	[3]	HALLOC, 0
-	[4]	CALL, 2, 1
+	[4]	CALL, 2, 1		;; Calls: coo::coo
 	[5]	SETVAR, 1
 	[6]	PUSHC, 0
 	[7]	RET, 1

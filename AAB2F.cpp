@@ -1,4 +1,5 @@
 #include "AAB2F.h"
+#include "AAVM.h"
 #include <fstream>
 
 namespace aa {
@@ -184,7 +185,7 @@ namespace aa {
 		}
 	}
 
-	void dump_instructions(std::wstring file, std::vector<AAC::CompiledProcedure> procedures) {
+	void dump_instructions(std::wstring file, std::vector<AAC::CompiledProcedure> procedures, AAVM* pAAVM) {
 
 		std::wofstream o = std::wofstream(file);
 
@@ -199,13 +200,19 @@ namespace aa {
 					AA_Literal lit = proc.procEnvironment.constValues.At(j);
 					o << L"\t[" << getLitType(lit.tp) << L", " << getLitValue(lit) << L"]";
 				}
-				o << L"\nIDENTIFIERS: \n";
+				o << L"\nIDENTIFIERS:\n";
 				for (size_t j = 0; j < proc.procEnvironment.identifiers.Size(); j++) {
 					o << L"\t" << proc.procEnvironment.identifiers.At(j) << L";";
 				}
-				o << L"\nOPERATIONS: \n";
+				o << L"\nOPERATIONS:\n";
 				for (size_t j = 0; j < proc.procOperations.Size(); j++) {
-					o << L"\t" << L"[" << std::to_wstring(j) << L"]\t" << OpToWString(proc.procOperations.At(j)) << "\n";
+					o << L"\t" << L"[" << std::to_wstring(j) << L"]\t" << OpToWString(proc.procOperations.At(j));
+					if (proc.procOperations.At(j).bc == AAByteCode::VMCALL) {
+						o << L"\t\t;; Calls: " << pAAVM->GetBuiltinFuncByIndex(proc.procOperations.At(j).argValues[0]).name;
+					} else if (proc.procOperations.At(j).bc == AAByteCode::CALL) {
+						o << L"\t\t;; Calls: " << procedures.at(proc.procOperations.At(j).argValues[0]).node->content;
+					}
+					o << "\n";
 				}
 				o << L"END PROCEDURE;\n\n";
 

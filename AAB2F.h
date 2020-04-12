@@ -7,6 +7,6 @@ namespace aa {
 	void dump_bytecode(std::wstring file, AAC_Out bytecode);
 
 	// Dumps operations in a readable format
-	void dump_instructions(std::wstring file, std::vector<AAC::CompiledProcedure> procedures);
+	void dump_instructions(std::wstring file, std::vector<AAC::CompiledProcedure> procedures, AAVM* pAAVM);
 
 }

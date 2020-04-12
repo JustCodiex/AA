@@ -1,28 +1,28 @@
 START PROCEDURE 0 (<GlobalScope>):
 CONSTANTS:
-IDENTIFIERS: 
+IDENTIFIERS:
 
-OPERATIONS: 
-	[0]	CALL, 3, 0
+OPERATIONS:
+	[0]	CALL, 3, 0		;; Calls: main
 END PROCEDURE;
 
 START PROCEDURE 1 (ExampleClass::ExampleClass):
 CONSTANTS:
-IDENTIFIERS: 
+IDENTIFIERS:
 	this;
-OPERATIONS: 
+OPERATIONS:
 	[0]	SETVAR, 0
 	[1]	GETVAR, 0
-	[2]	VMCALL, 3, 1
+	[2]	VMCALL, 3, 1		;; Calls: object::object
 	[3]	GETVAR, 0
 	[4]	RET, 1
 END PROCEDURE;
 
 START PROCEDURE 2 (ExampleClass::arg):
 CONSTANTS:
-IDENTIFIERS: 
+IDENTIFIERS:
 	v;	this;
-OPERATIONS: 
+OPERATIONS:
 	[0]	SETVAR, 0
 	[1]	SETVAR, 1
 	[2]	GETVAR, 0
@@ -31,18 +31,18 @@ END PROCEDURE;
 
 START PROCEDURE 3 (main):
 CONSTANTS:	[I32, 25]	[I32, 30]
-IDENTIFIERS: 
+IDENTIFIERS:
 	ex;
-OPERATIONS: 
+OPERATIONS:
 	[0]	HALLOC, 0
-	[1]	CALL, 1, 1
+	[1]	CALL, 1, 1		;; Calls: ExampleClass::ExampleClass
 	[2]	SETVAR, 0
 	[3]	GETVAR, 0
 	[4]	PUSHC, 0
-	[5]	CALL, 2, 2
+	[5]	CALL, 2, 2		;; Calls: ExampleClass::arg
 	[6]	GETVAR, 0
 	[7]	PUSHC, 1
-	[8]	CALL, 2, 2
+	[8]	CALL, 2, 2		;; Calls: ExampleClass::arg
 	[9]	ADD
 	[10]	RET, 1
 END PROCEDURE;

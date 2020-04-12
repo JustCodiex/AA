@@ -2,8 +2,12 @@
 #include "AAB2F.h"
 #include "AAVal.h"
 #include <stack>
+#include "AAVM.h"
 
-AAC::AAC() {
+AAC::AAC(AAVM* pVM) {
+
+	// Set VM
+	m_pAAVM = pVM;
 
 	// Set support classes to null
 	m_classCompiler = 0;
@@ -78,7 +82,7 @@ AAC_CompileResult AAC::CompileFromAbstractSyntaxTrees(std::vector<AA_AST*> trees
 
 	// Write operations out in a readable format
 	if (m_outfile != L"") {
-		aa::dump_instructions(m_outfile, compileResults.Vector());
+		aa::dump_instructions(m_outfile, compileResults.Vector(), m_pAAVM);
 	}
 
 	// Set success flag to true

@@ -17,7 +17,7 @@ AAVM* AAVM::CreateNewVM(bool logExecuteTime, bool logCompiler, bool logTopStack)
 
 AAVM::AAVM() {
 
-	m_compiler = new AAC;
+	m_compiler = new AAC(this);
 
 	if (m_compiler) {
 		m_compiler->SetupCompiler();

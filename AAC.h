@@ -6,6 +6,8 @@
 #include "bstream.h"
 #include "list.h"
 
+class AAVM;
+
 // Compiler Class
 class AAC {
 
@@ -42,7 +44,7 @@ public:
 
 public:
 
-	AAC();
+	AAC(AAVM* pVM);
 
 	void SetupCompiler();
 
@@ -138,6 +140,8 @@ private:
 
 	int m_currentProcID;
 	std::wstring m_outfile;
+
+	AAVM* m_pAAVM;
 
 	std::vector<AAClassSignature*> m_preregisteredClasses;
 	std::vector<AAFuncSignature*> m_preregisteredFunctions;
