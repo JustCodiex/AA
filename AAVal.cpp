@@ -71,6 +71,6 @@ void AAO_NewObject(AAVM* pAAVm, aa::stack<AAVal> args, aa::stack<AAVal>& stack) 
 	aa::list<AAVal> argl = aa::ToArgumentList(args);
 
 	// Push string representation of primitive unto stack
-	//stack.Push(argl.First());
+	stack.Push(argl.First());
 
 }

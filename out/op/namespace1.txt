@@ -14,10 +14,11 @@ OPERATIONS:
 	[0]	SETVAR, 0
 	[1]	GETVAR, 0
 	[2]	VMCALL, 3, 1		;; Calls: object::object
-	[3]	PUSHC, 0
-	[4]	VMCALL, 0, 1		;; Calls: println
-	[5]	GETVAR, 0
-	[6]	RET, 1
+	[3]	POP
+	[4]	PUSHC, 0
+	[5]	VMCALL, 0, 1		;; Calls: println
+	[6]	GETVAR, 0
+	[7]	RET, 1
 END PROCEDURE;
 
 START PROCEDURE 2 (StringList::StringList):
@@ -28,10 +29,11 @@ OPERATIONS:
 	[0]	SETVAR, 0
 	[1]	GETVAR, 0
 	[2]	VMCALL, 3, 1		;; Calls: object::object
-	[3]	PUSHC, 0
-	[4]	VMCALL, 0, 1		;; Calls: println
-	[5]	GETVAR, 0
-	[6]	RET, 1
+	[3]	POP
+	[4]	PUSHC, 0
+	[5]	VMCALL, 0, 1		;; Calls: println
+	[6]	GETVAR, 0
+	[7]	RET, 1
 END PROCEDURE;
 
 START PROCEDURE 3 (main):

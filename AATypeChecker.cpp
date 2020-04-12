@@ -419,6 +419,7 @@ AACType* AATypeChecker::TypeCheckCallOperation(AA_AST_NODE* pCallNode) {
 			pCallNode->tags["calls"] = (int)sig->procID;
 			pCallNode->tags["isVM"] = sig->isVMFunc;
 			pCallNode->tags["args"] = (int)sig->parameters.size();
+			pCallNode->tags["returns"] = (sig->returnType == AACType::Void) ? 0 : 1;
 
 			return sig->returnType;
 
@@ -515,6 +516,7 @@ AACType* AATypeChecker::TypeCheckCtorAndFindBestMatch(AACNamespace* pDomain, AA_
 				pCallNode->tags["isVM"] = sig->isVMFunc;
 				pCallNode->tags["args"] = (int)sig->parameters.size();
 				pCallNode->tags["allocsz"] = (int)classSig->classByteSz;
+				pCallNode->tags["returns"] = (sig->returnType == AACType::Void) ? 0 : 1;
 
 				// Return the proper type
 				return sig->returnType;

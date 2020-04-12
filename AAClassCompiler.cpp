@@ -144,6 +144,7 @@ bool AAClassCompiler::AddInheritanceCallNode(AAFuncSignature* ctor, AA_AST_NODE*
 		pCallNode->tags["calls"] = (int)ctor->procID;
 		pCallNode->tags["isVM"] = ctor->isVMFunc;
 		pCallNode->tags["args"] = (int)ctor->parameters.size();
+		pCallNode->tags["returns"] = 1; // Ctor calls will always return 1
 
 		AA_AST_NODE* pThisArgNode = new AA_AST_NODE(L"this", AA_AST_NODE_TYPE::variable, pCtorDeclNode->position);
 		pThisArgNode->tags["compiler_generated"] = true;

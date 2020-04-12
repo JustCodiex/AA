@@ -15,11 +15,12 @@ OPERATIONS:
 	[1]	SETVAR, 1
 	[2]	GETVAR, 1
 	[3]	VMCALL, 3, 1		;; Calls: object::object
-	[4]	GETVAR, 1
-	[5]	GETVAR, 0
-	[6]	SETFIELD, 0
-	[7]	GETVAR, 1
-	[8]	RET, 1
+	[4]	POP
+	[5]	GETVAR, 1
+	[6]	GETVAR, 0
+	[7]	SETFIELD, 0
+	[8]	GETVAR, 1
+	[9]	RET, 1
 END PROCEDURE;
 
 START PROCEDURE 2 (SingleClass::SingleClass):
@@ -30,13 +31,14 @@ OPERATIONS:
 	[0]	SETVAR, 0
 	[1]	GETVAR, 0
 	[2]	VMCALL, 3, 1		;; Calls: object::object
-	[3]	GETVAR, 0
-	[4]	HALLOC, 16
-	[5]	PUSHC, 0
-	[6]	CALL, 1, 2		;; Calls: Teacher::Teacher
-	[7]	SETFIELD, 1
-	[8]	GETVAR, 0
-	[9]	RET, 1
+	[3]	POP
+	[4]	GETVAR, 0
+	[5]	HALLOC, 16
+	[6]	PUSHC, 0
+	[7]	CALL, 1, 2		;; Calls: Teacher::Teacher
+	[8]	SETFIELD, 1
+	[9]	GETVAR, 0
+	[10]	RET, 1
 END PROCEDURE;
 
 START PROCEDURE 3 (SingleClass::GetTeacher):

@@ -14,11 +14,12 @@ OPERATIONS:
 	[0]	SETVAR, 0
 	[1]	GETVAR, 0
 	[2]	VMCALL, 3, 1		;; Calls: object::object
-	[3]	GETVAR, 0
-	[4]	PUSHC, 0
-	[5]	SETFIELD, 0
-	[6]	GETVAR, 0
-	[7]	RET, 1
+	[3]	POP
+	[4]	GETVAR, 0
+	[5]	PUSHC, 0
+	[6]	SETFIELD, 0
+	[7]	GETVAR, 0
+	[8]	RET, 1
 END PROCEDURE;
 
 START PROCEDURE 2 (main):
