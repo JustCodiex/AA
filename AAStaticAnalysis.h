@@ -21,6 +21,15 @@ struct AAStaticEnvironment {
 		globalNamespace = 0;
 	}
 
+	AAStaticEnvironment Union(AACNamespace*& space) const {
+		AAStaticEnvironment senv = AAStaticEnvironment(*this);
+		senv.availableClasses.UnionWith(space->classes);
+		senv.availableFunctions.UnionWith(space->functions);
+		senv.availableTypes.UnionWith(space->types);
+		senv.availableEnums.UnionWith(space->enums);
+		return senv;
+	}
+
 };
 
 /// <summary>
@@ -67,7 +76,7 @@ public:
 	/// <param name="sig">The function signature to check. Must have a valid <see cref="AA_AST_NODE"/> attached.</param>
 	/// <param name="err">The error message that is filled out IF the method returns false</param>
 	/// <returns>True only if the function is following a valid control structure</returns>
-	bool VerifyFunctionControlPath(AAFuncSignature* sig, AAC_CompileErrorMessage& err);
+	bool VerifyFunctionControlPath(AAFuncSignature* sig, AAStaticEnvironment environment, AAC_CompileErrorMessage& err);
 
 private:
 
@@ -84,6 +93,12 @@ private:
 	AAC_CompileErrorMessage RegisterClass(AA_AST_NODE* pNode, AAClassSignature*& sig, AACNamespace* domain, AAStaticEnvironment& senv);
 	AAC_CompileErrorMessage RegisterEnum(AA_AST_NODE* pNode, AACEnumSignature*& sig, AACNamespace* domain, AAStaticEnvironment& senv);
 
+	AAC_CompileErrorMessage VerifyDeclarations(AACNamespace* domain, AAStaticEnvironment environment);
+	AAC_CompileErrorMessage VerifyInheritanceCircularDependency(AAClassSignature* signatureA, AAClassSignature* signatureB);
+
+	AAC_CompileErrorMessage ApplyInheritance(AACNamespace* domain, AAStaticEnvironment& senv);
+	AAC_CompileErrorMessage ApplyInheritance(AAClassSignature* classSig, AAStaticEnvironment& senv);
+
 	AAC_CompileErrorMessage HandleObjectInheritance(AAClassSignature* sig, AAStaticEnvironment& senv);
 	AAC_CompileErrorMessage HandleObjectInheritance(AACEnumSignature* sig, AAStaticEnvironment& senv);
 
@@ -94,7 +109,7 @@ private:
 
 	int GetReturnCount(AAFuncSignature* funcSig);
 
-	int VerifyFunctionControlPath(AA_AST_NODE* pNode, AAC_CompileErrorMessage& err);
+	int VerifyFunctionControlPath(AA_AST_NODE* pNode, AAStaticEnvironment environment, AAC_CompileErrorMessage& err);
 
 private:
 

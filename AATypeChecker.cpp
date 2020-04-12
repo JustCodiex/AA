@@ -90,7 +90,7 @@ AACType* AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 		enumSig->values.ForEach([this, enumType](AACEnumValue& enumVal) { m_vtenv[enumVal.name] = enumType; });
 
 		// Typecheck enum body (not the values, which is the first expression)
-		AACType* bodyType = this->TypeCheckNode(node->expressions[1]);
+		AACType* bodyType = this->TypeCheckNode(node->expressions[AA_NODE_ENUMNODE_BODY]);
 
 		// Restore type environment
 		m_vtenv = typeEnv;
@@ -105,7 +105,7 @@ AACType* AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 
 	}		
 	case AA_AST_NODE_TYPE::classdecl:
-		return this->TypeCheckNode(node->expressions[0]);
+		return this->TypeCheckNode(node->expressions[AA_NODE_CLASSNODE_BODY]);
 	case AA_AST_NODE_TYPE::fundecl: 
 		return this->TypeCheckFuncDecl(node);
 	case AA_AST_NODE_TYPE::funcall:
@@ -492,20 +492,20 @@ AACType* AATypeChecker::TypeCheckCtorAndFindBestMatch(AACNamespace* pDomain, AA_
 AACType* AATypeChecker::TypeCheckFuncDecl(AA_AST_NODE* pDeclNode) {
 
 	// Do we have a body that also needs type verification/checking?
-	if (pDeclNode->expressions.size() >= 3) {
+	if (pDeclNode->expressions.size() >= AA_NODE_FUNNODE_BODY) {
 		
 		// Make a copy of the current variable environment
 		AAVarTypeEnv vtenv = AAVarTypeEnv(m_vtenv);
 
 		// For all arguments
-		for (size_t i = 0; i < pDeclNode->expressions[1]->expressions.size(); i++) {
+		for (size_t i = 0; i < pDeclNode->expressions[AA_NODE_FUNNODE_ARGLIST]->expressions.size(); i++) {
 
 			// Typecheck argument
-			AACType* argType = this->TypeCheckNode(pDeclNode->expressions[1]->expressions[i]);
+			AACType* argType = this->TypeCheckNode(pDeclNode->expressions[AA_NODE_FUNNODE_ARGLIST]->expressions[i]);
 
 			// Set variable type in environment
 			if (argType != AACType::ErrorType) {
-				m_vtenv[pDeclNode->expressions[1]->expressions[i]->content] = argType;
+				m_vtenv[pDeclNode->expressions[AA_NODE_FUNNODE_ARGLIST]->expressions[i]->content] = argType;
 			} else {
 				printf("Arg type error\n");
 			}
@@ -513,7 +513,7 @@ AACType* AATypeChecker::TypeCheckFuncDecl(AA_AST_NODE* pDeclNode) {
 		}
 
 		// Type verify body
-		this->TypeCheckNode(pDeclNode->expressions[2]);
+		this->TypeCheckNode(pDeclNode->expressions[AA_NODE_FUNNODE_BODY]);
 
 		// Reset variable types
 		m_vtenv = vtenv;
@@ -521,7 +521,7 @@ AACType* AATypeChecker::TypeCheckFuncDecl(AA_AST_NODE* pDeclNode) {
 	}
 
 	// Return the type the function returns
-	return this->TypeCheckNode(pDeclNode->expressions[0]);
+	return this->TypeCheckNode(pDeclNode->expressions[AA_NODE_FUNNODE_RETURNTYPE]);
 
 }
 
@@ -760,7 +760,11 @@ bool AATypeChecker::IsValidType(AACType* t) {
 }
 
 bool AATypeChecker::IsPrimitiveType(AACType* t) {
-	return !t->isRefType;
+	if (t) {
+		return !t->isRefType;
+	} else {
+		return false;
+	}
 }
 
 bool AATypeChecker::IsMatchingTypes(AACType* tCompare, AACType* tExpected) {
@@ -771,7 +775,15 @@ bool AATypeChecker::IsMatchingTypes(AACType* tCompare, AACType* tExpected) {
 		if (tExpected == AACType::Any) {
 			return true;
 		} else {
-			return false; // TODO: Check inheritance
+			if (tCompare->isRefType && tCompare->classSignature && tExpected->isRefType && tExpected->classSignature) { // Could it be a derivitve?
+				if (tCompare->classSignature->DerivesFrom(tExpected->classSignature)) { // Check if tCompare is derived from the expected type (because then it's a legal match)
+					return true;
+				} else {
+					return false;
+				}
+			} else {
+				return false;
+			}
 		}
 	}
 

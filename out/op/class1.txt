@@ -19,11 +19,11 @@ END PROCEDURE;
 START PROCEDURE 2 (ExampleClass::arg):
 CONSTANTS:
 IDENTIFIERS: 
-	this;	v;
+	v;	this;
 OPERATIONS: 
-	[0]	SETVAR, 1
-	[1]	SETVAR, 0
-	[2]	GETVAR, 1
+	[0]	SETVAR, 0
+	[1]	SETVAR, 1
+	[2]	GETVAR, 0
 	[3]	RET, 1
 END PROCEDURE;
 

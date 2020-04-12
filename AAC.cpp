@@ -114,14 +114,19 @@ aa::list<AAC::CompiledProcedure> AAC::CompileProcedureFromASTRootNode(AA_AST_NOD
 	// If it's a class, we'll have to compile it just a bit differently
 	if (tp == AA_AST_NODE_TYPE::classdecl) {
 
-		// For all sub-elements of class decl
-		for (size_t j = 0; j < pAstRootNode->expressions[0]->expressions.size(); j++) {
+		// Does the declaration contain a body to compile?
+		if (pAstRootNode->expressions.size() >= AA_NODE_CLASSNODE_BODY) {
 
-			// Make sure it's a function decleration
-			if (pAstRootNode->expressions[0]->expressions[j]->type == AA_AST_NODE_TYPE::fundecl) {
+			// For all sub-elements of class decl
+			for (size_t i = 0; i < pAstRootNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions.size(); i++) {
 
-				// Compile the AST
-				compileResults.Add(this->CompileProcedureFromASTNode(pAstRootNode->expressions[0]->expressions[j], senv));
+				// Make sure it's a function decleration
+				if (pAstRootNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions[i]->type == AA_AST_NODE_TYPE::fundecl) {
+
+					// Compile the AST
+					compileResults.Add(this->CompileProcedureFromASTNode(pAstRootNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions[i], senv));
+
+				}
 
 			}
 
@@ -140,10 +145,10 @@ aa::list<AAC::CompiledProcedure> AAC::CompileProcedureFromASTRootNode(AA_AST_NOD
 	} else if (tp == AA_AST_NODE_TYPE::enumdecleration) {
 	
 		// For all subelements in enum body
-		for (size_t i = 0; i < pAstRootNode->expressions[1]->expressions.size(); i++) {
+		for (size_t i = 0; i < pAstRootNode->expressions[AA_NODE_ENUMNODE_BODY]->expressions.size(); i++) {
 
 			// Compile code and add to results
-			compileResults.Add(this->CompileProcedureFromASTRootNode(pAstRootNode->expressions[1]->expressions[i], senv));
+			compileResults.Add(this->CompileProcedureFromASTRootNode(pAstRootNode->expressions[AA_NODE_ENUMNODE_BODY]->expressions[i], senv));
 
 		}
 
@@ -205,10 +210,9 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileAST(AA_AST_NODE* pNode, Co
 		break;
 	}
 	case AA_AST_NODE_TYPE::fundecl: {
-		if (pNode->expressions.size() == 3) { // We've got the actual function body => compile it
-			this->CompileAST(pNode->expressions[1], cTable, staticData);
+		if (pNode->expressions.size() >= AA_NODE_FUNNODE_BODY) { // We've got the actual function body => compile it
 			aa::list<CompiledAbstractExpression> args = this->CompileFuncArgs(pNode, cTable, staticData);
-			aa::list<CompiledAbstractExpression> body = aa::list<CompiledAbstractExpression>::Merge(args, this->CompileAST(pNode->expressions[2], cTable, staticData));
+			aa::list<CompiledAbstractExpression> body = aa::list<CompiledAbstractExpression>::Merge(args, this->CompileAST(pNode->expressions[AA_NODE_FUNNODE_BODY], cTable, staticData));
 			CompiledAbstractExpression retCAE;
 			retCAE.bc = AAByteCode::RET;
 			retCAE.argCount = 1;
@@ -219,13 +223,7 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileAST(AA_AST_NODE* pNode, Co
 		break;
 	}
 	case AA_AST_NODE_TYPE::funcall: {
-		executionStack .Add(CompileFunctionCall(pNode, cTable, staticData));
-		break;
-	}
-	case AA_AST_NODE_TYPE::funarglist: {
-		for (size_t i = 0; i < pNode->expressions.size(); i++) {
-			cTable.identifiers.Add(pNode->expressions[i]->content);
-		}
+		executionStack.Add(CompileFunctionCall(pNode, cTable, staticData));
 		break;
 	}
 	case AA_AST_NODE_TYPE::ifstatement: {
@@ -432,9 +430,18 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileFunctionCall(AA_AST_NODE* 
 
 aa::list<AAC::CompiledAbstractExpression> AAC::CompileFuncArgs(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
 
+	// Get the argument list
+	AA_AST_NODE* pArgList = pNode->expressions[AA_NODE_FUNNODE_ARGLIST];
+
 	aa::list<CompiledAbstractExpression> opList;
 
-	for (size_t i = 0; i < pNode->expressions[1]->expressions.size(); i++) {
+	for (size_t i = 0; i < pArgList->expressions.size(); i++) {
+
+		// Get the argument
+		std::wstring arg = pArgList->expressions[pArgList->expressions.size() - 1 - i]->content;
+
+		// Add identifier to constants' identifier table
+		cTable.identifiers.Add(arg);
 
 		// Create setvar operation
 		CompiledAbstractExpression argCAE;
@@ -442,7 +449,7 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileFuncArgs(AA_AST_NODE* pNod
 		argCAE.argCount = 1;
 
 		// Set the argument of size() - 1 - i (the inverse) becausue of the push-pop mechanism used by the AAVM to pass call arguments
-		argCAE.argValues[0] = cTable.identifiers.IndexOf(pNode->expressions[1]->expressions[pNode->expressions[1]->expressions.size() - 1 - i]->content);
+		argCAE.argValues[0] = cTable.identifiers.IndexOf(arg);
 
 		// Add operation
 		opList.Add(argCAE);

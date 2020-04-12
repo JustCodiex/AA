@@ -251,9 +251,6 @@
     <ClInclude Include="AAClassSignature.h">
       <Filter>Header Files\compiler</Filter>
     </ClInclude>
-    <ClInclude Include="AAAccessModifier.h">
-      <Filter>Header Files\compiler</Filter>
-    </ClInclude>
     <ClInclude Include="AAStaticAnalysis.h">
       <Filter>Header Files\compiler</Filter>
     </ClInclude>
@@ -277,6 +274,12 @@
     </ClInclude>
     <ClInclude Include="AAMemory.h">
       <Filter>Header Files\VM\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="AAModifier.h">
+      <Filter>Header Files\compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="AA_Node_Consts.h">
+      <Filter>Header Files\parser</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,7 +1,8 @@
 // Super class
 class Super {
 
-    Super() { // Super .ctor
+    // Super .ctor
+    Super() {
         println("Super .ctor called");
     }
 

@@ -51,6 +51,7 @@ enum class AA_AST_NODE_TYPE {
 
 	classdecl,
 	classctorcall,
+	classinheritancelist,
 
 	typeidentifier,
 	namespaceidentifier,
@@ -67,9 +68,13 @@ enum class AA_AST_NODE_TYPE {
 	funarg,
 	funarglist,
 
+	modifierlist,
+	modifier,
+
 	enumdecleration,
 	enumvallist,
 	enumidentifier,
+	enuminheritancelist,
 
 	intliteral,
 	floatliteral,

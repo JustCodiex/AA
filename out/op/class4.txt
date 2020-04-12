@@ -9,14 +9,14 @@ END PROCEDURE;
 START PROCEDURE 1 (Teacher::Teacher):
 CONSTANTS:
 IDENTIFIERS: 
-	this;	a;
+	a;	this;
 OPERATIONS: 
-	[0]	SETVAR, 1
-	[1]	SETVAR, 0
-	[2]	GETVAR, 0
-	[3]	GETVAR, 1
+	[0]	SETVAR, 0
+	[1]	SETVAR, 1
+	[2]	GETVAR, 1
+	[3]	GETVAR, 0
 	[4]	SETFIELD, 0
-	[5]	GETVAR, 0
+	[5]	GETVAR, 1
 	[6]	RET, 1
 END PROCEDURE;
 

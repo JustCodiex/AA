@@ -497,6 +497,30 @@ void AA_PT::HandleKeywordCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex
 		// Create pattern matching block (Note! we take whatever was before this lement and pattern matches with it, therefore we must assign to the previous element)
 		nodes[nodeIndex-1] = this->CreatePatternMatchBlock(nodes, nodeIndex);
 
+	} else if (IsModifierKeyword(nodes[nodeIndex]->content)) { // Is it a modifier (eg. virtual, override etc)
+
+		// Store modifier value
+		std::wstring content = nodes[nodeIndex]->content;
+
+		// Store location in node set
+		size_t n = nodeIndex;
+
+		// Goto next node
+		nodeIndex++;
+
+		// Parse next modifier OR next function decleration
+		this->HandleTreeCase(nodes, nodeIndex);
+
+		// Remove self
+		REMOVE_NODE(n);
+
+		// Add modifier to decleration's modifier list
+		if (nodes[n]->nodeType == AA_PT_NODE_TYPE::fundecleration) {
+			nodes[n]->childNodes[2]->childNodes.push_back(new AA_PT_NODE(AA_PT_NODE_TYPE::modifier, content.c_str(), nodes[n]->position));
+		} else if (nodes[n]->nodeType == AA_PT_NODE_TYPE::classdecleration) {
+			nodes[n]->childNodes[0]->childNodes.push_back(new AA_PT_NODE(AA_PT_NODE_TYPE::modifier, content.c_str(), nodes[n]->position));
+		}
+
 	}
 
 	nodeIndex++;
@@ -621,30 +645,62 @@ AA_PT_NODE* AA_PT::CreateVariableDecl(std::vector<AA_PT_NODE*>& nodes, size_t fr
 
 AA_PT_NODE* AA_PT::CreateClassDecl(std::vector<AA_PT_NODE*>& nodes, size_t from) {
 
+	// Create the class decl node (The actual class decleration
 	AA_PT_NODE* classDeclExp = new AA_PT_NODE(nodes[from]->position);
 	classDeclExp->nodeType = AA_PT_NODE_TYPE::classdecleration;
 
-	if (from + 1 < nodes.size() && nodes[from + 1]->nodeType == AA_PT_NODE_TYPE::identifier) {
+	// Create the modifier list
+	AA_PT_NODE* modifierList = new AA_PT_NODE(nodes[from]->position);
+	modifierList->nodeType = AA_PT_NODE_TYPE::modifierlist;
 
-		classDeclExp->content = nodes[from + 1]->content;
+	// Create the inheritance list node
+	AA_PT_NODE* inheritanceList = new AA_PT_NODE(nodes[from]->position);
+	inheritanceList->nodeType = AA_PT_NODE_TYPE::classinheritancelist;
 
-	} else {
-		printf("Found class keyword without a valid identifying name!");
-	}
+	// Add modifier and inheritance lists
+	classDeclExp->childNodes.push_back(modifierList);
+	classDeclExp->childNodes.push_back(inheritanceList);
 
+	// Set the name of the class we're declaring
+	classDeclExp->content = this->FindClassDeclName(nodes, from, classDeclExp);
+
+	// Do we then have a body to evaluate?
 	if (from + 2 < nodes.size() && nodes[from + 2]->nodeType == AA_PT_NODE_TYPE::block) {
 
+		// Create class body
 		AA_PT_NODE* classBody = new AA_PT_NODE(nodes[from + 2]->position);
 		classBody->nodeType = AA_PT_NODE_TYPE::classbody;
 		classBody->childNodes = this->CreateDeclerativeBody(nodes[from + 2]->childNodes);
 
+		// Add class body
 		classDeclExp->childNodes.push_back(classBody);
 
 	}
 
+	// Erase all the unnessecary stuff
 	nodes.erase(nodes.begin() + from + 1, nodes.begin() + from + 3);
 
+	// Return class definition
 	return classDeclExp;
+
+}
+
+std::wstring AA_PT::FindClassDeclName(std::vector<AA_PT_NODE*>& nodes, const size_t from, AA_PT_NODE* pClassDeclNode) {
+
+	if (from + 1 < nodes.size()) {
+		if (nodes[from + 1]->nodeType == AA_PT_NODE_TYPE::identifier) {
+			return nodes[from + 1]->content;
+		} else if (nodes[from+1]->nodeType == AA_PT_NODE_TYPE::accessor) {
+			// TODO: Add support for multiple inheritance
+			pClassDeclNode->childNodes[1]->childNodes.push_back(new AA_PT_NODE(AA_PT_NODE_TYPE::identifier, nodes[from + 1]->childNodes[1]->content.c_str(), nodes[from + 1]->position));
+			return nodes[from + 1]->childNodes[0]->content;
+		}
+	} else {
+		printf("Found class keyword without a valid identifying name!"); // TODO: Throw error
+	}
+
+	// TODO: Throw error
+	return L"NO NAME CLASS";
 
 }
 
@@ -660,6 +716,9 @@ AA_PT_NODE* AA_PT::CreateConstructorDecl(std::vector<AA_PT_NODE*>& nodes, size_t
 		return 0;
 	}
 
+	AA_PT_NODE* modifierList = new AA_PT_NODE(nodes[from]->position);
+	modifierList->nodeType = AA_PT_NODE_TYPE::modifierlist;
+
 	AA_PT_NODE* classType = new AA_PT_NODE(nodes[from]->position);
 	classType->nodeType = AA_PT_NODE_TYPE::identifier;
 	classType->content = L"ctor";
@@ -669,6 +728,7 @@ AA_PT_NODE* AA_PT::CreateConstructorDecl(std::vector<AA_PT_NODE*>& nodes, size_t
 	ctorDecl->content = L".ctor";
 	ctorDecl->childNodes.push_back(classType);
 	ctorDecl->childNodes.push_back(CreateFunctionArgList(nodes[from + 1])); // argument list
+	ctorDecl->childNodes.push_back(modifierList);
 
 	if (from + 2 < (int)nodes.size() && nodes[from + 2]->nodeType == AA_PT_NODE_TYPE::block) {
 		size_t n = 0;
@@ -696,11 +756,15 @@ AA_PT_NODE* AA_PT::CreateFunctionDecl(std::vector<AA_PT_NODE*>& nodes, size_t fr
 		return 0;
 	}
 
+	AA_PT_NODE* modifierList = new AA_PT_NODE(nodes[from]->position);
+	modifierList->nodeType = AA_PT_NODE_TYPE::modifierlist;
+
 	AA_PT_NODE* funDecl = new AA_PT_NODE(nodes[from]->position);
 	funDecl->nodeType = AA_PT_NODE_TYPE::fundecleration;
 	funDecl->content = nodes[from + 1]->content;
 	funDecl->childNodes.push_back(nodes[from]); // return type
 	funDecl->childNodes.push_back(CreateFunctionArgList(nodes[from+2])); // argument list
+	funDecl->childNodes.push_back(modifierList);
 
 	if (from + 3 < (int)nodes.size() && nodes[from + 3]->nodeType == AA_PT_NODE_TYPE::block) {
 		size_t n = 0;
@@ -1182,6 +1246,10 @@ bool AA_PT::IsDeclarativeIndexer(AA_PT_NODE* pNode) {
 		return false;
 	}
 
+}
+
+bool AA_PT::IsModifierKeyword(std::wstring ws) {
+	return ws.compare(L"override") == 0 || ws.compare(L"virtual") == 0;
 }
 
 void AA_PT::ApplyOrderOfOperationBindings(std::vector<AA_PT_NODE*>& nodes) {

@@ -175,7 +175,7 @@
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AAAccessModifier.h" />
+    <ClInclude Include="AAModifier.h" />
     <ClInclude Include="AAB2F.h" />
     <ClInclude Include="AAByteCode.h" />
     <ClInclude Include="AAC.h" />
@@ -210,6 +210,7 @@
     <ClInclude Include="AA_AST.h" />
     <ClInclude Include="AA_AST_NODE.h" />
     <ClInclude Include="AA_literals.h" />
+    <ClInclude Include="AA_Node_Consts.h" />
     <ClInclude Include="AA_PT.h" />
     <ClInclude Include="AA_PT_NODE.h" />
     <ClInclude Include="astring.h" />

@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include "AACodePosition.h"
+#include "AA_Node_Consts.h"
 
 enum class AA_PT_NODE_TYPE {
 
@@ -64,10 +65,16 @@ enum class AA_PT_NODE_TYPE {
 	enumdecleration,
 
 	enumvallist,
+	enuminheritancelist,
+
+	classinheritancelist,
 
 	funccall,
 	funarg,
 	funarglist,
+
+	modifierlist,
+	modifier,
 
 	intliteral,
 	shortliteral,
@@ -87,8 +94,18 @@ struct AA_PT_NODE {
 	std::vector< AA_PT_NODE*> childNodes;
 	AACodePosition position;
 	AA_PT_NODE(AACodePosition pos) {
-		nodeType = AA_PT_NODE_TYPE::undefined;
-		content = L"";
-		position = pos;
+		this->nodeType = AA_PT_NODE_TYPE::undefined;
+		this->content = L"";
+		this->position = pos;
+	}
+	AA_PT_NODE(AA_PT_NODE_TYPE type, AACodePosition pos) {
+		this->nodeType = type;
+		this->content = L"";
+		this->position = pos;
+	}
+	AA_PT_NODE(AA_PT_NODE_TYPE type, const wchar_t* content, AACodePosition pos) {
+		this->nodeType = type;
+		this->content = content;
+		this->position = pos;
 	}
 };

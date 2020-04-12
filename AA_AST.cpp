@@ -79,11 +79,12 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 	case AA_PT_NODE_TYPE::fundecleration: {
 		
 		AA_AST_NODE* funDecl = new AA_AST_NODE(pNode->content, AA_AST_NODE_TYPE::fundecl, pNode->position);
-		funDecl->expressions.push_back(new AA_AST_NODE(pNode->childNodes[0]->content, AA_AST_NODE_TYPE::typeidentifier, pNode->position));
-		funDecl->expressions.push_back(this->AbstractNode(pNode->childNodes[1]));
+		funDecl->expressions.push_back(new AA_AST_NODE(pNode->childNodes[AA_NODE_FUNNODE_RETURNTYPE]->content, AA_AST_NODE_TYPE::typeidentifier, pNode->position));
+		funDecl->expressions.push_back(this->AbstractNode(pNode->childNodes[AA_NODE_FUNNODE_ARGLIST]));
+		funDecl->expressions.push_back(this->AbstractNode(pNode->childNodes[AA_NODE_FUNNODE_MODIFIER]));
 
-		if (pNode->childNodes.size() == 3) {
-			funDecl->expressions.push_back(this->AbstractNode(pNode->childNodes[2]));
+		if (pNode->childNodes.size() >= AA_NODE_FUNNODE_BODY) {
+			funDecl->expressions.push_back(this->AbstractNode(pNode->childNodes[AA_NODE_FUNNODE_BODY]));
 		}
 
 		return funDecl;
@@ -166,7 +167,9 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 	}
 	case AA_PT_NODE_TYPE::classdecleration: {
 		AA_AST_NODE* classdef = new AA_AST_NODE(pNode->content, AA_AST_NODE_TYPE::classdecl, pNode->position);
-		classdef->expressions.push_back(this->AbstractNode(pNode->childNodes[0]));
+		classdef->expressions.push_back(this->AbstractNode(pNode->childNodes[AA_NODE_CLASSNODE_MODIFIER]));
+		classdef->expressions.push_back(this->AbstractNode(pNode->childNodes[AA_NODE_CLASSNODE_INHERITANCE]));
+		classdef->expressions.push_back(this->AbstractNode(pNode->childNodes[AA_NODE_CLASSNODE_BODY]));
 		return classdef;
 	}
 	case AA_PT_NODE_TYPE::newstatement: {
@@ -255,6 +258,22 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 		pMatchNode->expressions.push_back(this->AbstractNode(pNode->childNodes[1])); // match cases
 		return pMatchNode;
 	}
+	case AA_PT_NODE_TYPE::classinheritancelist: {
+		AA_AST_NODE* pInheritanceListNode = new AA_AST_NODE(L"", AA_AST_NODE_TYPE::classinheritancelist, pNode->position);
+		for (size_t i = 0; i < pNode->childNodes.size(); i++) {
+			pInheritanceListNode->expressions.push_back(new AA_AST_NODE(pNode->childNodes[i]->content, AA_AST_NODE_TYPE::typeidentifier, pNode->childNodes[i]->position));
+		}
+		return pInheritanceListNode;
+	}
+	case AA_PT_NODE_TYPE::modifierlist: {
+		AA_AST_NODE* pModifierListNode = new AA_AST_NODE(L"", AA_AST_NODE_TYPE::modifierlist, pNode->position);
+		for (size_t i = 0; i < pNode->childNodes.size(); i++) {
+			pModifierListNode->expressions.push_back(this->AbstractNode(pNode->childNodes[i]));
+		}
+		return pModifierListNode;
+	}
+	case AA_PT_NODE_TYPE::modifier:
+		return new AA_AST_NODE(pNode->content, AA_AST_NODE_TYPE::modifier, pNode->position);
 	case AA_PT_NODE_TYPE::intliteral:
 	case AA_PT_NODE_TYPE::charliteral:
 	case AA_PT_NODE_TYPE::floatliteral:

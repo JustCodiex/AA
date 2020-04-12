@@ -1,6 +1,8 @@
 #include "AAP.h"
 #include "AA_PT.h"
 
+AACodePosition AACodePosition::Undetermined = AACodePosition(2147483647, 2147483647);
+
 AAP::AAP() {
 
 	// Allocate memory for the lexer

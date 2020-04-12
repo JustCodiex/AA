@@ -230,8 +230,45 @@ AAC_CompileErrorMessage AAStaticAnalysis::FetchStaticDeclerationsFromTrees(std::
 		}
 	}
 
+	// Apply inheritance
+	this->ApplyInheritance(globalDomain, senv);
+
+	// Verify declarations
+	if (COMPILE_ERROR(err = this->VerifyDeclarations(globalDomain, senv))) {
+		return err;
+	}
+
 	// Set the global namespace
 	senv.globalNamespace = globalDomain;
+
+	// no compile error messages
+	return NO_COMPILE_ERROR_MESSAGE;
+
+}
+
+AAC_CompileErrorMessage AAStaticAnalysis::VerifyDeclarations(AACNamespace* domain, AAStaticEnvironment senv) {
+
+	// Error container
+	AAC_CompileErrorMessage err;
+
+	// For all domains
+	if (!domain->childspaces.ForAll([&err, this, senv](AACNamespace*& dom) { return COMPILE_OK(err = this->VerifyDeclarations(dom, senv.Union(dom))); })) {
+		return err;
+	}
+
+	// Make sure we have NO cicular dependencies
+	if (!(domain->classes * domain->classes).ForAll([&err, this](aa::set_pair<AAClassSignature*, AAClassSignature*> pair) 
+		{ return (COMPILE_OK(err = this->VerifyInheritanceCircularDependency(pair.first, pair.second))); })
+		) {
+
+		// Return error
+		return err;
+	}
+
+	// Verify control paths
+	if (!domain->functions.ForAll([&err, this, senv](AAFuncSignature*& fun) { return this->VerifyFunctionControlPath(fun, senv, err); })) {
+		return err;
+	}
 
 	// no compile error messages
 	return NO_COMPILE_ERROR_MESSAGE;
@@ -513,7 +550,8 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterEnum(AA_AST_NODE* pNode, AACEn
 				// Add method to class definition
 				enumSig->functions.Add(sig);
 
-				if (pNode->expressions[1]->expressions[i]->expressions.size() >= 3) { // make sure it's declared
+				// make sure it's declared
+				if (pNode->expressions[1]->expressions[i]->expressions.size() >= 3) { 
 					funcBodyNodes.push_back(pNode->expressions[1]->expressions[i]->expressions[2]);
 				}
 
@@ -546,61 +584,115 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterClass(AA_AST_NODE* pNode, AACl
 	// Compiled Class data size
 	cc->classByteSz = 0;
 
-	// Inherit from object
-	this->HandleObjectInheritance(cc, senv);
+	// Do we inherit from something?
+	if (pNode->expressions[AA_NODE_CLASSNODE_INHERITANCE]->expressions.size() > 0) {
+
+		// For all inheritances
+		for (size_t i = 0; i < pNode->expressions[AA_NODE_CLASSNODE_INHERITANCE]->expressions.size(); i++) {
+
+			// Type to look for
+			std::wstring lookfr = pNode->expressions[AA_NODE_CLASSNODE_INHERITANCE]->expressions[i]->content;
+
+			// Type index
+			int typeID;
+			if (senv.availableTypes.FindFirstIndex([lookfr](AACType*& type) { return type->name.compare(lookfr) == 0 && type->isRefType; }, typeID)) {
+
+				// Get type pointer
+				AACType* type = senv.availableTypes.Apply(typeID);
+
+				// Get Make sure type is a valid class!
+				if (type->classSignature) {
+
+					// Add to extension list
+					cc->extends.Add(type->classSignature);
+				
+				} else { // invalid extension type
+
+					// Tried to inherit from enum?
+					if (type->isEnum) {
+						err.errorMsg = ("Inheritance from enum type '" + string_cast(lookfr) + "' is not allowed").c_str();
+						err.errorSource = pNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions[i]->position;
+						err.errorType = 0;
+						return err;
+					} else {
+						err.errorMsg = ("Inheritance from primitive type '" + string_cast(lookfr) + "' is not allowed.").c_str();
+						err.errorSource = pNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions[i]->position;
+						err.errorType = 0;
+						return err;
+					}
+
+				}
+
+			} else { // type not found
+
+				err.errorMsg = ("Undefined base type '" + string_cast(lookfr) + "'").c_str();
+				err.errorSource = pNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions[i]->position;
+				err.errorType = 0;
+				return err;
+
+			}
+
+		}
+
+	} else { // Raw class --> Inherit from object automatically
+
+		// Add extending from object
+		cc->extends.Add(m_objectInheritFrom);
+
+	}
 
 	// Function bodies to correct
 	std::vector<AA_AST_NODE*> funcBodyNodes;
 
 	// Make sure we have a class body to work with
-	if (pNode->expressions.size() == 1 && pNode->expressions[0]->type == AA_AST_NODE_TYPE::classbody) {
+	if (pNode->expressions.size() >= AA_NODE_CLASSNODE_BODY && pNode->expressions[AA_NODE_CLASSNODE_BODY]->type == AA_AST_NODE_TYPE::classbody) {
 
 		// For all elements in class body
-		for (size_t i = 0; i < pNode->expressions[0]->expressions.size(); i++) {
+		for (size_t i = 0; i < pNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions.size(); i++) {
 
 			// If function
-			if (pNode->expressions[0]->expressions[i]->type == AA_AST_NODE_TYPE::fundecl) {
+			if (pNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions[i]->type == AA_AST_NODE_TYPE::fundecl) {
 
 				// We need to push a "this" into the method params list
-				m_compilerPointer->GetClassCompilerInstance()->RedefineFunDecl(cc->name, pNode->expressions[0]->expressions[i]);
+				m_compilerPointer->GetClassCompilerInstance()->RedefineFunDecl(cc->name, pNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions[i]);
 
 				// Register function
 				AAFuncSignature* sig;
-				if (COMPILE_OK(err = this->RegisterFunction(pNode->expressions[0]->expressions[i], sig, domain, senv))) {
+				if (COMPILE_OK(err = this->RegisterFunction(pNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions[i], sig, domain, senv))) {
 
 					// Update signature data
 					sig->isClassMethod = true;
-					sig->node = pNode->expressions[0]->expressions[i];
+					sig->node = pNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions[i];
 					sig->isClassCtor = sig->name == (cc->name + L"::" + cc->name);
 
 					// Update return count in case of a constructor
 					if (sig->isClassCtor) {
-						pNode->expressions[0]->expressions[i]->tags["returncount"] = 1;
+						pNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions[i]->tags["returncount"] = 1;
 					}
 
 					// Add method to class definition
 					cc->methods.Add(sig);
 
-					if (pNode->expressions[0]->expressions[i]->expressions.size() >= 3) { // make sure it's declared
-						funcBodyNodes.push_back(pNode->expressions[0]->expressions[i]->expressions[2]);
+					if (pNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions[i]->expressions.size() >= 3) { // make sure it's declared
+						funcBodyNodes.push_back(pNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions[i]->expressions[AA_NODE_FUNNODE_BODY]);
 					}
 
 				} else {
 					return err;
 				}
 
-			} else if (pNode->expressions[0]->expressions[i]->type == AA_AST_NODE_TYPE::vardecl) {
+			} else if (pNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions[i]->type == AA_AST_NODE_TYPE::vardecl) {
 
 				// Create field signature
 				AAClassFieldSignature field;
 				field.fieldID = (int)cc->fields.Size();
-				field.name = pNode->expressions[0]->expressions[i]->content;
-				field.type = this->GetTypeFromName(pNode->expressions[0]->expressions[i]->expressions[0]->content, domain, senv);
+				field.name = pNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions[i]->content;
+				field.type = this->GetTypeFromName(pNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions[i]->expressions[0]->content, domain, senv);
 
 				// Did we get an invalid field?
 				if (field.type == AACType::ErrorType) {
-					err.errorMsg = ("Undefined field type '" + string_cast(pNode->expressions[0]->content) + "'").c_str();
-					err.errorSource = pNode->expressions[0]->position;
+					err.errorMsg = ("Undefined field type '" + string_cast(pNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions[i]->content) + "'").c_str();
+					err.errorSource = pNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions[i]->position;
 					err.errorType = 0;
 					return err;
 				}
@@ -639,19 +731,19 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterFunction(AA_AST_NODE* pNode, A
 
 	// Set basic function data
 	sig->name = pNode->content;
-	sig->returnType = this->GetTypeFromName(pNode->expressions[0]->content, domain, senv);
+	sig->returnType = this->GetTypeFromName(pNode->expressions[AA_NODE_FUNNODE_RETURNTYPE]->content, domain, senv);
 	sig->node = pNode;
 
 	// Did the function return the error type?
 	if (sig->returnType == AACType::ErrorType) {
-		err.errorMsg = ("Undefined return type '" + string_cast(pNode->expressions[0]->content) + "'").c_str();
-		err.errorSource = pNode->expressions[0]->position;
+		err.errorMsg = ("Undefined return type '" + string_cast(pNode->expressions[AA_NODE_FUNNODE_RETURNTYPE]->content) + "'").c_str();
+		err.errorSource = pNode->expressions[AA_NODE_FUNNODE_RETURNTYPE]->position;
 		err.errorType = 0;
 		return err;
 	}
 
 	// Setup parameters
-	for (AA_AST_NODE* arg : pNode->expressions[1]->expressions) {
+	for (AA_AST_NODE* arg : pNode->expressions[AA_NODE_FUNNODE_ARGLIST]->expressions) {
 
 		AAFuncParam param;
 		param.identifier = arg->content;
@@ -660,7 +752,7 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterFunction(AA_AST_NODE* pNode, A
 		// Did the function return the error type?
 		if (param.type == AACType::ErrorType) {
 			err.errorMsg = ("Undefined argument type '" + string_cast(arg->expressions[0]->content) + "'").c_str();
-			err.errorSource = pNode->expressions[0]->position;
+			err.errorSource = pNode->expressions[AA_NODE_FUNNODE_ARGLIST]->position;
 			err.errorType = 0;
 			return err;
 		}
@@ -676,11 +768,7 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterFunction(AA_AST_NODE* pNode, A
 	sig->procID = this->m_compilerPointer->GetNextProcID();
 
 	// Verify function control structure
-	if (!this->VerifyFunctionControlPath(sig, err)) {
-		return err;
-	} else {
-		return NO_COMPILE_ERROR_MESSAGE;
-	}
+	return NO_COMPILE_ERROR_MESSAGE;
 
 }
 
@@ -701,10 +789,10 @@ AAC_CompileErrorMessage AAStaticAnalysis::HandleInheritanceFrom(AAClassSignature
 			AAFuncSignature* nSig = new AAFuncSignature(*sig);
 			nSig->name = child->name + L"::" + nSig->GetName();
 			child->methods.Add(nSig);
-			/*child->domain->AddFunction(nSig);
+			child->domain->AddFunction(nSig);
 			if (child->domain->IsGlobalSpace()) {
 				senv.availableFunctions.Add(nSig);
-			}*/
+			}
 			return nSig;
 		}
 	);
@@ -722,10 +810,6 @@ AAC_CompileErrorMessage AAStaticAnalysis::HandleInheritanceFrom(AACEnumSignature
 			AAFuncSignature* nSig = new AAFuncSignature(*sig);
 			nSig->name = child->name + L"::" + nSig->GetName();
 			child->functions.Add(nSig);
-			/*child->domain->AddFunction(nSig);
-			if (child->domain->IsGlobalSpace()) {
-				senv.availableFunctions.Add(nSig);
-			}*/
 			return nSig;
 		}
 	);
@@ -738,10 +822,15 @@ int AAStaticAnalysis::GetReturnCount(AAFuncSignature* funcSig) {
 	return (funcSig->returnType == AACType::Void) ? 0 : 1;
 }
 
-bool AAStaticAnalysis::VerifyFunctionControlPath(AAFuncSignature* sig, AAC_CompileErrorMessage& err) {
+bool AAStaticAnalysis::VerifyFunctionControlPath(AAFuncSignature* sig, AAStaticEnvironment environment, AAC_CompileErrorMessage& err) {
 
 	// If it's a VM function, this will be handled by the C++ compiler
 	if (sig->isVMFunc) {
+		return true;
+	}
+
+	// Compiler generated this function (The assumption is then that it's correct)
+	if (sig->isCompilerGenerated) {
 		return true;
 	}
 
@@ -754,7 +843,7 @@ bool AAStaticAnalysis::VerifyFunctionControlPath(AAFuncSignature* sig, AAC_Compi
 	int expectedReturncount = this->GetReturnCount(sig);
 
 	// Get the highest return count detected
-	int highestReturncount = this->VerifyFunctionControlPath(sig->node->expressions[2], err);
+	int highestReturncount = this->VerifyFunctionControlPath(sig->node->expressions[AA_NODE_FUNNODE_BODY], environment, err);
 
 	// Does the function not return the expected amount?
 	if (expectedReturncount != highestReturncount) {
@@ -785,7 +874,7 @@ bool AAStaticAnalysis::VerifyFunctionControlPath(AAFuncSignature* sig, AAC_Compi
 
 }
 
-int AAStaticAnalysis::VerifyFunctionControlPath(AA_AST_NODE* pNode, AAC_CompileErrorMessage& err) {
+int AAStaticAnalysis::VerifyFunctionControlPath(AA_AST_NODE* pNode, AAStaticEnvironment environment, AAC_CompileErrorMessage& err) {
 
 	// Set error message to none
 	err = NO_COMPILE_ERROR_MESSAGE;
@@ -796,7 +885,7 @@ int AAStaticAnalysis::VerifyFunctionControlPath(AA_AST_NODE* pNode, AAC_CompileE
 		int j = 0;
 		for (size_t i = 0; i < pNode->expressions.size(); i++) {
 			int k = 0;
-			if ((k = VerifyFunctionControlPath(pNode->expressions[i], err)) > j && i == pNode->expressions.size() - 1) {
+			if ((k = VerifyFunctionControlPath(pNode->expressions[i], environment, err)) > j && i == pNode->expressions.size() - 1) {
 				j = k;
 			}
 		}
@@ -813,18 +902,24 @@ int AAStaticAnalysis::VerifyFunctionControlPath(AA_AST_NODE* pNode, AAC_CompileE
 	case AA_AST_NODE_TYPE::fieldaccess: // Will return one
 		return 1;
 	case AA_AST_NODE_TYPE::callaccess: // NEEDS PRROPER CHECKING
-	case AA_AST_NODE_TYPE::funcall: // NEEDS PROPER CHECKING
 		return 1;
+	case AA_AST_NODE_TYPE::funcall: {
+		int funcID;
+		if (environment.availableFunctions.FindFirstIndex([pNode](AAFuncSignature*& fsig) { return fsig->name.compare(pNode->content) == 0; }, funcID)) {
+			return this->GetReturnCount(environment.availableFunctions.Apply(funcID));
+		}
+		return -1; // TODO: Execute this whole check AFTER typecheck ==> Then we know precisely what function is called
+	}
 	case AA_AST_NODE_TYPE::elsestatement:
-		return this->VerifyFunctionControlPath(pNode->expressions[0], err);
+		return this->VerifyFunctionControlPath(pNode->expressions[0], environment, err);
 	case AA_AST_NODE_TYPE::elseifstatement:
-		return this->VerifyFunctionControlPath(pNode->expressions[1], err);
+		return this->VerifyFunctionControlPath(pNode->expressions[1], environment, err);
 	case AA_AST_NODE_TYPE::ifstatement: {
 		printf(""); // This is where we'd potentially determine if a control block leads nowhere
 		int ret = pNode->expressions.size() - 2;
-		int c = this->VerifyFunctionControlPath(pNode->expressions[1], err);
+		int c = this->VerifyFunctionControlPath(pNode->expressions[1], environment, err);
 		for (size_t i = 2; i < pNode->expressions.size(); i++) {
-			int j = this->VerifyFunctionControlPath(pNode->expressions[i], err);
+			int j = this->VerifyFunctionControlPath(pNode->expressions[i], environment, err);
 			if (c != j) {
 				printf("err AAStaticAnalysis.Cpp@%i", __LINE__);
 			}
@@ -863,5 +958,75 @@ AACType* AAStaticAnalysis::GetTypeFromName(std::wstring tName, AACNamespace* dom
 
 	// Found nothing => Error type
 	return AACType::ErrorType;
+
+}
+
+AAC_CompileErrorMessage AAStaticAnalysis::VerifyInheritanceCircularDependency(AAClassSignature* signatureA, AAClassSignature* signatureB) {
+
+	// Inheritance flags 
+	bool a = false, b = false;
+
+	// Does signature A derive from signature B ?
+	if (signatureA->DerivesFrom(signatureB)) {
+		a = true;
+	}
+
+	// Does signature B derive from signature A ?
+	if (signatureB->DerivesFrom(signatureA)) {
+		b = true;
+	}
+
+	// Do they depend on each other?
+	if (a && b) {
+
+		// Error message
+		AAC_CompileErrorMessage err;
+		err.errorMsg = ("Cyclic dependency detected in types '" + string_cast(signatureA->GetFullname()) + "' and '" + string_cast(signatureB->GetFullname()) + "'").c_str();
+		err.errorSource = AACodePosition::Undetermined;
+		err.errorType = 0;
+
+		// Return error
+		return err;
+
+	}
+
+	// Return no compile error
+	return NO_COMPILE_ERROR_MESSAGE;
+
+}
+
+AAC_CompileErrorMessage AAStaticAnalysis::ApplyInheritance(AACNamespace* domain, AAStaticEnvironment& senv) {
+
+	// Possible error message
+	AAC_CompileErrorMessage err;
+
+	// Call recursively through subspaces
+	if (!domain->childspaces.ForAll([&err, &senv, this](AACNamespace* dom) { return COMPILE_OK(err = this->ApplyInheritance(dom, senv)); })) {
+		return err;
+	}
+
+	// Call on all classes
+	if (!domain->classes.ForAll([&err, &senv, this](AAClassSignature*& sig) { return COMPILE_OK(err = this->ApplyInheritance(sig, senv)); })) {
+		return err;
+	}
+
+	// Return no compile error
+	return NO_COMPILE_ERROR_MESSAGE;
+
+}
+
+AAC_CompileErrorMessage AAStaticAnalysis::ApplyInheritance(AAClassSignature* classSig, AAStaticEnvironment& senv) {
+
+	// TODO: Something smarter then simply merging (eg. create an actual inheritance tree)
+
+	// Possible error message
+	AAC_CompileErrorMessage err;
+
+	if (!classSig->extends.ForAll([&err, &senv, classSig, this](AAClassSignature*& sig) { return COMPILE_OK(err = this->HandleInheritanceFrom(classSig, sig, senv)); })) {
+		return err;
+	}
+
+	// Return no compile error
+	return NO_COMPILE_ERROR_MESSAGE;
 
 }

@@ -1,6 +1,7 @@
 #include "AACodePosition.h"
 #include "AAClassCompiler.h"
 #include "AAVal.h"
+#include "AA_Node_Consts.h"
 
 void AAClassCompiler::RedefineFunDecl(std::wstring className, AA_AST_NODE* pFuncDeclNode) {
 
@@ -10,7 +11,7 @@ void AAClassCompiler::RedefineFunDecl(std::wstring className, AA_AST_NODE* pFunc
 	// Is the name set to .ctor (marked as a constructor by AST)
 	if (pFuncDeclNode->content == L".ctor") {
 		pFuncDeclNode->content = className;
-		pFuncDeclNode->expressions[0] = new AA_AST_NODE(className, AA_AST_NODE_TYPE::typeidentifier, pFuncDeclNode->position);
+		pFuncDeclNode->expressions[AA_NODE_FUNNODE_RETURNTYPE] = new AA_AST_NODE(className, AA_AST_NODE_TYPE::typeidentifier, pFuncDeclNode->position);
 		isConstructor = true;
 	}
 
@@ -22,14 +23,14 @@ void AAClassCompiler::RedefineFunDecl(std::wstring className, AA_AST_NODE* pFunc
 	thisRef->expressions.push_back(new AA_AST_NODE(className, AA_AST_NODE_TYPE::typeidentifier, AACodePosition(0, 0)));
 	
 	// Add 'this' reference to function decleration
-	pFuncDeclNode->expressions[1]->expressions.insert(pFuncDeclNode->expressions[1]->expressions.begin(), thisRef);
+	pFuncDeclNode->expressions[AA_NODE_FUNNODE_ARGLIST]->expressions.insert(pFuncDeclNode->expressions[AA_NODE_FUNNODE_ARGLIST]->expressions.begin(), thisRef);
 
 	// Are we the constructor
 	if (isConstructor) {
 
 		// Set last statement to be a "return this;" statement
 		AA_AST_NODE* returnThisKw = new AA_AST_NODE(L"this", AA_AST_NODE_TYPE::variable, AACodePosition(0, 0));
-		pFuncDeclNode->expressions[2]->expressions.push_back(returnThisKw);
+		pFuncDeclNode->expressions[AA_NODE_FUNNODE_BODY]->expressions.push_back(returnThisKw);
 
 	}
 

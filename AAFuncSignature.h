@@ -1,7 +1,7 @@
 #pragma once
 #include "AA_AST_NODE.h"
 #include "AACType.h"
-#include "AAAccessModifier.h"
+#include "AAModifier.h"
 #include <string>
 #include <vector>
 
@@ -35,8 +35,9 @@ struct AAFuncSignature {
 	bool isClassMethod;
 	bool isClassCtor;
 	bool isClassDtor;
+	bool isCompilerGenerated;
 	AAAccessModifier accessModifier;
-	bool isVirtual;
+	AAStorageModifier storageModifier;
 	AACNamespace* domain;
 
 	AA_AST_NODE* node;
@@ -49,8 +50,9 @@ struct AAFuncSignature {
 		this->isClassMethod = false;
 		this->isClassCtor = false;
 		this->isClassDtor = false;
+		this->isCompilerGenerated = false;
 		this->accessModifier = AAAccessModifier::PUBLIC;
-		this->isVirtual = false;
+		this->storageModifier = AAStorageModifier::NONE;
 		this->node = 0;
 		this->procID = -1;
 		this->domain = 0;
@@ -63,8 +65,9 @@ struct AAFuncSignature {
 		this->isClassMethod = false;
 		this->isClassCtor = false;
 		this->isClassDtor = false;
+		this->isCompilerGenerated = false;
 		this->accessModifier = AAAccessModifier::PUBLIC;
-		this->isVirtual = false;
+		this->storageModifier = AAStorageModifier::NONE;
 		this->node = 0;
 		this->procID = -1;
 		this->domain = 0;
@@ -77,8 +80,9 @@ struct AAFuncSignature {
 		this->isClassMethod = false;
 		this->isClassCtor = false;
 		this->isClassDtor = false;
+		this->isCompilerGenerated = false;
 		this->accessModifier = AAAccessModifier::PUBLIC;
-		this->isVirtual = false;
+		this->storageModifier = AAStorageModifier::NONE;
 		this->node = 0;
 		this->procID = -1;
 		this->domain = 0;
@@ -92,8 +96,9 @@ struct AAFuncSignature {
 		this->isClassMethod = false;
 		this->isClassCtor = false;
 		this->isClassDtor = false;
+		this->isCompilerGenerated = false;
 		this->accessModifier = AAAccessModifier::PUBLIC;
-		this->isVirtual = false;
+		this->storageModifier = AAStorageModifier::NONE;
 		this->node = 0;
 		this->procID = -1;
 		this->domain = 0;

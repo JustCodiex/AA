@@ -135,6 +135,10 @@ private:
 	*/
 	bool IsDeclarativeIndexer(AA_PT_NODE* pNode);
 
+	bool IsModifierKeyword(std::wstring ws);
+
+	std::wstring FindClassDeclName(std::vector<AA_PT_NODE*>& nodes, const size_t from, AA_PT_NODE* pClassDeclNode);
+
 	/*
 	** Mathematical and language binding functions
 	*/

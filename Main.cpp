@@ -8,6 +8,12 @@
 #endif
 
 ///////////////////
+// Global Versions
+///////////////////
+const char* VM_Version = "0.1.0"; // VM version
+const char* C_Version = "0.0.1"; // Compiler Version
+
+///////////////////
 // Global Flags
 ///////////////////
 
@@ -74,7 +80,7 @@ int wmain(int argc, wchar_t** argv) {
     setupenvironment();
 
     // Print VM data
-    wprintf(L"Å Virtual Machine. V1.0\n");
+    printf("Å Virtual Machine. V%s\n", VM_Version);
 
     // index
     int i = 1;

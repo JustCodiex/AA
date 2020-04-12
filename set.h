@@ -1,12 +1,34 @@
 #pragma once
 #include "list.h"
+#include <type_traits>
 
 namespace aa {
 
 	/// <summary>
+	/// Represents a pair in a set
+	/// </summary>
+	/// <typeparam name="U">Type of first element</typeparam>
+	/// <typeparam name="V">Type of second element</typeparam>
+	template <typename U, typename V>
+	struct set_pair {
+		U first; // first element
+		V second; // second element
+		set_pair(U f, V s) {
+			this->first = f;
+			this->second = s;
+		}
+		bool operator==(set_pair p) {
+			return 
+				(this->first == p.first && this->second == p.second) ||
+				(this->first == p.second && this->second == p.first);
+		}
+	};
+
+
+	/// <summary>
 	/// A set of objects
 	/// </summary>
-	/// <typeparam name="T"></typeparam>
+	/// <typeparam name="T">Type contained within the set</typeparam>
 	template <class T> class set {
 
 	public:
@@ -203,5 +225,16 @@ namespace aa {
 		aa::list<T> m_list;
 
 	};
+
+	template<typename U, typename V>
+	set<set_pair<U, V>> operator*(set<U> set_a, set<V> set_b) {
+		set<set_pair<U, V>> product; // Create set of cartesian products
+		list<U> _ls = set_a.ToList(); // Convert the first set to a list
+		for (size_t i = 0; i < _ls.Size(); i++) { // Loop through the list
+			U _a = _ls.At(i); // Get eleemnt
+			set_b.ForEach([&product, _a](U& t) { product.Add(set_pair<U, V>(_a, t)); }); // Go through all elements in second set and create a pair with first element
+		}
+		return product; // Return product
+	} // What a nightmare to write (I already hate C++ templates)
 
 }
