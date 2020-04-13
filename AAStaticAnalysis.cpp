@@ -771,7 +771,7 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterFunction(AA_AST_NODE* pNode, A
 			if (sig->storageModifier == AAStorageModifier::NONE) {
 				sig->storageModifier = AAStorageModifier::VIRTUAL;
 			} else {
-				err.errorMsg = ("Invalod modifier combination 'virtual' and '" + string_cast(aa::NameofStorageModifier(sig->storageModifier)) + "'").c_str();
+				err.errorMsg = ("Invalid modifier combination 'virtual' and '" + string_cast(aa::NameofStorageModifier(sig->storageModifier)) + "'").c_str();
 				err.errorSource = mod->position;
 				err.errorType = 0;
 				return err;
@@ -780,7 +780,7 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterFunction(AA_AST_NODE* pNode, A
 			if (sig->storageModifier == AAStorageModifier::NONE) {
 				sig->storageModifier = AAStorageModifier::OVERRIDE;
 			} else {
-				err.errorMsg = ("Invalod modifier combination 'override' and '" + string_cast(aa::NameofStorageModifier(sig->storageModifier)) + "'").c_str();
+				err.errorMsg = ("Invalid modifier combination 'override' and '" + string_cast(aa::NameofStorageModifier(sig->storageModifier)) + "'").c_str();
 				err.errorSource = mod->position;
 				err.errorType = 0;
 				return err;

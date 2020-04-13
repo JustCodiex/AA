@@ -100,7 +100,7 @@ std::vector<std::wstring> keywords = {
 	// Storage modifiers
 	L"abstract",
 	L"interface",
-	L"light", // <-- Contextualise
+	L"tagged", // <-- Contextualise
 	L"sealed",
 
 	// Linkage modifiers

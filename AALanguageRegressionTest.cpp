@@ -411,6 +411,13 @@ void RunClassTests(AAVM* pAAVM, int& s, int& f) {
 		s++;
 	}
 
+	// Test simple class inheritance
+	if (!RunFileTest(pAAVM, L"testing\\class5.aa", L"out\\bin\\class5.aab", L"out\\op\\class5.txt", L"0")) {
+		f++;
+	} else {
+		s++;
+	}
+
 }
 
 void RunArrayTests(AAVM* pAAVM, int& s, int& f) {

@@ -1,44 +1,28 @@
-// Super class
-class Super {
+// Define an abstract class represeting a binary tree
+sealed abstract class BinaryTree;
 
-    // Super .ctor
-    Super() {
-        println("Super .ctor called");
-    }
+// Define the two cases
+tagged class Leaf() : BinaryTree; // case 1: Leaf
+tagged class Node(int value, BinaryTree left, BinaryTree right) : BinaryTree; // case 2: Node with a value and a left Node and a right Node
 
-    // Virtual function (can be overriden)
-    virtual void print() {
-        println("Super -> print"); // <-- This is one we expect to be called
-    }
-
-};
-
-// Sub class (it inherits from Super)
-class Sub : Super {
-
-    // .ctor for Sub (Which will implicitly call Super::.ctor first)
-    Sub() {
-        println("Sub .ctor called");
-    }
-
-    // Override the print function we were given
-    override void print() {
-        println("Sub -> print");  // <-- We don't expect this to be called
-    }
-
-};
-
-// Our main function
+// The main function
 int main() {
 
-    // Create a new sub object and store it in a variable for a Super object
-    Super instance = new Sub();
-    instance.print(); // Call print function (Should call Super::print)
+    // Define the tree
+    BinaryTree tree = Node( 10, Node(5, Node(2, Leaf(), Leaf()), Leaf()), Leaf() );
 
-    // Return 0
-    0;
+    // Get the top value of the tree
+    int topValue = tree match {
+        case Leaf() => 0,
+        case Node(v, _, _) => v
+    }
+
+    // Return the top value
+    topValue;
 
 };
 
 // Call the main function
 main();
+
+// Name (tagged class) is from: https://en.wikipedia.org/wiki/Tagged_union

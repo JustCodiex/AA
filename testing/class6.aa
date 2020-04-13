@@ -20,7 +20,7 @@ int main() {
     // Return the top value
     topValue;
 
-}
+};
 
 // Call the main function
 main();
