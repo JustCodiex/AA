@@ -147,6 +147,9 @@
     <ClCompile Include="AAMemoryStore.cpp">
       <Filter>Source Files\VM\Memory</Filter>
     </ClCompile>
+    <ClCompile Include="AAModifier.cpp">
+      <Filter>Source Files\compiler</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="list.h">

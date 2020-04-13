@@ -761,6 +761,34 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterFunction(AA_AST_NODE* pNode, A
 
 	}
 
+	// Set storage mode
+	sig->storageModifier = AAStorageModifier::NONE;
+
+	// For all modifiers
+	for (AA_AST_NODE* mod : pNode->expressions[AA_NODE_FUNNODE_MODIFIER]->expressions) {
+
+		if (mod->content.compare(L"virtual") == 0) {
+			if (sig->storageModifier == AAStorageModifier::NONE) {
+				sig->storageModifier = AAStorageModifier::VIRTUAL;
+			} else {
+				err.errorMsg = ("Invalod modifier combination 'virtual' and '" + string_cast(aa::NameofStorageModifier(sig->storageModifier)) + "'").c_str();
+				err.errorSource = mod->position;
+				err.errorType = 0;
+				return err;
+			}
+		} else if (mod->content.compare(L"override") == 0) {
+			if (sig->storageModifier == AAStorageModifier::NONE) {
+				sig->storageModifier = AAStorageModifier::OVERRIDE;
+			} else {
+				err.errorMsg = ("Invalod modifier combination 'override' and '" + string_cast(aa::NameofStorageModifier(sig->storageModifier)) + "'").c_str();
+				err.errorSource = mod->position;
+				err.errorType = 0;
+				return err;
+			}
+		}
+
+	}
+
 	// Set return count
 	pNode->tags["returncount"] = this->GetReturnCount(sig);
 
@@ -782,9 +810,12 @@ AAC_CompileErrorMessage AAStaticAnalysis::HandleObjectInheritance(AACEnumSignatu
 
 AAC_CompileErrorMessage AAStaticAnalysis::HandleInheritanceFrom(AAClassSignature* child, AAClassSignature* super, AAStaticEnvironment& senv) {
 
+	// Possible error message
+	AAC_CompileErrorMessage err = NO_COMPILE_ERROR_MESSAGE;
+
 	// Merge functions
-	int merged = child->methods.Merge(super->methods,
-		[child](AAFuncSignature* sig) { return !sig->isClassCtor && !child->methods.Contains(sig); },
+	child->methods.Merge(super->methods,
+		[&err, child, this](AAFuncSignature* sig) { return this->CanInheritFunction(child, sig, err); },
 		[child, &senv](AAFuncSignature* sig) {
 			AAFuncSignature* nSig = new AAFuncSignature(*sig);
 			nSig->name = child->name + L"::" + nSig->GetName();
@@ -797,14 +828,18 @@ AAC_CompileErrorMessage AAStaticAnalysis::HandleInheritanceFrom(AAClassSignature
 		}
 	);
 
-	return NO_COMPILE_ERROR_MESSAGE;
+	if (COMPILE_ERROR(err)) {
+		return err;
+	} else {
+		return NO_COMPILE_ERROR_MESSAGE;
+	}
 
 }
 
 AAC_CompileErrorMessage AAStaticAnalysis::HandleInheritanceFrom(AACEnumSignature* child, AAClassSignature* super, AAStaticEnvironment& senv) {
 
 	// Merge functions
-	int merged = child->functions.Merge(super->methods,
+	child->functions.Merge(super->methods,
 		[child](AAFuncSignature* sig) { return !child->functions.Contains(sig); },
 		[child, &senv](AAFuncSignature* sig) {
 			AAFuncSignature* nSig = new AAFuncSignature(*sig);
@@ -815,6 +850,30 @@ AAC_CompileErrorMessage AAStaticAnalysis::HandleInheritanceFrom(AACEnumSignature
 	);
 
 	return NO_COMPILE_ERROR_MESSAGE;
+
+}
+
+bool AAStaticAnalysis::CanInheritFunction(AAClassSignature* pChildSig, AAFuncSignature* pToInherit, AAC_CompileErrorMessage& compileErr) {
+
+	// No compile error from here
+	compileErr = NO_COMPILE_ERROR_MESSAGE;
+
+	// We don't inherit class constructors
+	if (pToInherit->isClassCtor) {
+		return false;
+	}
+
+	// Is this a virtual method? (Only inherit if it's not overloaded
+	if (pToInherit->storageModifier == AAStorageModifier::VIRTUAL) {
+		int matchMethodIndex;
+		if (pChildSig->methods.FindFirstIndex([pToInherit](AAFuncSignature*& childSig) { return childSig->IsValidOverride(pToInherit); }, matchMethodIndex)) {
+			pChildSig->methods.Apply(matchMethodIndex)->overrides = pToInherit; 
+			return false; // Don't inherit ==> We have an overload
+		}
+	}
+
+	// Return no compile error
+	return true;
 
 }
 
@@ -1048,6 +1107,14 @@ AAC_CompileErrorMessage AAStaticAnalysis::ApplyInheritance(AAClassSignature* cla
 
 	// Inherit stuff
 	if (!classSig->extends.ForAll([&err, &senv, classSig, this](AAClassSignature*& sig) { return COMPILE_OK(err = this->HandleInheritanceFrom(classSig, sig, senv)); })) {
+		return err;
+	}
+
+	// Verify we have no dangling override functions
+	if (!classSig->methods.ForAll([&errSrc](AAFuncSignature*& sig) { errSrc = sig; return sig->storageModifier != AAStorageModifier::OVERRIDE || sig->overrides != 0; })) {
+		err.errorMsg = ("No matching function '" + string_cast(errSrc->GetName()) + "' to override found in inherited classes").c_str();
+		err.errorSource = errSrc->node->position;
+		err.errorType = 0;
 		return err;
 	}
 

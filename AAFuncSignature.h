@@ -36,6 +36,7 @@ struct AAFuncSignature {
 	bool isClassCtor;
 	bool isClassDtor;
 	bool isCompilerGenerated;
+	AAFuncSignature* overrides; // When calling base.<> we now know which function to call!
 	AAAccessModifier accessModifier;
 	AAStorageModifier storageModifier;
 	AACNamespace* domain;
@@ -51,6 +52,7 @@ struct AAFuncSignature {
 		this->isClassCtor = false;
 		this->isClassDtor = false;
 		this->isCompilerGenerated = false;
+		this->overrides = 0;
 		this->accessModifier = AAAccessModifier::PUBLIC;
 		this->storageModifier = AAStorageModifier::NONE;
 		this->node = 0;
@@ -66,6 +68,7 @@ struct AAFuncSignature {
 		this->isClassCtor = false;
 		this->isClassDtor = false;
 		this->isCompilerGenerated = false;
+		this->overrides = 0;
 		this->accessModifier = AAAccessModifier::PUBLIC;
 		this->storageModifier = AAStorageModifier::NONE;
 		this->node = 0;
@@ -81,6 +84,7 @@ struct AAFuncSignature {
 		this->isClassCtor = false;
 		this->isClassDtor = false;
 		this->isCompilerGenerated = false;
+		this->overrides = 0;
 		this->accessModifier = AAAccessModifier::PUBLIC;
 		this->storageModifier = AAStorageModifier::NONE;
 		this->node = 0;
@@ -97,6 +101,7 @@ struct AAFuncSignature {
 		this->isClassCtor = false;
 		this->isClassDtor = false;
 		this->isCompilerGenerated = false;
+		this->overrides = 0;
 		this->accessModifier = AAAccessModifier::PUBLIC;
 		this->storageModifier = AAStorageModifier::NONE;
 		this->node = 0;
@@ -120,6 +125,40 @@ struct AAFuncSignature {
 
 	bool Equals(AAFuncSignature* other) {
 		return *this == *other;
+	}
+
+	bool EqualsParams(std::vector<AAFuncParam> params, bool ignoreFirst = false) {
+		if (this->parameters.size() == params.size()) {
+			for (size_t i = (ignoreFirst)?1:0; i < this->parameters.size(); i++) {
+				if (this->parameters[i].type != params[i].type) {
+					return false;
+				}
+			}
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/// <summary>
+	/// Check if the given function can be overriden by the function
+	/// </summary>
+	/// <param name="other">Function to compare with</param>
+	/// <returns>True if function is a valid override for 'other' function</returns>
+	bool IsValidOverride(AAFuncSignature* other) {
+		if (this->storageModifier == AAStorageModifier::OVERRIDE) {
+			if (this->GetName().compare(other->GetName()) == 0) {
+				if (this->returnType == other->returnType && this->EqualsParams(other->parameters, other->isClassCtor && this->isClassCtor)) {
+					return true;
+				} else {
+					return false;
+				}
+			} else {
+				return false;
+			}
+		} else {
+			return false;
+		}
 	}
 
 	bool operator==(AAFuncSignature other) {

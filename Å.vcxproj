@@ -162,6 +162,7 @@
     <ClCompile Include="AALanguageRegressionTest.cpp" />
     <ClCompile Include="AALexer.cpp" />
     <ClCompile Include="AAMemoryStore.cpp" />
+    <ClCompile Include="AAModifier.cpp" />
     <ClCompile Include="AAP.cpp" />
     <ClCompile Include="AAProgram.cpp" />
     <ClCompile Include="AAStaticAnalysis.cpp" />

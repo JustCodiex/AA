@@ -1,0 +1,21 @@
+int main() {
+
+    // Declare the 'add' lambda
+    val add = (a) => (b) => a + b;
+
+    // Declare the increment
+    val inc = (a) => add(1);
+
+    // Test the add lambdas
+    println(add(1,3));
+    println(add(8,2));
+
+    // Increment 9
+    println(inc(9));
+
+    // Return 6 + 8
+    add(inc(5), inc(7));
+
+}
+
+main();

@@ -105,6 +105,8 @@ private:
 	AAC_CompileErrorMessage HandleInheritanceFrom(AAClassSignature* child, AAClassSignature* super, AAStaticEnvironment& senv);
 	AAC_CompileErrorMessage HandleInheritanceFrom(AACEnumSignature* child, AAClassSignature* super, AAStaticEnvironment& senv);
 
+	bool CanInheritFunction(AAClassSignature* pChildSig, AAFuncSignature* pToInherit, AAC_CompileErrorMessage& compileErr);
+
 	AACType* GetTypeFromName(std::wstring tName, AACNamespace* domain, AAStaticEnvironment& senv);
 
 	int GetReturnCount(AAFuncSignature* funcSig);
