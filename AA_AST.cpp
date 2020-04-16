@@ -60,7 +60,6 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 
 	}
 	case AA_PT_NODE_TYPE::vardecleration: {
-
 		if (pNode->childNodes[0]->content == L"var") {
 			return new AA_AST_NODE(pNode->childNodes[1]->content, AA_AST_NODE_TYPE::vardecl, pNode->position);
 		} else { // When a specific type is specified
@@ -73,8 +72,6 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 			}
 			return varDeclType;
 		}
-
-		break;
 	}
 	case AA_PT_NODE_TYPE::fundecleration: {
 		
@@ -83,8 +80,10 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 		funDecl->expressions.push_back(this->AbstractNode(pNode->childNodes[AA_NODE_FUNNODE_ARGLIST]));
 		funDecl->expressions.push_back(this->AbstractNode(pNode->childNodes[AA_NODE_FUNNODE_MODIFIER]));
 
-		if (pNode->childNodes.size() >= AA_NODE_FUNNODE_BODY) {
+		if (AA_NODE_FUNNODE_BODY < pNode->childNodes.size()) {
 			funDecl->expressions.push_back(this->AbstractNode(pNode->childNodes[AA_NODE_FUNNODE_BODY]));
+		} else {
+			// print stuff ...
 		}
 
 		return funDecl;
@@ -169,7 +168,13 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 		AA_AST_NODE* classdef = new AA_AST_NODE(pNode->content, AA_AST_NODE_TYPE::classdecl, pNode->position);
 		classdef->expressions.push_back(this->AbstractNode(pNode->childNodes[AA_NODE_CLASSNODE_MODIFIER]));
 		classdef->expressions.push_back(this->AbstractNode(pNode->childNodes[AA_NODE_CLASSNODE_INHERITANCE]));
-		classdef->expressions.push_back(this->AbstractNode(pNode->childNodes[AA_NODE_CLASSNODE_BODY]));
+		if (AA_NODE_CLASSNODE_BODY < pNode->childNodes.size()) {
+			classdef->expressions.push_back(this->AbstractNode(pNode->childNodes[AA_NODE_CLASSNODE_BODY]));
+		} else {
+			if (!IsClassBodyOmmisionAllowed(pNode)) {
+				this->SetError("Class body expected in class definition", 0, pNode->position);
+			}
+		}
 		return classdef;
 	}
 	case AA_PT_NODE_TYPE::newstatement: {
@@ -291,6 +296,8 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 
 }
 
+#pragma region PT to AST Helper functions
+
 AA_AST_NODE_TYPE AA_AST::GetASTLiteralType(AA_PT_NODE_TYPE type) {
 	switch (type) {
 	case AA_PT_NODE_TYPE::intliteral:
@@ -329,6 +336,22 @@ AA_AST_NODE_TYPE AA_AST::GetASTAccessType(AA_PT_NODE* pNode) {
 		return AA_AST_NODE_TYPE::callaccess;
 	}
 }
+
+bool AA_AST::IsClassBodyOmmisionAllowed(AA_PT_NODE* pNode) {
+
+	for (auto pModifier : pNode->childNodes[AA_NODE_CLASSNODE_MODIFIER]->childNodes) {
+		if (pModifier->content.compare(L"abstract") == 0 || pModifier->content.compare(L"tagged") == 0) {
+			return true;
+		}
+	}
+
+	return false;
+
+}
+
+#pragma endregion
+
+#pragma region Simplify Tree
 
 void AA_AST::Simplify() {
 	this->SimplifyNode(m_root);
@@ -384,4 +407,11 @@ AA_AST_NODE* AA_AST::SimplifyBinaryNode(AA_AST_NODE* pBinaryNode) {
 
 	return pBinaryNode;
 
+}
+
+#pragma endregion
+
+void AA_AST::SetError(std::string msg, int type, AACodePosition src) {
+	m_anyLastErr = true;
+	m_lastError = AA_AST::Error(msg, type, src);
 }

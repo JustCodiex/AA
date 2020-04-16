@@ -1,9 +1,10 @@
 #pragma once
 #include "AALexer.h"
-#include "AA_PT_NODE.h"
+#include "AA_PT_Unflatten.h"
 
-const int AA_PT_NODE_OUT_OF_BOUNDS_INDEX = 9999;
-
+/// <summary>
+/// Å Parse Tree
+/// </summary>
 class AA_PT {
 	
 public:
@@ -40,22 +41,6 @@ public:
 	void Clear();
 
 	static std::vector<AA_PT*> CreateTrees(std::vector<AA_PT_NODE*>& nodes);
-
-	/*
-	** Mathematical and language binding functions
-	*/
-
-	static void ApplyOrderOfOperationBindings(std::vector<AA_PT_NODE*>& nodes);
-
-	/*
-	** Flow control parsing
-	*/
-	static void ApplyFlowControlBindings(std::vector<AA_PT_NODE*>& nodes);
-
-	/*
-	** Incorrect structure fix
-	*/
-	static void ApplySyntaxRules(std::vector<AA_PT_NODE*>& nodes);
 
 	/*
 	** To node converter functions
@@ -127,7 +112,7 @@ private:
 	inline AA_PT_NODE* HandleFunctionDecleration(std::vector<AA_PT_NODE*>& nodes, size_t& from);
 	inline AA_PT_NODE* HandleVariableDecleration(std::vector<AA_PT_NODE*>& nodes, size_t& from);
 
-	AA_PT_NODE* CreateFunctionArgList(AA_PT_NODE* pExpNode);
+	AA_PT_NODE* CreateArgList(AA_PT_NODE* pExpNode, AA_PT_NODE_TYPE outType, AA_PT_NODE_TYPE elementType);
 	AA_PT_NODE* CreateEnumValueList(AA_PT_NODE* pBlockNode);
 
 	/*
@@ -138,29 +123,6 @@ private:
 	bool IsModifierKeyword(std::wstring ws);
 
 	std::wstring FindClassDeclName(std::vector<AA_PT_NODE*>& nodes, const size_t from, AA_PT_NODE* pClassDeclNode);
-
-	/*
-	** Mathematical and language binding functions
-	*/
-
-	static void ApplyGroupings(std::vector<AA_PT_NODE*>& nodes);
-	static void ApplyAccessorBindings(std::vector<AA_PT_NODE*>& nodes);
-	static void ApplyFunctionBindings(std::vector<AA_PT_NODE*>& nodes);
-	static void ApplyUnaryBindings(std::vector<AA_PT_NODE*>& nodes);
-	static void ApplyArithemticRules(std::vector<AA_PT_NODE*>& nodes);
-	static void ApplyAssignmentOrder(std::vector<AA_PT_NODE*>& nodes);
-
-	static bool CanTreatKeywordAsIdentifier(AA_PT_NODE* node);
-
-	/*
-	** Flow control parsing
-	*/
-	static void ApplyStatementBindings(std::vector<AA_PT_NODE*>& nodes);
-
-	/*
-	** Open/Close operator pairing operations - eg. { <some content> } => BlockExpr, ( <some content> ) => Expr, [ <some content> ] => IndexerExpr
-	*/
-	static std::vector<AA_PT_NODE*> PairStatements(std::vector<AA_PT_NODE*>& nodes, int& index, AA_PT_NODE_TYPE open, AA_PT_NODE_TYPE close, AA_PT_NODE_TYPE contentType);
 
 	// Sets the last error if not set
 	static void SetError(AA_PT::Error err) { if (!g_hasEnyErr) { g_errMsg = err; g_hasEnyErr = true; } }

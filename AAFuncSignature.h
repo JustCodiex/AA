@@ -146,7 +146,7 @@ struct AAFuncSignature {
 	/// <param name="other">Function to compare with</param>
 	/// <returns>True if function is a valid override for 'other' function</returns>
 	bool IsValidOverride(AAFuncSignature* other) {
-		if (this->storageModifier == AAStorageModifier::OVERRIDE) {
+		//if (this->storageModifier == AAStorageModifier::OVERRIDE) {
 			if (this->GetName().compare(other->GetName()) == 0) {
 				if (this->returnType == other->returnType && this->EqualsParams(other->parameters, other->isClassCtor && this->isClassCtor)) {
 					return true;
@@ -156,9 +156,9 @@ struct AAFuncSignature {
 			} else {
 				return false;
 			}
-		} else {
+		/*} else {
 			return false;
-		}
+		}*/
 	}
 
 	bool operator==(AAFuncSignature other) {

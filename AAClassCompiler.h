@@ -18,6 +18,8 @@ public:
 	bool AddInheritanceCall(AAClassSignature* cc, AA_AST_NODE* pCtorDeclNode);
 	bool AddInheritanceCallNode(AAFuncSignature* ctor, AA_AST_NODE* pCtorDeclNode);
 
+	bool AutoTaggedClass(AAClassSignature* taggedClassSignature);
+
 	static bool HasField(AAClassSignature* cc, std::wstring fieldname, int& fieldID);
 
 private:

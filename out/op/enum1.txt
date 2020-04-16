@@ -35,7 +35,7 @@ OPERATIONS:
 	[21]	PUSHC, 5
 	[22]	JMP, 3
 	[23]	GETVAR, 0
-	[24]	VMCALL, 4, 1		;; Calls: object::ToString
+	[24]	XCALL, 4, 1		;; Calls: object::ToString
 	[25]	JMP, 0
 	[26]	RET, 1
 END PROCEDURE;
@@ -49,7 +49,7 @@ OPERATIONS:
 	[1]	SETVAR, 0
 	[2]	GETVAR, 0
 	[3]	CALL, 1, 1		;; Calls: UniversityDepartment::GetString
-	[4]	VMCALL, 0, 1		;; Calls: println
+	[4]	XCALL, 0, 1		;; Calls: println
 	[5]	PUSHC, 0
 	[6]	RET, 1
 END PROCEDURE;

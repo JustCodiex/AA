@@ -163,6 +163,14 @@ bool AAClassCompiler::AddInheritanceCallNode(AAFuncSignature* ctor, AA_AST_NODE*
 
 }
 
+bool AAClassCompiler::AutoTaggedClass(AAClassSignature* taggedClassSignature) {
+
+
+
+	return true;
+
+}
+
 bool AAClassCompiler::HasField(AAClassSignature* cc, std::wstring fieldname, int& fieldID) {
 	return cc->fields.FindFirstIndex([fieldname](AAClassFieldSignature& sig) { return sig.name == fieldname; }, fieldID);
 }

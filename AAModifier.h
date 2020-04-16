@@ -37,42 +37,42 @@ enum class AAAccessModifier : unsigned char {
 /// <summary>
 /// The storage modifiers
 /// </summary>
-enum class AAStorageModifier : unsigned char {
+enum class AAStorageModifier : long long {
 
 	/// <summary>
 	/// No modifier
 	/// </summary>
-	NONE = '\0',
+	NONE = 1 << 0,
 
 	/// <summary>
 	/// Can be overwritten
 	/// </summary>
-	VIRTUAL = 'v',
+	VIRTUAL = 1 << 1,
 
 	/// <summary>
 	/// Overrides a function (iff maked virtual)
 	/// </summary>
-	OVERRIDE = 'o',
+	OVERRIDE = 1 << 2,
 
 	/// <summary>
 	/// Tagged class
 	/// </summary>
-	TAGGED = 't',
+	TAGGED = 1 << 3,
 
 	/// <summary>
 	/// Static member
 	/// </summary>
-	STATIC = 's',
+	STATIC = 1 << 4,
 
 	/// <summary>
 	/// Abstract type
 	/// </summary>
-	ABSTRACT = 'a',
+	ABSTRACT = 1 << 5,
 
 	/// <summary>
 	/// Sealed class type
 	/// </summary>
-	SEALED = 'z',
+	SEALED = 1 << 6,
 
 };
 
@@ -101,6 +101,17 @@ namespace aa {
 		/// <param name="sMod">Storage modifier</param>
 		/// <returns>True if valid</returns>
 		bool IsLegalModifierCombination(AAAccessModifier aMod, AAStorageModifier sMod);
+
+		AAStorageModifier operator|(AAStorageModifier a, AAStorageModifier b);
+		AAStorageModifier operator&(AAStorageModifier a, AAStorageModifier b);
+
+		/// <summary>
+		/// Check if the modifier contains the flag
+		/// </summary>
+		/// <param name="modifier">The modifier value to check against</param>
+		/// <param name="flag">The flag to check for</param>
+		/// <returns></returns>
+		bool ContainsFlag(AAStorageModifier modifier, AAStorageModifier flag);
 
 	}
 

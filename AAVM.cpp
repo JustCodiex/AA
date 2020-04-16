@@ -317,7 +317,7 @@ AAVal AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 
 			break;
 		}
-		case AAByteCode::VMCALL: {
+		case AAByteCode::XCALL: {
 			
 			// Get function
 			int callProc = AAVM_GetArgument(0);

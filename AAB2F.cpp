@@ -126,8 +126,11 @@ namespace aa {
 		case AAByteCode::SETELEM:
 			output = L"SETELEM";
 			break;
-		case AAByteCode::VMCALL:
-			output = L"VMCALL";
+		case AAByteCode::XCALL:
+			output = L"XCALL";
+			break;
+		case AAByteCode::VCALL:
+			output = L"VCALL";
 			break;
 		case AAByteCode::POP:
 			output = L"POP";
@@ -207,7 +210,7 @@ namespace aa {
 				o << L"\nOPERATIONS:\n";
 				for (size_t j = 0; j < proc.procOperations.Size(); j++) {
 					o << L"\t" << L"[" << std::to_wstring(j) << L"]\t" << OpToWString(proc.procOperations.At(j));
-					if (proc.procOperations.At(j).bc == AAByteCode::VMCALL) {
+					if (proc.procOperations.At(j).bc == AAByteCode::XCALL) {
 						o << L"\t\t;; Calls: " << pAAVM->GetBuiltinFuncByIndex(proc.procOperations.At(j).argValues[0]).name;
 					} else if (proc.procOperations.At(j).bc == AAByteCode::CALL) {
 						o << L"\t\t;; Calls: " << procedures.at(proc.procOperations.At(j).argValues[0]).node->content;

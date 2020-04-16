@@ -54,6 +54,18 @@ namespace aa {
 			return true;
 		}
 
+		AAStorageModifier operator|(AAStorageModifier a, AAStorageModifier b) {
+			return static_cast<AAStorageModifier>(static_cast<int>(a) | static_cast<int>(b));
+		}
+
+		AAStorageModifier operator&(AAStorageModifier a, AAStorageModifier b) {
+			return static_cast<AAStorageModifier>(static_cast<int>(a) & static_cast<int>(b));
+		}
+
+		bool ContainsFlag(AAStorageModifier modifier, AAStorageModifier flag) {
+			return (static_cast<int>(modifier & flag)) != 0;
+		}
+
 	}
 
 }

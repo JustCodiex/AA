@@ -150,6 +150,9 @@
     <ClCompile Include="AAModifier.cpp">
       <Filter>Source Files\compiler</Filter>
     </ClCompile>
+    <ClCompile Include="AA_PT_Unflatten.cpp">
+      <Filter>Source Files\parser</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="list.h">
@@ -282,6 +285,9 @@
       <Filter>Header Files\compiler</Filter>
     </ClInclude>
     <ClInclude Include="AA_Node_Consts.h">
+      <Filter>Header Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="AA_PT_Unflatten.h">
       <Filter>Header Files\parser</Filter>
     </ClInclude>
   </ItemGroup>

@@ -599,7 +599,9 @@ std::vector<AA_PT_NODE*> AA_PT::CreateDeclerativeBody(std::vector<AA_PT_NODE*> n
 std::vector<AA_PT_NODE*> AA_PT::CreateArgumentTree(AA_PT_NODE* pExpNode) {
 
 	std::vector<AA_PT_NODE*> nodes;
-	this->ApplyStatementBindings(pExpNode->childNodes);
+
+	// Apply statement bindings (This might be unneccessary)
+	AA_PT_Unflatten::ApplyStatementBindings(pExpNode->childNodes);
 
 	for (size_t i = 0; i < pExpNode->childNodes.size(); i++) {
 		
@@ -609,7 +611,8 @@ std::vector<AA_PT_NODE*> AA_PT::CreateArgumentTree(AA_PT_NODE* pExpNode) {
 			argElements.push_back(n);
 		}
 
-		ApplySyntaxRules(argElements);
+		// Apply syntaax rules with the unflattener (This might be unneccessary)
+		AA_PT_Unflatten::ApplySyntaxRules(argElements);
 
 		AA_PT_NODE* arg = this->CreateTree(argElements, 0);
 
@@ -675,10 +678,62 @@ AA_PT_NODE* AA_PT::CreateClassDecl(std::vector<AA_PT_NODE*>& nodes, size_t from)
 		// Add class body
 		classDeclExp->childNodes.push_back(classBody);
 
-	}
+		// Erase all the unnessecary stuff
+		nodes.erase(nodes.begin() + from + 1, nodes.begin() + from + 3);
 
-	// Erase all the unnessecary stuff
-	nodes.erase(nodes.begin() + from + 1, nodes.begin() + from + 3);
+	} else if (from + 2 < nodes.size() && nodes[from + 2]->nodeType == AA_PT_NODE_TYPE::expression) { // Could it be a direct class construcotr?
+
+		// Create class body with fields inserted beforehand
+		AA_PT_NODE* classBody = this->CreateArgList(nodes[from + 2], AA_PT_NODE_TYPE::classbody, AA_PT_NODE_TYPE::vardecleration);
+
+		// Correct declerations
+		for (auto var : classBody->childNodes) {
+
+			AA_PT_NODE* nameNode = new AA_PT_NODE(AA_PT_NODE_TYPE::identifier, var->content.c_str(), var->position);
+			var->childNodes.push_back(nameNode);
+
+		}
+
+		// Remove expr
+		nodes.erase(nodes.begin() + from + 2);
+
+		// More content?
+		if (from + 2 < nodes.size() && nodes[from+2]->nodeType == AA_PT_NODE_TYPE::accessor && nodes[from + 2]->content.compare(L":") == 0) {
+
+			// While there's content
+			while (from + 3 < nodes.size()) {
+
+				// Add element to inherit from
+				if (nodes[from + 3]->nodeType == AA_PT_NODE_TYPE::identifier) { // TODO: Add support for namespaces and such here
+					inheritanceList->childNodes.push_back(new AA_PT_NODE(AA_PT_NODE_TYPE::identifier, nodes[from + 3]->content.c_str(), nodes[from + 3]->position));
+				} else if (nodes[from + 3]->nodeType == AA_PT_NODE_TYPE::seperator && nodes[from + 3]->content.compare(L";") == 0) {
+					from++;
+					break;
+				}
+
+				// Remove from nodes
+				nodes.erase(nodes.begin() + from + 3);
+
+			}
+
+			// Remove the accessor
+			nodes.erase(nodes.begin() + from + 1);
+
+		}
+
+		// Add class body
+		classDeclExp->childNodes.push_back(classBody);
+
+		// TODO: Add support for additional body content here
+
+		// Erase all the unnessecary stuff (Only the name should be left)
+		nodes.erase(nodes.begin() + from);
+
+	} else { // no body decleration
+
+		nodes.erase(nodes.begin() + from + 1);
+
+	}
 
 	// Return class definition
 	return classDeclExp;
@@ -727,7 +782,7 @@ AA_PT_NODE* AA_PT::CreateConstructorDecl(std::vector<AA_PT_NODE*>& nodes, size_t
 	ctorDecl->nodeType = AA_PT_NODE_TYPE::fundecleration;
 	ctorDecl->content = L".ctor";
 	ctorDecl->childNodes.push_back(classType);
-	ctorDecl->childNodes.push_back(CreateFunctionArgList(nodes[from + 1])); // argument list
+	ctorDecl->childNodes.push_back(CreateArgList(nodes[from + 1], AA_PT_NODE_TYPE::funarglist, AA_PT_NODE_TYPE::funarg)); // argument list
 	ctorDecl->childNodes.push_back(modifierList);
 
 	if (from + 2 < (int)nodes.size() && nodes[from + 2]->nodeType == AA_PT_NODE_TYPE::block) {
@@ -763,7 +818,7 @@ AA_PT_NODE* AA_PT::CreateFunctionDecl(std::vector<AA_PT_NODE*>& nodes, size_t fr
 	funDecl->nodeType = AA_PT_NODE_TYPE::fundecleration;
 	funDecl->content = nodes[from + 1]->content;
 	funDecl->childNodes.push_back(nodes[from]); // return type
-	funDecl->childNodes.push_back(CreateFunctionArgList(nodes[from+2])); // argument list
+	funDecl->childNodes.push_back(CreateArgList(nodes[from+2], AA_PT_NODE_TYPE::funarglist, AA_PT_NODE_TYPE::funarg)); // argument list
 	funDecl->childNodes.push_back(modifierList);
 
 	if (from + 3 < (int)nodes.size() && nodes[from + 3]->nodeType == AA_PT_NODE_TYPE::block) {
@@ -781,10 +836,10 @@ AA_PT_NODE* AA_PT::CreateFunctionDecl(std::vector<AA_PT_NODE*>& nodes, size_t fr
 
 }
 
-AA_PT_NODE* AA_PT::CreateFunctionArgList(AA_PT_NODE* pExpNode) {
+AA_PT_NODE* AA_PT::CreateArgList(AA_PT_NODE* pExpNode, AA_PT_NODE_TYPE outType, AA_PT_NODE_TYPE elementType) {
 
 	AA_PT_NODE* argList = new AA_PT_NODE(pExpNode->position);
-	argList->nodeType = AA_PT_NODE_TYPE::funarglist;
+	argList->nodeType = outType;
 
 	size_t i = 0;
 	while (i < pExpNode->childNodes.size()) {
@@ -793,7 +848,7 @@ AA_PT_NODE* AA_PT::CreateFunctionArgList(AA_PT_NODE* pExpNode) {
 			if (i + 1 < pExpNode->childNodes.size() && pExpNode->childNodes[i + 1]->nodeType == AA_PT_NODE_TYPE::identifier) {
 
 				AA_PT_NODE* arg = new AA_PT_NODE(pExpNode->childNodes[i]->position);
-				arg->nodeType = AA_PT_NODE_TYPE::funarg;
+				arg->nodeType = elementType;
 				arg->content = pExpNode->childNodes[i + 1]->content;
 				arg->childNodes.push_back(pExpNode->childNodes[i]);
 
@@ -1153,7 +1208,7 @@ AA_PT_NODE* AA_PT::CreateForStatement(std::vector<AA_PT_NODE*>& nodes, size_t no
 		nodes[nodeIndex + 1]->nodeType = AA_PT_NODE_TYPE::block;
 
 		// Make sure the statements follow syntax rules
-		ApplyOrderOfOperationBindings(nodes[nodeIndex + 1]->childNodes); // [Temporary HACK to fix something in the ApplyFunctionalBindings method)
+		AA_PT_Unflatten::ApplyOrderOfOperationBindings(nodes[nodeIndex + 1]->childNodes); // [Temporary HACK to fix something in the ApplyFunctionalBindings method)
 
 		// Get loop expressions
 		std::vector<AA_PT_NODE*> forLoopExpr = this->CreateArgumentTree(nodes[nodeIndex + 1]);
@@ -1249,329 +1304,7 @@ bool AA_PT::IsDeclarativeIndexer(AA_PT_NODE* pNode) {
 }
 
 bool AA_PT::IsModifierKeyword(std::wstring ws) {
-	return ws.compare(L"override") == 0 || ws.compare(L"virtual") == 0;
-}
-
-void AA_PT::ApplyOrderOfOperationBindings(std::vector<AA_PT_NODE*>& nodes) {
-
-	// Convert parenthesis blocks into singular expressions
-	ApplyGroupings(nodes);
-
-	// Apply bindings (eg. -1 => unary operation)
-	ApplyUnaryBindings(nodes);
-	
-	// Apply mathematic rules So 5+5*5 = 30 and not 50
-	ApplyArithemticRules(nodes);
-	
-	// Apply assignment order rule, so var x = 5+5 is treated as 5+5=x and not x=5, + 5
-	ApplyAssignmentOrder(nodes);
-
-}
-
-void AA_PT::ApplyGroupings(std::vector<AA_PT_NODE*>& nodes) {
-
-	// Pair parenthesis statements
-	int i = 0;
-	PairStatements(nodes, i, AA_PT_NODE_TYPE::parenthesis_start, AA_PT_NODE_TYPE::parenthesis_end, AA_PT_NODE_TYPE::expression);
-
-	// Pair indexers
-	i = 0;
-	PairStatements(nodes, i, AA_PT_NODE_TYPE::indexer_start, AA_PT_NODE_TYPE::indexer_end, AA_PT_NODE_TYPE::indexing);
-
-	// Pair possible function or keywords with arguments to their parenthesis (Because arguments to something binds the strongest)
-	ApplyFunctionBindings(nodes);
-
-	// Pair member access to their respective left->right associations
-	ApplyAccessorBindings(nodes);
-
-}
-
-bool AA_PT::CanTreatKeywordAsIdentifier(AA_PT_NODE* node) {
-	if (node->nodeType == AA_PT_NODE_TYPE::keyword) {
-		return node->content.compare(L"this") == 0 || node->content.compare(L"base") == 0;
-	} else {
-		return false;
-	}
-}
-
-void AA_PT::ApplyAccessorBindings(std::vector<AA_PT_NODE*>& nodes) {
-
-	int i = 0;
-	while (i < (int)nodes.size()) {
-
-		if (nodes[i]->nodeType == AA_PT_NODE_TYPE::accessor) {
-
-			if (i - 1 >= 0 && (nodes[i-1]->nodeType == AA_PT_NODE_TYPE::identifier || nodes[i-1]->nodeType == AA_PT_NODE_TYPE::accessor || CanTreatKeywordAsIdentifier(nodes[i-1]))) {
-
-				if (i + 1 < (int)nodes.size() && nodes[i + 1]->nodeType == AA_PT_NODE_TYPE::identifier) {
-
-					nodes[i]->childNodes.push_back(nodes[i - 1]);
-
-					if (i + 2 < (int)nodes.size() && nodes[i + 2]->nodeType == AA_PT_NODE_TYPE::expression) {
-
-						AA_PT_NODE* rhsNode = new AA_PT_NODE(nodes[i + 1]->position);
-						rhsNode->nodeType = AA_PT_NODE_TYPE::expression;
-						rhsNode->childNodes.push_back(nodes[i + 1]);
-						rhsNode->childNodes.push_back(nodes[i + 2]);
-
-						nodes[i]->childNodes.push_back(rhsNode);
-
-						nodes.erase(nodes.begin() + i + 1, nodes.begin() + i + 3);
-
-					} else {
-
-						nodes[i]->childNodes.push_back(nodes[i + 1]);
-						nodes.erase(nodes.begin() + i + 1);
-
-					}
-
-					nodes.erase(nodes.begin() + i - 1);
-					i--;
-
-				}
-
-			}
-
-		}
-
-		i++;
-
-	}
-
-}
-
-void AA_PT::ApplyFunctionBindings(std::vector<AA_PT_NODE*>& nodes) {
-
-	int i = 0;
-
-	while (i < (int)nodes.size()) {
-
-		if (nodes[i]->nodeType == AA_PT_NODE_TYPE::identifier) {
-			if (i + 1 < (int)nodes.size() && nodes[i + 1]->nodeType == AA_PT_NODE_TYPE::expression) {
-				if (i - 1 > 0 && nodes[i - 1]->nodeType == AA_PT_NODE_TYPE::binary_operation) {
-					ApplyFunctionBindings(nodes[i + 1]->childNodes);
-					nodes[i]->childNodes.push_back(nodes[i + 1]);
-					//nodes.erase(nodes.begin() + i + 1);
-				}
-			}
-		} /*else if (nodes[i]->nodeType == AA_PT_NODE_TYPE::keyword) {
-			if (i + 1 < nodes.size() && nodes[i + 1]->nodeType == AA_PT_NODE_TYPE::expression) {
-				if (i - 1 > 0 && nodes[i - 1]->nodeType == AA_PT_NODE_TYPE::binary_operation) {
-					nodes[i]->childNodes.push_back(nodes[i + 1]);
-					nodes.erase(nodes.begin() + i + 1);
-				}
-			}
-		}*/
-
-		i++;
-
-	}
-
-}
-
-void AA_PT::ApplyUnaryBindings(std::vector<AA_PT_NODE*>& nodes) {
-
-	for (size_t i = 0; i < nodes.size(); i++) {
-		if (nodes[i]->nodeType == AA_PT_NODE_TYPE::expression) {
-			ApplyUnaryBindings(nodes[i]->childNodes);
-		}
-	}
-
-	size_t index = 0;
-
-	while (index < nodes.size()) {
-
-		if (nodes[index]->nodeType == AA_PT_NODE_TYPE::unary_operation) {
-
-			AA_PT_NODE* unaryExp = new AA_PT_NODE(nodes[index]->position);
-			unaryExp->nodeType = AA_PT_NODE_TYPE::expression;
-			unaryExp->childNodes.push_back(nodes[index]);
-			unaryExp->childNodes.push_back(nodes[index+1]);
-
-			nodes.erase(nodes.begin() + index+1);
-			nodes.erase(nodes.begin() + index);
-
-			nodes.insert(nodes.begin() + index, unaryExp);
-
-		} else {
-
-			index++;
-
-		}
-
-	}
-
-}
-
-void AA_PT::ApplyArithemticRules(std::vector<AA_PT_NODE*>& nodes) {
-
-	for (size_t i = 0; i < nodes.size(); i++) {
-		if (nodes[i]->nodeType == AA_PT_NODE_TYPE::expression) {
-			for (size_t j = 0; j < nodes[i]->childNodes.size(); j++) {
-				ApplyArithemticRules(nodes[i]->childNodes[j]->childNodes);
-			}
-		}
-	}
-
-	size_t index = 0;
-
-	while (index < nodes.size()) {
-
-		if (nodes[index]->nodeType == AA_PT_NODE_TYPE::binary_operation) {
-
-			if (nodes[index]->content == L"*" || nodes[index]->content == L"/" || nodes[index]->content == L"%") {
-
-				AA_PT_NODE* binOpNode = new AA_PT_NODE(nodes[index]->position);
-				binOpNode->nodeType = AA_PT_NODE_TYPE::expression;
-				binOpNode->childNodes.push_back(nodes[index - 1]);
-				binOpNode->childNodes.push_back(nodes[index]);
-				binOpNode->childNodes.push_back(nodes[index + 1]);
-
-				nodes.erase(nodes.begin() + index + 1);
-				nodes.erase(nodes.begin() + index);
-
-				nodes.insert(nodes.begin() + index, binOpNode);
-
-				nodes.erase(nodes.begin() + index - 1);
-
-			} else {
-				index++;
-			}
-
-		} else {
-			index++;
-		}
-
-	}
-
-}
-
-void AA_PT::ApplyAssignmentOrder(std::vector<AA_PT_NODE*>& nodes) {
-
-	size_t index = 0;
-
-	while (index < nodes.size()) {
-
-		if (nodes[index]->nodeType == AA_PT_NODE_TYPE::binary_operation) {
-
-			if (nodes[index]->content == L"=") {
-
-				size_t index2 = index;
-
-				while (index2 < nodes.size()) {
-					if (nodes[index2]->nodeType == AA_PT_NODE_TYPE::seperator) {
-						break;
-					} else {
-						index2++;
-					}
-				}
-
-				AA_PT_NODE* rhs = new AA_PT_NODE(nodes[index]->position);
-				rhs->nodeType = AA_PT_NODE_TYPE::expression;
-				rhs->childNodes = std::vector<AA_PT_NODE*>(nodes.begin() + index + 1, nodes.begin() + index2);
-
-				nodes.erase(nodes.begin() + index + 1, nodes.begin() + index2);
-				nodes.insert(nodes.begin() + index + 1, rhs);
-
-			}
-
-		}
-
-		index++;
-
-	}
-
-}
-
-void AA_PT::ApplyFlowControlBindings(std::vector<AA_PT_NODE*>& nodes) {
-
-	int index = 0;
-	PairStatements(nodes, index, AA_PT_NODE_TYPE::block_start, AA_PT_NODE_TYPE::block_end, AA_PT_NODE_TYPE::block);
-
-	ApplyStatementBindings(nodes);
-
-}
-
-void AA_PT::ApplyStatementBindings(std::vector<AA_PT_NODE*>& nodes) {
-
-	size_t index = 0;
-
-	while (index < nodes.size()) {
-
-		if (nodes[index]->nodeType == AA_PT_NODE_TYPE::block) {
-			ApplyStatementBindings(nodes[index]->childNodes);
-		} else {
-
-			size_t index2 = index;
-
-			while (index2 < nodes.size()) {
-				if (nodes[index2]->nodeType == AA_PT_NODE_TYPE::seperator) {
-					index2++;
-					break;
-				} else {
-					index2++;
-				}
-			}
-
-			AA_PT_NODE* rhs = new AA_PT_NODE(nodes[index]->position);
-			rhs->nodeType = AA_PT_NODE_TYPE::expression;
-			rhs->childNodes = std::vector<AA_PT_NODE*>(nodes.begin() + index, nodes.begin() + index2);
-
-			nodes.erase(nodes.begin() + index, nodes.begin() + index2);
-			nodes.insert(nodes.begin() + index, rhs);
-
-		}
-
-		index++;
-
-	}
-
-}
-
-std::vector<AA_PT_NODE*> AA_PT::PairStatements(std::vector<AA_PT_NODE*>& nodes, int& index, AA_PT_NODE_TYPE open, AA_PT_NODE_TYPE close, AA_PT_NODE_TYPE contentType) {
-
-	std::vector<AA_PT_NODE*> subNodes;
-
-	while (index < (int)nodes.size()) {
-
-		if (nodes[index]->nodeType == open) {
-
-			REMOVE_NODE(index);
-
-			int pStart = index;
-
-			AA_PT_NODE* expNode = new AA_PT_NODE(nodes[index]->position);
-			expNode->nodeType = contentType;
-			expNode->childNodes = PairStatements(nodes, index, open, close, contentType);
-
-			nodes.erase(nodes.begin() + pStart, nodes.begin() + pStart + expNode->childNodes.size());
-			nodes.insert(nodes.begin() + pStart, expNode);
-
-			index = pStart;
-
-		} else if (nodes[index]->nodeType == close) {
-
-			REMOVE_NODE(index);
-
-			return subNodes;
-
-		} else {
-			subNodes.push_back(nodes[index]);
-			index++;
-		}
-
-	}
-
-	return subNodes;
-
-}
-
-void AA_PT::ApplySyntaxRules(std::vector<AA_PT_NODE*>& nodes) {
-
-	// Apply OOP bindings
-	ApplyOrderOfOperationBindings(nodes);
-
-	// Apply FC bindings
-	ApplyFlowControlBindings(nodes);
-
+	return 
+		ws.compare(L"override") == 0 || ws.compare(L"virtual") == 0 || ws.compare(L"abstract") == 0 ||
+		ws.compare(L"sealed") == 0 || ws.compare(L"tagged") == 0;
 }

@@ -1,0 +1,28 @@
+// Define an abstract class represeting a binary tree
+sealed abstract class BinaryTree;
+
+// Define the two cases
+tagged class Leaf() : BinaryTree; // case 1: Leaf
+tagged class Node(int value, BinaryTree left, BinaryTree right) : BinaryTree; // case 2: Node with a value and a left Node and a right Node
+
+// The main function
+int main() {
+
+    // Define the tree
+    BinaryTree tree = Node( 10, Node(5, Node(2, Leaf(), Leaf()), Leaf()), Leaf() );
+
+    // Get the top value of the tree
+    int topValue = tree match {
+        case Leaf() => 0,
+        case Node(v, _, _) => v
+    }
+
+    // Return the top value
+    topValue;
+
+};
+
+// Call the main function
+main();
+
+// Name (tagged class) is from: https://en.wikipedia.org/wiki/Tagged_union

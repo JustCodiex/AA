@@ -13,7 +13,7 @@ IDENTIFIERS:
 OPERATIONS:
 	[0]	SETVAR, 0
 	[1]	GETVAR, 0
-	[2]	VMCALL, 3, 1		;; Calls: object::object
+	[2]	XCALL, 3, 1		;; Calls: object::object
 	[3]	POP
 	[4]	GETVAR, 0
 	[5]	RET, 1

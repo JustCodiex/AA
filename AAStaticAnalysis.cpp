@@ -3,6 +3,8 @@
 #include "AAC.h"
 #include "AAVal.h"
 
+using namespace aa::modifiers;
+
 aa::list<AACType*> _getdeftypeenv() {
 	aa::list<AACType*> types;
 	types.Add(AACTypeDef::Bool);
@@ -584,6 +586,54 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterClass(AA_AST_NODE* pNode, AACl
 	// Compiled Class data size
 	cc->classByteSz = 0;
 
+	// Do we have any modifiers?
+	if (pNode->expressions[AA_NODE_CLASSNODE_MODIFIER]->expressions.size() > 0) {
+
+		// Default storage modifier
+		AAStorageModifier sMod = AAStorageModifier::NONE;
+
+		// Go through all the storrage modifiers
+		for (size_t i = 0; i < pNode->expressions[AA_NODE_CLASSNODE_MODIFIER]->expressions.size(); i++) {
+
+			// Modifier
+			AAStorageModifier mod;
+
+			// Find the modifier (only check for class modifiers)
+			if (pNode->expressions[AA_NODE_CLASSNODE_MODIFIER]->expressions[i]->content.compare(L"sealed") == 0) {
+				mod = AAStorageModifier::SEALED;
+			} else if (pNode->expressions[AA_NODE_CLASSNODE_MODIFIER]->expressions[i]->content.compare(L"abstract") == 0) {
+				mod = AAStorageModifier::ABSTRACT;
+			} else if (pNode->expressions[AA_NODE_CLASSNODE_MODIFIER]->expressions[i]->content.compare(L"static") == 0) {
+				mod = AAStorageModifier::STATIC;
+			} else if (pNode->expressions[AA_NODE_CLASSNODE_MODIFIER]->expressions[i]->content.compare(L"tagged") == 0) {
+				mod = AAStorageModifier::TAGGED;
+			} else {
+				err.errorMsg = ("Invalid modifier '" + string_cast(pNode->expressions[AA_NODE_CLASSNODE_MODIFIER]->expressions[i]->content) + "' on class type").c_str();
+				err.errorSource = pNode->expressions[AA_NODE_CLASSNODE_MODIFIER]->expressions[i]->position;
+				err.errorType = 0;
+				return err;
+			}
+
+			// If it's not none (we have to merge)
+			if (sMod != AAStorageModifier::NONE) {
+
+				// Merge them
+				sMod = sMod | mod;
+
+			} else {
+
+				// Simply assign
+				sMod = mod;
+			
+			}
+
+		}
+
+		// Set storage modifier
+		cc->storageModifier = sMod;
+
+	}
+
 	// Do we inherit from something?
 	if (pNode->expressions[AA_NODE_CLASSNODE_INHERITANCE]->expressions.size() > 0) {
 
@@ -645,7 +695,7 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterClass(AA_AST_NODE* pNode, AACl
 	std::vector<AA_AST_NODE*> funcBodyNodes;
 
 	// Make sure we have a class body to work with
-	if (pNode->expressions.size() >= AA_NODE_CLASSNODE_BODY && pNode->expressions[AA_NODE_CLASSNODE_BODY]->type == AA_AST_NODE_TYPE::classbody) {
+	if (AA_NODE_CLASSNODE_BODY < pNode->expressions.size() && pNode->expressions[AA_NODE_CLASSNODE_BODY]->type == AA_AST_NODE_TYPE::classbody) {
 
 		// For all elements in class body
 		for (size_t i = 0; i < pNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions.size(); i++) {
@@ -712,6 +762,19 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterClass(AA_AST_NODE* pNode, AACl
 
 	// Correct incorrect references (eg. field access)
 	m_compilerPointer->GetClassCompilerInstance()->CorrectReferences(cc, funcBodyNodes);
+
+	// If it's a tagged class
+	if (aa::modifiers::ContainsFlag(cc->storageModifier, AAStorageModifier::TAGGED)) {
+
+		// Auto-generate some class methods
+		if (!m_compilerPointer->GetClassCompilerInstance()->AutoTaggedClass(cc)) {
+			err.errorMsg = "Failed to generate tagged class elements";
+			err.errorSource = pNode->position;
+			err.errorType = 0;
+			return err;
+		}
+
+	}
 
 	// Calculate the class size in memory
 	cc->classByteSz = m_compilerPointer->GetClassCompilerInstance()->CalculateMemoryUse(cc);
@@ -864,13 +927,13 @@ bool AAStaticAnalysis::CanInheritFunction(AAClassSignature* pChildSig, AAFuncSig
 	}
 
 	// Is this a virtual method? (Only inherit if it's not overloaded
-	if (pToInherit->storageModifier == AAStorageModifier::VIRTUAL) {
+	//if (pToInherit->storageModifier == AAStorageModifier::VIRTUAL) {
 		int matchMethodIndex;
 		if (pChildSig->methods.FindFirstIndex([pToInherit](AAFuncSignature*& childSig) { return childSig->IsValidOverride(pToInherit); }, matchMethodIndex)) {
 			pChildSig->methods.Apply(matchMethodIndex)->overrides = pToInherit; 
 			return false; // Don't inherit ==> We have an overload
 		}
-	}
+	//}
 
 	// Return no compile error
 	return true;

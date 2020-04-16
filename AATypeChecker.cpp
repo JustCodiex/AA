@@ -3,9 +3,6 @@
 #include "AAStaticAnalysis.h"
 #include "set.h"
 
-// Temp solution, replace with const variables later
-static int AATypeCheckerGlobalErrorCounter = 1000;
-
 #define AATC_W_ERROR(__msg, __pos, __err) this->SetError(AATypeChecker::Error(__msg, __err, __pos)); return AACType::ErrorType
 #define AATC_ERROR(__msg, __pos) AATC_W_ERROR((__msg), (__pos), (aa::compiler_err::C_Unclassified_Type))
 
@@ -106,7 +103,12 @@ AACType* AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 
 	}		
 	case AA_AST_NODE_TYPE::classdecl:
-		return this->TypeCheckNode(node->expressions[AA_NODE_CLASSNODE_BODY]);
+		// Make sure there's a valid class body (a body node and that node actually contains some content)
+		if (AA_NODE_CLASSNODE_BODY < node->expressions.size() && node->expressions[AA_NODE_CLASSNODE_BODY]->expressions.size() > 0) {
+			return this->TypeCheckNode(node->expressions[AA_NODE_CLASSNODE_BODY]);
+		} else {
+			return AACType::Void; // Merely a declaration => No specific type to return
+		}
 	case AA_AST_NODE_TYPE::fundecl: 
 		return this->TypeCheckFuncDecl(node);
 	case AA_AST_NODE_TYPE::funcall:
@@ -196,6 +198,7 @@ AACType* AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 		return this->TypeCheckUsingOperation(node);
 	case AA_AST_NODE_TYPE::matchstatement:
 		return this->TypeCheckPatternMatchBlock(node);
+		//case AA_AST_NODE_TYPE
 	default:
 		break;
 	}

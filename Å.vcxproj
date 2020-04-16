@@ -172,6 +172,7 @@
     <ClCompile Include="AAVM.cpp" />
     <ClCompile Include="AA_AST.cpp" />
     <ClCompile Include="AA_PT.cpp" />
+    <ClCompile Include="AA_PT_Unflatten.cpp" />
     <ClCompile Include="astring.cpp" />
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
@@ -214,6 +215,7 @@
     <ClInclude Include="AA_Node_Consts.h" />
     <ClInclude Include="AA_PT.h" />
     <ClInclude Include="AA_PT_NODE.h" />
+    <ClInclude Include="AA_PT_Unflatten.h" />
     <ClInclude Include="astring.h" />
     <ClInclude Include="bstream.h" />
     <ClInclude Include="bwalker.h" />

@@ -30,6 +30,8 @@ enum class AAByteCode : unsigned char {
 	JMPT, // (Relative jump to operation if top of stack is true, 1 argument[distance])
 	LJMP, // (Long relative jump to operation, 1 argument[distance])
 	CALL, // (Call subroutine, 2 arguments[procID, argCount])
+	VCALL, // (Virtual call, 2 arguments[procID, argCount])>: Only call with objects!
+	XCALL, // (External call - Invoke VM specified call, 2 arguments[procID, argCount])
 	RET, // (Return, 1 argument[returtCount])
 
 	CMPE, // (Compares the two top elements on stack and returns true if they're equal, 0 arguments)
@@ -45,8 +47,6 @@ enum class AAByteCode : unsigned char {
 
 	HALLOC, // (Heap Allocate memory for new object, 1 argument[size in bytes])
 	SALLOC, // (Stack allocate memory for the new object, 1 argument[size in bytes])
-
-	VMCALL, // (Virtual Machine call, 2 arguments[procID, argCount])
 
 	TRY, // ---
 	THROW, // ---

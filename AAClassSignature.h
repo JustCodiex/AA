@@ -45,6 +45,7 @@ struct AAClassSignature {
 	size_t classByteSz;
 	
 	AAAccessModifier accessModifier;
+	AAStorageModifier storageModifier;
 	AACNamespace* domain;
 	AACType* type;
 
@@ -52,6 +53,7 @@ struct AAClassSignature {
 		this->name = L"";
 		this->classByteSz = 0;
 		this->accessModifier = AAAccessModifier::PUBLIC;
+		this->storageModifier = AAStorageModifier::NONE;
 		this->domain = 0;
 		this->type = new AACType(this);
 	}
@@ -60,6 +62,7 @@ struct AAClassSignature {
 		this->name = name;
 		this->classByteSz = 0;
 		this->accessModifier = AAAccessModifier::PUBLIC;
+		this->storageModifier = AAStorageModifier::NONE;
 		this->domain = 0;
 		this->type = new AACType(this);
 	}

@@ -58,7 +58,7 @@ bool RunFileTest(AAVM* pAAVM, std::wstring fileinput, std::wstring fileoutputBin
 
 bool RunExpressionTest(AAVM* pAAVM, std::wstring expression, std::wstring fileoutputBinary, std::wstring fileoutputOpCodes, std::wstring expectedoutput, bool compile, bool runtime) {
 
-	std::wcout << L"Testing expression: '" << expression << L"'" << std::endl;
+	std::wcout << L"Testing expression: '" << expression << L"'" << L" OpCodeFile: \"" << fileoutputOpCodes << L"\"" << std::endl;
 	return VerifyTestResult(pAAVM, pAAVM->CompileAndRunExpression(expression, fileoutputBinary, fileoutputOpCodes).ToString(), expectedoutput, compile, runtime);
 }
 
@@ -160,21 +160,21 @@ void RunArithmeticTests(AAVM* pAAVM, int& s, int& f) {
 void RunVariableDeclerationTests(AAVM* pAAVM, int& s, int& f) {
 
 	// Test modulo operator
-	if (!RunExpressionTest(pAAVM, L"var x = (5+5)*5-2;", L"out\\bin\\variable_var_rhsop2.aab", L"out\\op\\variable_var_rhsop2.txt", L"Null")) {
+	if (!RunExpressionTest(pAAVM, L"var x = (5+5)*5-2; x;", L"out\\bin\\variable_var_rhsop2.aab", L"out\\op\\variable_var_rhsop2.txt", L"48")) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test modulo operator
-	if (!RunExpressionTest(pAAVM, L"var x = 5+5;", L"out\\bin\\variable_var_rhsop1.aab", L"out\\op\\variable_var_rhsop1.txt", L"Null")) {
+	if (!RunExpressionTest(pAAVM, L"var x = 5+5; x;", L"out\\bin\\variable_var_rhsop1.aab", L"out\\op\\variable_var_rhsop1.txt", L"10")) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test modulo operator
-	if (!RunExpressionTest(pAAVM, L"var x = 5;", L"out\\bin\\variable_var.aab", L"out\\op\\variable_var.txt", L"Null")) {
+	if (!RunExpressionTest(pAAVM, L"var x = 5; x;", L"out\\bin\\variable_var.aab", L"out\\op\\variable_var.txt", L"5")) {
 		f++;
 	} else {
 		s++;

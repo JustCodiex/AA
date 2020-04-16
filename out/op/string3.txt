@@ -9,8 +9,8 @@ OPERATIONS:
 	[3]	SETVAR, 1
 	[4]	GETVAR, 0
 	[5]	PUSHC, 2
-	[6]	VMCALL, 2, 2		;; Calls: string::concat
+	[6]	XCALL, 2, 2		;; Calls: string::concat
 	[7]	GETVAR, 1
-	[8]	VMCALL, 2, 2		;; Calls: string::concat
+	[8]	XCALL, 2, 2		;; Calls: string::concat
 END PROCEDURE;
 

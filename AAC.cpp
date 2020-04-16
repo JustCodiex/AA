@@ -343,7 +343,7 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileBinaryOperation(AA_AST_NOD
 
 		if (pNode->tags["useCall"]) {
 
-			binopCAE.bc = (pNode->tags["operatorIsVM"]) ? AAByteCode::VMCALL : AAByteCode::CALL;
+			binopCAE.bc = (pNode->tags["operatorIsVM"]) ? AAByteCode::XCALL : AAByteCode::CALL;
 			binopCAE.argCount = 2;
 			binopCAE.argValues[0] = pNode->tags["operatorProcID"];
 			binopCAE.argValues[1] = 2;
@@ -437,7 +437,7 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileFunctionCall(AA_AST_NODE* 
 
 	CompiledAbstractExpression callCAE;
 	callCAE.argCount = 2;
-	callCAE.bc = (isVmCll) ? AAByteCode::VMCALL : AAByteCode::CALL;
+	callCAE.bc = (isVmCll) ? AAByteCode::XCALL : AAByteCode::CALL;
 	callCAE.argValues[0] = procID;
 	callCAE.argValues[1] = args;
 
@@ -997,7 +997,7 @@ aa::list<AAC::CompiledAbstractExpression> AAC::HandleCtorCall(AA_AST_NODE* pNode
 	}
 
 	CompiledAbstractExpression callCAE;
-	callCAE.bc = (isVmCll) ? AAByteCode::VMCALL : AAByteCode::CALL;
+	callCAE.bc = (isVmCll) ? AAByteCode::XCALL : AAByteCode::CALL;
 	callCAE.argCount = 2;
 	callCAE.argValues[0] = procID;
 	callCAE.argValues[1] = args;
@@ -1178,7 +1178,7 @@ int AAC::CalcStackSzAfterOperation(AAC::CompiledAbstractExpression op, AAStaticE
 		printf("%i", callc);
 		return -op.argValues[1] + callc;
 	}
-	case AAByteCode::VMCALL:
+	case AAByteCode::XCALL:
 		return -op.argValues[1] + (m_preregisteredFunctions[op.argValues[0]]->returnType == AACType::Void) ? 0 : 1;
 	case AAByteCode::JMP:
 	case AAByteCode::GETFIELD:
