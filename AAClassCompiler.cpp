@@ -2,6 +2,7 @@
 #include "AAClassCompiler.h"
 #include "AAVal.h"
 #include "AA_Node_Consts.h"
+#include "AAAutoCodeGenerator.h"
 
 void AAClassCompiler::RedefineFunDecl(std::wstring className, AA_AST_NODE* pFuncDeclNode) {
 
@@ -68,37 +69,40 @@ size_t AAClassCompiler::CalculateMemoryUse(AAClassSignature* cc) {
 
 }
 
-void AAClassCompiler::CorrectReferences(AAClassSignature* cc, std::vector<AA_AST_NODE*> pFuncBodies) {
+void AAClassCompiler::CorrectReferences(aa::list<std::wstring> fields, aa::set<AAFuncSignature*> pFuncSignatures) {
 
-	for (size_t i = 0; i < pFuncBodies.size(); i++) {
-		this->CorrectFuncFieldReferences(pFuncBodies[i], cc);
-	}
+	pFuncSignatures.ForEach(
+		[fields, this](AAFuncSignature*& sig) {
+			// Make sure there's something to verify
+			if (sig->node) {
+				aa::list<std::wstring> params = aa::list<AAFuncParam>(sig->parameters).Map<std::wstring>([](AAFuncParam& param) { return param.identifier; });
+				this->CorrectFuncFieldReferences(fields, params, sig->node->expressions[AA_NODE_FUNNODE_BODY]);
+			}
+		}
+	);
 
 }
 
-void AAClassCompiler::CorrectFuncFieldReferences(AA_AST_NODE* pNode, AAClassSignature* cc) {
+void AAClassCompiler::CorrectFuncFieldReferences(aa::list<std::wstring> fields, aa::list<std::wstring> args, AA_AST_NODE* pNode) {
 
 	switch (pNode->type) {
 	case AA_AST_NODE_TYPE::block:
 	case AA_AST_NODE_TYPE::funcbody:
 		for (size_t i = 0; i < pNode->expressions.size(); i++) {
-			this->CorrectFuncFieldReferences(pNode->expressions[i], cc);
+			this->CorrectFuncFieldReferences(fields, args, pNode->expressions[i]);
 		}
 		break;
 	case AA_AST_NODE_TYPE::binop:
-		this->CorrectFuncFieldReferences(pNode->expressions[0], cc);
-		this->CorrectFuncFieldReferences(pNode->expressions[1], cc);
+		this->CorrectFuncFieldReferences(fields, args, pNode->expressions[0]);
+		this->CorrectFuncFieldReferences(fields, args, pNode->expressions[1]);
 		break;
 	case AA_AST_NODE_TYPE::unop:
-		this->CorrectFuncFieldReferences(pNode->expressions[0], cc);
+		this->CorrectFuncFieldReferences(fields, args, pNode->expressions[0]);
 		break;
 	case AA_AST_NODE_TYPE::variable: {
 
-		int fID; // If we have a field in the class with specified variable (TODO: Check function params - because then the this word must be explicit)
-		if (HasField(cc, pNode->content, fID)) {
-
-			// Update the identiffier to be a member access operation
-			this->UpdateIdentifierToThisFieldReference(pNode, fID);
+		if (fields.Contains(pNode->content) && !args.Contains(pNode->content)) { // We also check if the args contain it (if it does, we wont do anything, because then it refers to the argument)
+			UpdateIdentifierToThisFieldReference(pNode, fields.IndexOf(pNode->content));
 		}
 
 		break;
@@ -116,6 +120,7 @@ void AAClassCompiler::UpdateIdentifierToThisFieldReference(AA_AST_NODE* pNode, i
 	pNode->expressions.push_back(new AA_AST_NODE(pNode->content, AA_AST_NODE_TYPE::field, pNode->position));
 	pNode->expressions[pNode->expressions.size() - 1]->tags["fieldid"] = fieldId;
 	pNode->tags["compiler_generated"] = true;
+	pNode->content = L"."; // We remember to set the field access type
 
 }
 
@@ -123,11 +128,13 @@ bool AAClassCompiler::AddInheritanceCall(AAClassSignature* cc, AA_AST_NODE* pCto
 
 	return cc->extends.ForAll(
 		[pCtorDeclNode, this](AAClassSignature*& sig) {
-			AAFuncSignature* ctor = this->FindBestCtor(sig);
-			if (ctor) {
-				return this->AddInheritanceCallNode(ctor, pCtorDeclNode);
-			} else {
-				return false;
+			if (!aa::modifiers::ContainsFlag(sig->storageModifier, AAStorageModifier::ABSTRACT)) { // We cannot call the instructor of an abstract class
+				AAFuncSignature* ctor = this->FindBestCtor(sig);
+				if (ctor) {
+					return this->AddInheritanceCallNode(ctor, pCtorDeclNode);
+				} else {
+					return false;
+				}
 			}
 		}
 	);
@@ -163,11 +170,124 @@ bool AAClassCompiler::AddInheritanceCallNode(AAFuncSignature* ctor, AA_AST_NODE*
 
 }
 
-bool AAClassCompiler::AutoTaggedClass(AAClassSignature* taggedClassSignature) {
+bool AAClassCompiler::AutoTaggedClass(AAClassSignature* taggedClassSignature, AA_AST_NODE*& pOutClassFuncCtor) {
 
+	using namespace aa::compiler::generator;
+	using namespace aa::compiler::generator::expr;
 
+	/*
 
+		Å Code:
+		tagged class Class(<...>);
+
+		Expands to:
+
+		class Class {
+			<...> // fields
+			Class(Class this, <...>) {
+				this.<...> = <...>;
+			}
+			bool Equals(Class _c){
+				this.<...> == _c.<...>;
+			}
+			string ToString(){
+				#nameof(Class) + "(" + #beautystring(<...>) + ")";
+			}
+		}
+
+		Class Class(<...>){
+			new Class(<...>);
+		}
+
+	*/
+
+	// Get the fields
+	std::vector<__name_type> fields = this->GetTaggedFields(taggedClassSignature->pSourceNode);
+
+	// Class functions
+	AA_AST_NODE* classCtor = NewFunctionNode(L".ctor", taggedClassSignature->name, true);
+	AddFunctionArguments(classCtor, fields);
+
+	// Class equal method
+	AA_AST_NODE* classEquals = NewFunctionNode(L"Equals", L"bool", true);
+	AddFunctionArgument(classEquals, L"_other", taggedClassSignature->name);
+
+	// Class to string method
+	AA_AST_NODE* classToString = NewFunctionNode(L"ToString", L"string", true);
+	AA_AST_NODE* funcToStringBinop = BinaryOperationNode(L"+", StringLiteralNode(taggedClassSignature->name + L"("), StringLiteralNode(L")"));
+	AddFunctionBodyElement(classToString, funcToStringBinop);
+
+	// The class constructor that eliminates 'new' usage
+	pOutClassFuncCtor = NewFunctionNode(taggedClassSignature->name, taggedClassSignature->name, true);
+	AddFunctionArguments(pOutClassFuncCtor, fields);
+	AA_AST_NODE* ctorCall = CtorCallNode(taggedClassSignature->name);
+	AA_AST_NODE* newStatement = NewNode(ctorCall);
+	AddFunctionBodyElement(pOutClassFuncCtor, newStatement);
+
+	// flag for adding comma
+	bool commaflg = false;
+
+	// Contains all the nodes where an equal operation is used
+	std::vector<AA_AST_NODE*> equalsNode;
+
+	// For all fields
+	for (auto& field : fields) {
+
+		// Add the assignment node
+		AA_AST_NODE* fieldAssign = AssignmentNode(ThisAccessorNode(IdentifierNode(field.first)), IdentifierNode(field.first));
+		AddFunctionBodyElement(classCtor, fieldAssign);
+
+		// String node
+		AA_AST_NODE* strAssign = (commaflg) ? BinaryOperationNode(L"+", StringLiteralNode(L", "), IdentifierNode(field.first)) : IdentifierNode(field.first);
+		commaflg = true;
+
+		// Add field name in stringification
+		funcToStringBinop->expressions[1] = BinaryOperationNode(L"+", strAssign, funcToStringBinop->expressions[1]);
+
+		// Add field as argument to no-new class call
+		AddCallArgument(ctorCall, IdentifierNode(field.first));
+
+		// Create equals node
+		AA_AST_NODE* eq = BinaryOperationNode(L"==", ThisAccessorNode(IdentifierNode(field.first)), AccessorNode(L".", IdentifierNode(L"_other"), IdentifierNode(field.first)));
+		equalsNode.push_back(eq);
+
+	}
+
+	if (equalsNode.size() > 0) {
+		AA_AST_NODE* finalEqualsNode = equalsNode[0];
+		for (size_t i = 1; i < equalsNode.size(); i++) {
+			finalEqualsNode = BinaryOperationNode(L"&&", finalEqualsNode, equalsNode[i]);
+		}
+		AddFunctionBodyElement(classEquals, finalEqualsNode);
+	} else {
+		AddFunctionBodyElement(classEquals, BoolLiteralNode(true));
+	}
+
+	// Add all the nodes
+	taggedClassSignature->pSourceNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions.push_back(classCtor);
+	taggedClassSignature->pSourceNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions.push_back(classEquals);
+	taggedClassSignature->pSourceNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions.push_back(classToString);
+
+	// Return true
 	return true;
+
+}
+
+std::vector<aa::compiler::generator::__name_type> AAClassCompiler::GetTaggedFields(AA_AST_NODE* pClassSource) {
+
+	std::vector<aa::compiler::generator::__name_type> result;
+
+	if (AA_NODE_CLASSNODE_BODY < pClassSource->expressions.size()) {
+
+		for (auto& field : pClassSource->expressions[AA_NODE_CLASSNODE_BODY]->expressions) {
+			if (field->type == AA_AST_NODE_TYPE::vardecl && field->HasTag("ctor_field")) {
+				result.push_back(aa::compiler::generator::__name_type(field->content, field->expressions[0]->content));
+			}
+		}
+
+	}
+
+	return result;
 
 }
 

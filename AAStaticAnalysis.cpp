@@ -22,6 +22,12 @@ AAStaticAnalysis::AAStaticAnalysis(AAC* pCompiler) {
 	// Point to null until defined
 	this->m_objectInheritFrom = NULL;
 
+	// Point to nothing
+	this->m_workTrees = NULL;
+
+	// Currently nothing
+	this->m_currentTreeIndex = 0;
+
 }
 
 void AAStaticAnalysis::Reset(std::vector<AAFuncSignature*> funcs, std::vector<AAClassSignature*> classes, std::vector<AACNamespace*> namespaces) {
@@ -35,6 +41,12 @@ void AAStaticAnalysis::Reset(std::vector<AAFuncSignature*> funcs, std::vector<AA
 	// Copy namespaces
 	m_preregisteredNamespaces.FromVector(namespaces);
 
+	// Point to none
+	m_workTrees = 0;
+
+	// Not working on one
+	m_currentTreeIndex = 0;
+
 }
 
 AAC_CompileErrorMessage AAStaticAnalysis::RunStaticAnalysis(std::vector<AA_AST*>& trees) {
@@ -45,6 +57,9 @@ AAC_CompileErrorMessage AAStaticAnalysis::RunStaticAnalysis(std::vector<AA_AST*>
 	// Extract the global scope
 	this->ExtractGlobalScope(trees);
 
+	// Set to point to the working trees
+	this->m_workTrees = &trees;
+
 	// The global domain
 	AACNamespace* globalDomain = 0;
 
@@ -52,7 +67,7 @@ AAC_CompileErrorMessage AAStaticAnalysis::RunStaticAnalysis(std::vector<AA_AST*>
 	AAStaticEnvironment senv = this->NewStaticEnvironment(globalDomain);
 
 	// Fetch static declerations
-	if (COMPILE_ERROR(err = this->FetchStaticDeclerationsFromTrees(trees, globalDomain, senv))) {
+	if (COMPILE_ERROR(err = this->FetchStaticDeclerationsFromTrees(globalDomain, senv))) {
 		return err;
 	}
 
@@ -209,27 +224,38 @@ bool AAStaticAnalysis::ExtractGlobalScope(std::vector<AA_AST*>& trees) {
 
 }
 
-AAC_CompileErrorMessage AAStaticAnalysis::FetchStaticDeclerationsFromTrees(std::vector<AA_AST*> trees, AACNamespace* globalDomain, AAStaticEnvironment& senv) {
+AAC_CompileErrorMessage AAStaticAnalysis::FetchStaticDeclerationsFromTrees(AACNamespace* globalDomain, AAStaticEnvironment& senv) {
 
 	// Error container
 	AAC_CompileErrorMessage err;
 
 	// Fetch static declerations from all tree roots, register (but do not verify) their types
-	for (size_t i = 0; i < trees.size(); i++) {
+	while (m_currentTreeIndex < m_workTrees->size()) {
 
 		// Fetch static decleration from node and put it into the global domain. Return compile error if any
-		if (COMPILE_ERROR(err = this->PreregisterTypes(trees[i]->GetRoot(), globalDomain, senv))) {
+		if (COMPILE_ERROR(err = this->PreregisterTypes(m_workTrees->at(m_currentTreeIndex)->GetRoot(), globalDomain, senv))) {
 			return err;
 		}
+
+		// Increment tree index
+		m_currentTreeIndex++;
+
 	}
 
+	// Reset the tree node index
+	m_currentTreeIndex = 0;
+
 	// Fetch static declerations from all tree roots
-	for (size_t i = 0; i < trees.size(); i++) {
+	while (m_currentTreeIndex < m_workTrees->size()) {
 
 		// Fetch static decleration from node and put it into the global domain. Return compile error if any
-		if (COMPILE_ERROR(err = this->FetchStaticDeclerationsFromASTNode(trees[i]->GetRoot(), globalDomain, senv))) {
+		if (COMPILE_ERROR(err = this->FetchStaticDeclerationsFromASTNode(m_workTrees->at(m_currentTreeIndex)->GetRoot(), globalDomain, senv))) {
 			return err;
 		}
+
+		// Increment tree index
+		m_currentTreeIndex++;
+
 	}
 
 	// Apply inheritance
@@ -583,7 +609,10 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterClass(AA_AST_NODE* pNode, AACl
 	// Fetch the class from domain
 	cc = domain->classes.Apply(classId);
 
-	// Compiled Class data size
+	// Set class source node
+	cc->pSourceNode = pNode;
+
+	// Set default compiled class size
 	cc->classByteSz = 0;
 
 	// Do we have any modifiers?
@@ -691,6 +720,30 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterClass(AA_AST_NODE* pNode, AACl
 
 	}
 
+	// If it's a tagged class
+	if (aa::modifiers::ContainsFlag(cc->storageModifier, AAStorageModifier::TAGGED)) {
+
+		// The tagged auto function constructor
+		AA_AST_NODE* pTaggedAutoCtor = 0;
+
+		// Auto-generate some class methods
+		if (!m_compilerPointer->GetClassCompilerInstance()->AutoTaggedClass(cc, pTaggedAutoCtor)) {
+			err.errorMsg = "Failed to generate tagged class elements";
+			err.errorSource = pNode->position;
+			err.errorType = 0;
+			return err;
+		}
+
+		// If assigned, register it
+		if (pTaggedAutoCtor) {
+
+			// Insert into next tree (and then let it be handled from there)
+			m_workTrees->insert(m_workTrees->begin() + m_currentTreeIndex + 1, new AA_AST(pTaggedAutoCtor));
+
+		}
+
+	}
+
 	// Function bodies to correct
 	std::vector<AA_AST_NODE*> funcBodyNodes;
 
@@ -722,10 +775,6 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterClass(AA_AST_NODE* pNode, AACl
 
 					// Add method to class definition
 					cc->methods.Add(sig);
-
-					if (pNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions[i]->expressions.size() >= 3) { // make sure it's declared
-						funcBodyNodes.push_back(pNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions[i]->expressions[AA_NODE_FUNNODE_BODY]);
-					}
 
 				} else {
 					return err;
@@ -761,20 +810,7 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterClass(AA_AST_NODE* pNode, AACl
 	}
 
 	// Correct incorrect references (eg. field access)
-	m_compilerPointer->GetClassCompilerInstance()->CorrectReferences(cc, funcBodyNodes);
-
-	// If it's a tagged class
-	if (aa::modifiers::ContainsFlag(cc->storageModifier, AAStorageModifier::TAGGED)) {
-
-		// Auto-generate some class methods
-		if (!m_compilerPointer->GetClassCompilerInstance()->AutoTaggedClass(cc)) {
-			err.errorMsg = "Failed to generate tagged class elements";
-			err.errorSource = pNode->position;
-			err.errorType = 0;
-			return err;
-		}
-
-	}
+	m_compilerPointer->GetClassCompilerInstance()->CorrectReferences(cc->fields.ToList().Map<std::wstring>([](AAClassFieldSignature& f) { return f.name; }), cc->methods);
 
 	// Calculate the class size in memory
 	cc->classByteSz = m_compilerPointer->GetClassCompilerInstance()->CalculateMemoryUse(cc);
@@ -796,6 +832,7 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterFunction(AA_AST_NODE* pNode, A
 	sig->name = pNode->content;
 	sig->returnType = this->GetTypeFromName(pNode->expressions[AA_NODE_FUNNODE_RETURNTYPE]->content, domain, senv);
 	sig->node = pNode;
+	sig->isCompilerGenerated = pNode->HasTag("__ctorgen");
 
 	// Did the function return the error type?
 	if (sig->returnType == AACType::ErrorType) {

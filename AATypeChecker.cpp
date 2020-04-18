@@ -66,7 +66,7 @@ AACType* AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 			break;
 		}
 	case AA_AST_NODE_TYPE::fieldaccess:
-		if (node->content == L".") {
+		if (node->content.compare(L".") == 0) {
 			return this->TypeCheckClassDotFieldAccessorOperation(node, node->expressions[0], node->expressions[1]);
 		} else {
 			break;
@@ -103,12 +103,29 @@ AACType* AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 
 	}		
 	case AA_AST_NODE_TYPE::classdecl:
+
 		// Make sure there's a valid class body (a body node and that node actually contains some content)
 		if (AA_NODE_CLASSNODE_BODY < node->expressions.size() && node->expressions[AA_NODE_CLASSNODE_BODY]->expressions.size() > 0) {
-			return this->TypeCheckNode(node->expressions[AA_NODE_CLASSNODE_BODY]);
+			
+			// Copy the variable type environment
+			AAVarTypeEnv vtenv = AAVarTypeEnv(m_vtenv);
+			
+			// Save a definition of 'this' to point to the typeof of the class currently edited
+			m_vtenv[L"this"] = FindType(node->content);
+			
+			// Typecheck body
+			AACType* bodyType = this->TypeCheckNode(node->expressions[AA_NODE_CLASSNODE_BODY]);
+			
+			// Restore variable environment
+			m_vtenv = vtenv;
+
+			// Return body type
+			return bodyType;
+
 		} else {
 			return AACType::Void; // Merely a declaration => No specific type to return
 		}
+
 	case AA_AST_NODE_TYPE::fundecl: 
 		return this->TypeCheckFuncDecl(node);
 	case AA_AST_NODE_TYPE::funcall:
@@ -245,12 +262,43 @@ AACType* AATypeChecker::TypeCheckBinaryOperation(AA_AST_NODE* pOpNode, AA_AST_NO
 		
 		}
 
+	} else if (left->type == AA_AST_NODE_TYPE::index) {
+
+		AACType* typeLeft = this->TypeCheckNode(left);
+		AACType* typeRight = this->TypeCheckNode(right);
+
+		// Is it a legal operation (We may have to do more checks here in the future...
+		if (IsMatchingTypes(typeRight, typeLeft->encapsulatedType)) {
+			return typeLeft;
+		} else {
+			AATC_W_ERROR(
+				"Type mismsatch on binary operation '" + string_cast(pOpNode->content) + "', left operand: '"
+				+ string_cast(typeLeft->GetFullname()) + "' and right operand: '" + string_cast(typeRight->GetFullname()) + "'",
+				pOpNode->position,
+				aa::compiler_err::C_Mismatching_Types
+			);
+		}
+
 	} else {
 
 		AACType* typeLeft = this->TypeCheckNode(left);
 		AACType* typeRight = this->TypeCheckNode(right);
 		
-		if (IsPrimitiveType(typeLeft) && IsPrimitiveType(typeRight)) {
+		if (pOpNode->content.compare(L"=") == 0) { // Assignment (Not overloadable)
+
+			// Is legal assignment?
+			if (IsMatchingTypes(typeRight, typeLeft)) {
+				return typeLeft;
+			} else {
+				AATC_W_ERROR(
+					"Type mismsatch on assignment operation, left operand '"
+					+ string_cast(typeLeft->GetFullname()) + "' cannot be assigned to right operand type: '" + string_cast(typeRight->GetFullname()) + "'",
+					pOpNode->position,
+					aa::compiler_err::C_Mismatching_Types
+				);
+			}
+
+		} else if (IsPrimitiveType(typeLeft) && IsPrimitiveType(typeRight)) {
 			pOpNode->tags["useCall"] = false;
 			AACType* resultType = this->TypeCheckBinaryOperationOnPrimitive(pOpNode, typeLeft, typeRight);
 			/*if (resultType == AACType::ErrorType) {
@@ -288,6 +336,9 @@ AACType* AATypeChecker::TypeCheckBinaryOperation(AA_AST_NODE* pOpNode, AA_AST_NO
 				// Return the type of whatever the operator will return
 				return ccop.method->returnType;
 
+			} else if (op.compare(L"==") == 0) {
+				printf("");
+				return AACTypeDef::Bool; // Comparrison operator => boolean result (not overloaded, thus we'll just compare pointers)
 			} else {
 				AATC_W_ERROR(
 					"Invalid operator '" + string_cast(op) + "' on left operand type '" + string_cast(typeLeft->GetFullname())
@@ -792,10 +843,10 @@ AACType* AATypeChecker::TypeCheckPatternMatchBlock(AA_AST_NODE* pMatchNode) {
 
 AACType* AATypeChecker::TypeCheckPatternMatchCase(AA_AST_NODE* pCaseNode, AACType* pConditionType) {
 
+	// Copy the current variable type environment (Incase the condition/body introduce new variables)
 	AAVarTypeEnv vtenv = AAVarTypeEnv(m_vtenv);
-	m_vtenv[L"_"] = pConditionType; // TODO: Make this work better with context (Actually, just check for this symbol and return Any when we see it, but dont explicitly declare it in the vtenv)
-
-	AACType* conditionType = this->TypeCheckPatternMatchCaseCondition(pCaseNode->expressions[0]);
+	
+	AACType* conditionType = this->TypeCheckPatternMatchCaseCondition(pCaseNode->expressions[0], pConditionType);
 	if (!IsMatchingTypes(conditionType, pConditionType)) {
 		AATC_ERROR(
 			"Detected 'case' condition type mismsatch '" + string_cast(conditionType->GetFullname()) + "' cannot be matched with condition of type '" + 
@@ -804,26 +855,85 @@ AACType* AATypeChecker::TypeCheckPatternMatchCase(AA_AST_NODE* pCaseNode, AACTyp
 		);
 	}
 
+	// Typecheck body
+	AACType* bodyType = this->TypeCheckNode(pCaseNode->expressions[1]);
+
+	// Reset variable type environment
 	m_vtenv = vtenv;
 
-	return this->TypeCheckNode(pCaseNode->expressions[1]);
+	// Return found body type
+	return bodyType;
 
 }
 
-AACType* AATypeChecker::TypeCheckPatternMatchCaseCondition(AA_AST_NODE* pConditionNode) {
+AACType* AATypeChecker::TypeCheckPatternMatchCaseCondition(AA_AST_NODE* pConditionNode, AACType* _conditionType) {
 
 	AACType* conditionType = AACType::ErrorType;
 	for (size_t i = 0; i < pConditionNode->expressions.size(); i++) {
-		AACType* foundType = this->TypeCheckNode(pConditionNode->expressions[i]);
-		if (foundType == AACType::ErrorType) {
-			// throw error
-			return foundType;
-		} else if (foundType != AACType::Void) { // Found may come from if-statements and such
-			conditionType = foundType;
-			if (foundType->isEnum && pConditionNode->expressions[i]->type == AA_AST_NODE_TYPE::variable) {
-				pConditionNode->expressions[i]->type = AA_AST_NODE_TYPE::enumidentifier;
-				pConditionNode->expressions[i]->tags["enumval"] = (int)foundType->enumSignature->GetValue(pConditionNode->expressions[i]->content);
+
+		// Is it a function call?
+		if (pConditionNode->expressions[i]->type == AA_AST_NODE_TYPE::funcall) {
+
+			// Get potential candidates
+			aa::set<AAFuncSignature*> candidates = m_currentnamespace->functions.FindAll(
+				[pConditionNode, i](AAFuncSignature*& sig) {
+					return sig->name.compare(pConditionNode->expressions[i]->content) == 0
+						&& sig->parameters.size() == pConditionNode->expressions[i]->expressions.size();
+				}
+			);
+
+			// Make sure there's only ONE candidate
+			if (candidates.Size() == 1) {
+
+				// We'll use the first
+				AAFuncSignature* first = candidates.Apply(0);
+
+				// For each argument in function call
+				for (size_t j = 0; j < pConditionNode->expressions[i]->expressions.size(); j++) {
+
+					if (pConditionNode->expressions[i]->expressions[j]->type == AA_AST_NODE_TYPE::variable) {
+						if (pConditionNode->expressions[i]->expressions[j]->content.compare(L"_") != 0) {
+							m_vtenv[pConditionNode->expressions[i]->expressions[j]->content] = first->parameters[j].type; // Add variable to type environment
+						}
+					} else {
+						AATC_ERROR(
+							"Cannot pattern match on non-variable in function call!",
+							pConditionNode->expressions[i]->expressions[j]->position
+						);
+					}
+
+				}
+
+				// The condition type is then of that type
+				return first->returnType;
+
+			} else {
+				AATC_ERROR(
+					"Found no function in pattern match case",
+					pConditionNode->expressions[i]->position
+				);
 			}
+
+		} else if (pConditionNode->expressions[i]->type == AA_AST_NODE_TYPE::variable) {
+
+			if (pConditionNode->expressions[i]->content.compare(L"_") == 0) { // The dummy
+				return _conditionType; // No new variables or anything special to consider (But also not an error)
+			} else {
+
+				AACType* foundType = this->TypeCheckNode(pConditionNode->expressions[i]);
+				if (foundType == AACType::ErrorType) {
+					// throw error
+					return foundType;
+				} else if (foundType != AACType::Void) { // Found may come from if-statements and such
+					conditionType = foundType;
+					if (foundType->isEnum && pConditionNode->expressions[i]->type == AA_AST_NODE_TYPE::variable) {
+						pConditionNode->expressions[i]->type = AA_AST_NODE_TYPE::enumidentifier;
+						pConditionNode->expressions[i]->tags["enumval"] = (int)foundType->enumSignature->GetValue(pConditionNode->expressions[i]->content);
+					}
+				}
+
+			}
+
 		}
 
 	}

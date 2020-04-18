@@ -41,6 +41,8 @@ void AAString_Concat(AAVM* pAAVm, aa::stack<AAVal> args, aa::stack<AAVal>& stack
 
 	if (argl.At(0).litVal.tp != AALiteralType::String || argl.At(1).litVal.tp != AALiteralType::String) {
 		
+		printf("");
+
 		// throw err
 		return;
 

@@ -86,7 +86,7 @@ private:
 
 	AAC_CompileErrorMessage PreregisterTypes(AA_AST_NODE* pNode, AACNamespace* domain, AAStaticEnvironment& senv);
 
-	AAC_CompileErrorMessage FetchStaticDeclerationsFromTrees(std::vector<AA_AST*> trees, AACNamespace* globalDomain, AAStaticEnvironment& senv);
+	AAC_CompileErrorMessage FetchStaticDeclerationsFromTrees(AACNamespace* globalDomain, AAStaticEnvironment& senv);
 	AAC_CompileErrorMessage FetchStaticDeclerationsFromASTNode(AA_AST_NODE* pNode, AACNamespace* domain, AAStaticEnvironment& senv);
 
 	AAC_CompileErrorMessage RegisterFunction(AA_AST_NODE* pNode, AAFuncSignature*& sig, AACNamespace* domain, AAStaticEnvironment& senv);
@@ -125,5 +125,8 @@ private:
 	AAC* m_compilerPointer;
 
 	AAStaticEnvironment m_lastStaticEnv;
+
+	std::vector<AA_AST*>* m_workTrees;
+	size_t m_currentTreeIndex;
 
 };

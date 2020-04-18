@@ -44,6 +44,8 @@ struct AAClassSignature {
 	
 	size_t classByteSz;
 	
+	AA_AST_NODE* pSourceNode; // Defining AST node (May be NULL, should only ever be used in compile phase)
+
 	AAAccessModifier accessModifier;
 	AAStorageModifier storageModifier;
 	AACNamespace* domain;
@@ -56,6 +58,7 @@ struct AAClassSignature {
 		this->storageModifier = AAStorageModifier::NONE;
 		this->domain = 0;
 		this->type = new AACType(this);
+		this->pSourceNode = 0;
 	}
 	
 	AAClassSignature(std::wstring name) {
@@ -65,6 +68,7 @@ struct AAClassSignature {
 		this->storageModifier = AAStorageModifier::NONE;
 		this->domain = 0;
 		this->type = new AACType(this);
+		this->pSourceNode = 0;
 	}
 
 	/// <summary>

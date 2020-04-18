@@ -153,6 +153,9 @@
     <ClCompile Include="AA_PT_Unflatten.cpp">
       <Filter>Source Files\parser</Filter>
     </ClCompile>
+    <ClCompile Include="AAAutoCodeGeneratorcpp.cpp">
+      <Filter>Source Files\compiler</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="list.h">
@@ -289,6 +292,9 @@
     </ClInclude>
     <ClInclude Include="AA_PT_Unflatten.h">
       <Filter>Header Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="AAAutoCodeGenerator.h">
+      <Filter>Header Files\compiler</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

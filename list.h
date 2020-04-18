@@ -13,6 +13,12 @@ namespace aa {
 
 	public:
 
+		list() {}
+
+		list(const std::vector<T>& v) {
+			m_vector = v;
+		}
+
 		/// <summary>
 		/// 
 		/// </summary>

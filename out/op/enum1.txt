@@ -7,7 +7,7 @@ OPERATIONS:
 END PROCEDURE;
 
 START PROCEDURE 1 (UniversityDepartment::GetString):
-CONSTANTS:	[I32, 0]	[UTF-8, "Computer Science"]	[I32, 4]	[UTF-8, "Political Science"]	[I32, 9]	[UTF-8, "Fine Arts"]	[B, T]
+CONSTANTS:	[I32, 0]	[UTF-8, "Computer Science"]	[I32, 4]	[UTF-8, "Political Science"]	[I32, 9]	[UTF-8, "Fine Arts"]
 IDENTIFIERS:
 	this;
 OPERATIONS:
@@ -25,7 +25,7 @@ OPERATIONS:
 	[11]	CMPE
 	[12]	JMPT, 8
 	[13]	GETVAR, 0
-	[14]	PUSHC, 6
+	[14]	GETVAR, -1
 	[15]	CMPE
 	[16]	JMPT, 6
 	[17]	PUSHC, 1

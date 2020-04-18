@@ -61,7 +61,9 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 	}
 	case AA_PT_NODE_TYPE::vardecleration: {
 		if (pNode->childNodes[0]->content == L"var") {
-			return new AA_AST_NODE(pNode->childNodes[1]->content, AA_AST_NODE_TYPE::vardecl, pNode->position);
+			AA_AST_NODE* varDeclVar = new AA_AST_NODE(pNode->childNodes[1]->content, AA_AST_NODE_TYPE::vardecl, pNode->position);
+			varDeclVar->tags = pNode->flags;
+			return varDeclVar;
 		} else { // When a specific type is specified
 			AA_AST_NODE* varDeclType = new AA_AST_NODE(pNode->childNodes[1]->content, AA_AST_NODE_TYPE::vardecl, pNode->position);
 			if (pNode->childNodes[0]->nodeType == AA_PT_NODE_TYPE::accessor) { // However, it could also be a member accessor (ie. we're trying to access a type in a namespace or a class subtype)
@@ -70,6 +72,7 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 			} else { // default is of course a type identifier
 				varDeclType->expressions.push_back(new AA_AST_NODE(pNode->childNodes[0]->content, AA_AST_NODE_TYPE::typeidentifier, pNode->position));
 			}
+			varDeclType->tags = pNode->flags;
 			return varDeclType;
 		}
 	}

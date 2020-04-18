@@ -37,7 +37,7 @@ enum class AAAccessModifier : unsigned char {
 /// <summary>
 /// The storage modifiers
 /// </summary>
-enum class AAStorageModifier : long long {
+enum class AAStorageModifier : int16_t {
 
 	/// <summary>
 	/// No modifier

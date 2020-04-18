@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <unordered_map>
 #include "AACodePosition.h"
 #include "AA_Node_Consts.h"
 
@@ -93,6 +94,7 @@ struct AA_PT_NODE {
 	std::wstring content;
 	std::vector< AA_PT_NODE*> childNodes;
 	AACodePosition position;
+	std::unordered_map<const char*, int> flags;
 	AA_PT_NODE(AACodePosition pos) {
 		this->nodeType = AA_PT_NODE_TYPE::undefined;
 		this->content = L"";
@@ -108,4 +110,5 @@ struct AA_PT_NODE {
 		this->content = content;
 		this->position = pos;
 	}
+	bool HasFlag(const char* flg) { return flags.find(flg) != flags.end(); }
 };

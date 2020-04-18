@@ -41,9 +41,12 @@ enum class AAByteCode : unsigned char {
 	GEQ, // (Compares numerics and returns true if x<=y, 0 arguments)
 	LEQ, // (Compares numerics and returns true if x>=y, 0 arguments)
 
-	LNEG, // (Logical Negation, 0 arguments)
-	LAND, // (Logical And, 0 arguments)
-	LOR, // (Logcal Or, 0 arguments)
+	LNEG, // (Logical Negation !, 0 arguments)
+	LAND, // (Logical And &&, 0 arguments)
+	LOR, // (Logcal Or ||, 0 arguments)
+
+	BAND, // (Bitwise And &, 0 arguments)
+	BOR, // (Bitwise Or |, 0 arguments)
 
 	HALLOC, // (Heap Allocate memory for new object, 1 argument[size in bytes])
 	SALLOC, // (Stack allocate memory for the new object, 1 argument[size in bytes])

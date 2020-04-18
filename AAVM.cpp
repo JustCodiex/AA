@@ -805,7 +805,7 @@ void AAVM::LoadStandardLibrary() {
 	// Create string class
 	AACClass stringClass;
 	stringClass.classMethods.push_back(AACSingleFunction(L"length", &AAString_Length, AACTypeDef::Int32, 0));
-	stringClass.classOperators.push_back(AACClassOperator(L"+", AACSingleFunction(L"concat", &AAString_Concat, AACType::ExportReferenceType, 1, AAFuncParam(AACType::ExportReferenceType, L"_x"))));
+	stringClass.classOperators.push_back(AACClassOperator(L"+", AACSingleFunction(L"concat", &AAString_Concat, AACType::ExportReferenceType, 1, AAFuncParam(AACType::Any, L"_x"))));
 
 	// Register string class and type
 	AAClassSignature* strCls = this->RegisterClass(L"string", stringClass);

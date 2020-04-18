@@ -110,6 +110,7 @@ std::vector<std::wstring> keywords = {
 	// Method modifiers
 	L"virtual",
 	L"override",
+	L"operator", // <-- Contextualise (Must be followed by an operator)
 
 	// Pre-processing
 	/*L"macro",

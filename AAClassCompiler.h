@@ -1,6 +1,6 @@
 #pragma once
 #include "AAClassSignature.h"
-#include "list.h"
+#include "AAAutoCodeGenerator.h"
 
 class AAClassCompiler {
 
@@ -11,20 +11,33 @@ public:
 	AAClassSignature* FindClassFromCtor(std::wstring ctorname, aa::list<AAClassSignature*> classes);
 	AAFuncSignature* FindBestCtor(AAClassSignature* pCC);
 
-	void CorrectReferences(AAClassSignature* cc, std::vector<AA_AST_NODE*> pFuncBodies);
+	/// <summary>
+	/// Correct local variable references, for example:
+	/// class C {
+	///		int field;
+	///		void test() {
+	///			field = 5; // This is translated to "this.field = 5;"
+	///		}
+	///	}
+	/// </summary>
+	/// <param name="fields">List of known fields</param>
+	/// <param name="pFuncSignatures">List of functions to correct</param>
+	void CorrectReferences(aa::list<std::wstring> fields, aa::set<AAFuncSignature*> pFuncSignatures);
 
 	size_t CalculateMemoryUse(AAClassSignature* cc);
 
 	bool AddInheritanceCall(AAClassSignature* cc, AA_AST_NODE* pCtorDeclNode);
 	bool AddInheritanceCallNode(AAFuncSignature* ctor, AA_AST_NODE* pCtorDeclNode);
 
-	bool AutoTaggedClass(AAClassSignature* taggedClassSignature);
+	bool AutoTaggedClass(AAClassSignature* taggedClassSignature, AA_AST_NODE*& pOutClassFuncCtor);
 
 	static bool HasField(AAClassSignature* cc, std::wstring fieldname, int& fieldID);
 
 private:
 
-	void CorrectFuncFieldReferences(AA_AST_NODE* pNode, AAClassSignature* cc);
+	std::vector<aa::compiler::generator::__name_type> GetTaggedFields(AA_AST_NODE* pClassSource);
+
+	void CorrectFuncFieldReferences(aa::list<std::wstring> fields, aa::list<std::wstring> args, AA_AST_NODE* pNode);
 
 	void UpdateIdentifierToThisFieldReference(AA_AST_NODE* pNode, int fieldId);
 

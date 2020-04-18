@@ -56,7 +56,7 @@ AACType::AACType(AACEnumSignature* enumSignature) {
 }
 
 std::wstring AACType::GetFullname() {
-	if (this->classSignature && this->classSignature->domain) {
+	if (this->classSignature && this->classSignature->domain && !this->classSignature->domain->IsGlobalSpace()) {
 		return this->classSignature->domain->GetNamePath() + L"::" + this->name;
 	} else {
 		return this->name;

@@ -119,7 +119,7 @@ aa::list<AAC::CompiledProcedure> AAC::CompileProcedureFromASTRootNode(AA_AST_NOD
 	if (tp == AA_AST_NODE_TYPE::classdecl) {
 
 		// Does the declaration contain a body to compile?
-		if (pAstRootNode->expressions.size() >= AA_NODE_CLASSNODE_BODY) {
+		if (AA_NODE_CLASSNODE_BODY < pAstRootNode->expressions.size()) {
 
 			// For all sub-elements of class decl
 			for (size_t i = 0; i < pAstRootNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions.size(); i++) {
@@ -806,6 +806,14 @@ AAByteCode AAC::GetBytecodeFromBinaryOperator(std::wstring ws, AA_AST_NODE_TYPE 
 		return AAByteCode::LEQ;
 	} else if (ws == L">=") {
 		return AAByteCode::GEQ;
+	} else if (ws.compare(L"&&") == 0) {
+		return AAByteCode::LAND;
+	} else if (ws.compare(L"&") == 0) {
+		return AAByteCode::BAND;
+	} else if (ws.compare(L"||") == 0) {
+		return AAByteCode::LOR;
+	} else if (ws.compare(L"|") == 0) {
+		return AAByteCode::BOR;
 	} else {
 		return AAByteCode::NOP;
 	}

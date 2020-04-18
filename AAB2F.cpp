@@ -213,7 +213,12 @@ namespace aa {
 					if (proc.procOperations.At(j).bc == AAByteCode::XCALL) {
 						o << L"\t\t;; Calls: " << pAAVM->GetBuiltinFuncByIndex(proc.procOperations.At(j).argValues[0]).name;
 					} else if (proc.procOperations.At(j).bc == AAByteCode::CALL) {
-						o << L"\t\t;; Calls: " << procedures.at(proc.procOperations.At(j).argValues[0]).node->content;
+						size_t target = proc.procOperations.At(j).argValues[0];
+						if (target < procedures.size()) {
+							o << L"\t\t;; Calls: " << procedures.at(target).node->content;
+						} else {
+							o << L"\t\t;; Calls: Uncompiled function [Uncaught compile error!]";
+						}
 					}
 					o << "\n";
 				}

@@ -687,10 +687,11 @@ AA_PT_NODE* AA_PT::CreateClassDecl(std::vector<AA_PT_NODE*>& nodes, size_t from)
 		AA_PT_NODE* classBody = this->CreateArgList(nodes[from + 2], AA_PT_NODE_TYPE::classbody, AA_PT_NODE_TYPE::vardecleration);
 
 		// Correct declerations
-		for (auto var : classBody->childNodes) {
+		for (auto& var : classBody->childNodes) {
 
 			AA_PT_NODE* nameNode = new AA_PT_NODE(AA_PT_NODE_TYPE::identifier, var->content.c_str(), var->position);
 			var->childNodes.push_back(nameNode);
+			var->flags["ctor_field"] = true;
 
 		}
 

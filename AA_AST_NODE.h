@@ -2,7 +2,7 @@
 #include "AACodePosition.h"
 #include <string>
 #include <vector>
-#include <map>
+#include <unordered_map>
 
 enum class AA_AST_NODE_TYPE {
 
@@ -90,7 +90,7 @@ struct AA_AST_NODE {
 	std::wstring content;
 	std::vector<AA_AST_NODE*> expressions;
 	AACodePosition position;
-	std::map<const char*, int> tags;
+	std::unordered_map<const char*, int> tags;
 	AA_AST_NODE(std::wstring content, AA_AST_NODE_TYPE type, AACodePosition pos) {
 		this->type = type;
 		this->content = content;

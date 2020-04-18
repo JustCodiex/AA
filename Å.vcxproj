@@ -151,6 +151,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AAAutoCodeGeneratorcpp.cpp" />
     <ClCompile Include="AAB2F.cpp" />
     <ClCompile Include="AAC.cpp" />
     <ClCompile Include="AACFunction.cpp" />
@@ -177,6 +178,7 @@
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AAAutoCodeGenerator.h" />
     <ClInclude Include="AAModifier.h" />
     <ClInclude Include="AAB2F.h" />
     <ClInclude Include="AAByteCode.h" />

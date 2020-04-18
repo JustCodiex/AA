@@ -66,7 +66,7 @@ private:
 
 	AACType* TypeCheckPatternMatchBlock(AA_AST_NODE* pMatchNode);
 	AACType* TypeCheckPatternMatchCase(AA_AST_NODE* pCaseNode, AACType* conditionType);
-	AACType* TypeCheckPatternMatchCaseCondition(AA_AST_NODE* pConditionNode);
+	AACType* TypeCheckPatternMatchCaseCondition(AA_AST_NODE* pConditionNode, AACType* conditionType);
 
 	AACType* TypeCheckCtorAndFindBestMatch(AACNamespace* pDomain, AA_AST_NODE* pCallNode);
 
