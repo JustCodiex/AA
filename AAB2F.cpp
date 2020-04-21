@@ -99,6 +99,9 @@ namespace aa {
 		case AAByteCode::PUSHV:
 			output = L"PUSHV";
 			break;
+		case AAByteCode::PUSHN:
+			output = L"PUSHN";
+			break;
 		case AAByteCode::RET:
 			output = L"RET";
 			break;
@@ -134,6 +137,12 @@ namespace aa {
 			break;
 		case AAByteCode::POP:
 			output = L"POP";
+			break;
+		case AAByteCode::BCKM:
+			output = L"BCKM";
+			break;
+		case AAByteCode::BDOP:
+			output = L"BDOP";
 			break;
 		default:
 			break;

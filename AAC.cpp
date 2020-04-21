@@ -689,9 +689,8 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompilePatternBlock(AA_AST_NODE* 
 	// For each case in match list
 	for (size_t i = 0; i < cases.size(); i++) {
 
-		aa::list<CompiledAbstractExpression> condition;
-		condition.Add(matchon);
-		condition.Add(this->CompileAST(cases[i]->expressions[0]->expressions[0], cTable, staticData)); // Will throw error later! (TODO: Implement a condition compiler)
+		// Compile the condition (We cannot compile it as usual)
+		aa::list<CompiledAbstractExpression> condition = this->CompilePatternCondition(matchon, cases[i]->expressions[0]->expressions[0], cTable, staticData);
 
 		CompiledAbstractExpression eq;
 		eq.bc = AAByteCode::CMPE;
@@ -751,6 +750,65 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompilePatternBlock(AA_AST_NODE* 
 	}
 
 	// Return the list of operations
+	return opList;
+
+}
+
+aa::list<AAC::CompiledAbstractExpression> AAC::CompilePatternCondition(aa::list<CompiledAbstractExpression> match, AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
+
+	// Operations list
+	aa::list<CompiledAbstractExpression> opList;
+
+	if (pNode->type == AA_AST_NODE_TYPE::funcall) {
+
+		opList.Add(match);
+		opList.Add(CompiledAbstractExpression(AAByteCode::BDOP, 0, NULL));
+
+		size_t stackpopulation = 0;
+
+		for (size_t i = 0; i < pNode->expressions.size(); i++) {
+			size_t j = pNode->expressions.size() - 1 - i;
+
+			if (pNode->expressions[j]->type == AA_AST_NODE_TYPE::variable) {
+				if (pNode->expressions[j]->content.compare(L"_") == 0) {
+					opList.Add(CompiledAbstractExpression(AAByteCode::PUSHN, 0, NULL));
+				} else {
+					cTable.identifiers.Add(pNode->expressions[j]->content); // TODO: Fix scoping.... this is bound to cause an error
+					opList.Add(this->HandleVarPush(cTable, pNode->expressions[j]));
+				}
+			} // else ...?
+
+		}
+
+		CompiledAbstractExpression bcheck;
+		bcheck.bc = AAByteCode::BCKM;
+		bcheck.argCount = 4;
+		bcheck.argValues[0] = pNode->tags["procID"];
+		bcheck.argValues[1] = pNode->tags["isVM"];
+		bcheck.argValues[2] = pNode->tags["params"];
+		bcheck.argValues[3] = (int)stackpopulation;
+
+		opList.Add(bcheck);
+
+	} else if (pNode->type == AA_AST_NODE_TYPE::variable || pNode->type == AA_AST_NODE_TYPE::enumidentifier) {
+
+		if (pNode->content.compare(L"_") == 0) {
+
+			AA_AnyLiteral lit; // TODO: Make AnyLiteral union have constructors for this...
+			lit.b = true;
+
+			opList.Add(this->HandleConstPush(cTable, AA_Literal(lit, AALiteralType::Boolean)));
+
+		} else {
+
+			opList.Add(match);
+			opList.Add(this->CompileAST(pNode, cTable, staticData));
+
+		}
+
+	}
+
+	// Return the opList
 	return opList;
 
 }

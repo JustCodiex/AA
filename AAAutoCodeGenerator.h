@@ -68,6 +68,8 @@ namespace aa {
 
 				AA_AST_NODE* IdentifierNode(std::wstring identifier);
 
+				AA_AST_NODE* FieldNode(std::wstring field);
+
 				AA_AST_NODE* StringLiteralNode(std::wstring lit);
 
 				AA_AST_NODE* BoolLiteralNode(bool b);

@@ -79,20 +79,20 @@ OPERATIONS:
 	[0]	SETVAR, 0
 	[1]	SETVAR, 1
 	[2]	GETVAR, 1
-	[3]	GETVAR, -1
+	[3]	GETFIELD, 0
 	[4]	GETVAR, 0
-	[5]	GETVAR, -1
+	[5]	GETFIELD, 0
 	[6]	CMPE
 	[7]	GETVAR, 1
-	[8]	GETVAR, -1
+	[8]	GETFIELD, 1
 	[9]	GETVAR, 0
-	[10]	GETVAR, -1
+	[10]	GETFIELD, 1
 	[11]	CMPE
 	[12]	LAND
 	[13]	GETVAR, 1
-	[14]	GETVAR, -1
+	[14]	GETFIELD, 2
 	[15]	GETVAR, 0
-	[16]	GETVAR, -1
+	[16]	GETFIELD, 2
 	[17]	CMPE
 	[18]	LAND
 	[19]	RET, 1
@@ -142,7 +142,7 @@ END PROCEDURE;
 START PROCEDURE 9 (main):
 CONSTANTS:	[I32, 10]	[I32, 5]	[I32, 2]	[I32, 0]
 IDENTIFIERS:
-	tree;	topValue;
+	tree;	topValue;	v;
 OPERATIONS:
 	[0]	PUSHC, 0
 	[1]	PUSHC, 1
@@ -156,18 +156,23 @@ OPERATIONS:
 	[9]	CALL, 8, 3		;; Calls: Node
 	[10]	SETVAR, 0
 	[11]	GETVAR, 0
-	[12]	CALL, -1, 0		;; Calls: Uncompiled function [Uncaught compile error!]
-	[13]	CMPE
-	[14]	JMPT, 4
-	[15]	GETVAR, 0
-	[16]	CALL, -1, 0		;; Calls: Uncompiled function [Uncaught compile error!]
-	[17]	CMPE
-	[18]	JMPT, 2
-	[19]	PUSHC, 3
-	[20]	JMP, 2
-	[21]	GETVAR, -1
-	[22]	JMP, 0
-	[23]	SETVAR, 1
-	[24]	RET, 1
+	[12]	BDOP
+	[13]	BCKM, 4, 0, 0, 0
+	[14]	CMPE
+	[15]	JMPT, 8
+	[16]	GETVAR, 0
+	[17]	BDOP
+	[18]	PUSHN
+	[19]	PUSHN
+	[20]	GETVAR, 2
+	[21]	BCKM, 8, 0, 3, 0
+	[22]	CMPE
+	[23]	JMPT, 2
+	[24]	PUSHC, 3
+	[25]	JMP, 2
+	[26]	GETVAR, 2
+	[27]	JMP, 0
+	[28]	SETVAR, 1
+	[29]	RET, 1
 END PROCEDURE;
 

@@ -464,7 +464,10 @@ AAVal AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 			AAVM_OPI++;
 			break;
 		case AAByteCode::NOP:
+			AAVM_OPI++;
+			break;
 		default:
+			AAVM_ThrowRuntimeErr("UnknownBytecodeError", "Used unknown bytecode operation @" + std::to_string(AAVM_OPI));
 			AAVM_OPI++;
 			break;
 		}

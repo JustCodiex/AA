@@ -70,6 +70,10 @@ namespace aa {
 					return new AA_AST_NODE(identifier, AA_AST_NODE_TYPE::variable, AACodePosition::Undetermined);
 				}
 
+				AA_AST_NODE* FieldNode(std::wstring field) {
+					return new AA_AST_NODE(field, AA_AST_NODE_TYPE::field, AACodePosition::Undetermined);
+				}
+
 				AA_AST_NODE* StringLiteralNode(std::wstring lit) {
 					return new AA_AST_NODE(lit, AA_AST_NODE_TYPE::stringliteral, AACodePosition::Undetermined);
 				}

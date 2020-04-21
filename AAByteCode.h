@@ -5,6 +5,7 @@ enum class AAByteCode : unsigned char {
 
 	NOP, // No operation, expects nothing, does nothing.
 	PUSHC, // (Push a constant onto stack from the constants table, 1 argument[const ID])
+	PUSHN, // (Push a null onto stack, 0 arguments)
 	PUSHV, // (Push a constant value onto stack, 2 arguments[literal type, value])
 	ADD, // (Addition, 0 arguments)
 	SUB, // (Subtraction, 0 arguments)
@@ -74,5 +75,8 @@ enum class AAByteCode : unsigned char {
  	CASTD2S, // f64 => i16
 	CASTD2F, // f64 => f32
  	CASTD2L, // f64 => i64
+
+	BCKM, // (Backwards pattern match - pushes boolean value on stack, 4 arguments[func, vm{0,1}, args, stacksz])
+	BDOP, // (Break Down Object & Push, 0 arguments)
 
 };

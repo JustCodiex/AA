@@ -219,6 +219,7 @@ bool AAClassCompiler::AutoTaggedClass(AAClassSignature* taggedClassSignature, AA
 
 	// The class constructor that eliminates 'new' usage
 	pOutClassFuncCtor = NewFunctionNode(taggedClassSignature->name, taggedClassSignature->name, true);
+	pOutClassFuncCtor->tags["isTaggedClassConstructor"] = true;
 	AddFunctionArguments(pOutClassFuncCtor, fields);
 	AA_AST_NODE* ctorCall = CtorCallNode(taggedClassSignature->name);
 	AA_AST_NODE* newStatement = NewNode(ctorCall);
@@ -234,11 +235,11 @@ bool AAClassCompiler::AutoTaggedClass(AAClassSignature* taggedClassSignature, AA
 	for (auto& field : fields) {
 
 		// Add the assignment node
-		AA_AST_NODE* fieldAssign = AssignmentNode(ThisAccessorNode(IdentifierNode(field.first)), IdentifierNode(field.first));
+		AA_AST_NODE* fieldAssign = AssignmentNode(ThisAccessorNode(FieldNode(field.first)), IdentifierNode(field.first));
 		AddFunctionBodyElement(classCtor, fieldAssign);
 
 		// String node
-		AA_AST_NODE* strAssign = (commaflg) ? BinaryOperationNode(L"+", StringLiteralNode(L", "), IdentifierNode(field.first)) : IdentifierNode(field.first);
+		AA_AST_NODE* strAssign = (commaflg) ? BinaryOperationNode(L"+", StringLiteralNode(L", "), ThisAccessorNode(FieldNode(field.first))) : ThisAccessorNode(FieldNode(field.first));
 		commaflg = true;
 
 		// Add field name in stringification
@@ -248,7 +249,7 @@ bool AAClassCompiler::AutoTaggedClass(AAClassSignature* taggedClassSignature, AA
 		AddCallArgument(ctorCall, IdentifierNode(field.first));
 
 		// Create equals node
-		AA_AST_NODE* eq = BinaryOperationNode(L"==", ThisAccessorNode(IdentifierNode(field.first)), AccessorNode(L".", IdentifierNode(L"_other"), IdentifierNode(field.first)));
+		AA_AST_NODE* eq = BinaryOperationNode(L"==", ThisAccessorNode(FieldNode(field.first)), AccessorNode(L".", IdentifierNode(L"_other"), FieldNode(field.first)));
 		equalsNode.push_back(eq);
 
 	}

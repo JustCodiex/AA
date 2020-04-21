@@ -904,6 +904,10 @@ AACType* AATypeChecker::TypeCheckPatternMatchCaseCondition(AA_AST_NODE* pConditi
 
 				}
 
+				pConditionNode->expressions[i]->tags["params"] = first->parameters.size();
+				pConditionNode->expressions[i]->tags["isVM"] = first->isVMFunc;
+				pConditionNode->expressions[i]->tags["procID"] = first->procID;
+
 				// The condition type is then of that type
 				return first->returnType;
 
