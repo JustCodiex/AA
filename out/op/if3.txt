@@ -1,17 +1,17 @@
 START PROCEDURE 0 (<GlobalScope>):
-CONSTANTS:	[I32, 6]	[I32, 5]	[I32, 25]	[I32, 4]	[I32, 27]	[I32, 30]
+CONSTANTS:	[I32, 6][I32, 5][I32, 25][I32, 4][I32, 27][I32, 30]
 IDENTIFIERS:
 
 OPERATIONS:
 	[0]	PUSHC, 0
 	[1]	PUSHC, 1
-	[2]	LE
+	[2]	LE, 6
 	[3]	JMPF, 2
 	[4]	PUSHC, 2
 	[5]	JMP, 7
 	[6]	PUSHC, 3
 	[7]	PUSHC, 1
-	[8]	LE
+	[8]	LE, 6
 	[9]	JMPF, 2
 	[10]	PUSHC, 4
 	[11]	JMP, 1

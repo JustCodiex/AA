@@ -6,7 +6,9 @@
 #include "AAProgram.h"
 #include "AARuntimeEnvironment.h"
 #include "AACClass.h"
+#include "AAStackValue.h"
 #include "stack.h"
+#include "any_stack.h"
 #include <iostream>
 #include <ctime>
 
@@ -51,20 +53,24 @@ public:
 	*/
 	AAC_Out CompileFileToFile(std::wstring fileIn, std::wstring fileOut);
 
-	AAVal Execute(AAC_Out bytecode);
-	AAVal Execute(unsigned char* bytes, unsigned long long len);
+	AAStackValue Execute(AAC_Out bytecode);
+	AAStackValue Execute(unsigned char* bytes, unsigned long long len);
 
-	AAVal CompileAndRunFile(std::wstring sourcefile);
-	AAVal CompileAndRunFile(std::wstring sourcefile, std::wstring binaryoutputfile, std::wstring formattedoutputfile);
+	AAStackValue CompileAndRunFile(std::wstring sourcefile);
+	AAStackValue CompileAndRunFile(std::wstring sourcefile, std::wstring binaryoutputfile, std::wstring formattedoutputfile);
 
-	AAVal CompileAndRunExpression(std::wstring input);
-	AAVal CompileAndRunExpression(std::wstring input, std::wstring binaryoutputfile, std::wstring formattedoutputfile);
+	AAStackValue CompileAndRunExpression(std::wstring input);
+	AAStackValue CompileAndRunExpression(std::wstring input, std::wstring binaryoutputfile, std::wstring formattedoutputfile);
 
 	AAP* GetParser() { return m_parser; }
 	AAC* GetCompiler() { return m_compiler; }
 
 	void SetOutput(std::ostream* stream) {
 		m_outStream = stream;
+	}
+
+	std::ostream* GetOutput() {
+		return m_outStream;
 	}
 
 	void EnableCompilerLog(bool enable) { m_logCompileMessages = enable; }
@@ -99,15 +105,17 @@ public:
 
 private:
 
-	AAVal CompileAndRun(AAP_ParseResult input, std::wstring binaryoutputfile, std::wstring formattedoutputfile);
+	AAStackValue CompileAndRun(AAP_ParseResult input, std::wstring binaryoutputfile, std::wstring formattedoutputfile);
 
-	AAVal Run(AAProgram::Procedure* procedures, int entry);
+	AAStackValue Run(AAProgram::Procedure* procedures, int entry);
 
-	AAVal Run(AAProgram* pProg);
+	AAStackValue Run(AAProgram* pProg);
 
-	AAVal ReportStack(aa::stack<AAVal> stack);
+	//AAStackValue ReportStack(aa::stack<AAStackValue> stack);
+	AAStackValue ReportStack(any_stack& stack);
 
-	inline AAVal BinaryOperation(AAByteCode op, AA_Literal left, AA_Literal right);
+	inline aa::list<AAStackValue> BreakdownObject(AAStackValue top);
+	inline AAStackValue BackwardsPatternmatch(int op, int vm, int args, int get, const any_stack& stack);
 
 	void WriteCompilerError(AAC_CompileErrorMessage errMsg);
 	void WriteSyntaxError(AAP_SyntaxErrorMessage errMsg);

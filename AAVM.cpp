@@ -5,6 +5,7 @@
 #include "AAConsole.h"
 #include "AAstdiolib.h"
 #include "AAMemoryStore.h"
+#include "AAExecute.h"
 
 AAVM* AAVM::CreateNewVM(bool logExecuteTime, bool logCompiler, bool logTopStack) {
 	AAVM* vm = new AAVM();
@@ -52,11 +53,11 @@ void AAVM::Release() {
 
 }
 
-AAVal AAVM::CompileAndRunExpression(std::wstring input) {
+AAStackValue AAVM::CompileAndRunExpression(std::wstring input) {
 	return this->CompileAndRunExpression(input, L"", L"");
 }
 
-AAVal AAVM::CompileAndRunExpression(std::wstring input, std::wstring binaryoutputfile, std::wstring formattedoutputfile) {
+AAStackValue AAVM::CompileAndRunExpression(std::wstring input, std::wstring binaryoutputfile, std::wstring formattedoutputfile) {
 
 	// Start compile clock
 	m_startCompile = clock();
@@ -69,7 +70,7 @@ AAVal AAVM::CompileAndRunExpression(std::wstring input, std::wstring binaryoutpu
 
 }
 
-AAVal AAVM::CompileAndRunFile(std::wstring sourcefile, std::wstring binaryoutputfile, std::wstring formattedoutputfile) {
+AAStackValue AAVM::CompileAndRunFile(std::wstring sourcefile, std::wstring binaryoutputfile, std::wstring formattedoutputfile) {
 	
 	// Start compile clock
 	m_startCompile = clock();
@@ -113,11 +114,11 @@ void AAVM::RunExpression(std::wstring input) {
 
 }
 
-AAVal AAVM::CompileAndRunFile(std::wstring sourcefile) {
+AAStackValue AAVM::CompileAndRunFile(std::wstring sourcefile) {
 	return this->CompileAndRunFile(sourcefile, L"", L"");
 }
 
-AAVal AAVM::CompileAndRun(AAP_ParseResult result, std::wstring binaryoutputfile, std::wstring formattedoutputfile) {
+AAStackValue AAVM::CompileAndRun(AAP_ParseResult result, std::wstring binaryoutputfile, std::wstring formattedoutputfile) {
 
 	// The the parser succeed?
 	if (result.success) {
@@ -156,8 +157,8 @@ AAVal AAVM::CompileAndRun(AAP_ParseResult result, std::wstring binaryoutputfile,
 			// Write compiler error
 			this->WriteCompilerError(compileResult.firstMsg);
 
-			// Return null
-			return AAVal::Null;
+			// Return nothing
+			return AAStackValue::None;
 
 		}
 
@@ -166,18 +167,18 @@ AAVal AAVM::CompileAndRun(AAP_ParseResult result, std::wstring binaryoutputfile,
 		// Write syntax error
 		this->WriteSyntaxError(result.firstMsg);
 
-		// Return null
-		return AAVal::Null;
+		// Return nothing
+		return AAStackValue::None;
 
 	}
 
 }
 
-AAVal AAVM::Execute(AAC_Out bytecode) {
+AAStackValue AAVM::Execute(AAC_Out bytecode) {
 	return this->Execute(bytecode.bytes, bytecode.length);
 }
 
-AAVal AAVM::Execute(unsigned char* bytes, unsigned long long len) {
+AAStackValue AAVM::Execute(unsigned char* bytes, unsigned long long len) {
 
 	// Load program so we can execute it
 	AAProgram* pProg = new AAProgram;
@@ -189,13 +190,13 @@ AAVal AAVM::Execute(unsigned char* bytes, unsigned long long len) {
 	} else {
 
 		// Return AAVal Error
-		return AAVal(L"");
+		return AAStackValue::None;
 
 	}
 
 }
 
-AAVal AAVM::Run(AAProgram* pProg) {
+AAStackValue AAVM::Run(AAProgram* pProg) {
 
 	// Clear last runtime flag
 	m_hasRuntimeError = false;
@@ -207,7 +208,7 @@ AAVal AAVM::Run(AAProgram* pProg) {
 	clock_t s = clock();
 
 	// Run the program from entry point
-	AAVal v = this->Run(pProg->m_procedures, entryPoint);
+	AAStackValue v = this->Run(pProg->m_procedures, entryPoint);
 
 	// Should we log execution?
 	if (m_logExecTime) {
@@ -228,11 +229,11 @@ AAVal AAVM::Run(AAProgram* pProg) {
 #define AAVM_CURRENTOP procedure[AAVM_PROC].opSequence[AAVM_OPI].op
 #define AAVM_GetArgument(i) procedure[AAVM_PROC].opSequence[AAVM_OPI].args[i]
 
-#define AAVM_ThrowRuntimeErr(exc, msg) this->WriteRuntimeError(AAVM_RuntimeError(exc, (msg).c_str(), execp, callstack)); return AAVal::Null;
+#define AAVM_ThrowRuntimeErr(exc, msg) this->WriteRuntimeError(AAVM_RuntimeError(exc, (msg).c_str(), execp, callstack)); return AAStackValue::None;
 
-AAVal AAVM::Run(AAProgram::Procedure* procedure, int entry) {
+AAStackValue AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 
-	aa::stack<AAVal> stack;
+	any_stack stack = any_stack(1024); // Stack with 1 Kb storage --> Will have to be modular
 	aa::stack<AARuntimeEnvironment> callstack;
 
 	// Represents the VM's heap memory (We allocate this on the heap as well). We do this every time a program is executed
@@ -246,47 +247,111 @@ AAVal AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 	while (AAVM_OPI < procedure[AAVM_PROC].opCount) {
 		switch (AAVM_CURRENTOP) {
 		case AAByteCode::ADD:
-		case AAByteCode::CMPE:
-		case AAByteCode::CMPNE:
 		case AAByteCode::DIV:
-		case AAByteCode::GE:
-		case AAByteCode::GEQ:
-		case AAByteCode::LE:
-		case AAByteCode::LEQ:
-		case AAByteCode::MOD:
 		case AAByteCode::MUL:
 		case AAByteCode::SUB:
 		{
-			AA_Literal rhs = stack.Pop().litVal;
-			AA_Literal lhs = stack.Pop().litVal;
-			stack.Push(BinaryOperation(AAVM_CURRENTOP, lhs, rhs));
+			AAPrimitiveType pt = (AAPrimitiveType)AAVM_GetArgument(0);
+			if (pt == AAPrimitiveType::int16) {
+				stack.Push<int16_t>(aa::vm::Arithmetic_BinaryOperation(AAVM_CURRENTOP, stack.Pop<int16_t>(), stack.Pop<int16_t>()));
+			} else if (pt == AAPrimitiveType::int32) {
+				stack.Push<int32_t>(aa::vm::Arithmetic_BinaryOperation(AAVM_CURRENTOP, stack.Pop<int32_t>(), stack.Pop<int32_t>()));
+			} else if (pt == AAPrimitiveType::int64) {
+				stack.Push<int64_t>(aa::vm::Arithmetic_BinaryOperation(AAVM_CURRENTOP, stack.Pop<int64_t>(), stack.Pop<int64_t>()));
+			} else if (pt == AAPrimitiveType::real32) {
+				stack.Push<float_t>(aa::vm::Arithmetic_BinaryOperation(AAVM_CURRENTOP, stack.Pop<float_t>(), stack.Pop<float_t>()));
+			} else if (pt == AAPrimitiveType::real64) {
+				stack.Push<double_t>(aa::vm::Arithmetic_BinaryOperation(AAVM_CURRENTOP, stack.Pop<double_t>(), stack.Pop<double_t>()));
+			}
 			AAVM_OPI++;
 			break;
 		}
-		case AAByteCode::PUSHC: {
-			int p = AAVM_GetArgument(0);
-			stack.Push(procedure[AAVM_PROC].constTable[p]);
+		case AAByteCode::MOD: { // can't compile if we let double and floats be executed with this
+			AAPrimitiveType pt = (AAPrimitiveType)AAVM_GetArgument(0);
+			if (pt == AAPrimitiveType::int16) {
+				stack.Push<int16_t>(aa::vm::Mod_BinaryOperation(stack.Pop<int16_t>(), stack.Pop<int16_t>()));
+			} else if (pt == AAPrimitiveType::int32) {
+				stack.Push<int32_t>(aa::vm::Mod_BinaryOperation(stack.Pop<int32_t>(), stack.Pop<int32_t>()));
+			} else if (pt == AAPrimitiveType::int64) {
+				stack.Push<int64_t>(aa::vm::Mod_BinaryOperation(stack.Pop<int64_t>(), stack.Pop<int64_t>()));
+			}
+			AAVM_OPI++;
+			break;
+		}
+		case AAByteCode::CONCAT: {
+			std::wstring rhs = m_heapMemory->String(stack.Pop<AAMemoryPtr>())->ToString();
+			std::wstring lhs = m_heapMemory->String(stack.Pop<AAMemoryPtr>())->ToString();
+			stack.Push(m_heapMemory->AllocString(lhs + rhs));
+			AAVM_OPI++;
+			break;
+		}
+		case AAByteCode::CMPE:
+		case AAByteCode::CMPNE:
+		case AAByteCode::GE:
+		case AAByteCode::GEQ:
+		case AAByteCode::LE:
+		case AAByteCode::LEQ: {
+			AAPrimitiveType pt = (AAPrimitiveType)AAVM_GetArgument(0);
+			if (pt == AAPrimitiveType::int16) {
+				stack.Push<bool>(aa::vm::Logic_BinaryOperation(AAVM_CURRENTOP, stack.Pop<int16_t>(), stack.Pop<int16_t>()));
+			} else if (pt == AAPrimitiveType::int32) {
+				stack.Push<bool>(aa::vm::Logic_BinaryOperation(AAVM_CURRENTOP, stack.Pop<int32_t>(), stack.Pop<int32_t>()));
+			} else if (pt == AAPrimitiveType::int64) {
+				stack.Push<bool>(aa::vm::Logic_BinaryOperation(AAVM_CURRENTOP, stack.Pop<int64_t>(), stack.Pop<int64_t>()));
+			} else if (pt == AAPrimitiveType::real32) {
+				stack.Push<bool>(aa::vm::Logic_BinaryOperation(AAVM_CURRENTOP, stack.Pop<float_t>(), stack.Pop<float_t>()));
+			} else if (pt == AAPrimitiveType::real64) {
+				stack.Push<bool>(aa::vm::Logic_BinaryOperation(AAVM_CURRENTOP, stack.Pop<double_t>(), stack.Pop<double_t>()));
+			}
 			AAVM_OPI++;
 			break;
 		}
 		case AAByteCode::NNEG: {
-			stack.Push(-stack.Pop().litVal);
+			AAPrimitiveType pt = (AAPrimitiveType)AAVM_GetArgument(0);
+			if (pt == AAPrimitiveType::int16) {
+				stack.Push<int16_t>(aa::vm::Arithmetic_UnaryOperation(AAVM_CURRENTOP, stack.Pop<int16_t>()));
+			} else if (pt == AAPrimitiveType::int32) {
+				stack.Push<int32_t>(aa::vm::Arithmetic_UnaryOperation(AAVM_CURRENTOP, stack.Pop<int32_t>()));
+			} else if (pt == AAPrimitiveType::int64) {
+				stack.Push<int64_t>(aa::vm::Arithmetic_UnaryOperation(AAVM_CURRENTOP, stack.Pop<int64_t>()));
+			} else if (pt == AAPrimitiveType::real32) {
+				stack.Push<float_t>(aa::vm::Arithmetic_UnaryOperation(AAVM_CURRENTOP, stack.Pop<float_t>()));
+			} else if (pt == AAPrimitiveType::real64) {
+				stack.Push<double_t>(aa::vm::Arithmetic_UnaryOperation(AAVM_CURRENTOP, stack.Pop<double_t>()));
+			}
 			AAVM_OPI++;
 			break;
 		}
 		case AAByteCode::LNEG: {
-			stack.Push(!stack.Pop().litVal);
+			stack.Push(!stack.Pop<bool>()); // Logical negation => Can only be done on bools
+			AAVM_OPI++;
+			break;
+		}
+		case AAByteCode::PUSHC: {
+			aa::vm::PushConstant(procedure[AAVM_PROC].constTable[AAVM_GetArgument(0)], stack);
+			AAVM_OPI++;
+			break;
+		}
+		case AAByteCode::PUSHN: {
+			aa::vm::PushSomething(AAStackValue::Null, stack);
+			AAVM_OPI++;
+			break;
+		}
+		case AAByteCode::PUSHWS: {
+			AA_Literal sLit = procedure[AAVM_PROC].constTable[AAVM_GetArgument(0)];
+			std::wstring wcs = sLit.lit.s.val;
+			aa::vm::PushSomething(AAStackValue(m_heapMemory->AllocString(wcs)), stack);
 			AAVM_OPI++;
 			break;
 		}
 		case AAByteCode::GETVAR: {
-			stack.Push(AAVM_VENV->GetVariable(AAVM_GetArgument(0)));
+			AAStackValue val = AAVM_VENV->GetVariable(AAVM_GetArgument(0));
+			aa::vm::PushSomething(val, stack);
 			AAVM_OPI++;
 			break;
 		}
 		case AAByteCode::SETVAR: {
-			AAVal rhs = stack.Pop();
-			AAVM_VENV->SetVariable(AAVM_GetArgument(0), rhs);
+			AAVM_VENV->SetVariable(AAVM_GetArgument(0), aa::vm::PopSomething((AAPrimitiveType)AAVM_GetArgument(1), stack));
 			AAVM_OPI++;
 			break;
 		}
@@ -299,21 +364,12 @@ AAVal AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 				AAVM_ThrowRuntimeErr("FatalCompileError", "Call index " + std::to_string(callProc) + " is out of range!");
 			}
 
-			aa::stack<AAVal> args;
-			for (int i = 0; i < argCount; i++) {
-				args.Push(stack.Pop());
-			}
-
 			AAVM_OPI++;
 			callstack.Push(execp);
 
 			AAVM_VENV = procedure[callProc].venv->CloneSelf();
 			AAVM_PROC = callProc;
 			AAVM_OPI = 0;
-
-			while (args.Size() > 0) {
-				stack.Push(args.Pop());
-			}
 
 			break;
 		}
@@ -323,14 +379,8 @@ AAVal AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 			int callProc = AAVM_GetArgument(0);
 			int argCount = AAVM_GetArgument(1);
 			
-			// Collect arguments
-			aa::stack<AAVal> args;
-			for (int i = 0; i < argCount; i++) {
-				args.Push(stack.Pop());
-			}
-
 			// Call the native function (The native function is also responsible for handling the return
-			this->m_cppfunctions.Apply(callProc).fPtr(this, args, stack);
+			this->m_cppfunctions.Apply(callProc).fPtr(this, stack);
 
 			// Did the call cause a runtime error?
 			if (this->m_hasRuntimeError) {
@@ -345,7 +395,7 @@ AAVal AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 				this->WriteRuntimeError(m_lastRuntimeError); 
 				
 				// Stop execution
-				return AAVal::Null;
+				return AAStackValue::None;
 
 			}
 
@@ -355,11 +405,6 @@ AAVal AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 			break;
 		}
 		case AAByteCode::RET: {
-			int retCount = AAVM_GetArgument(0);
-			aa::stack<AAVal> returnValues;
-			for (int i = 0; i < retCount; i++) {
-				returnValues.Push(stack.Pop());
-			}
 
 			if (callstack.Size() > 0) {
 				delete execp.venv;
@@ -368,14 +413,10 @@ AAVal AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 				AAVM_ThrowRuntimeErr("CallstackCorrupted", std::string("The callstack was unexpectedly corrupted"));
 			}
 
-			for (int i = 0; i < retCount; i++) {
-				stack.Push(returnValues.Pop());
-			}
-
 			break;
 		}
 		case AAByteCode::JMPF: {
-			if (stack.Pop().litVal.lit.b.val) {
+			if (stack.Pop<bool>()) {
 				AAVM_OPI++;
 			} else {
 				AAVM_OPI += 1 + AAVM_GetArgument(0); // jump to next (if-else or else) or next statement after block
@@ -383,7 +424,7 @@ AAVal AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 			break;
 		}
 		case AAByteCode::JMPT: {
-			if (!stack.Pop().litVal.lit.b.val) {
+			if (!stack.Pop<bool>()) {
 				AAVM_OPI++;
 			} else {
 				AAVM_OPI += 1 + AAVM_GetArgument(0); // jump to next (if-else or else) or next statement after block
@@ -394,73 +435,96 @@ AAVal AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 			AAVM_OPI += 1 + AAVM_GetArgument(0);
 			break;
 		}
-		case AAByteCode::HALLOC: {
+		case AAByteCode::ALLOC: {
 			int allocsz = AAVM_GetArgument(0);
-			AAVal allocobj = AAVal(m_heapMemory->Alloc(allocsz));
+			AAStackValue allocobj = AAStackValue(m_heapMemory->Alloc(allocsz));
 			stack.Push(allocobj);
 			AAVM_OPI++;
 			break;
 		}
+		case AAByteCode::ALLOCARRAY: {
+			AAPrimitiveType t = (AAPrimitiveType)AAVM_GetArgument(0);
+			int dCount = AAVM_GetArgument(1);
+			int* dLengths = new int[dCount];
+			for (int i = 2; i < 8; i++) { // Note here <-- we may only have 6 dimensions
+				int dimSize = (int)AAVM_GetArgument(i);
+				if (i - 2 < dCount) {
+					dLengths[i - 2] = dimSize;
+				}
+			}
+			AAMemoryPtr ptr = m_heapMemory->AllocArray(t, dCount, dLengths);
+			stack.Push(ptr);
+			AAVM_OPI++;
+			break;
+		}
 		case AAByteCode::GETFIELD: {
-			AAVal oPtr = stack.Pop();
-			AAObject* o = m_heapMemory->operator[](oPtr.ptr);
+			AAMemoryPtr oPtr = stack.Pop< AAMemoryPtr>();
+			AAObject* o = m_heapMemory->Object(oPtr);
 			if (o) {
-				stack.Push(o->values[AAVM_GetArgument(0)]);
+				aa::vm::PushSomething(aa::GetValue(o, (AAPrimitiveType)AAVM_GetArgument(1), AAVM_GetArgument(0)), stack);
 			} else {
-				AAVM_ThrowRuntimeErr("NullPointerException", "Null value at address '" + std::to_string(oPtr.ptr.val) + "'");
+				AAVM_ThrowRuntimeErr("NullPointerException", "Null value at address '" + oPtr.get_memory_address_str() + "'");
 			}
 			AAVM_OPI++;
 			break;
 		}
 		case AAByteCode::SETFIELD: {
-			AAVal rhs = stack.Pop();
-			AAVal oPtr = stack.Pop();
-			AAObject* o = m_heapMemory->operator[](oPtr.ptr);
+			AAStackValue rhs = aa::vm::PopSomething((AAPrimitiveType)AAVM_GetArgument(1), stack);
+			AAMemoryPtr oPtr = stack.Pop< AAMemoryPtr>();
+			AAObject* o = m_heapMemory->Object(oPtr);
 			if (o) {
-				o->values[AAVM_GetArgument(0)] = rhs;
+				aa::SetValue(o, AAVM_GetArgument(0), rhs);
 			} else {
-				AAVM_ThrowRuntimeErr("NullPointerException", "Null value at address '" + std::to_string(oPtr.ptr.val) + "'");
+				AAVM_ThrowRuntimeErr("NullPointerException", "Null value at address '" + oPtr.get_memory_address_str() + "'");
 			}
 			AAVM_OPI++;
 			break;
 		}
 		case AAByteCode::GETELEM: {
-			int i = stack.Pop().litVal.lit.i.val; // index
-			AAVal arrayPtr = stack.Pop(); // Ptr to array
-			AAObject* arrObj = m_heapMemory->operator[](arrayPtr.ptr); // Actual array object
+			int32_t i = stack.Pop<int32_t>(); // index
+			AAMemoryPtr arrayPtr = stack.Pop< AAMemoryPtr>(); // Ptr to array
+			AAArray* arrObj = m_heapMemory->Array(arrayPtr); // Actual array object
 			if (arrObj) {
-				if (i >= 0 && i < arrObj->valCount) {
-					stack.Push(arrObj->values[i]);
+				if (i >= 0 && i < (int32_t)arrObj->get_length()) {
+					stack.Push(arrObj->get_value(i, AAVM_GetArgument(0)));
 				} else {
 					AAVM_ThrowRuntimeErr("IndexOutOfRange", "Index " + std::to_string(i) + " is out of range!");
 				}
 			} else {
-				AAVM_ThrowRuntimeErr("NullPointerException", "Null value at address '" + std::to_string(arrayPtr.ptr.val) + "'");
+				AAVM_ThrowRuntimeErr("NullPointerException", "Null value at address '" + arrayPtr.get_memory_address_str() + "'");
 			}
 			AAVM_OPI++;
 			break;
 		}
 		case AAByteCode::SETELEM: {
-			AAVal v = stack.Pop(); // Value to set (RHS)
-			int i = stack.Pop().litVal.lit.i.val; // index
-			AAVal arrayPtr = stack.Pop(); // Ptr to array
-			AAObject* arrObj = m_heapMemory->operator[](arrayPtr.ptr); // Actual array object
+			int32_t i = stack.Pop<int32_t>(); // index
+			AAMemoryPtr arrayPtr = stack.Pop<AAMemoryPtr>(); // Ptr to array
+			AAArray* arrObj = m_heapMemory->Array(arrayPtr); // Actual array object
 			if (arrObj) {
-				if (i >= 0 && i < arrObj->valCount) {
-					arrObj->values[i] = v;
+				if (i >= 0 && i < (int32_t)arrObj->get_length()) {
+					AAStackValue val = aa::vm::PopSomething(arrObj->get_type(), stack); // REMEMBER THE ORDER WAS CHANGED!!!!!!!!
+					arrObj->set_value(i, AAVM_GetArgument(0), val);
 				} else {
 					AAVM_ThrowRuntimeErr("IndexOutOfRange", "Index " + std::to_string(i) + " is out of range!");
 				}
 			} else {
-				AAVM_ThrowRuntimeErr("NullPointerException", "Null value at address '" + std::to_string(arrayPtr.ptr.val) + "'");
+				AAVM_ThrowRuntimeErr("NullPointerException", "Null value at address '" + arrayPtr.get_memory_address_str() + "'");
 			}
 			AAVM_OPI++;
 			break;
 		}
+		case AAByteCode::BDOP: {
+			aa::list<AAStackValue> v = this->BreakdownObject(stack.Pop<AAMemoryPtr>());
+			v.ForEach([&stack](AAStackValue& val) { stack.Push(val); });
+			AAVM_OPI++;
+			break;
+		}
+		case AAByteCode::BCKM:
+			stack.Push(this->BackwardsPatternmatch(AAVM_GetArgument(0), AAVM_GetArgument(1), AAVM_GetArgument(2), AAVM_GetArgument(3), stack));
+			AAVM_OPI++;
+			break;
 		case AAByteCode::POP:
-			if (stack.Size() > 0) {
-				stack.Pop();
-			}
+			stack.Pop(AAVM_GetArgument(0));
 			AAVM_OPI++;
 			break;
 		case AAByteCode::NOP:
@@ -474,61 +538,66 @@ AAVal AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 
 	}
 
+	// Report the stack
+	AAStackValue val = this->ReportStack(stack);
+
 	// Release all allocated memory (No longer used)
 	m_heapMemory->Release();
 
 	// Return whatever's on top of the stack
-	return this->ReportStack(stack);
+	return val;
 
 }
 
-AAVal AAVM::BinaryOperation(AAByteCode op, AA_Literal lhs, AA_Literal rhs) {
-	switch (op) {
-	case AAByteCode::ADD: {
-		return lhs + rhs;
+aa::list<AAStackValue> AAVM::BreakdownObject(AAStackValue top) {
+
+	aa::list<AAStackValue> ls;
+	AAMemoryPtr ptr = top.to_cpp<AAMemoryPtr>();
+
+	if (ptr > 0) {
+
+		AAObject* pObject = m_heapMemory->Object(ptr);
+
+		printf("");
+
+	} else {
+
+		printf("Something very fatal!");
+
 	}
-	case AAByteCode::SUB: {
-		return lhs - rhs;
-	}
-	case AAByteCode::MUL: {
-		return lhs * rhs;
-	}
-	case AAByteCode::DIV: {
-		return lhs / rhs;
-	}
-	case AAByteCode::MOD: {
-		return lhs % rhs;
-	}
-	case AAByteCode::CMPE: {
-		return AAVal(lhs == rhs);
-	}
-	case AAByteCode::CMPNE: {
-		return AAVal(lhs != rhs);
-	}
-	case AAByteCode::LE: {
-		return AAVal(lhs < rhs);
-	}
-	case AAByteCode::LEQ: {
-		return AAVal(lhs <= rhs);
-	}
-	case AAByteCode::GE: {
-		return AAVal(lhs > rhs);
-	}
-	case AAByteCode::GEQ: {
-		return AAVal(lhs >= rhs);
-	}
-	default:
-		return AAVal(0);
-	}
+
+	return ls;
+
 }
 
-AAVal AAVM::ReportStack(aa::stack<AAVal> stack) {
+AAStackValue AAVM::BackwardsPatternmatch(int op, int vm, int args, int get, const any_stack& stack) {
 
-	if (stack.Size() == 1) {
-		AAVal v = stack.Pop();
+	AAStackValue v = false;
+
+	return v;
+
+}
+
+template<typename T>
+inline T __writesck(any_stack stack, std::ostream* pOutstream, bool logTopOfStack) {
+	T t = stack.Pop<T>();
+	if (pOutstream && logTopOfStack) {
+		std::wstring ws = std::to_wstring(t);
+		pOutstream->write(string_cast(ws).c_str(), ws.length());
+		pOutstream->write("", 1);
+		pOutstream->write("\n", 1);
+	}
+	return t;
+}
+
+AAStackValue AAVM::ReportStack(/*aa::stack<AAStackValue>*/ any_stack& stack) {
+
+	/*if (stack.Size() == 1) {
+		AAStackValue v = stack.Pop();
 		if (m_outStream && m_logTopOfStackAfterExec) {
 			std::wstring ws = v.ToString();
 			m_outStream->write(string_cast(ws).c_str(), ws.length());
+			m_outStream->write("", 1);
 			m_outStream->write("\n", 1);
 		}
 		return v;
@@ -537,7 +606,47 @@ AAVal AAVM::ReportStack(aa::stack<AAVal> stack) {
 			const char* msg = "<Warning!> More than one element remained on the stack!\n";
 			m_outStream->write(msg, strlen(msg));
 		}
-		return AAVal::Null;
+		return AAStackValue::None;
+	}*/
+
+	if (stack.is_empty()) {
+		stack.Release(false);
+		return AAStackValue::None;
+	} else {
+		AAStackValue val = AAStackValue::None;
+		if (stack.get_pointer() == 8) {
+			val = AAStackValue(__writesck<int64_t>(stack, m_outStream, m_logTopOfStackAfterExec));
+		} else if (stack.get_pointer() == 4) {
+			val = AAStackValue(__writesck<int32_t>(stack, m_outStream, m_logTopOfStackAfterExec));
+		} else if (stack.get_pointer() == 2) {
+			val = AAStackValue(__writesck<int16_t>(stack, m_outStream, m_logTopOfStackAfterExec));
+		} else if (stack.get_pointer() == 1) {
+			val = AAStackValue(__writesck<unsigned char>(stack, m_outStream, m_logTopOfStackAfterExec));
+		} else if (stack.get_pointer() == sizeof(AAMemoryPtr)) {
+			AAMemoryPtr ptr = stack.Pop<AAMemoryPtr>();
+			if (ptr.ptrType == 'S') {
+				std::wstring str = m_heapMemory->String(ptr)->ToString();
+				if (m_logTopOfStackAfterExec) {
+					m_outStream->write(string_cast(str).c_str(), str.length());
+					m_outStream->write("", 1);
+					m_outStream->write("\n", 1);
+				}
+				val = AAStackValue(str);
+			} else {
+				std::wstring str = ptr.get_object()->ToString();
+				if (m_logTopOfStackAfterExec) {
+					m_outStream->write(string_cast(str).c_str(), str.length());
+					m_outStream->write("", 1);
+					m_outStream->write("\n", 1);
+				}
+				val = AAStackValue(ptr);
+			}
+		} else if (stack.get_pointer() != 0) {
+			std::string msg = "<Warning!> " + std::to_string(stack.get_pointer()) + " bytes remained on the stack!\n";
+			m_outStream->write(msg.c_str(), msg.length());
+		}
+		stack.Release(false);
+		return val;
 	}
 
 }
@@ -620,6 +729,9 @@ void AAVM::WriteMsg(const char* msg) {
 	}
 
 }
+
+void AAO_ToString(AAVM* pAAVm, any_stack& stack);
+void AAO_NewObject(AAVM* pAAVm, any_stack& stack);
 
 int AAVM::RegisterFunction(AACSingleFunction funcPtr) {
 	return this->RegisterFunction(funcPtr, NULL);
@@ -808,7 +920,6 @@ void AAVM::LoadStandardLibrary() {
 	// Create string class
 	AACClass stringClass;
 	stringClass.classMethods.push_back(AACSingleFunction(L"length", &AAString_Length, AACTypeDef::Int32, 0));
-	stringClass.classOperators.push_back(AACClassOperator(L"+", AACSingleFunction(L"concat", &AAString_Concat, AACType::ExportReferenceType, 1, AAFuncParam(AACType::Any, L"_x"))));
 
 	// Register string class and type
 	AAClassSignature* strCls = this->RegisterClass(L"string", stringClass);
@@ -892,4 +1003,24 @@ void AAVM::StopAndLogCompile() {
 		printf("Compile time: %fs\n", (float)(clock() - m_startCompile) / CLOCKS_PER_SEC);
 	}
 
+}
+
+void AAO_ToString(AAVM* pAAVm, any_stack& stack) {
+	
+	// Get the address and create new string for it
+	AAMemoryPtr hexMemAddress = pAAVm->GetHeap()->AllocString(stack.Pop<AAMemoryPtr>().get_memory_address_wstr());
+
+	// Push address
+	aa::vm::PushSomething(AAStackValue(hexMemAddress), stack);
+
+}
+
+void AAO_NewObject(AAVM* pAAVm, any_stack& stack) {
+	/*
+	// Convert to argument list
+	aa::list<AAStackValue> argl = aa::ToArgumentList(args);
+
+	// Push string representation of primitive unto stack
+	stack.Push(argl.First());
+	*/ // We can do nothing here
 }

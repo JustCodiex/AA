@@ -117,9 +117,6 @@
     <ClCompile Include="AALanguageRegressionTest.cpp">
       <Filter>Source Files\aatesting</Filter>
     </ClCompile>
-    <ClCompile Include="AAVal.cpp">
-      <Filter>Source Files\VM</Filter>
-    </ClCompile>
     <ClCompile Include="AAClassCompiler.cpp">
       <Filter>Source Files\compiler</Filter>
     </ClCompile>
@@ -155,6 +152,36 @@
     </ClCompile>
     <ClCompile Include="AAAutoCodeGeneratorcpp.cpp">
       <Filter>Source Files\compiler</Filter>
+    </ClCompile>
+    <ClCompile Include="AAObject.cpp">
+      <Filter>Source Files\VM</Filter>
+    </ClCompile>
+    <ClCompile Include="AAStackValue.cpp">
+      <Filter>Source Files\VM</Filter>
+    </ClCompile>
+    <ClCompile Include="AAExecute.cpp">
+      <Filter>Source Files\VM</Filter>
+    </ClCompile>
+    <ClCompile Include="AAVal.cpp">
+      <Filter>Source Files\VM</Filter>
+    </ClCompile>
+    <ClCompile Include="AAPrimitiveType.cpp">
+      <Filter>Source Files\VM</Filter>
+    </ClCompile>
+    <ClCompile Include="AAArray.cpp">
+      <Filter>Source Files\VM\builtin</Filter>
+    </ClCompile>
+    <ClCompile Include="AAString.cpp">
+      <Filter>Source Files\VM\builtin</Filter>
+    </ClCompile>
+    <ClCompile Include="AAConsole.cpp">
+      <Filter>Source Files\VM\builtin</Filter>
+    </ClCompile>
+    <ClCompile Include="AAstdiolib.cpp">
+      <Filter>Source Files\VM\builtin</Filter>
+    </ClCompile>
+    <ClCompile Include="AAMemory.cpp">
+      <Filter>Source Files\VM\Memory</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -295,6 +322,24 @@
     </ClInclude>
     <ClInclude Include="AAAutoCodeGenerator.h">
       <Filter>Header Files\compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="AAObject.h">
+      <Filter>Header Files\VM</Filter>
+    </ClInclude>
+    <ClInclude Include="AAStackValue.h">
+      <Filter>Header Files\VM</Filter>
+    </ClInclude>
+    <ClInclude Include="AAPrimitiveType.h">
+      <Filter>Header Files\VM</Filter>
+    </ClInclude>
+    <ClInclude Include="AAExecute.h">
+      <Filter>Header Files\VM</Filter>
+    </ClInclude>
+    <ClInclude Include="any_stack.h">
+      <Filter>Header Files\util</Filter>
+    </ClInclude>
+    <ClInclude Include="AAArray.h">
+      <Filter>Header Files\VM\builtin</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

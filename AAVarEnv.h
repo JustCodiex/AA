@@ -1,5 +1,5 @@
 #pragma once
-#include "AAVal.h"
+#include "AAStackValue.h"
 #include <string>
 #include <map>
 
@@ -9,13 +9,13 @@ public:
 
 	void DeclareVariable(unsigned int identifier);
 
-	void SetVariable(unsigned int identifier, AAVal);
-	AAVal GetVariable(unsigned int identifier);
+	void SetVariable(unsigned int identifier, AAStackValue val);
+	AAStackValue GetVariable(unsigned int identifier);
 
 	AAVarEnv* CloneSelf();
 
 private:
 
-	std::map<unsigned int, AAVal> m_variables;
+	std::map<unsigned int, AAStackValue> m_variables;
 
 };

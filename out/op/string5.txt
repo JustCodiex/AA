@@ -1,24 +1,24 @@
 START PROCEDURE 0 (<GlobalScope>):
-CONSTANTS:	[UTF-8, "Hello"]	[UTF-8, "World"]	[UTF-8, "Hello "]	[UTF-8, " "]
+CONSTANTS:	[UTF-8, "Hello"][UTF-8, "World"][UTF-8, "Hello "][UTF-8, " "]
 IDENTIFIERS:
 	a;	b;
 OPERATIONS:
-	[0]	PUSHC, 0
-	[1]	SETVAR, 0
-	[2]	PUSHC, 1
-	[3]	SETVAR, 1
+	[0]	PUSHWS, 0
+	[1]	SETVAR, 0, 13		;; primitive: string [16 bytes]
+	[2]	PUSHWS, 1
+	[3]	SETVAR, 1, 13		;; primitive: string [16 bytes]
 	[4]	GETVAR, 0
 	[5]	XCALL, 0, 1		;; Calls: println
 	[6]	GETVAR, 1
 	[7]	XCALL, 0, 1		;; Calls: println
-	[8]	PUSHC, 2
-	[9]	PUSHC, 1
-	[10]	XCALL, 2, 2		;; Calls: string::concat
+	[8]	PUSHWS, 2
+	[9]	PUSHWS, 1
+	[10]	CONCAT
 	[11]	XCALL, 0, 1		;; Calls: println
 	[12]	GETVAR, 0
-	[13]	PUSHC, 3
-	[14]	XCALL, 2, 2		;; Calls: string::concat
+	[13]	PUSHWS, 3
+	[14]	CONCAT
 	[15]	GETVAR, 1
-	[16]	XCALL, 2, 2		;; Calls: string::concat
+	[16]	CONCAT
 END PROCEDURE;
 

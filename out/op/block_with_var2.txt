@@ -1,20 +1,20 @@
 START PROCEDURE 0 (<GlobalScope>):
-CONSTANTS:	[I32, 5]	[I32, 2]	[I32, 20]
+CONSTANTS:	[I32, 5][I32, 2][I32, 20]
 IDENTIFIERS:
 	x;	y;
 OPERATIONS:
 	[0]	PUSHC, 0
 	[1]	PUSHC, 0
-	[2]	ADD
+	[2]	ADD, 6		;; primitive: int32 [4 bytes]
 	[3]	PUSHC, 0
-	[4]	MUL
+	[4]	MUL, 6		;; primitive: int32 [4 bytes]
 	[5]	PUSHC, 1
-	[6]	SUB
-	[7]	SETVAR, 0
+	[6]	SUB, 6		;; primitive: int32 [4 bytes]
+	[7]	SETVAR, 0, 6		;; primitive: int32 [4 bytes]
 	[8]	PUSHC, 2
-	[9]	SETVAR, 1
+	[9]	SETVAR, 1, 6		;; primitive: int32 [4 bytes]
 	[10]	GETVAR, 0
 	[11]	GETVAR, 1
-	[12]	SUB
+	[12]	SUB, 6		;; primitive: int32 [4 bytes]
 END PROCEDURE;
 

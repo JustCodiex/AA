@@ -151,22 +151,31 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AAArray.cpp" />
     <ClCompile Include="AAAutoCodeGeneratorcpp.cpp" />
     <ClCompile Include="AAB2F.cpp" />
     <ClCompile Include="AAC.cpp" />
     <ClCompile Include="AACFunction.cpp" />
     <ClCompile Include="AAClassCompiler.cpp" />
     <ClCompile Include="AACNamespace.cpp" />
+    <ClCompile Include="AAConsole.cpp" />
     <ClCompile Include="AACType.cpp" />
+    <ClCompile Include="AAExecute.cpp" />
     <ClCompile Include="AAFileStream.cpp" />
     <ClCompile Include="AAGarbageCollector.cpp" />
     <ClCompile Include="AALanguageRegressionTest.cpp" />
     <ClCompile Include="AALexer.cpp" />
+    <ClCompile Include="AAMemory.cpp" />
     <ClCompile Include="AAMemoryStore.cpp" />
     <ClCompile Include="AAModifier.cpp" />
+    <ClCompile Include="AAObject.cpp" />
     <ClCompile Include="AAP.cpp" />
+    <ClCompile Include="AAPrimitiveType.cpp" />
     <ClCompile Include="AAProgram.cpp" />
+    <ClCompile Include="AAStackValue.cpp" />
     <ClCompile Include="AAStaticAnalysis.cpp" />
+    <ClCompile Include="AAstdiolib.cpp" />
+    <ClCompile Include="AAString.cpp" />
     <ClCompile Include="AATypeChecker.cpp" />
     <ClCompile Include="AAVal.cpp" />
     <ClCompile Include="AAVarEnv.cpp" />
@@ -178,7 +187,9 @@
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AAArray.h" />
     <ClInclude Include="AAAutoCodeGenerator.h" />
+    <ClInclude Include="AAExecute.h" />
     <ClInclude Include="AAModifier.h" />
     <ClInclude Include="AAB2F.h" />
     <ClInclude Include="AAByteCode.h" />
@@ -197,6 +208,8 @@
     <ClInclude Include="AALanguageRegressionTest.h" />
     <ClInclude Include="AAMemory.h" />
     <ClInclude Include="AAMemoryStore.h" />
+    <ClInclude Include="AAObject.h" />
+    <ClInclude Include="AAPrimitiveType.h" />
     <ClInclude Include="AARuntimeEnvironment.h" />
     <ClInclude Include="AACodePosition.h" />
     <ClInclude Include="AAFuncSignature.h" />
@@ -204,6 +217,7 @@
     <ClInclude Include="AAO.h" />
     <ClInclude Include="AAP.h" />
     <ClInclude Include="AAProgram.h" />
+    <ClInclude Include="AAStackValue.h" />
     <ClInclude Include="AAStaticAnalysis.h" />
     <ClInclude Include="AAstdiolib.h" />
     <ClInclude Include="AAString.h" />
@@ -218,6 +232,7 @@
     <ClInclude Include="AA_PT.h" />
     <ClInclude Include="AA_PT_NODE.h" />
     <ClInclude Include="AA_PT_Unflatten.h" />
+    <ClInclude Include="any_stack.h" />
     <ClInclude Include="astring.h" />
     <ClInclude Include="bstream.h" />
     <ClInclude Include="bwalker.h" />

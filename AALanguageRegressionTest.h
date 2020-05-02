@@ -20,7 +20,7 @@ bool RunRegressionTests(AAVM* pAAVM);
 /// <param name="expectRuntimeError">Expects a runtime error (VM error testing)</param>
 /// <returns></returns>
 bool RunFileTest(
-	AAVM* pAAVM, std::wstring fileinput, std::wstring fileoutputBinary, std::wstring fileoutputOpCodes, std::wstring expectedoutput, 
+	AAVM* pAAVM, std::wstring fileinput, std::wstring fileoutputBinary, std::wstring fileoutputOpCodes, AAStackValue expectedoutput, 
 	bool expectCompileError = false, bool expectRuntimeError = false
 );
 
@@ -36,6 +36,6 @@ bool RunFileTest(
 /// <param name="expectRuntimeError">Expects a runtime error (VM error testing)</param>
 /// <returns></returns>
 bool RunExpressionTest(
-	AAVM* pAAVM, std::wstring expression, std::wstring fileoutputBinary, std::wstring fileoutputOpCodes, std::wstring expectedoutput,
+	AAVM* pAAVM, std::wstring expression, std::wstring fileoutputBinary, std::wstring fileoutputOpCodes, AAStackValue expectedoutput,
 	bool expectCompileError = false, bool expectRuntimeError = false
 );

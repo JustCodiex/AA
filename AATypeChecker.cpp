@@ -1,6 +1,7 @@
 #include "AATypeChecker.h"
 #include "astring.h"
 #include "AAStaticAnalysis.h"
+#include "AAPrimitiveType.h"
 #include "set.h"
 
 #define AATC_W_ERROR(__msg, __pos, __err) this->SetError(AATypeChecker::Error(__msg, __err, __pos)); return AACType::ErrorType
@@ -247,6 +248,9 @@ AACType* AATypeChecker::TypeCheckBinaryOperation(AA_AST_NODE* pOpNode, AA_AST_NO
 		// Do these types match each other?
 		if (this->IsMatchingTypes(typeRight, typeLeft)) {
 
+			// Set the primitive type
+			pOpNode->tags["primitive"] = (int)aa::runtime::runtimetype_from_statictype(typeLeft);
+
 			// return the left type
 			return typeLeft;
 
@@ -288,6 +292,10 @@ AACType* AATypeChecker::TypeCheckBinaryOperation(AA_AST_NODE* pOpNode, AA_AST_NO
 
 			// Is legal assignment?
 			if (IsMatchingTypes(typeRight, typeLeft)) {
+
+				// Set the primitive type
+				pOpNode->tags["primitive"] = (int)aa::runtime::runtimetype_from_statictype(typeLeft);
+
 				return typeLeft;
 			} else {
 				AATC_W_ERROR(
@@ -298,9 +306,12 @@ AACType* AATypeChecker::TypeCheckBinaryOperation(AA_AST_NODE* pOpNode, AA_AST_NO
 				);
 			}
 
-		} else if (IsPrimitiveType(typeLeft) && IsPrimitiveType(typeRight)) {
+		} else if (aa::runtime::is_primitive_type(typeLeft) && aa::runtime::is_primitive_type(typeRight)) {
+			left->tags["primitive"] = (int)aa::runtime::runtimetype_from_statictype(typeLeft);
+			right->tags["primitive"] = (int)aa::runtime::runtimetype_from_statictype(typeRight);
+			AACType* resultType = this->TypeCheckBinaryOperationOnPrimitive(pOpNode, typeLeft, typeRight); // should be checking directly on the nodes if possible...
+			pOpNode->tags["primitive"] = left->tags["primitive"];
 			pOpNode->tags["useCall"] = false;
-			AACType* resultType = this->TypeCheckBinaryOperationOnPrimitive(pOpNode, typeLeft, typeRight);
 			/*if (resultType == AACType::ErrorType) {
 				AATC_W_ERROR(
 					"Type mismsatch on binary operation '" + string_cast(pOpNode->content) + "', left operand: '"
@@ -365,8 +376,28 @@ AACType* AATypeChecker::TypeCheckBinaryOperationOnPrimitive(AA_AST_NODE* pOpNode
 }
 
 AACType* AATypeChecker::TypeCheckUnaryOperation(AA_AST_NODE* pOpNode, AA_AST_NODE* right) {
-	// TODO: Actually do a type check
-	return this->TypeCheckNode(right);
+	AACType* pType = this->TypeCheckNode(right);
+	if (pType != AACType::ErrorType) {
+
+		if (aa::runtime::is_primitive_type(pType)) {
+
+			// TODO: Verify
+
+			pOpNode->tags["primitive"] = (int)aa::runtime::runtimetype_from_statictype(pType);
+
+		} else {
+			// potentially something else
+		}
+
+		return pType;
+
+	} else {
+		AATC_W_ERROR(
+			"Undefined type: " + string_cast(right->content),
+			pOpNode->position,
+			aa::compiler_err::C_Undefined_Type
+		);
+	}
 }
 
 AACType* AATypeChecker::TypeCheckConditionalBlock(AA_AST_NODE* pConditionalNode) {
@@ -644,7 +675,13 @@ AACType* AATypeChecker::TypeCheckFuncDecl(AA_AST_NODE* pDeclNode) {
 
 			// Set variable type in environment
 			if (argType != AACType::ErrorType) {
+				
+				// Set type in variable environment
 				m_vtenv[pDeclNode->expressions[AA_NODE_FUNNODE_ARGLIST]->expressions[i]->content] = argType;
+
+				// Set primittive type
+				pDeclNode->expressions[AA_NODE_FUNNODE_ARGLIST]->expressions[i]->tags["primitive"] = (int)aa::runtime::runtimetype_from_statictype(argType);
+
 			} else {
 				AATC_W_ERROR(
 					"Undefined type  '" + string_cast(pDeclNode->expressions[AA_NODE_FUNNODE_ARGLIST]->expressions[i]->content) + "' in argument", 
@@ -962,14 +999,6 @@ bool AATypeChecker::IsValidType(AACType* t) {
 	} else {
 		return true;
 	}	
-}
-
-bool AATypeChecker::IsPrimitiveType(AACType* t) {
-	if (t) {
-		return !t->isRefType;
-	} else {
-		return false;
-	}
 }
 
 bool AATypeChecker::IsNumericType(AACType* t) {

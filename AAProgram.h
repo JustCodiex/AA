@@ -2,6 +2,7 @@
 #include "bwalker.h"
 #include "AAO.h"
 #include "AAVarEnv.h"
+#include "AAObject.h"
 
 class AAProgram {
 	friend class AAVM; // Allow the virtual machine to access private parts of class
@@ -13,11 +14,6 @@ private:
 		AAVarEnv* venv;
 		AAO* opSequence;
 		int opCount;
-	};
-
-	struct ExportSignature {
-		std::wstring name;
-		int procID;
 	};
 
 public:
@@ -39,6 +35,8 @@ private:
 	int m_procedureCount;
 	int m_signatureCount;
 	Procedure* m_procedures;
-	ExportSignature* m_exportedSignatures;
+
+	size_t m_typeCount;
+	AAObjectType* m_types;
 
 };

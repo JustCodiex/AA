@@ -1,81 +1,59 @@
 #pragma once
-#include "AA_literals.h"
-#include "AAMemory.h"
-#include "stack.h"
-
-struct AAObject;
+#include <cstring>
+#include <string>
 
 struct AAVal {
 	
-	AA_Literal litVal;
-	AAMemoryPtr ptr;
+public:
 
 	AAVal() {
-		litVal = AA_Literal();
-		ptr = 0;
+		m_data = 0;
 	}
 
-	AAVal(AA_Literal l) {
-		litVal = l;
-		ptr = 0;
-	}
-	
-	AAVal(int i) {
-		litVal.tp = AALiteralType::Int;
-		litVal.lit.i = AA_IntLiteral(i);
-		ptr = 0;
+	template<typename T>
+	AAVal(T val) {
+		m_data = new unsigned char[sizeof(T)];
+		memcpy(m_data, &val, sizeof(T));
 	}
 
-	AAVal(float f) {
-		litVal.tp = AALiteralType::Float;
-		litVal.lit.f = AA_FloatLiteral(f);
-		ptr = 0;
-	}
-	
-	AAVal(bool b) {
-		litVal.tp = AALiteralType::Boolean;
-		litVal.lit.b = AA_BoolLiteral(b);
-		ptr = 0;
-	}
-	
+	template<>
 	AAVal(std::wstring ws) {
-		litVal.tp = AALiteralType::String;
-		litVal.lit.s.len = ws.length();
-		litVal.lit.s.val = new wchar_t[ws.length()+1];
-		wmemset(litVal.lit.s.val, '\0', ws.length() + 1);
-		wcscpy(litVal.lit.s.val, ws.c_str());		
-		ptr = 0;
+		m_data = new unsigned char[sizeof(wchar_t) * (ws.length() + 1)];
+		memset(m_data, '\0', sizeof(wchar_t) * (ws.length()+1));
+		memcpy(m_data, &ws[0], sizeof(wchar_t) * ws.length());
 	}
 
-	AAVal(wchar_t* str, size_t l) {
-		litVal.tp = AALiteralType::String;
-		litVal.lit.s.len = l;
-		litVal.lit.s.val = str;
-		ptr = 0;
+	AAVal(const unsigned char* dat, size_t sz) {
+		m_data = new unsigned char[sz];
+		memcpy(m_data, dat, sz);
 	}
 
-	AAVal(AAMemoryPtr ptr) {
-		this->ptr = ptr;
-		this->litVal.tp = AALiteralType::Null;
+	void Free();
+
+	template<typename T>
+	T Raw() {
+		return *reinterpret_cast<T*>(m_data);
 	}
 
-	std::wstring ToString();
+	template<>
+	std::wstring Raw() {
+		return std::wstring(reinterpret_cast<const wchar_t*>(m_data));
+	}
 
-	static AAVal Null;
+	const bool Equals(const AAVal& other, const size_t& cmpsz) const {
+		return memcmp(this->m_data, other.m_data, cmpsz) == 0;
+	}
+
+	const bool is_valid() const;
+
+	template<typename T>
+	const T ToValue() const {
+		return *reinterpret_cast<T*>(m_data);
+	}
+
+	unsigned char* get_bytes() { return m_data; }
+
+private:
+	unsigned char* m_data;
 
 };
-
-struct AAObject {
-	AAVal* values;
-	int valCount;
-	AAObject() {
-		values = 0;
-		valCount = 0;
-	}
-};
-
-AAObject* AllocAAO(size_t sz);
-
-class AAVM;
-void AAO_ToString(AAVM* pAAVm, aa::stack<AAVal> args, aa::stack<AAVal>& stack);
-void AAO_NewObject(AAVM* pAAVm, aa::stack<AAVal> args, aa::stack<AAVal>& stack);

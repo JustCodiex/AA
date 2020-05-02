@@ -730,7 +730,7 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterClass(AA_AST_NODE* pNode, AACl
 		if (!m_compilerPointer->GetClassCompilerInstance()->AutoTaggedClass(cc, pTaggedAutoCtor)) {
 			err.errorMsg = "Failed to generate tagged class elements";
 			err.errorSource = pNode->position;
-			err.errorType = 0;
+			err.errorType = aa::compiler_err::C_Compiler_TaggedClass_Generator_Error;
 			return err;
 		}
 
@@ -739,6 +739,14 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterClass(AA_AST_NODE* pNode, AACl
 
 			// Insert into next tree (and then let it be handled from there)
 			m_workTrees->insert(m_workTrees->begin() + m_currentTreeIndex + 1, new AA_AST(pTaggedAutoCtor));
+
+		} else {
+
+			// Error out => Compiler should always be able to generate this
+			err.errorMsg = "Failed to generate tagged class elements";
+			err.errorSource = pNode->position;
+			err.errorType = aa::compiler_err::C_Compiler_TaggedClass_Generator_Error;
+			return err;
 
 		}
 

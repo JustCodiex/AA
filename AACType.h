@@ -5,6 +5,9 @@ struct AACNamespace;
 struct AAClassSignature;
 struct AACEnumSignature;
 
+/// <summary>
+/// AA Compile-Time Static Type
+/// </summary>
 struct AACType {
 
 	std::wstring name;

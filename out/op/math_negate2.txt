@@ -5,7 +5,7 @@ IDENTIFIERS:
 OPERATIONS:
 	[0]	PUSHC, 0
 	[1]	PUSHC, 0
-	[2]	NNEG
-	[3]	ADD
+	[2]	NNEG, 6		;; primitive: int32 [4 bytes]
+	[3]	ADD, 6		;; primitive: int32 [4 bytes]
 END PROCEDURE;
 

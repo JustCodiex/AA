@@ -12,14 +12,14 @@ CONSTANTS:	[I32, 28]
 IDENTIFIERS:
 	z;	x;
 OPERATIONS:
-	[0]	SETVAR, 0
+	[0]	SETVAR, 0, 6		;; primitive: int32 [4 bytes]
 	[1]	GETVAR, 0
-	[2]	SETVAR, 1
+	[2]	SETVAR, 1, 6		;; primitive: int32 [4 bytes]
 	[3]	GETVAR, 1
 	[4]	PUSHC, 0
-	[5]	ADD
-	[6]	SETVAR, 1
+	[5]	ADD, 6		;; primitive: int32 [4 bytes]
+	[6]	SETVAR, 1, 6		;; primitive: int32 [4 bytes]
 	[7]	GETVAR, 1
-	[8]	RET, 1
+	[8]	RET
 END PROCEDURE;
 

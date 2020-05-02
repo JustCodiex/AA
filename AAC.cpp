@@ -223,8 +223,9 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileAST(AA_AST_NODE* pNode, Co
 			aa::list<CompiledAbstractExpression> body = aa::list<CompiledAbstractExpression>::Merge(args, this->CompileAST(pNode->expressions[AA_NODE_FUNNODE_BODY], cTable, staticData));
 			CompiledAbstractExpression retCAE;
 			retCAE.bc = AAByteCode::RET;
-			retCAE.argCount = 1;
-			retCAE.argValues[0] = pNode->tags["returncount"];
+			retCAE.argCount = 0;
+			//retCAE.argCount = 1;
+			//retCAE.argValues[0] = pNode->tags["returncount"];
 			body.Add(retCAE);
 			executionStack.Add(body);
 		}
@@ -321,8 +322,9 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileBinaryOperation(AA_AST_NOD
 
 	if (binopCAE.bc == AAByteCode::SETVAR) {
 
-		binopCAE.argCount = 1;
+		binopCAE.argCount = 2;
 		binopCAE.argValues[0] = HandleDecl(cTable, pNode->expressions[0]);
+		binopCAE.argValues[1] = pNode->tags["primitive"];
 		opList.Add(HandleStackPush(cTable, pNode->expressions[1], staticData));
 
 	} else if (binopCAE.bc == AAByteCode::SETFIELD) {
@@ -348,6 +350,15 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileBinaryOperation(AA_AST_NOD
 			binopCAE.argValues[0] = pNode->tags["operatorProcID"];
 			binopCAE.argValues[1] = 2;
 
+		} else {
+
+			if (pNode->tags["primitive"] == (int)AAPrimitiveType::string) {
+				binopCAE.bc = AAByteCode::CONCAT;
+			} else {
+				binopCAE.argCount = 1;
+				binopCAE.argValues[0] = pNode->tags["primitive"];
+			}
+
 		}
 
 		opList.Add(HandleStackPush(cTable, pNode->expressions[0], staticData));
@@ -366,7 +377,8 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileUnaryOperation(AA_AST_NODE
 	aa::list<CompiledAbstractExpression> opList;
 
 	CompiledAbstractExpression unopCAE;
-	unopCAE.argCount = 0;
+	unopCAE.argCount = 1;
+	unopCAE.argValues[0] = pNode->tags["primitive"];
 	unopCAE.bc = GetBytecodeFromUnaryOperator(pNode->content);
 
 	opList.Add(HandleStackPush(cTable, pNode->expressions[0], staticData));
@@ -465,10 +477,11 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileFuncArgs(AA_AST_NODE* pNod
 		// Create setvar operation
 		CompiledAbstractExpression argCAE;
 		argCAE.bc = AAByteCode::SETVAR;
-		argCAE.argCount = 1;
+		argCAE.argCount = 2;
 
 		// Set the argument of size() - 1 - i (the inverse) becausue of the push-pop mechanism used by the AAVM to pass call arguments
 		argCAE.argValues[0] = cTable.identifiers.IndexOf(arg);
+		argCAE.argValues[1] = pArgList->expressions[pArgList->expressions.size() - 1 - i]->tags["primitive"];
 
 		// Add operation
 		opList.Add(argCAE);
@@ -655,7 +668,7 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileNewStatement(AA_AST_NODE* 
 
 		// Create allocation instruction
 		CompiledAbstractExpression allocCAE;
-		allocCAE.bc = AAByteCode::HALLOC;
+		allocCAE.bc = AAByteCode::ALLOC;
 		allocCAE.argCount = 1;
 		allocCAE.argValues[0] = std::stoi(pNode->expressions[0]->expressions[1]->content) * sizeof(AAVal);
 
@@ -937,9 +950,7 @@ AAC::CompiledAbstractExpression AAC::HandleConstPush(CompiledEnviornmentTable& c
 
 AAC::CompiledAbstractExpression AAC::HandleConstPush(CompiledEnviornmentTable& cTable, AA_Literal lit) {
 
-	// TODO: Update this to keep track of const counter (so two cases of 5's is added to the const table)
-	//		 If a single const is used, we don't want to waste time looking it up
-
+	// Get the constant ID to push
 	int i = -1;
 	if (cTable.constValues.Contains(lit)) {
 		i = cTable.constValues.IndexOf(lit);
@@ -948,12 +959,25 @@ AAC::CompiledAbstractExpression AAC::HandleConstPush(CompiledEnviornmentTable& c
 		cTable.constValues.Add(lit);
 	}
 
-	CompiledAbstractExpression pushOp;
-	pushOp.bc = AAByteCode::PUSHC;
-	pushOp.argCount = 1;
-	pushOp.argValues[0] = i;
+	if (lit.tp == AALiteralType::String) { // We treat strings a bit different
+		
+		CompiledAbstractExpression pushStringOp;
+		pushStringOp.bc = AAByteCode::PUSHWS;
+		pushStringOp.argCount = 1;
+		pushStringOp.argValues[0] = i;
 
-	return pushOp;
+		return pushStringOp;
+
+	} else {
+
+		CompiledAbstractExpression pushOp;
+		pushOp.bc = AAByteCode::PUSHC;
+		pushOp.argCount = 1;
+		pushOp.argValues[0] = i;
+
+		return pushOp;
+
+	}
 
 }
 
@@ -1054,7 +1078,7 @@ aa::list<AAC::CompiledAbstractExpression> AAC::HandleCtorCall(AA_AST_NODE* pNode
 	CompiledAbstractExpression newCAE;
 	newCAE.argCount = 1;
 	newCAE.argValues[0] = allocSize;
-	newCAE.bc = AAByteCode::HALLOC;
+	newCAE.bc = AAByteCode::ALLOC;
 
 	opList.Add(newCAE);
 
@@ -1222,8 +1246,7 @@ int AAC::CalcStackSzAfterOperation(AAC::CompiledAbstractExpression op, AAStaticE
 	case AAByteCode::PUSHC:
 	case AAByteCode::PUSHV:
 	case AAByteCode::GETVAR:
-	case AAByteCode::HALLOC:
-	case AAByteCode::SALLOC:
+	case AAByteCode::ALLOC:
 		return 1; // Increases stack size by one
 	case AAByteCode::ADD:
 	case AAByteCode::SUB:

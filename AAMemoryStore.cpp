@@ -1,4 +1,5 @@
 #include "AAMemoryStore.h"
+#include "AAObject.h"
 #include "AAVal.h"
 
 AAMemoryStore::AAMemoryStore(int chunksz) {
@@ -14,11 +15,12 @@ void AAMemoryStore::Release() {
 		this->DeleteAt((*itt).first);
 	}
 
+	// Finally, release ourselves
 	delete this;
 
 }
 
-size_t AAMemoryStore::NextPointer() {
+uint64_t AAMemoryStore::NextPointer() {
 	return ++m_nextPtr;
 }
 
@@ -28,14 +30,8 @@ void AAMemoryStore::DeleteAt(AAMemoryPtr ptr) {
 	auto slot = this->m_slots.find(ptr);
 	if (slot != this->m_slots.end()) {
 
-		// Delete the object
-		AAObject* obj = (*slot).second.obj;
-		
-		// Delete all values
-		delete[] obj->values;
-
-		// Delete the object itself
-		delete obj;
+		// Release the object and all it's underlying resources
+		(*slot).second.obj->Release();
 
 		// Get rid of the element
 		this->m_slots.erase(slot);
@@ -57,12 +53,14 @@ AAMemoryPtr AAMemoryStore::Alloc(size_t sz) {
 
 	// Get the next pointer
 	AAMemoryPtr ptr = this->NextPointer();
+	ptr.set_store(this);
+	ptr.ptrType = 'O';
 
 	// Set slot
 	MemorySlot slot;
 	slot.refcount = 1;
 	slot.isMutable = true;
-	slot.obj = AllocAAO(sz);
+	slot.obj = new AAObject(sz);
 
 	// Assign slot
 	this->m_slots[ptr] = slot;
@@ -72,10 +70,71 @@ AAMemoryPtr AAMemoryStore::Alloc(size_t sz) {
 
 }
 
-AAObject* AAMemoryStore::operator[](const AAMemoryPtr& ptr) const {
+AAMemoryPtr AAMemoryStore::AllocArray(AAPrimitiveType primitiveType, int dimCount, int* dimensionLengths) {
+
+	// Get next ptr
+	AAMemoryPtr ptr = this->NextPointer();
+	ptr.set_store(this);
+	ptr.ptrType = 'A';
+
+	// Set slot
+	MemorySlot slot;
+	slot.refcount = 1;
+	slot.isMutable = true;
+	slot.obj = new AAArray(primitiveType, dimCount, dimensionLengths);
+
+	// Assign slot
+	this->m_slots[ptr] = slot;
+
+	// Return ptr
+	return ptr;
+
+}
+
+AAMemoryPtr AAMemoryStore::AllocString(std::wstring str) {
+
+	// Get next ptr
+	AAMemoryPtr ptr = this->NextPointer();
+	ptr.set_store(this);
+	ptr.ptrType = 'S';
+
+	// Set slot
+	MemorySlot slot;
+	slot.refcount = 1;
+	slot.isMutable = true;
+	slot.obj = new AAString(str);
+
+	// Assign slot
+	this->m_slots[ptr] = slot;
+
+	// Return ptr
+	return ptr;
+
+
+}
+
+AAObject* AAMemoryStore::Object(const AAMemoryPtr& ptr) const {
 	auto slot = this->m_slots.find(ptr);
 	if (slot != this->m_slots.end()) {
 		return (*slot).second.obj;
+	} else {
+		return NULL;
+	}
+}
+
+AAArray* AAMemoryStore::Array(const AAMemoryPtr& ptr) const {
+	auto slot = this->m_slots.find(ptr);
+	if (slot != this->m_slots.end()) {
+		return dynamic_cast<AAArray*>((*slot).second.obj);
+	} else {
+		return NULL;
+	}
+}
+
+AAString* AAMemoryStore::String(const AAMemoryPtr& ptr) const {
+	auto slot = this->m_slots.find(ptr);
+	if (slot != this->m_slots.end()) {
+		return dynamic_cast<AAString*>((*slot).second.obj);
 	} else {
 		return NULL;
 	}

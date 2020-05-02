@@ -1,5 +1,6 @@
 #include "AAB2F.h"
 #include "AAVM.h"
+#include "AAPrimitiveType.h"
 #include <fstream>
 
 namespace aa {
@@ -102,6 +103,9 @@ namespace aa {
 		case AAByteCode::PUSHN:
 			output = L"PUSHN";
 			break;
+		case AAByteCode::PUSHWS:
+			output = L"PUSHWS";
+			break;
 		case AAByteCode::RET:
 			output = L"RET";
 			break;
@@ -111,11 +115,11 @@ namespace aa {
 		case AAByteCode::SUB:
 			output = L"SUB";
 			break;
-		case AAByteCode::HALLOC:
-			output = L"HALLOC";
+		case AAByteCode::ALLOC:
+			output = L"ALLOC";
 			break;
-		case AAByteCode::SALLOC:
-			output = L"SALLOC";
+		case AAByteCode::ALLOCARRAY:
+			output = L"ALLOCARRAY";
 			break;
 		case AAByteCode::GETFIELD:
 			output = L"GETFIELD";
@@ -143,6 +147,12 @@ namespace aa {
 			break;
 		case AAByteCode::BDOP:
 			output = L"BDOP";
+			break;
+		case AAByteCode::CONCAT:
+			output = L"CONCAT";
+			break;
+		case AAByteCode::LEN:
+			output = L"LEN";
 			break;
 		default:
 			break;
@@ -197,6 +207,15 @@ namespace aa {
 		}
 	}
 
+	bool __is_primitive_code(AAByteCode code) {
+		return code == AAByteCode::ADD || code == AAByteCode::SUB || code == AAByteCode::MUL || code == AAByteCode::DIV || 
+			code == AAByteCode::MOD || code == AAByteCode::NNEG || code == AAByteCode::SETVAR || code == AAByteCode::SETFIELD || code == AAByteCode::GETFIELD;
+	}
+
+	bool __is_arithmetic_code(AAByteCode code) {
+		return code == AAByteCode::ADD || code == AAByteCode::SUB || code == AAByteCode::MUL || code == AAByteCode::DIV || code == AAByteCode::MOD || code == AAByteCode::NNEG;
+	}
+
 	void dump_instructions(std::wstring file, std::vector<AAC::CompiledProcedure> procedures, AAVM* pAAVM) {
 
 		std::wofstream o = std::wofstream(file);
@@ -207,10 +226,10 @@ namespace aa {
 
 				AAC::CompiledProcedure proc = procedures[i];
 				o << L"START PROCEDURE " << std::to_wstring(i) << " (" << procedures[i].node->content << L"):\n";
-				o << "CONSTANTS:";
+				o << "CONSTANTS:\t";
 				for (size_t j = 0; j < proc.procEnvironment.constValues.Size(); j++) {
 					AA_Literal lit = proc.procEnvironment.constValues.At(j);
-					o << L"\t[" << getLitType(lit.tp) << L", " << getLitValue(lit) << L"]";
+					o << L"[" << getLitType(lit.tp) << L", " << getLitValue(lit) << L"]";
 				}
 				o << L"\nIDENTIFIERS:\n";
 				for (size_t j = 0; j < proc.procEnvironment.identifiers.Size(); j++) {
@@ -228,6 +247,12 @@ namespace aa {
 						} else {
 							o << L"\t\t;; Calls: Uncompiled function [Uncaught compile error!]";
 						}
+					} else if (__is_arithmetic_code(proc.procOperations.At(j).bc)) {
+						o << L"\t\t;; primitive: " << aa::runtime::name_of_type((AAPrimitiveType)proc.procOperations.At(j).argValues[0]);
+						o << L" [" << aa::runtime::size_of_type((AAPrimitiveType)proc.procOperations.At(j).argValues[0]) << L" bytes]";
+					} else if (__is_primitive_code(proc.procOperations.At(j).bc)) {
+						o << L"\t\t;; primitive: " << aa::runtime::name_of_type((AAPrimitiveType)proc.procOperations.At(j).argValues[1]);
+						o << L" [" << aa::runtime::size_of_type((AAPrimitiveType)proc.procOperations.At(j).argValues[1]) << L" bytes]";
 					}
 					o << "\n";
 				}

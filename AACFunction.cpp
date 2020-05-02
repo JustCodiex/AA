@@ -1,10 +1,10 @@
 #include "AACFunction.h"
-
+/*
 namespace aa {
 
-	list<AAVal> ToArgumentList(stack<AAVal> args) {
+	list<AAStackValue> ToArgumentList(stack<AAStackValue> args) {
 
-		list<AAVal> argl;
+		list<AAStackValue> argl;
 		while (args.Size() > 0) {
 			argl.Add(args.Pop());
 		}
@@ -14,3 +14,4 @@ namespace aa {
 	}
 
 }
+*/

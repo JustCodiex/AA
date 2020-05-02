@@ -27,7 +27,7 @@ CONSTANTS:
 IDENTIFIERS:
 	e;
 OPERATIONS:
-	[0]	HALLOC, 16
+	[0]	HALLOC, 4
 	[1]	CALL, 1, 1		;; Calls: ExampleClass::ExampleClass
 	[2]	SETVAR, 0
 	[3]	GETVAR, 0

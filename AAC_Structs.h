@@ -51,9 +51,14 @@ namespace aa {
 		const int C_Mismatching_Types = 200;
 
 		/// <summary>
+		/// Type doesn't match unary operation
+		/// </summary>
+		const int C_Msimatching_Unary_Type = 201;
+
+		/// <summary>
 		/// Types don't have a compatible operation
 		/// </summary>
-		const int C_Invalid_Binary_Operator = 201;
+		const int C_Invalid_Binary_Operator = 202;
 
 		/// <summary>
 		/// The function being called is undefined
@@ -74,6 +79,11 @@ namespace aa {
 		/// There exists no constructor overload matching argument list
 		/// </summary>
 		const int C_Undefined_Constructor_Overload = 322;
+
+		/// <summary>
+		/// Very fatal compiler error, when compiling a tagged class
+		/// </summary>
+		const int C_Compiler_TaggedClass_Generator_Error = -101;
 
 	}
 }

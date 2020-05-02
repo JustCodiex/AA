@@ -1,5 +1,5 @@
 START PROCEDURE 0 (<GlobalScope>):
-CONSTANTS:
+CONSTANTS:	
 IDENTIFIERS:
 
 OPERATIONS:
@@ -7,21 +7,21 @@ OPERATIONS:
 END PROCEDURE;
 
 START PROCEDURE 1 (foo):
-CONSTANTS:	[I32, 0]	[I32, 10]	[I32, 1]
+CONSTANTS:	[I32, 0][I32, 10][I32, 1]
 IDENTIFIERS:
 	i;
 OPERATIONS:
 	[0]	PUSHC, 0
-	[1]	SETVAR, 0
+	[1]	SETVAR, 0, 6		;; primitive: int32 [4 bytes]
 	[2]	GETVAR, 0
 	[3]	PUSHC, 2
-	[4]	ADD
-	[5]	SETVAR, 0
+	[4]	ADD, 0		;; primitive: nil [0 bytes]
+	[5]	SETVAR, 0, 0		;; primitive: nil [0 bytes]
 	[6]	GETVAR, 0
 	[7]	PUSHC, 1
-	[8]	LE
+	[8]	LE, 0
 	[9]	JMPT, -8
 	[10]	GETVAR, 0
-	[11]	RET, 1
+	[11]	RET
 END PROCEDURE;
 

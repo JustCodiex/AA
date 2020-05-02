@@ -135,6 +135,8 @@ bool AAClassCompiler::AddInheritanceCall(AAClassSignature* cc, AA_AST_NODE* pCto
 				} else {
 					return false;
 				}
+			} else {
+				return false;
 			}
 		}
 	);

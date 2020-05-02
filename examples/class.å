@@ -1,5 +1,5 @@
 
-public light class E1(string x, string y); // the 'light' keyword means create a new class type with properties supplied to the constructor
+public tagged class E1(string x, string y); // the 'tagged' keyword means create a new class type with fields supplied to the constructor
 
 public class E2 {
     public property String x; // Public getter and setter

@@ -12,19 +12,19 @@ CONSTANTS:	[I32, 1]
 IDENTIFIERS:
 	n;
 OPERATIONS:
-	[0]	SETVAR, 0
+	[0]	SETVAR, 0, 6		;; primitive: int32 [4 bytes]
 	[1]	GETVAR, 0
 	[2]	PUSHC, 0
-	[3]	LEQ
+	[3]	LEQ, 6
 	[4]	JMPF, 2
 	[5]	PUSHC, 0
 	[6]	JMP, 6
 	[7]	GETVAR, 0
 	[8]	GETVAR, 0
 	[9]	PUSHC, 0
-	[10]	SUB
+	[10]	SUB, 6		;; primitive: int32 [4 bytes]
 	[11]	CALL, 1, 1		;; Calls: factorial
-	[12]	MUL
-	[13]	RET, 1
+	[12]	MUL, 6		;; primitive: int32 [4 bytes]
+	[13]	RET
 END PROCEDURE;
 

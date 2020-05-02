@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <sstream>
 #include <iomanip>
 
 std::string string_cast(const wchar_t* pSource);
