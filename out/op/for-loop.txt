@@ -14,21 +14,21 @@ OPERATIONS:
 	[0]	PUSHC, 0
 	[1]	SETVAR, 0, 6		;; primitive: int32 [4 bytes]
 	[2]	PUSHC, 0
-	[3]	SETVAR, 1, 0		;; primitive: nil [0 bytes]
+	[3]	SETVAR, 1, 6		;; primitive: int32 [4 bytes]
 	[4]	GETVAR, 1
 	[5]	PUSHC, 1
-	[6]	LE, 0
+	[6]	LE, 6
 	[7]	JMPF, 11
 	[8]	GETVAR, 0
 	[9]	GETVAR, 1
 	[10]	PUSHC, 3
-	[11]	MUL, 0		;; primitive: nil [0 bytes]
-	[12]	ADD, 0		;; primitive: nil [0 bytes]
-	[13]	SETVAR, 0, 0		;; primitive: nil [0 bytes]
+	[11]	MUL, 6		;; primitive: int32 [4 bytes]
+	[12]	ADD, 6		;; primitive: int32 [4 bytes]
+	[13]	SETVAR, 0, 6		;; primitive: int32 [4 bytes]
 	[14]	GETVAR, 1
 	[15]	PUSHC, 2
-	[16]	ADD, 0		;; primitive: nil [0 bytes]
-	[17]	SETVAR, 1, 0		;; primitive: nil [0 bytes]
+	[16]	ADD, 6		;; primitive: int32 [4 bytes]
+	[17]	SETVAR, 1, 6		;; primitive: int32 [4 bytes]
 	[18]	JMP, -15
 	[19]	GETVAR, 0
 	[20]	RET

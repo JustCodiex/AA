@@ -15,12 +15,12 @@ OPERATIONS:
 	[1]	SETVAR, 0, 6		;; primitive: int32 [4 bytes]
 	[2]	GETVAR, 0
 	[3]	PUSHC, 1
-	[4]	LE, 0
+	[4]	LE, 6
 	[5]	JMPF, 5
 	[6]	GETVAR, 0
 	[7]	PUSHC, 2
-	[8]	ADD, 0		;; primitive: nil [0 bytes]
-	[9]	SETVAR, 0, 0		;; primitive: nil [0 bytes]
+	[8]	ADD, 6		;; primitive: int32 [4 bytes]
+	[9]	SETVAR, 0, 6		;; primitive: int32 [4 bytes]
 	[10]	JMP, -9
 	[11]	GETVAR, 0
 	[12]	RET

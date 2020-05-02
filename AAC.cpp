@@ -554,9 +554,9 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileForBlock(AA_AST_NODE* pNod
 	aa::list<CompiledAbstractExpression> opList;
 
 	// Compile individual
-	aa::list<CompiledAbstractExpression> init = CompileAST(pNode->expressions[0], cTable, staticData);
-	aa::list<CompiledAbstractExpression> condition = CompileAST(pNode->expressions[1], cTable, staticData);
-	aa::list<CompiledAbstractExpression> afterthought = CompileAST(pNode->expressions[2], cTable, staticData);
+	aa::list<CompiledAbstractExpression> init = CompileAST(pNode->expressions[0]->expressions[0], cTable, staticData);
+	aa::list<CompiledAbstractExpression> condition = CompileAST(pNode->expressions[1]->expressions[0], cTable, staticData);
+	aa::list<CompiledAbstractExpression> afterthought = CompileAST(pNode->expressions[2]->expressions[0], cTable, staticData);
 	aa::list<CompiledAbstractExpression> body = CompileAST(pNode->expressions[3], cTable, staticData);
 
 	// Merge the oplist with the initialisor
@@ -596,7 +596,7 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileWhileBlock(AA_AST_NODE* pN
 	aa::list<CompiledAbstractExpression> opList;
 
 	// Compile individual elements
-	aa::list<CompiledAbstractExpression> condition = CompileAST(pNode->expressions[0], cTable, staticData);
+	aa::list<CompiledAbstractExpression> condition = CompileAST(pNode->expressions[0]->expressions[0], cTable, staticData);
 	aa::list<CompiledAbstractExpression> body = CompileAST(pNode->expressions[1], cTable, staticData);
 
 	// The jump if false instruction that will skip the body if the condition no longer holds
@@ -632,8 +632,8 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileDoWhileBlock(AA_AST_NODE* 
 	aa::list<CompiledAbstractExpression> opList;
 
 	// Compile individual elements
-	aa::list<CompiledAbstractExpression> condition = CompileAST(pNode->expressions[1], cTable, staticData);
-	aa::list<CompiledAbstractExpression> body = CompileAST(pNode->expressions[0], cTable, staticData);
+	aa::list<CompiledAbstractExpression> condition = CompileAST(pNode->expressions[0]->expressions[0], cTable, staticData);
+	aa::list<CompiledAbstractExpression> body = CompileAST(pNode->expressions[1], cTable, staticData);
 
 	// The jump if false instruction that will skip the body if the condition no longer holds
 	CompiledAbstractExpression jmpDntLoopIns;

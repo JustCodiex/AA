@@ -43,6 +43,8 @@ bool AATypeChecker::TypeCheck() {
 AACType* AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 
 	switch (node->type) {
+	case AA_AST_NODE_TYPE::forafterthought:
+	case AA_AST_NODE_TYPE::forinit:
 	case AA_AST_NODE_TYPE::funcbody:
 	case AA_AST_NODE_TYPE::classbody:
 	case AA_AST_NODE_TYPE::enumbody:
@@ -216,7 +218,11 @@ AACType* AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 		return this->TypeCheckUsingOperation(node);
 	case AA_AST_NODE_TYPE::matchstatement:
 		return this->TypeCheckPatternMatchBlock(node);
-		//case AA_AST_NODE_TYPE
+	case AA_AST_NODE_TYPE::forstatement:
+		return this->TypeCheckForStatement(node);
+	case AA_AST_NODE_TYPE::whilestatement:
+	case AA_AST_NODE_TYPE::dowhilestatement:
+		return this->TypeCheckWhileStatement(node);
 	default:
 		break;
 	}
@@ -307,11 +313,16 @@ AACType* AATypeChecker::TypeCheckBinaryOperation(AA_AST_NODE* pOpNode, AA_AST_NO
 			}
 
 		} else if (aa::runtime::is_primitive_type(typeLeft) && aa::runtime::is_primitive_type(typeRight)) {
+			
+			// Set the primitive types here
 			left->tags["primitive"] = (int)aa::runtime::runtimetype_from_statictype(typeLeft);
 			right->tags["primitive"] = (int)aa::runtime::runtimetype_from_statictype(typeRight);
-			AACType* resultType = this->TypeCheckBinaryOperationOnPrimitive(pOpNode, typeLeft, typeRight); // should be checking directly on the nodes if possible...
+
+			// should be checking directly on the nodes if possible...
+			AACType* resultType = this->TypeCheckBinaryOperationOnPrimitive(pOpNode, typeLeft, typeRight);
 			pOpNode->tags["primitive"] = left->tags["primitive"];
 			pOpNode->tags["useCall"] = false;
+
 			/*if (resultType == AACType::ErrorType) {
 				AATC_W_ERROR(
 					"Type mismsatch on binary operation '" + string_cast(pOpNode->content) + "', left operand: '"
@@ -371,6 +382,12 @@ AACType* AATypeChecker::TypeCheckBinaryOperationOnPrimitive(AA_AST_NODE* pOpNode
 		//printf("Incorrect type!"); // TODO: Implement this when function calls have been implemented
 	}
 
+	if (pOpNode->content.compare(L"<") == 0 || pOpNode->content.compare(L"<=") == 0 || pOpNode->content.compare(L">") == 0 || 
+		pOpNode->content.compare(L">=") == 0 || pOpNode->content.compare(L"==") == 0) {
+		return AACTypeDef::Bool; // Result of such binary operations will always be a boolean
+	}
+
+	// Return thte lhs type (is equal to rhs)
 	return typeLeft;
 
 }
@@ -980,6 +997,64 @@ AACType* AATypeChecker::TypeCheckPatternMatchCaseCondition(AA_AST_NODE* pConditi
 	}
 
 	return conditionType;
+
+}
+
+AACType* AATypeChecker::TypeCheckForStatement(AA_AST_NODE* pForStatementNode) {
+
+	// Copy the variable type environment
+	AAVarTypeEnv vtenv = AAVarTypeEnv(m_vtenv);
+
+	// Typecheck init
+	if (this->TypeCheckNode(pForStatementNode->expressions[0]) == AACType::ErrorType) {
+		return AACType::ErrorType;
+	}
+
+	// Typecheck condition and make sure it's a boolean
+	if (this->TypeCheckNode(pForStatementNode->expressions[1]->expressions[0]) != AACTypeDef::Bool) {
+		AATC_W_ERROR(
+			"Expected boolean type in for condition",
+			pForStatementNode->position,
+			aa::compiler_err::C_Undefined_Constructor_Overload
+		);
+	}
+
+	// Typecheck afterthought
+	if (this->TypeCheckNode(pForStatementNode->expressions[2]) == AACType::ErrorType) {
+		return AACType::ErrorType;
+	}
+
+	// Typecheck body
+	if (this->TypeCheckNode(pForStatementNode->expressions[3]) == AACType::ErrorType) {
+		return AACType::ErrorType;
+	}
+
+	// Restore variable type environment
+	m_vtenv = vtenv;
+
+	// We cannot return anything from a for-statement ==> Void
+	return AACType::Void;
+
+}
+
+AACType* AATypeChecker::TypeCheckWhileStatement(AA_AST_NODE* pWhileStatementNode) {
+
+	// Typecheck body failed?
+	if (this->TypeCheckNode(pWhileStatementNode->expressions[1]) == AACType::ErrorType) {
+		return AACType::ErrorType;
+	}
+
+	// Typecheck condition and make sure it's a boolean
+	if (this->TypeCheckNode(pWhileStatementNode->expressions[0]->expressions[0]) != AACTypeDef::Bool) {
+		AATC_W_ERROR(
+			"Expected boolean type in while condition",
+			pWhileStatementNode->position,
+			aa::compiler_err::C_Undefined_Constructor_Overload
+		);
+	}
+
+	// We cannot return anything from a while-statement ==> Void
+	return AACType::Void;
 
 }
 

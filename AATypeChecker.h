@@ -72,6 +72,9 @@ private:
 
 	AACType* TypeCheckFuncDecl(AA_AST_NODE* pDeclNode);
 
+	AACType* TypeCheckForStatement(AA_AST_NODE* pForStatementNode);
+	AACType* TypeCheckWhileStatement(AA_AST_NODE* pWhileStatementNode);
+
 	AACType* TypeOf(AAId var);
 
 	/*

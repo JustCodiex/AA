@@ -1200,9 +1200,11 @@ AA_PT_NODE* AA_PT::CreateConditionBlock(std::vector<AA_PT_NODE*>& nodes, size_t 
 
 AA_PT_NODE* AA_PT::CreateForStatement(std::vector<AA_PT_NODE*>& nodes, size_t nodeIndex) {
 
+	// Create the for statement node
 	AA_PT_NODE* forStatement = new AA_PT_NODE(nodes[nodeIndex]->position);
 	forStatement->nodeType = AA_PT_NODE_TYPE::forstatement;
 
+	// Make sure the next element is an expressions
 	if (nodeIndex + 1 < nodes.size() && nodes[nodeIndex + 1]->nodeType == AA_PT_NODE_TYPE::expression) {
 
 		// Set type to block so we may extract more trees
@@ -1214,27 +1216,53 @@ AA_PT_NODE* AA_PT::CreateForStatement(std::vector<AA_PT_NODE*>& nodes, size_t no
 		// Get loop expressions
 		std::vector<AA_PT_NODE*> forLoopExpr = this->CreateArgumentTree(nodes[nodeIndex + 1]);
 
+		// Make sure we only have 3 elements to consider
 		if (forLoopExpr.size() == 3) {
-			forStatement->childNodes.push_back(forLoopExpr[0]); // initialise
-			forStatement->childNodes.push_back(forLoopExpr[1]); // condition
-			forStatement->childNodes.push_back(forLoopExpr[2]); // afterthought
+			
+			// Initialize
+			AA_PT_NODE* pInitNode = new AA_PT_NODE(AA_PT_NODE_TYPE::forinit, forLoopExpr[0]->position);
+			pInitNode->childNodes.push_back(forLoopExpr[0]);
+
+			// Condition
+			AA_PT_NODE* pConditionNode = new AA_PT_NODE(AA_PT_NODE_TYPE::condition, forLoopExpr[1]->position);
+			pConditionNode->childNodes.push_back(forLoopExpr[1]); // Condition
+
+			// Afterthought
+			AA_PT_NODE* pAfterthoughtNode = new AA_PT_NODE(AA_PT_NODE_TYPE::forafterthought, forLoopExpr[2]->position);
+			pAfterthoughtNode->childNodes.push_back(forLoopExpr[2]); // Afterthought
+
+			// Add expressions
+			forStatement->childNodes.push_back(pInitNode); // initialise
+			forStatement->childNodes.push_back(pConditionNode); // condition
+			forStatement->childNodes.push_back(pAfterthoughtNode); // afterthought
+
 		} else {
-			printf("Missing statements!");
+
+			SetError(Error("One or more expressions are missing in the for-statement", 0, nodes[nodeIndex]->position));
+			return NULL;
+
 		}
 
 	} else {
 
-		printf("for-statement missing expressions");
+		SetError(Error("for-statement missing expressions", 0, nodes[nodeIndex]->position));
+		return NULL;
 
 	}
 
 	if (nodeIndex + 2 < nodes.size() && nodes[nodeIndex + 2]->nodeType == AA_PT_NODE_TYPE::block) {
 
-		forStatement->childNodes.push_back(this->CreateTree(nodes[nodeIndex + 2]->childNodes, 0));
+		// Create the for-loop body
+		AA_PT_NODE* pBodyNode = new AA_PT_NODE(AA_PT_NODE_TYPE::block, nodes[nodeIndex + 2]->position);
+		pBodyNode->childNodes.push_back(this->CreateTree(nodes[nodeIndex + 2]->childNodes, 0));
+
+		// Add to for statement
+		forStatement->childNodes.push_back(pBodyNode);
 
 	} else {
 
-		printf("for-statement missing body");
+		SetError(Error("for-statement missing loop body", 0, nodes[nodeIndex]->position));
+		return NULL;
 
 	}
 
@@ -1249,21 +1277,36 @@ AA_PT_NODE* AA_PT::CreateWhileStatement(std::vector<AA_PT_NODE*>& nodes, size_t 
 	AA_PT_NODE* whileStatement = new AA_PT_NODE(nodes[nodeIndex]->position);
 	whileStatement->nodeType = AA_PT_NODE_TYPE::whilestatement;
 
+	// Make sure we have a condition
 	if (nodeIndex + 1 < nodes.size() && nodes[nodeIndex + 1]->nodeType == AA_PT_NODE_TYPE::expression) {
 
-		whileStatement->childNodes.push_back(this->CreateTree(nodes[nodeIndex + 1]->childNodes, 0));
+		// Parse condition
+		AA_PT_NODE* whileCondition = new AA_PT_NODE(AA_PT_NODE_TYPE::condition, nodes[nodeIndex+1]->position);
+		whileCondition->childNodes.push_back(this->CreateTree(nodes[nodeIndex + 1]->childNodes, 0));
+
+		// Add condition to statement
+		whileStatement->childNodes.push_back(whileCondition);
 
 	} else {
-		printf("while-statement missing condition");
+		
+		SetError(Error("While-statement missing condition", 0, nodes[nodeIndex]->position));
+		return NULL;
+
 	}
 
 	if (nodeIndex + 2 < nodes.size() && nodes[nodeIndex + 2]->nodeType == AA_PT_NODE_TYPE::block) {
 
-		whileStatement->childNodes.push_back(this->CreateTree(nodes[nodeIndex + 2]->childNodes, 0));
+		// Create the while-loop body
+		AA_PT_NODE* pBodyNode = new AA_PT_NODE(AA_PT_NODE_TYPE::block, nodes[nodeIndex + 2]->position);
+		pBodyNode->childNodes.push_back(this->CreateTree(nodes[nodeIndex + 2]->childNodes, 0));
+
+		// Add the while-loop body
+		whileStatement->childNodes.push_back(pBodyNode);
 
 	} else {
 
-		printf("while-statement missing body");
+		SetError(Error("While-statement missing body", 0, nodes[nodeIndex]->position));
+		return NULL;
 
 	}
 
@@ -1279,13 +1322,37 @@ AA_PT_NODE* AA_PT::CreateDoWhileStatement(std::vector<AA_PT_NODE*>& nodes, size_
 	dowhileStatement->nodeType = AA_PT_NODE_TYPE::dowhilestatement;
 
 	if (nodeIndex + 1 < nodes.size() && nodes[nodeIndex + 1]->nodeType == AA_PT_NODE_TYPE::block) {
-		dowhileStatement->childNodes.push_back(this->CreateTree(nodes[nodeIndex + 1]->childNodes, 0));
+		
+
+		// Create the while-loop body
+		AA_PT_NODE* pBodyNode = new AA_PT_NODE(AA_PT_NODE_TYPE::block, nodes[nodeIndex + 1]->position);
+		pBodyNode->childNodes.push_back(this->CreateTree(nodes[nodeIndex + 1]->childNodes, 0));
+
+		// Add the while-loop body
+		dowhileStatement->childNodes.push_back(pBodyNode);
+
 	} else {
-		printf("do-while statement without a body!");
+		SetError(Error("do-while-statement missing loop body", 0, nodes[nodeIndex]->position));
+		return NULL;
 	}
 
-	if (nodeIndex + 3 < nodes.size() && nodes[nodeIndex + 3]->nodeType == AA_PT_NODE_TYPE::expression) {
-		dowhileStatement->childNodes.push_back(this->CreateTree(nodes[nodeIndex + 3]->childNodes, 0));
+	if (!(nodeIndex + 2 < nodes.size() && nodes[nodeIndex + 2]->content.compare(L"while") == 0)) {
+		SetError(Error("'while' keyword expected following the do-body in do-while statement.", 0, nodes[nodeIndex]->position));
+		return NULL;
+	}
+
+	if (nodeIndex + 3 < nodes.size() && nodes[nodeIndex + 3]->nodeType == AA_PT_NODE_TYPE::expression ) {
+
+		// Parse condition
+		AA_PT_NODE* whileCondition = new AA_PT_NODE(AA_PT_NODE_TYPE::condition, nodes[nodeIndex + 3]->position);
+		whileCondition->childNodes.push_back(this->CreateTree(nodes[nodeIndex + 3]->childNodes, 0));
+
+		// Add condition to statement
+		dowhileStatement->childNodes.insert(dowhileStatement->childNodes.begin(), whileCondition);
+
+	} else {
+		SetError(Error("do-while-statement missing end-condition", 0, nodes[nodeIndex]->position));
+		return NULL;
 	}
 
 	nodes.erase(nodes.begin() + nodeIndex + 1, nodes.begin() + nodeIndex + 4);

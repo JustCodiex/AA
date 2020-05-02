@@ -32,10 +32,12 @@ enum class AA_PT_NODE_TYPE {
 	elsestatement,
 
 	forstatement,
+	forinit,
+	forafterthought,
 	foreachstatement,
 	dowhilestatement,
 	whilestatement,
-
+	
 	breakstatement,
 	continuestatement,
 	returnstatement,

@@ -27,6 +27,8 @@ enum class AA_AST_NODE_TYPE {
 	elsestatement,
 
 	forstatement,
+	forinit,
+	forafterthought,
 	foreachstatement,
 	dowhilestatement,
 	whilestatement,

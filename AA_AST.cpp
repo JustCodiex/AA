@@ -148,23 +148,32 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 	}
 	case AA_PT_NODE_TYPE::forstatement: {
 		AA_AST_NODE* forstatement = new AA_AST_NODE(L"for", AA_AST_NODE_TYPE::forstatement, pNode->position);
-		for (size_t i = 0; i < pNode->childNodes.size(); i++) {
-			forstatement->expressions.push_back(this->AbstractNode(pNode->childNodes[i]));
-		}
+		forstatement->expressions.push_back(this->AbstractNode(pNode->childNodes[0])); // init
+		forstatement->expressions.push_back(this->AbstractNode(pNode->childNodes[1])); // condition
+		forstatement->expressions.push_back(this->AbstractNode(pNode->childNodes[2])); // afterthought
+		forstatement->expressions.push_back(this->AbstractNode(pNode->childNodes[3])); // body
 		return forstatement;
+	}
+	case AA_PT_NODE_TYPE::forinit: {
+		AA_AST_NODE* con = new AA_AST_NODE(L"init", AA_AST_NODE_TYPE::forinit, pNode->position);
+		con->expressions.push_back(this->AbstractNode(pNode->childNodes[0]));
+		return con;
+	}
+	case AA_PT_NODE_TYPE::forafterthought: {
+		AA_AST_NODE* con = new AA_AST_NODE(L"afterthought", AA_AST_NODE_TYPE::forafterthought, pNode->position);
+		con->expressions.push_back(this->AbstractNode(pNode->childNodes[0]));
+		return con;
 	}
 	case AA_PT_NODE_TYPE::whilestatement: {
 		AA_AST_NODE* whilestatement = new AA_AST_NODE(L"while", AA_AST_NODE_TYPE::whilestatement, pNode->position);
-		for (size_t i = 0; i < pNode->childNodes.size(); i++) {
-			whilestatement->expressions.push_back(this->AbstractNode(pNode->childNodes[i]));
-		}
+		whilestatement->expressions.push_back(this->AbstractNode(pNode->childNodes[0])); // condition
+		whilestatement->expressions.push_back(this->AbstractNode(pNode->childNodes[1])); // body
 		return whilestatement;
 	}
 	case AA_PT_NODE_TYPE::dowhilestatement: {
 		AA_AST_NODE* dowhilestatement = new AA_AST_NODE(L"do-while", AA_AST_NODE_TYPE::dowhilestatement, pNode->position);
-		for (size_t i = 0; i < pNode->childNodes.size(); i++) {
-			dowhilestatement->expressions.push_back(this->AbstractNode(pNode->childNodes[i]));
-		}
+		dowhilestatement->expressions.push_back(this->AbstractNode(pNode->childNodes[0])); // condition
+		dowhilestatement->expressions.push_back(this->AbstractNode(pNode->childNodes[1])); // body
 		return dowhilestatement;
 	}
 	case AA_PT_NODE_TYPE::classdecleration: {
