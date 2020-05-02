@@ -666,11 +666,16 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileNewStatement(AA_AST_NODE* 
 
 	} else { // Else it's an array creation
 
+		// Compile the array size
+		aa::list<CompiledAbstractExpression> arraySizes = this->CompileAST(pNode->expressions[0]->expressions[1], cTable, staticData);
+		opList.Add(arraySizes);
+
 		// Create allocation instruction
 		CompiledAbstractExpression allocCAE;
-		allocCAE.bc = AAByteCode::ALLOC;
-		allocCAE.argCount = 1;
-		allocCAE.argValues[0] = std::stoi(pNode->expressions[0]->expressions[1]->content) * sizeof(AAVal);
+		allocCAE.bc = AAByteCode::ALLOCARRAY;
+		allocCAE.argCount = 2;
+		allocCAE.argValues[0] = pNode->tags["primitive"];
+		allocCAE.argValues[1] = 1; // TODO: Add support for multi-dimensions
 
 		// Add to oplist
 		opList.Add(allocCAE);
@@ -1134,7 +1139,8 @@ aa::list<AAC::CompiledAbstractExpression> AAC::HandleIndexPush(AA_AST_NODE* pNod
 	// Create dynamic method of fetching element operation
 	CompiledAbstractExpression getElemCAE;
 	getElemCAE.bc = AAByteCode::GETELEM;
-	getElemCAE.argCount = 0;
+	getElemCAE.argCount = 1;
+	getElemCAE.argValues[0] = 0; // TODO: Add support for multidimension
 
 	// Add to operations list
 	opList.Add(getElemCAE);

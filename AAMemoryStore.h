@@ -29,7 +29,7 @@ public:
 	bool Dereference(AAMemoryPtr ptr);
 
 	AAMemoryPtr Alloc(size_t sz);
-	AAMemoryPtr AllocArray(AAPrimitiveType primitiveType, int dimCount, int* dimensionLengths);
+	AAMemoryPtr AllocArray(AAPrimitiveType primitiveType, uint32_t dimCount, uint32_t* dimensionLengths);
 	AAMemoryPtr AllocString(std::wstring str);
 
 	AAObject* Object(const AAMemoryPtr& ptr) const;

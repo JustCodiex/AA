@@ -48,7 +48,7 @@ public:
 
 	AAStackValue change_type(AAPrimitiveType type);
 
-	AAVal as_val();
+	AAVal as_val() const;
 
 	static AAStackValue None;
 	static AAStackValue Null;

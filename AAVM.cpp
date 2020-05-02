@@ -444,15 +444,12 @@ AAStackValue AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 		}
 		case AAByteCode::ALLOCARRAY: {
 			AAPrimitiveType t = (AAPrimitiveType)AAVM_GetArgument(0);
-			int dCount = AAVM_GetArgument(1);
-			int* dLengths = new int[dCount];
-			for (int i = 2; i < 8; i++) { // Note here <-- we may only have 6 dimensions
-				int dimSize = (int)AAVM_GetArgument(i);
-				if (i - 2 < dCount) {
-					dLengths[i - 2] = dimSize;
-				}
+			int dimCount = AAVM_GetArgument(1);
+			uint32_t* dimLengths = new uint32_t[dimCount];
+			for (int i = 0; i < dimCount; i++) {
+				dimLengths[0] = stack.Pop<uint32_t>(); // NOTE!: We'll always pop 4 bytes from stack
 			}
-			AAMemoryPtr ptr = m_heapMemory->AllocArray(t, dCount, dLengths);
+			AAMemoryPtr ptr = m_heapMemory->AllocArray(t, dimCount, dimLengths);
 			stack.Push(ptr);
 			AAVM_OPI++;
 			break;
@@ -486,7 +483,7 @@ AAStackValue AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 			AAArray* arrObj = m_heapMemory->Array(arrayPtr); // Actual array object
 			if (arrObj) {
 				if (i >= 0 && i < (int32_t)arrObj->get_length()) {
-					stack.Push(arrObj->get_value(i, AAVM_GetArgument(0)));
+					aa::vm::PushSomething(arrObj->get_value(i, AAVM_GetArgument(0)), stack);
 				} else {
 					AAVM_ThrowRuntimeErr("IndexOutOfRange", "Index " + std::to_string(i) + " is out of range!");
 				}

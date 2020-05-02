@@ -57,7 +57,7 @@ enum class AAByteCode : unsigned char {
 	BOR, // (Bitwise Or |, 1 argument [primitive type])
 
 	ALLOC, // (Heap Allocate memory for a new object, 1 argument[size in bytes])
-	ALLOCARRAY, // (Heap Allocate memory for a new array, 2+(n+) arguments[primitive type, dimensions, <dim_size...>])
+	ALLOCARRAY, // (Heap Allocate memory for a new array, 2 arguments[primitive type, dimension count])
 	CTOR, // (Call constructor and bind type, 3 arguments[typeID, ctor, args])
 	
 	TRY, // ---

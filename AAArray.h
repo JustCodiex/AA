@@ -5,23 +5,27 @@ class AAArray : public AAObject {
 
 public:
 
-	AAArray(AAPrimitiveType type, int dimCount, int* dimLengths);
+	AAArray(AAPrimitiveType type, uint32_t dimCount, uint32_t* dimLengths);
 
 	void Release() override;
 
-	const size_t& get_length() const;
-	const size_t& get_length(const size_t dimension) const;
+	const uint32_t& get_length() const;
+	const uint32_t& get_length(const uint32_t dimension) const;
 
 	const AAPrimitiveType get_type() const;
 
-	void set_value(const int32_t& index, const size_t& dimension, const AAStackValue& val);
+	void set_value(const uint32_t& index, const uint32_t& dimension, const AAStackValue& val);
 
-	const AAStackValue& get_value(const int32_t& index, const size_t& dimension);
+	const AAStackValue get_value(const uint32_t& index, const uint32_t& dimension);
 
 private:
 
 	AAPrimitiveType m_primitiveType;
-	int m_dimensionCount;
-	int* m_dimensionLengths;
+	uint32_t m_offsetSize;
+
+	uint32_t m_dimensionCount;
+	uint32_t* m_dimensionLengths;
+
+	unsigned char** m_content;
 
 };

@@ -47,7 +47,11 @@ namespace aa {
 			} else if (pStaticType == AACTypeDef::String) {
 				return AAPrimitiveType::string;
 			} else {
-				return AAPrimitiveType::Undefined;
+				if (pStaticType->isArrayType || pStaticType->isRefType) {
+					return AAPrimitiveType::refptr;
+				} else {
+					return AAPrimitiveType::Undefined;
+				}
 			}
 		}
 

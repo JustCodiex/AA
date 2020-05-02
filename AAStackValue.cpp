@@ -121,7 +121,7 @@ bool AAStackValue::is_string() { return m_type == AAPrimitiveType::string; }
 
 bool AAStackValue::is_nil() { return m_type == AAPrimitiveType::Undefined; }
 
-AAVal AAStackValue::as_val() { return m_val; }
+AAVal AAStackValue::as_val() const { return m_val; }
 
 bool AAStackValue::is_same_value(const AAStackValue& value) const {
 

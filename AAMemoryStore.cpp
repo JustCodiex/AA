@@ -70,7 +70,7 @@ AAMemoryPtr AAMemoryStore::Alloc(size_t sz) {
 
 }
 
-AAMemoryPtr AAMemoryStore::AllocArray(AAPrimitiveType primitiveType, int dimCount, int* dimensionLengths) {
+AAMemoryPtr AAMemoryStore::AllocArray(AAPrimitiveType primitiveType, uint32_t dimCount, uint32_t* dimensionLengths) {
 
 	// Get next ptr
 	AAMemoryPtr ptr = this->NextPointer();

@@ -593,9 +593,6 @@ bool RunRegressionTests(AAVM* pAAVM) {
 	// Run text tests
 	RunTextTests(pAAVM, successes, fails);
 
-	// Run array tests
-	//RunArrayTests(pAAVM, successes, fails);
-
 	// Run function tests
 	RunFunctionTests(pAAVM, successes, fails);
 
@@ -604,6 +601,9 @@ bool RunRegressionTests(AAVM* pAAVM) {
 
 	// Run loop tests
 	RunLoopTests(pAAVM, successes, fails);
+
+	// Run array tests
+	RunArrayTests(pAAVM, successes, fails);
 
 	// Run class tests
 	//RunClassTests(pAAVM, successes, fails);

@@ -731,6 +731,9 @@ AACType* AATypeChecker::TypeCheckNewStatement(AA_AST_NODE* pNewStatement) {
 	} else if (pNewStatement->expressions[0]->type == AA_AST_NODE_TYPE::index) {
 		AACType* tp = this->FindType(pNewStatement->expressions[0]->expressions[0]->content + L"[]"); // Put an additional [] on, such that it picks up the correct type
 		if (this->IsValidType(tp)) {
+
+			pNewStatement->tags["primitive"] = (int)aa::runtime::runtimetype_from_statictype(tp->encapsulatedType);
+
 			return tp;
 		}
 	}
