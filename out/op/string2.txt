@@ -3,9 +3,9 @@ CONSTANTS:	[UTF-8, "Hello"]
 IDENTIFIERS:
 	s;
 OPERATIONS:
-	[0]	PUSHWS, 0
-	[1]	SETVAR, 0, 13		;; primitive: string [16 bytes]
-	[2]	GETVAR, 0
-	[3]	XCALL, 1, 1		;; Calls: string::length
+	[0000]  PUSHWS, 0                       
+	[0001]  SETVAR, 0, 13                   ;; primitive: string [16 bytes]
+	[0002]  GETVAR, 0                       
+	[0003]  XCALL, 1, 1                     ;; Calls: string::length
 END PROCEDURE;
 

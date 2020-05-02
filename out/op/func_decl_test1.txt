@@ -3,7 +3,7 @@ CONSTANTS:
 IDENTIFIERS:
 
 OPERATIONS:
-	[0]	RET
+	[0000]  RET                             
 END PROCEDURE;
 
 START PROCEDURE 1 (testb):
@@ -11,6 +11,6 @@ CONSTANTS:
 IDENTIFIERS:
 
 OPERATIONS:
-	[0]	RET
+	[0000]  RET                             
 END PROCEDURE;
 

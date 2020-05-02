@@ -3,8 +3,8 @@ CONSTANTS:	[I32, 10]
 IDENTIFIERS:
 
 OPERATIONS:
-	[0]	PUSHC, 0
-	[1]	CALL, 1, 1		;; Calls: par
+	[0000]  PUSHC, 0                        
+	[0001]  CALL, 1, 1                      ;; Calls: par
 END PROCEDURE;
 
 START PROCEDURE 1 (par):
@@ -12,14 +12,14 @@ CONSTANTS:	[I32, 28]
 IDENTIFIERS:
 	z;	x;
 OPERATIONS:
-	[0]	SETVAR, 0, 6		;; primitive: int32 [4 bytes]
-	[1]	GETVAR, 0
-	[2]	SETVAR, 1, 6		;; primitive: int32 [4 bytes]
-	[3]	GETVAR, 1
-	[4]	PUSHC, 0
-	[5]	ADD, 6		;; primitive: int32 [4 bytes]
-	[6]	SETVAR, 1, 6		;; primitive: int32 [4 bytes]
-	[7]	GETVAR, 1
-	[8]	RET
+	[0000]  SETVAR, 0, 6                    ;; primitive: int32 [4 bytes]
+	[0001]  GETVAR, 0                       
+	[0002]  SETVAR, 1, 6                    ;; primitive: int32 [4 bytes]
+	[0003]  GETVAR, 1                       
+	[0004]  PUSHC, 0                        
+	[0005]  ADD, 6                          ;; primitive: int32 [4 bytes]
+	[0006]  SETVAR, 1, 6                    ;; primitive: int32 [4 bytes]
+	[0007]  GETVAR, 1                       
+	[0008]  RET                             
 END PROCEDURE;
 

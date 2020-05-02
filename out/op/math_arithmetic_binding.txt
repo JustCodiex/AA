@@ -3,10 +3,10 @@ CONSTANTS:	[I32, 5]
 IDENTIFIERS:
 
 OPERATIONS:
-	[0]	PUSHC, 0
-	[1]	PUSHC, 0
-	[2]	PUSHC, 0
-	[3]	MUL, 6		;; primitive: int32 [4 bytes]
-	[4]	ADD, 6		;; primitive: int32 [4 bytes]
+	[0000]  PUSHC, 0                        
+	[0001]  PUSHC, 0                        
+	[0002]  PUSHC, 0                        
+	[0003]  MUL, 6                          ;; primitive: int32 [4 bytes]
+	[0004]  ADD, 6                          ;; primitive: int32 [4 bytes]
 END PROCEDURE;
 

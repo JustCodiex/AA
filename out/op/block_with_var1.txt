@@ -3,14 +3,14 @@ CONSTANTS:	[I32, 5][I32, 2]
 IDENTIFIERS:
 	x;
 OPERATIONS:
-	[0]	PUSHC, 0
-	[1]	PUSHC, 0
-	[2]	ADD, 6		;; primitive: int32 [4 bytes]
-	[3]	PUSHC, 0
-	[4]	MUL, 6		;; primitive: int32 [4 bytes]
-	[5]	PUSHC, 1
-	[6]	SUB, 6		;; primitive: int32 [4 bytes]
-	[7]	SETVAR, 0, 6		;; primitive: int32 [4 bytes]
-	[8]	GETVAR, 0
+	[0000]  PUSHC, 0                        
+	[0001]  PUSHC, 0                        
+	[0002]  ADD, 6                          ;; primitive: int32 [4 bytes]
+	[0003]  PUSHC, 0                        
+	[0004]  MUL, 6                          ;; primitive: int32 [4 bytes]
+	[0005]  PUSHC, 1                        
+	[0006]  SUB, 6                          ;; primitive: int32 [4 bytes]
+	[0007]  SETVAR, 0, 6                    ;; primitive: int32 [4 bytes]
+	[0008]  GETVAR, 0                       
 END PROCEDURE;
 

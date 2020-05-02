@@ -3,9 +3,9 @@ CONSTANTS:	[B, T]
 IDENTIFIERS:
 	x;
 OPERATIONS:
-	[0]	PUSHC, 0
-	[1]	SETVAR, 0, 3		;; primitive: bool [1 bytes]
-	[2]	GETVAR, 0
-	[3]	LNEG, 3
+	[0000]  PUSHC, 0                        
+	[0001]  SETVAR, 0, 3                    ;; primitive: bool [1 bytes]
+	[0002]  GETVAR, 0                       
+	[0003]  LNEG, 3                         
 END PROCEDURE;
 

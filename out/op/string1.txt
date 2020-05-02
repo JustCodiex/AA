@@ -3,8 +3,8 @@ CONSTANTS:	[UTF-8, "This is a string - Hello from AA"]
 IDENTIFIERS:
 	s;
 OPERATIONS:
-	[0]	PUSHWS, 0
-	[1]	SETVAR, 0, 13		;; primitive: string [16 bytes]
-	[2]	GETVAR, 0
+	[0000]  PUSHWS, 0                       
+	[0001]  SETVAR, 0, 13                   ;; primitive: string [16 bytes]
+	[0002]  GETVAR, 0                       
 END PROCEDURE;
 

@@ -3,12 +3,12 @@ CONSTANTS:	[F32, 1.500000][F32, 1.250000]
 IDENTIFIERS:
 	x;
 OPERATIONS:
-	[0]	PUSHC, 0
-	[1]	SETVAR, 0, 10		;; primitive: real32 [4 bytes]
-	[2]	GETVAR, 0
-	[3]	PUSHC, 1
-	[4]	ADD, 10		;; primitive: real32 [4 bytes]
-	[5]	SETVAR, 0, 10		;; primitive: real32 [4 bytes]
-	[6]	GETVAR, 0
+	[0000]  PUSHC, 0                        
+	[0001]  SETVAR, 0, 10                   ;; primitive: real32 [4 bytes]
+	[0002]  GETVAR, 0                       
+	[0003]  PUSHC, 1                        
+	[0004]  ADD, 10                         ;; primitive: real32 [4 bytes]
+	[0005]  SETVAR, 0, 10                   ;; primitive: real32 [4 bytes]
+	[0006]  GETVAR, 0                       
 END PROCEDURE;
 

@@ -337,9 +337,12 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileBinaryOperation(AA_AST_NOD
 
 	} else if (binopCAE.bc == AAByteCode::SETELEM) {
 	
-		opList.Add(HandleVarPush(cTable, pNode->expressions[0]->expressions[0]));
-		opList.Add(HandleStackPush(cTable, pNode->expressions[0]->expressions[1], staticData));
 		opList.Add(HandleStackPush(cTable, pNode->expressions[1], staticData));
+		opList.Add(HandleStackPush(cTable, pNode->expressions[0]->expressions[1], staticData));
+		opList.Add(HandleVarPush(cTable, pNode->expressions[0]->expressions[0]));
+		
+		binopCAE.argCount = 1;
+		binopCAE.argValues[0] = 0; // TODO: Add support for multi-dimensions
 
 	} else {
 

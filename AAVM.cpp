@@ -494,13 +494,12 @@ AAStackValue AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 			break;
 		}
 		case AAByteCode::SETELEM: {
-			int32_t i = stack.Pop<int32_t>(); // index
 			AAMemoryPtr arrayPtr = stack.Pop<AAMemoryPtr>(); // Ptr to array
 			AAArray* arrObj = m_heapMemory->Array(arrayPtr); // Actual array object
 			if (arrObj) {
+				int32_t i = stack.Pop<int32_t>(); // index
 				if (i >= 0 && i < (int32_t)arrObj->get_length()) {
-					AAStackValue val = aa::vm::PopSomething(arrObj->get_type(), stack); // REMEMBER THE ORDER WAS CHANGED!!!!!!!!
-					arrObj->set_value(i, AAVM_GetArgument(0), val);
+					arrObj->set_value(i, AAVM_GetArgument(0), aa::vm::PopSomething(arrObj->get_type(), stack));
 				} else {
 					AAVM_ThrowRuntimeErr("IndexOutOfRange", "Index " + std::to_string(i) + " is out of range!");
 				}

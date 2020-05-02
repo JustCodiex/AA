@@ -3,8 +3,8 @@ CONSTANTS:	[I32, 4]
 IDENTIFIERS:
 
 OPERATIONS:
-	[0]	PUSHC, 0
-	[1]	CALL, 1, 1		;; Calls: factorial
+	[0000]  PUSHC, 0                        
+	[0001]  CALL, 1, 1                      ;; Calls: factorial
 END PROCEDURE;
 
 START PROCEDURE 1 (factorial):
@@ -12,19 +12,19 @@ CONSTANTS:	[I32, 1]
 IDENTIFIERS:
 	n;
 OPERATIONS:
-	[0]	SETVAR, 0, 6		;; primitive: int32 [4 bytes]
-	[1]	GETVAR, 0
-	[2]	PUSHC, 0
-	[3]	LEQ, 6
-	[4]	JMPF, 2
-	[5]	PUSHC, 0
-	[6]	JMP, 6
-	[7]	GETVAR, 0
-	[8]	GETVAR, 0
-	[9]	PUSHC, 0
-	[10]	SUB, 6		;; primitive: int32 [4 bytes]
-	[11]	CALL, 1, 1		;; Calls: factorial
-	[12]	MUL, 6		;; primitive: int32 [4 bytes]
-	[13]	RET
+	[0000]  SETVAR, 0, 6                    ;; primitive: int32 [4 bytes]
+	[0001]  GETVAR, 0                       
+	[0002]  PUSHC, 0                        
+	[0003]  LEQ, 6                          
+	[0004]  JMPF, 2                         
+	[0005]  PUSHC, 0                        
+	[0006]  JMP, 6                          
+	[0007]  GETVAR, 0                       
+	[0008]  GETVAR, 0                       
+	[0009]  PUSHC, 0                        
+	[0010]  SUB, 6                          ;; primitive: int32 [4 bytes]
+	[0011]  CALL, 1, 1                      ;; Calls: factorial
+	[0012]  MUL, 6                          ;; primitive: int32 [4 bytes]
+	[0013]  RET                             
 END PROCEDURE;
 

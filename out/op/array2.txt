@@ -3,11 +3,11 @@ CONSTANTS:	[I32, 10][I32, 0]
 IDENTIFIERS:
 	arr;
 OPERATIONS:
-	[0]	PUSHC, 0
-	[1]	ALLOCARRAY, 6, 1
-	[2]	SETVAR, 0, 14		;; primitive: refptr [16 bytes]
-	[3]	GETVAR, 0
-	[4]	PUSHC, 1
-	[5]	GETELEM, 0
+	[0000]  PUSHC, 0                        
+	[0001]  ALLOCARRAY, 6, 1                
+	[0002]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
+	[0003]  GETVAR, 0                       
+	[0004]  PUSHC, 1                        
+	[0005]  GETELEM, 0                      
 END PROCEDURE;
 

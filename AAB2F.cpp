@@ -2,6 +2,8 @@
 #include "AAVM.h"
 #include "AAPrimitiveType.h"
 #include <fstream>
+#include <iostream>
+#include <iomanip>
 
 namespace aa {
 
@@ -237,21 +239,22 @@ namespace aa {
 				}
 				o << L"\nOPERATIONS:\n";
 				for (size_t j = 0; j < proc.procOperations.Size(); j++) {
-					o << L"\t" << L"[" << std::to_wstring(j) << L"]\t" << OpToWString(proc.procOperations.At(j));
+					o << L"\t" << L"[" << std::right << std::setw(4) << std::setfill(L'0') << std::to_wstring(j) << L"]  ";
+					o << std::left << std::setw(32) << std::setfill(L' ') << OpToWString(proc.procOperations.At(j));
 					if (proc.procOperations.At(j).bc == AAByteCode::XCALL) {
-						o << L"\t\t;; Calls: " << pAAVM->GetBuiltinFuncByIndex(proc.procOperations.At(j).argValues[0]).name;
+						o << L";; Calls: " << pAAVM->GetBuiltinFuncByIndex(proc.procOperations.At(j).argValues[0]).name;
 					} else if (proc.procOperations.At(j).bc == AAByteCode::CALL) {
 						size_t target = proc.procOperations.At(j).argValues[0];
 						if (target < procedures.size()) {
-							o << L"\t\t;; Calls: " << procedures.at(target).node->content;
+							o << L";; Calls: " << procedures.at(target).node->content;
 						} else {
-							o << L"\t\t;; Calls: Uncompiled function [Uncaught compile error!]";
+							o << L"t;; Calls: Uncompiled function [Uncaught compile error!]";
 						}
 					} else if (__is_arithmetic_code(proc.procOperations.At(j).bc)) {
-						o << L"\t\t;; primitive: " << aa::runtime::name_of_type((AAPrimitiveType)proc.procOperations.At(j).argValues[0]);
+						o << L";; primitive: " << aa::runtime::name_of_type((AAPrimitiveType)proc.procOperations.At(j).argValues[0]);
 						o << L" [" << aa::runtime::size_of_type((AAPrimitiveType)proc.procOperations.At(j).argValues[0]) << L" bytes]";
 					} else if (__is_primitive_code(proc.procOperations.At(j).bc)) {
-						o << L"\t\t;; primitive: " << aa::runtime::name_of_type((AAPrimitiveType)proc.procOperations.At(j).argValues[1]);
+						o << L";; primitive: " << aa::runtime::name_of_type((AAPrimitiveType)proc.procOperations.At(j).argValues[1]);
 						o << L" [" << aa::runtime::size_of_type((AAPrimitiveType)proc.procOperations.At(j).argValues[1]) << L" bytes]";
 					}
 					o << "\n";

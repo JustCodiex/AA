@@ -3,7 +3,7 @@ CONSTANTS:
 IDENTIFIERS:
 
 OPERATIONS:
-	[0]	CALL, 1, 0		;; Calls: foo
+	[0000]  CALL, 1, 0                      ;; Calls: foo
 END PROCEDURE;
 
 START PROCEDURE 1 (foo):
@@ -11,18 +11,18 @@ CONSTANTS:	[I32, 0][I32, 10][I32, 1]
 IDENTIFIERS:
 	i;
 OPERATIONS:
-	[0]	PUSHC, 0
-	[1]	SETVAR, 0, 6		;; primitive: int32 [4 bytes]
-	[2]	GETVAR, 0
-	[3]	PUSHC, 1
-	[4]	LE, 6
-	[5]	JMPF, 5
-	[6]	GETVAR, 0
-	[7]	PUSHC, 2
-	[8]	ADD, 6		;; primitive: int32 [4 bytes]
-	[9]	SETVAR, 0, 6		;; primitive: int32 [4 bytes]
-	[10]	JMP, -9
-	[11]	GETVAR, 0
-	[12]	RET
+	[0000]  PUSHC, 0                        
+	[0001]  SETVAR, 0, 6                    ;; primitive: int32 [4 bytes]
+	[0002]  GETVAR, 0                       
+	[0003]  PUSHC, 1                        
+	[0004]  LE, 6                           
+	[0005]  JMPF, 5                         
+	[0006]  GETVAR, 0                       
+	[0007]  PUSHC, 2                        
+	[0008]  ADD, 6                          ;; primitive: int32 [4 bytes]
+	[0009]  SETVAR, 0, 6                    ;; primitive: int32 [4 bytes]
+	[0010]  JMP, -9                         
+	[0011]  GETVAR, 0                       
+	[0012]  RET                             
 END PROCEDURE;
 
