@@ -609,7 +609,7 @@ bool RunRegressionTests(AAVM* pAAVM) {
 	RunClassTests(pAAVM, successes, fails);
 
 	// Run namespace tests
-	//RunNamespaceTests(pAAVM, successes, fails);
+	RunNamespaceTests(pAAVM, successes, fails);
 
 	// Run IO tests
 	//RunIOTests(pAAVM, successes, fails);
