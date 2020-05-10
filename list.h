@@ -87,20 +87,30 @@ namespace aa {
 		}
 
 		/// <summary>
-		/// 
+		/// Find the index of specified element
 		/// </summary>
-		/// <param name="val"></param>
-		/// <returns></returns>
+		/// <param name="val">The value to find index of</param>
+		/// <returns>Index of element in list or SIZE_MAX if not found</returns>
 		size_t IndexOf(T val) {
 			for (size_t i = 0; i < m_vector.size(); i++) if (m_vector.at(i) == val) return i;
-			return -1;
+			return SIZE_MAX;
+		}
+
+		/// <summary>
+		/// Find the index of specified element
+		/// </summary>
+		/// <param name="val">The value to find index of</param>
+		/// <returns>Index of element in list or SIZE_MAX if not found</returns>
+		const size_t IndexOf(T val) const {
+			for (size_t i = 0; i < m_vector.size(); i++) if (m_vector.at(i) == val) return i;
+			return SIZE_MAX;
 		}
 
 		/// <summary>
 		/// Return the (amount of elements) size of the list
 		/// </summary>
 		/// <returns>Size of internal vector</returns>
-		size_t Size() {
+		size_t Size() const {
 			return m_vector.size();
 		}
 
@@ -212,6 +222,13 @@ namespace aa {
 				}
 			}
 			return ls;
+		}
+
+		/// <summary>
+		/// Clear internal vector
+		/// </summary>
+		void Clear() {
+			m_vector.clear();
 		}
 
 		/// <summary>

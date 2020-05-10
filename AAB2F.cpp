@@ -156,6 +156,9 @@ namespace aa {
 		case AAByteCode::LEN:
 			output = L"LEN";
 			break;
+		case AAByteCode::CTOR:
+			output = L"CTOR";
+			break;
 		default:
 			break;
 		}
@@ -228,16 +231,21 @@ namespace aa {
 
 				AAC::CompiledProcedure proc = procedures[i];
 				o << L"START PROCEDURE " << std::to_wstring(i) << " (" << procedures[i].node->content << L"):\n";
-				o << "CONSTANTS:\t";
-				for (size_t j = 0; j < proc.procEnvironment.constValues.Size(); j++) {
-					AA_Literal lit = proc.procEnvironment.constValues.At(j);
-					o << L"[" << getLitType(lit.tp) << L", " << getLitValue(lit) << L"]";
+				if (proc.procEnvironment.constValues.Size() > 0) {
+					o << "CONSTANTS:\t";
+					for (size_t j = 0; j < proc.procEnvironment.constValues.Size(); j++) {
+						AA_Literal lit = proc.procEnvironment.constValues.At(j);
+						o << L"[" << getLitType(lit.tp) << L", " << getLitValue(lit) << L"]";
+					}
 				}
-				o << L"\nIDENTIFIERS:\n";
-				for (size_t j = 0; j < proc.procEnvironment.identifiers.Size(); j++) {
-					o << L"\t" << proc.procEnvironment.identifiers.At(j) << L";";
+				if (proc.procEnvironment.identifiers.Size() > 0) {
+					o << L"\nIDENTIFIERS:\n";
+					for (size_t j = 0; j < proc.procEnvironment.identifiers.Size(); j++) {
+						o << L"\t" << proc.procEnvironment.identifiers.At(j) << L";";
+					}
+					o << "\n";
 				}
-				o << L"\nOPERATIONS:\n";
+				o << L"OPERATIONS:\n";
 				for (size_t j = 0; j < proc.procOperations.Size(); j++) {
 					o << L"\t" << L"[" << std::right << std::setw(4) << std::setfill(L'0') << std::to_wstring(j) << L"]  ";
 					o << std::left << std::setw(32) << std::setfill(L' ') << OpToWString(proc.procOperations.At(j));

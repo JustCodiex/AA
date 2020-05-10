@@ -2,7 +2,7 @@
 #include "bwalker.h"
 #include "AAO.h"
 #include "AAVarEnv.h"
-#include "AAObject.h"
+#include "AARuntimeTypeEnv.h"
 
 class AAProgram {
 	friend class AAVM; // Allow the virtual machine to access private parts of class
@@ -24,19 +24,23 @@ public:
 
 	int GetEntryPoint() { return m_entryPoint; }
 
+	AAStaticTypeEnvironment* GetTypeEnvironment();
+
 private:
 
 	void LoadConstants(Procedure& proc, aa::bwalker& bw);
 	void LoadOperations(Procedure& proc, aa::bwalker& bw);
+	void LoadType(aa::bwalker& bw);
 
 private:
+
+	unsigned char m_compiledWithVersion[10] = {};
 
 	int m_entryPoint;
 	int m_procedureCount;
 	int m_signatureCount;
-	Procedure* m_procedures;
 
-	size_t m_typeCount;
-	AAObjectType* m_types;
+	Procedure* m_procedures;
+	AAStaticTypeEnvironment* m_types;
 
 };

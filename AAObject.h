@@ -12,11 +12,17 @@ public:
 
 	AAObjectType();
 
+	AAObjectType(std::wstring _typename);
+
 	bool IsTaggedType();
 
 	bool IsInstanceOf(AAObjectType* pBaseType);
 
+	const std::wstring GetName() const;
+
 private:
+
+	std::wstring m_typename;
 
 	int16_t m_taggedFieldCount;
 	size_t* m_taggedFieldTypes;

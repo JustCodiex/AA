@@ -79,6 +79,18 @@
     <Filter Include="Source Files\VM\Memory\GC">
       <UniqueIdentifier>{f8da15d9-178e-4ced-bee9-f1d4c22b89b9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\bytecode">
+      <UniqueIdentifier>{8a41d1c2-005b-4451-9ac4-bc01b3dec37c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\bytecode">
+      <UniqueIdentifier>{b1471b4c-8273-47f5-b1a7-0285ca4e0004}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\VM\runtime">
+      <UniqueIdentifier>{0351ce37-4360-4fd8-8a18-1e55826c2821}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\VM\runtime">
+      <UniqueIdentifier>{0fcd8b49-ca2d-424c-a273-fbe471de2b6e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -105,14 +117,8 @@
     <ClCompile Include="AAVM.cpp">
       <Filter>Source Files\VM</Filter>
     </ClCompile>
-    <ClCompile Include="AAVarEnv.cpp">
-      <Filter>Source Files\VM</Filter>
-    </ClCompile>
     <ClCompile Include="AATypeChecker.cpp">
       <Filter>Source Files\compiler</Filter>
-    </ClCompile>
-    <ClCompile Include="AAProgram.cpp">
-      <Filter>Source Files\VM</Filter>
     </ClCompile>
     <ClCompile Include="AALanguageRegressionTest.cpp">
       <Filter>Source Files\aatesting</Filter>
@@ -159,9 +165,6 @@
     <ClCompile Include="AAStackValue.cpp">
       <Filter>Source Files\VM</Filter>
     </ClCompile>
-    <ClCompile Include="AAExecute.cpp">
-      <Filter>Source Files\VM</Filter>
-    </ClCompile>
     <ClCompile Include="AAVal.cpp">
       <Filter>Source Files\VM</Filter>
     </ClCompile>
@@ -183,6 +186,21 @@
     <ClCompile Include="AAMemory.cpp">
       <Filter>Source Files\VM\Memory</Filter>
     </ClCompile>
+    <ClCompile Include="AAExecute.cpp">
+      <Filter>Source Files\VM\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="AAVarEnv.cpp">
+      <Filter>Source Files\VM\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="AAProgram.cpp">
+      <Filter>Source Files\VM\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="AARuntimeTypeEnv.cpp">
+      <Filter>Source Files\VM\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="AARuntimeEnvironment.cpp">
+      <Filter>Source Files\VM\runtime</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="list.h">
@@ -197,13 +215,7 @@
     <ClInclude Include="AAB2F.h">
       <Filter>Header Files\aautil</Filter>
     </ClInclude>
-    <ClInclude Include="AAO.h">
-      <Filter>Header Files\compiler</Filter>
-    </ClInclude>
     <ClInclude Include="AAC.h">
-      <Filter>Header Files\compiler</Filter>
-    </ClInclude>
-    <ClInclude Include="AAByteCode.h">
       <Filter>Header Files\compiler</Filter>
     </ClInclude>
     <ClInclude Include="AA_AST.h">
@@ -221,9 +233,6 @@
     <ClInclude Include="AAVM.h">
       <Filter>Header Files\VM</Filter>
     </ClInclude>
-    <ClInclude Include="AAVarEnv.h">
-      <Filter>Header Files\VM</Filter>
-    </ClInclude>
     <ClInclude Include="AAVal.h">
       <Filter>Header Files\VM</Filter>
     </ClInclude>
@@ -233,17 +242,11 @@
     <ClInclude Include="AACodePosition.h">
       <Filter>Header Files\parser</Filter>
     </ClInclude>
-    <ClInclude Include="AAProgram.h">
-      <Filter>Header Files\VM</Filter>
-    </ClInclude>
     <ClInclude Include="bwalker.h">
       <Filter>Header Files\util</Filter>
     </ClInclude>
     <ClInclude Include="AAFuncSignature.h">
       <Filter>Header Files\compiler</Filter>
-    </ClInclude>
-    <ClInclude Include="AARuntimeEnvironment.h">
-      <Filter>Header Files\VM</Filter>
     </ClInclude>
     <ClInclude Include="AALanguageRegressionTest.h">
       <Filter>Header Files\aatesting</Filter>
@@ -332,14 +335,35 @@
     <ClInclude Include="AAPrimitiveType.h">
       <Filter>Header Files\VM</Filter>
     </ClInclude>
-    <ClInclude Include="AAExecute.h">
-      <Filter>Header Files\VM</Filter>
-    </ClInclude>
     <ClInclude Include="any_stack.h">
       <Filter>Header Files\util</Filter>
     </ClInclude>
     <ClInclude Include="AAArray.h">
       <Filter>Header Files\VM\builtin</Filter>
+    </ClInclude>
+    <ClInclude Include="AAO.h">
+      <Filter>Header Files\bytecode</Filter>
+    </ClInclude>
+    <ClInclude Include="AAByteCode.h">
+      <Filter>Header Files\bytecode</Filter>
+    </ClInclude>
+    <ClInclude Include="AAByteType.h">
+      <Filter>Header Files\bytecode</Filter>
+    </ClInclude>
+    <ClInclude Include="AARuntimeEnvironment.h">
+      <Filter>Header Files\VM\runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="AAExecute.h">
+      <Filter>Header Files\VM\runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="AAVarEnv.h">
+      <Filter>Header Files\VM\runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="AAProgram.h">
+      <Filter>Header Files\VM\runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="AARuntimeTypeEnv.h">
+      <Filter>Header Files\VM\runtime</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

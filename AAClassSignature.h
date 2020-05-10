@@ -41,7 +41,8 @@ struct AAClassSignature {
 	aa::set<AAClassOperatorSignature> operators;
 	aa::set<AAClassFieldSignature> fields;
 	aa::set<AAClassSignature*> extends; // (The class(es) from which we inherit from)
-	
+	unsigned int basePtr;
+
 	size_t classByteSz;
 	
 	AA_AST_NODE* pSourceNode; // Defining AST node (May be NULL, should only ever be used in compile phase)
@@ -59,6 +60,7 @@ struct AAClassSignature {
 		this->domain = 0;
 		this->type = new AACType(this);
 		this->pSourceNode = 0;
+		this->basePtr = 0;
 	}
 	
 	AAClassSignature(std::wstring name) {
@@ -69,6 +71,7 @@ struct AAClassSignature {
 		this->domain = 0;
 		this->type = new AACType(this);
 		this->pSourceNode = 0;
+		this->basePtr = 0;
 	}
 
 	/// <summary>

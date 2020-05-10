@@ -31,7 +31,12 @@ void AAObject::Release() {
 	}
 
 	// Delete data and self
-	delete[] m_data;
+	if (m_data) {
+		delete[] m_data;
+		m_data = 0;
+	}
+
+	// Delete self
 	delete this;
 
 }
@@ -87,7 +92,14 @@ AAObjectType::AAObjectType() {
 	m_taggedFieldCount = -1; // Must be -1 if not a tagged class
 	m_taggedFieldTypes = 0;
 	m_baseType = 0;
+	m_typename = L"Object";
+}
 
+AAObjectType::AAObjectType(std::wstring _typename) {
+	m_baseType = 0;
+	m_taggedFieldCount = -1; // Must be -1 if not a tagged class
+	m_taggedFieldTypes = 0;
+	m_typename = _typename;
 }
 
 bool AAObjectType::IsTaggedType() {
@@ -102,17 +114,100 @@ bool AAObjectType::IsInstanceOf(AAObjectType* pBaseType) {
 	}
 }
 
+const std::wstring AAObjectType::GetName() const {
+	return m_typename;
+}
+
 #pragma endregion
 
 namespace aa {
 
 	void SetValue(AAObject* pObject, size_t offset, AAStackValue value) {
-
+		switch (value.get_type()) {
+		case AAPrimitiveType::boolean:
+			*pObject->Offset<bool>(offset) = value.to_cpp<bool>();
+			break;
+		case AAPrimitiveType::byte:
+			*pObject->Offset<unsigned char>(offset) = value.to_cpp<unsigned char>();
+			break;
+		case AAPrimitiveType::int16:
+			*pObject->Offset<int16_t>(offset) = value.to_cpp<int16_t>();
+			break;
+		case AAPrimitiveType::int32:
+			*pObject->Offset<int32_t>(offset) = value.to_cpp<int32_t>();
+			break;
+		case AAPrimitiveType::int64:
+			*pObject->Offset<int64_t>(offset) = value.to_cpp<int64_t>();
+			break;
+		case AAPrimitiveType::intptr:
+			*pObject->Offset<bool>(offset) = value.to_cpp<bool>(); // This is so undefined....
+			break;
+		case AAPrimitiveType::real32:
+			*pObject->Offset<float_t>(offset) = value.to_cpp<float_t>();
+			break;
+		case AAPrimitiveType::real64:
+			*pObject->Offset<double_t>(offset) = value.to_cpp<double_t>();
+			break;
+		case AAPrimitiveType::string:
+		case AAPrimitiveType::refptr:
+			*pObject->Offset<AAMemoryPtr>(offset) = value.to_cpp<AAMemoryPtr>();
+			break;
+		case AAPrimitiveType::sbyte:
+			*pObject->Offset<char>(offset) = value.to_cpp<char>();
+			break;
+		case AAPrimitiveType::uint16:
+			*pObject->Offset<uint16_t>(offset) = value.to_cpp<uint16_t>();
+			break;
+		case AAPrimitiveType::uint32:
+			*pObject->Offset<uint32_t>(offset) = value.to_cpp<uint32_t>();
+			break;
+		case AAPrimitiveType::uint64:
+			*pObject->Offset<uint64_t>(offset) = value.to_cpp<uint64_t>();
+			break;
+		case AAPrimitiveType::wchar:
+			*pObject->Offset<wchar_t>(offset) = value.to_cpp<wchar_t>();
+			break;
+		case AAPrimitiveType::Undefined:
+		default:
+			break;
+		}
 	}
 
 	const AAStackValue GetValue(AAObject* pObject, AAPrimitiveType type, size_t offset) {
-		AAStackValue val;
-		return val;
+		switch (type) {
+		case AAPrimitiveType::boolean:
+			return AAStackValue(*pObject->Offset<bool>(offset));
+		case AAPrimitiveType::byte:
+			return AAStackValue(*pObject->Offset<unsigned char>(offset));
+		case AAPrimitiveType::int16:
+			return AAStackValue(*pObject->Offset<int16_t>(offset));
+		case AAPrimitiveType::int32:
+			return AAStackValue(*pObject->Offset<int32_t>(offset));
+		case AAPrimitiveType::int64:
+			return AAStackValue(*pObject->Offset<int64_t>(offset));
+		case AAPrimitiveType::intptr:
+			return AAStackValue(*pObject->Offset<bool>(offset)); // TODO: 
+		case AAPrimitiveType::real32:
+			return AAStackValue(*pObject->Offset<float_t>(offset));
+		case AAPrimitiveType::real64:
+			return AAStackValue(*pObject->Offset<double_t>(offset));
+		case AAPrimitiveType::string:
+		case AAPrimitiveType::refptr:
+			return AAStackValue(*pObject->Offset<AAMemoryPtr>(offset));
+		case AAPrimitiveType::sbyte:
+			return AAStackValue(*pObject->Offset<signed char>(offset));
+		case AAPrimitiveType::uint16:
+			return AAStackValue(*pObject->Offset<uint16_t>(offset));
+		case AAPrimitiveType::uint32:
+			return AAStackValue(*pObject->Offset<uint32_t>(offset));
+		case AAPrimitiveType::uint64:
+			return AAStackValue(*pObject->Offset<uint64_t>(offset));
+		case AAPrimitiveType::wchar:
+			return AAStackValue(*pObject->Offset<wchar_t>(offset));
+		case AAPrimitiveType::Undefined:
+		default:
+			return AAStackValue::None;
+		}
 	}
 
 }

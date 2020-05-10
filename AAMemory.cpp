@@ -5,7 +5,7 @@ void AAMemoryPtr::set_store(AAMemoryStore* pMemStr) {
 	this->pMemStore = pMemStr;
 }
 
-const AAObject* AAMemoryPtr::get_object() const {
+AAObject* AAMemoryPtr::get_object() const {
 	return this->pMemStore->Object(*this);
 }
 

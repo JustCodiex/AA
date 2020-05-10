@@ -56,7 +56,12 @@ namespace aa {
 		}
 
 		bool is_primitive_type(AACType* pStaticType) {
-			return runtimetype_from_statictype(pStaticType) != AAPrimitiveType::Undefined;
+			AAPrimitiveType p = runtimetype_from_statictype(pStaticType);
+			if (p != AAPrimitiveType::refptr && p != AAPrimitiveType::Undefined) {
+				return true;
+			} else {
+				return (p == AAPrimitiveType::Undefined) ? false : (pStaticType->isVMType);
+			}
 		}
 
 		std::wstring name_of_type(const AAPrimitiveType& type) {

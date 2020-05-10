@@ -1,7 +1,4 @@
 START PROCEDURE 0 (<GlobalScope>):
-CONSTANTS:	
-IDENTIFIERS:
-
 OPERATIONS:
 	[0000]  CALL, 1, 0                      ;; Calls: test
 END PROCEDURE;

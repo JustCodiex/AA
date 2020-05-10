@@ -66,6 +66,20 @@ namespace aa {
 		}
 
 		/// <summary>
+		/// Finds the index of the specified element
+		/// </summary>
+		/// <param name="val">Value to find index of</param>
+		/// <returns>UINT32_MAX if value is not found, otherwise index of element</returns>
+		const unsigned int FindIndexOf(const T& val) {
+			int i;
+			if (this->FindFirstIndex([val](T& e) { return e == val; }, i)) {
+				return (unsigned int)i;
+			} else {
+				return UINT32_MAX;
+			}
+		}
+
+		/// <summary>
 		/// Find the first element in list that fulfills the predicate
 		/// </summary>
 		/// <param name="predicate">Predicate to test on elements</param>

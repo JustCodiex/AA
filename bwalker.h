@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <sstream>
 
 namespace aa{
 
@@ -13,9 +14,24 @@ namespace aa{
 			m_position = 0;
 		}
 
-		void operator>>(int& i) {
+		void operator>>(int32_t& i) {
 			memcpy(&i, m_bytes + m_position, 4);
 			m_position += 4;
+		}
+
+		void operator>>(uint32_t& i) {
+			memcpy(&i, m_bytes + m_position, 4);
+			m_position += 4;
+		}
+
+		void operator>>(int16_t& i) {
+			memcpy(&i, m_bytes + m_position, 2);
+			m_position += 2;
+		}
+
+		void operator>>(uint16_t& i) {
+			memcpy(&i, m_bytes + m_position, 2);
+			m_position += 2;
 		}
 
 		void operator>>(float& f) {
@@ -49,6 +65,27 @@ namespace aa{
 			wmemset(ubytes, '\0', len + 1);
 			memcpy(ubytes, bytes, len * 2);
 			ws = std::wstring(ubytes);
+		}
+
+		void read_bytes(unsigned char* bytes, const size_t& amount) {
+			for (size_t i = 0; i < amount; i++) {
+				memcpy(bytes + i, m_bytes + m_position, 1);
+				m_position++;
+			}
+		}
+
+		std::wstring read_cstring() {
+			std::wstringstream wif;
+			while (m_position < m_length) {
+				wchar_t _wchar;
+				memcpy(&_wchar, m_bytes + m_position, sizeof(wchar_t));
+				m_position += 2;
+				wif << _wchar;
+				if (_wchar == L'\0') {
+					break;
+				}
+			}
+			return wif.str();
 		}
 
 	private:

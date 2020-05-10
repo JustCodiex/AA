@@ -14,9 +14,12 @@ struct AACType {
 	bool isRefType;
 	bool isArrayType;
 	bool isEnum;
+	bool isVMType;
 	AACType* encapsulatedType;
 	AAClassSignature* classSignature;
 	AACEnumSignature* enumSignature;
+
+	uint32_t constantID; // The unique ID associated with the type
 
 	AACType();
 	AACType(std::wstring name);

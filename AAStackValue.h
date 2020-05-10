@@ -24,6 +24,7 @@ public:
 	AAStackValue(int64_t s);
 
 	AAStackValue(std::wstring ws);
+	AAStackValue(wchar_t w);
 
 	AAStackValue(float r32);
 	AAStackValue(double r64);

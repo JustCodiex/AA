@@ -55,6 +55,16 @@ public:
 	}
 
 	/// <summary>
+	/// Get a pointer to the current element at the top of the stack
+	/// </summary>
+	/// <typeparam name="TValue"></typeparam>
+	/// <returns>Pointer to element at the top of stack</returns>
+	template<typename TValue>
+	TValue* Top() {
+		return reinterpret_cast<TValue*>(m_bytes + m_top - sizeof(TValue));
+	}
+
+	/// <summary>
 	/// Releases all resources used by the stack and the stack itself
 	/// </summary>
 	void Release(bool releaseSelf) {

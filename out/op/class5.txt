@@ -1,9 +1,6 @@
 START PROCEDURE 0 (<GlobalScope>):
-CONSTANTS:
-IDENTIFIERS:
-
 OPERATIONS:
-	[0]	CALL, 5, 0		;; Calls: main
+	[0000]  CALL, 5, 0                      ;; Calls: main
 END PROCEDURE;
 
 START PROCEDURE 1 (Super::Super):
@@ -11,14 +8,13 @@ CONSTANTS:	[UTF-8, "Super .ctor called"]
 IDENTIFIERS:
 	this;
 OPERATIONS:
-	[0]	SETVAR, 0
-	[1]	GETVAR, 0
-	[2]	XCALL, 3, 1		;; Calls: object::object
-	[3]	POP
-	[4]	PUSHC, 0
-	[5]	XCALL, 0, 1		;; Calls: println
-	[6]	GETVAR, 0
-	[7]	RET, 1
+	[0000]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
+	[0001]  GETVAR, 0                       
+	[0002]  XCALL, 2, 1                     ;; Calls: object::object
+	[0003]  PUSHWS, 0                       
+	[0004]  XCALL, 0, 1                     ;; Calls: println
+	[0005]  GETVAR, 0                       
+	[0006]  RET                             
 END PROCEDURE;
 
 START PROCEDURE 2 (Super::print):
@@ -26,10 +22,10 @@ CONSTANTS:	[UTF-8, "Super -> print"]
 IDENTIFIERS:
 	this;
 OPERATIONS:
-	[0]	SETVAR, 0
-	[1]	PUSHC, 0
-	[2]	XCALL, 0, 1		;; Calls: println
-	[3]	RET, 0
+	[0000]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
+	[0001]  PUSHWS, 0                       
+	[0002]  XCALL, 0, 1                     ;; Calls: println
+	[0003]  RET                             
 END PROCEDURE;
 
 START PROCEDURE 3 (Sub::Sub):
@@ -37,14 +33,14 @@ CONSTANTS:	[UTF-8, "Sub .ctor called"]
 IDENTIFIERS:
 	this;
 OPERATIONS:
-	[0]	SETVAR, 0
-	[1]	GETVAR, 0
-	[2]	CALL, 1, 1		;; Calls: Super::Super
-	[3]	POP
-	[4]	PUSHC, 0
-	[5]	XCALL, 0, 1		;; Calls: println
-	[6]	GETVAR, 0
-	[7]	RET, 1
+	[0000]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
+	[0001]  GETVAR, 0                       
+	[0002]  POP, 16                         
+	[0003]  CALL, 1, 1                      ;; Calls: Super::Super
+	[0004]  PUSHWS, 0                       
+	[0005]  XCALL, 0, 1                     ;; Calls: println
+	[0006]  GETVAR, 0                       
+	[0007]  RET                             
 END PROCEDURE;
 
 START PROCEDURE 4 (Sub::print):
@@ -52,10 +48,10 @@ CONSTANTS:	[UTF-8, "Sub -> print"]
 IDENTIFIERS:
 	this;
 OPERATIONS:
-	[0]	SETVAR, 0
-	[1]	PUSHC, 0
-	[2]	XCALL, 0, 1		;; Calls: println
-	[3]	RET, 0
+	[0000]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
+	[0001]  PUSHWS, 0                       
+	[0002]  XCALL, 0, 1                     ;; Calls: println
+	[0003]  RET                             
 END PROCEDURE;
 
 START PROCEDURE 5 (main):
@@ -63,12 +59,11 @@ CONSTANTS:	[I32, 0]
 IDENTIFIERS:
 	instance;
 OPERATIONS:
-	[0]	HALLOC, 0
-	[1]	CALL, 3, 1		;; Calls: Sub::Sub
-	[2]	SETVAR, 0
-	[3]	GETVAR, 0
-	[4]	CALL, 2, 1		;; Calls: Super::print
-	[5]	PUSHC, 0
-	[6]	RET, 1
+	[0000]  CTOR, 2, 3, 0, 0                
+	[0001]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
+	[0002]  GETVAR, 0                       
+	[0003]  CALL, 2, 1                      ;; Calls: Super::print
+	[0004]  PUSHC, 0                        
+	[0005]  RET                             
 END PROCEDURE;
 

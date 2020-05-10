@@ -28,6 +28,9 @@ AAStaticAnalysis::AAStaticAnalysis(AAC* pCompiler) {
 	// Currently nothing
 	this->m_currentTreeIndex = 0;
 
+	// Set type index to 0
+	this->m_typeIndex = 0;
+
 }
 
 void AAStaticAnalysis::Reset(std::vector<AAFuncSignature*> funcs, std::vector<AAClassSignature*> classes, std::vector<AACNamespace*> namespaces) {
@@ -46,6 +49,9 @@ void AAStaticAnalysis::Reset(std::vector<AAFuncSignature*> funcs, std::vector<AA
 
 	// Not working on one
 	m_currentTreeIndex = 0;
+
+	// Reset the type index
+	m_typeIndex = 0;
 
 }
 
@@ -336,10 +342,14 @@ AAC_CompileErrorMessage AAStaticAnalysis::PreregisterTypes(AA_AST_NODE* pNode, A
 		// Add to domain
 		if (domain->AddClass(classSig)) {
 
+			// If in global space - add to available classes now
 			if (domain->IsGlobalSpace()) {
 				senv.availableClasses.Add(classSig);
 				senv.availableTypes.Add(classSig->type);
 			}
+
+			// Assign constant ID
+			classSig->type->constantID = ++m_typeIndex;
 
 		} else { // Already exists in domain -> redefinition NOT allowed
 
@@ -362,10 +372,14 @@ AAC_CompileErrorMessage AAStaticAnalysis::PreregisterTypes(AA_AST_NODE* pNode, A
 		// Can we add the enum signature
 		if (domain->AddEnum(enumSig)) {
 
+			// If in global space - add to available classes now
 			if (domain->IsGlobalSpace()) {
 				senv.availableEnums.Add(enumSig);
 				senv.availableTypes.Add(enumSig->type);
 			}
+
+			// Assign constant ID
+			enumSig->type->constantID = ++m_typeIndex;
 
 		} else {
 
@@ -717,6 +731,9 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterClass(AA_AST_NODE* pNode, AACl
 
 		// Add extending from object
 		cc->extends.Add(m_objectInheritFrom);
+
+		// Assign base ptr
+		cc->basePtr = cc->extends.FindIndexOf(m_objectInheritFrom);
 
 	}
 

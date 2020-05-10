@@ -60,7 +60,7 @@ struct AAMemoryPtr {
 	/// Returns the object that's being pointed to
 	/// </summary>
 	/// <returns></returns>
-	const AAObject* get_object() const;
+	AAObject* get_object() const;
 
 };
 

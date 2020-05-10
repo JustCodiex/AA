@@ -6,13 +6,22 @@ AAMemoryStore::AAMemoryStore(int chunksz) {
 	this->m_chunksz = chunksz;
 	this->m_nextPtr = 1;
 	this->m_slots.reserve(m_chunksz);
+	this->m_pObjectTypeEnv = 0;
 }
 
 void AAMemoryStore::Release() {
 
-	auto itt = this->m_slots.begin(); // I just dont want to lookup the type...
-	while ((itt = this->m_slots.begin()) != this->m_slots.end()) {
-		this->DeleteAt((*itt).first);
+	// Release all the memory used
+	for (auto& slot : this->m_slots) {
+		this->DeleteAt(slot.first);
+	}
+
+	// Clear the slots
+	this->m_slots.clear();
+
+	// Release the type environment
+	if (m_pObjectTypeEnv) {
+		m_pObjectTypeEnv->Release();
 	}
 
 	// Finally, release ourselves
@@ -32,9 +41,6 @@ void AAMemoryStore::DeleteAt(AAMemoryPtr ptr) {
 
 		// Release the object and all it's underlying resources
 		(*slot).second.obj->Release();
-
-		// Get rid of the element
-		this->m_slots.erase(slot);
 
 	}
 
@@ -59,7 +65,6 @@ AAMemoryPtr AAMemoryStore::Alloc(size_t sz) {
 	// Set slot
 	MemorySlot slot;
 	slot.refcount = 1;
-	slot.isMutable = true;
 	slot.obj = new AAObject(sz);
 
 	// Assign slot
@@ -80,7 +85,6 @@ AAMemoryPtr AAMemoryStore::AllocArray(AAPrimitiveType primitiveType, uint32_t di
 	// Set slot
 	MemorySlot slot;
 	slot.refcount = 1;
-	slot.isMutable = true;
 	slot.obj = new AAArray(primitiveType, dimCount, dimensionLengths);
 
 	// Assign slot
@@ -101,7 +105,6 @@ AAMemoryPtr AAMemoryStore::AllocString(std::wstring str) {
 	// Set slot
 	MemorySlot slot;
 	slot.refcount = 1;
-	slot.isMutable = true;
 	slot.obj = new AAString(str);
 
 	// Assign slot
@@ -138,4 +141,8 @@ AAString* AAMemoryStore::String(const AAMemoryPtr& ptr) const {
 	} else {
 		return NULL;
 	}
+}
+
+void AAMemoryStore::SetStaticTypeEnvironment(AAStaticTypeEnvironment* pTypeEnv) {
+	m_pObjectTypeEnv = pTypeEnv;
 }

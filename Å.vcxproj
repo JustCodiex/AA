@@ -172,6 +172,8 @@
     <ClCompile Include="AAP.cpp" />
     <ClCompile Include="AAPrimitiveType.cpp" />
     <ClCompile Include="AAProgram.cpp" />
+    <ClCompile Include="AARuntimeEnvironment.cpp" />
+    <ClCompile Include="AARuntimeTypeEnv.cpp" />
     <ClCompile Include="AAStackValue.cpp" />
     <ClCompile Include="AAStaticAnalysis.cpp" />
     <ClCompile Include="AAstdiolib.cpp" />
@@ -189,6 +191,7 @@
   <ItemGroup>
     <ClInclude Include="AAArray.h" />
     <ClInclude Include="AAAutoCodeGenerator.h" />
+    <ClInclude Include="AAByteType.h" />
     <ClInclude Include="AAExecute.h" />
     <ClInclude Include="AAModifier.h" />
     <ClInclude Include="AAB2F.h" />
@@ -217,6 +220,7 @@
     <ClInclude Include="AAO.h" />
     <ClInclude Include="AAP.h" />
     <ClInclude Include="AAProgram.h" />
+    <ClInclude Include="AARuntimeTypeEnv.h" />
     <ClInclude Include="AAStackValue.h" />
     <ClInclude Include="AAStaticAnalysis.h" />
     <ClInclude Include="AAstdiolib.h" />

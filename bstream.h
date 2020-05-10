@@ -13,7 +13,7 @@ namespace aa {
 			m_buffer.push_back(byte);
 		}
 
-		void operator <<(int si) {
+		void operator <<(int32_t si) {
 			unsigned char bytes[4];
 			memcpy(bytes, &si, 4);
 			for (int i = 0; i < 4; i++)
@@ -27,7 +27,7 @@ namespace aa {
 				m_buffer.push_back(bytes[i]);
 		}
 
-		void operator <<(float f) {
+		void operator <<(float_t f) {
 			unsigned char bytes[4];
 			memcpy(bytes, &f, 4);
 			for (int i = 0; i < 4; i++)
@@ -46,6 +46,12 @@ namespace aa {
 			unsigned char byte;
 			memcpy(&byte, &b, 1);
 			m_buffer.push_back(byte);
+		}
+
+		void write_bytes(const size_t& byteCount, unsigned char* bytes) {
+			for (size_t i = 0; i < byteCount; i++) {
+				m_buffer.push_back(bytes[i]);
+			}
 		}
 
 		// Get length of the underlying buffer at the time of the call

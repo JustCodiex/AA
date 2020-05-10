@@ -11,7 +11,6 @@
 // Global Versions
 ///////////////////
 const char* VM_Version = "0.4.0"; // VM version
-const char* C_Version = "0.1.2"; // Compiler Version
 
 ///////////////////
 // Global Flags

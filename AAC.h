@@ -1,6 +1,7 @@
 #pragma once
 #include "AA_AST.h"
 #include "AAByteCode.h"
+#include "AAByteType.h"
 #include "AA_literals.h"
 #include "AAStaticAnalysis.h"
 #include "bstream.h"
@@ -62,6 +63,8 @@ public:
 	void AddVMFunction(AAFuncSignature* sig);
 	void AddVMNamespace(AACNamespace* dom);
 
+	const unsigned char* GetCompilerVersion() const { return m_version; }
+
 private:
 
 	/*
@@ -71,6 +74,8 @@ private:
 	CompiledProcedure CompileProcedureFromASTNode(AA_AST_NODE* pASTNode, AAStaticEnvironment staticData);
 	aa::list<CompiledProcedure> CompileProcedureFromASTRootNode(AA_AST_NODE* pAstRootNode, AAStaticEnvironment staticData);
 	AAC_Out CompileFromProcedures(aa::list<CompiledProcedure> procedures, AAStaticEnvironment staticCompileData, int entryPoint);
+	aa::list<AAByteType> CompileTypedata(AAStaticEnvironment staticCompileData);
+	aa::list<AACType*> FetchTypedata(AACNamespace* pNamespace);
 
 	/*
 	** Static checkers
@@ -118,8 +123,11 @@ private:
 	bool IsVariable(AA_AST_NODE_TYPE type);
 	bool IsDecleration(AA_AST_NODE_TYPE type);
 	bool IsEnumeration(AA_AST_NODE_TYPE type);
+	
 	AAByteCode GetBytecodeFromBinaryOperator(std::wstring ws, AA_AST_NODE_TYPE lhsType);
 	AAByteCode GetBytecodeFromUnaryOperator(std::wstring ws);
+
+	AAByteType ConvertTypeToBytes(AACType* pCType, const aa::list<AACType*> typeList);
 
 	// Check if the stack will return as many values as it says it will 
 	bool VerifyFunctionCallstack(aa::list<CompiledAbstractExpression> body, int expected, int args, AAStaticEnvironment staticData);
@@ -140,6 +148,8 @@ private:
 
 private:
 
+	unsigned char m_version[10] = { 'v', '0', '0', '.', '0', '1', '.', '3', '0', '\0' };
+
 	int m_currentProcID;
 	std::wstring m_outfile;
 
@@ -148,6 +158,8 @@ private:
 	std::vector<AAClassSignature*> m_preregisteredClasses;
 	std::vector<AAFuncSignature*> m_preregisteredFunctions;
 	std::vector<AACNamespace*> m_preregisteredNamespaces;
+
+	aa::list<AAByteType> m_byteTypes;
 
 	AAClassCompiler* m_classCompiler;
 	AAStaticAnalysis* m_staticAnalyser;

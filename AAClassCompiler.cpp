@@ -3,6 +3,7 @@
 #include "AAVal.h"
 #include "AA_Node_Consts.h"
 #include "AAAutoCodeGenerator.h"
+#include "AAPrimitiveType.h"
 
 void AAClassCompiler::RedefineFunDecl(std::wstring className, AA_AST_NODE* pFuncDeclNode) {
 
@@ -19,19 +20,24 @@ void AAClassCompiler::RedefineFunDecl(std::wstring className, AA_AST_NODE* pFunc
 	// Fetch real function name
 	pFuncDeclNode->content = className + L"::" + pFuncDeclNode->content;
 
-	// Create 'this' reference for function decleration
+	// Create 'this' reference in the argument list of the function
 	AA_AST_NODE* thisRef = new AA_AST_NODE(L"this", AA_AST_NODE_TYPE::funarg, AACodePosition(0,0));
 	thisRef->expressions.push_back(new AA_AST_NODE(className, AA_AST_NODE_TYPE::typeidentifier, AACodePosition(0, 0)));
 	
-	// Add 'this' reference to function decleration
-	pFuncDeclNode->expressions[AA_NODE_FUNNODE_ARGLIST]->expressions.insert(pFuncDeclNode->expressions[AA_NODE_FUNNODE_ARGLIST]->expressions.begin(), thisRef);
-
 	// Are we the constructor
 	if (isConstructor) {
+
+		// Add 'this' reference to constructor decleration - at the back
+		pFuncDeclNode->expressions[AA_NODE_FUNNODE_ARGLIST]->expressions.push_back(thisRef);
 
 		// Set last statement to be a "return this;" statement
 		AA_AST_NODE* returnThisKw = new AA_AST_NODE(L"this", AA_AST_NODE_TYPE::variable, AACodePosition(0, 0));
 		pFuncDeclNode->expressions[AA_NODE_FUNNODE_BODY]->expressions.push_back(returnThisKw);
+
+	} else {
+
+		// Add 'this' reference to function decleration - at the front
+		pFuncDeclNode->expressions[AA_NODE_FUNNODE_ARGLIST]->expressions.insert(pFuncDeclNode->expressions[AA_NODE_FUNNODE_ARGLIST]->expressions.begin(), thisRef);
 
 	}
 
@@ -61,8 +67,12 @@ size_t AAClassCompiler::CalculateMemoryUse(AAClassSignature* cc) {
 	// Total size of class in memory
 	size_t total = 0;
 
-	// Right now we just have to account for fields
-	total += cc->fields.Size() * sizeof(AAVal);
+	// For each field
+	cc->fields.ForEach(
+		[&total](AAClassFieldSignature& sig) {
+			total += aa::runtime::size_of_type(aa::runtime::runtimetype_from_statictype(sig.type));
+		}
+	);
 
 	// Return total
 	return total;
@@ -154,6 +164,11 @@ bool AAClassCompiler::AddInheritanceCallNode(AAFuncSignature* ctor, AA_AST_NODE*
 		pCallNode->tags["isVM"] = ctor->isVMFunc;
 		pCallNode->tags["args"] = (int)ctor->parameters.size();
 		pCallNode->tags["returns"] = 1; // Ctor calls will always return 1
+
+		// If not object, we discard
+		if (ctor->name.compare(L"object::object") != 0) {
+			pCallNode->tags["pop_size"] = aa::runtime::size_of_type(AAPrimitiveType::refptr);
+		}
 
 		AA_AST_NODE* pThisArgNode = new AA_AST_NODE(L"this", AA_AST_NODE_TYPE::variable, pCtorDeclNode->position);
 		pThisArgNode->tags["compiler_generated"] = true;

@@ -506,11 +506,15 @@ AACType* AATypeChecker::TypeCheckClassDotFieldAccessorOperation(AA_AST_NODE* pAc
 	int field;
 	if (AAClassCompiler::HasField(cc, right->content, field)) {
 
+		// Get the field type
+		AACType* pFieldType = cc->fields.Apply(field).type;
+
 		// Save the ID of the field we're referencing
 		right->tags["fieldid"] = field;
+		right->tags["primitive"] = (int)aa::runtime::runtimetype_from_statictype(pFieldType);
 
 		// Return field type
-		return cc->fields.Apply(field).type;
+		return pFieldType;
 
 	} else {
 
@@ -726,6 +730,7 @@ AACType* AATypeChecker::TypeCheckNewStatement(AA_AST_NODE* pNewStatement) {
 	if (pNewStatement->expressions[0]->type == AA_AST_NODE_TYPE::classctorcall) {
 		AACType* type = this->TypeCheckNode(pNewStatement->expressions[0]);
 		if (type != AACType::ErrorType) {
+			pNewStatement->expressions[0]->tags["typeID"] = type->constantID;
 			return type;
 		}
 	} else if (pNewStatement->expressions[0]->type == AA_AST_NODE_TYPE::index) {
@@ -1141,16 +1146,17 @@ AACType* AATypeChecker::FindType(std::wstring t) {
 bool AATypeChecker::IsTypeMatchingFunction(AAFuncSignature* sig, AA_AST_NODE* pCallNode) {
 
 	// Parameter offset
-	size_t paramOffset = sig->isClassMethod ? 1 : 0;
+	size_t paramOffset = (sig->isClassMethod && !sig->isClassCtor) ? 1 : 0;
+	size_t paramEndOffset = (sig->isClassCtor) ? 1 : 0;
 
 	// Is this the correct function to call?
-	if (pCallNode->expressions.size() == sig->parameters.size() - paramOffset) {
+	if (pCallNode->expressions.size() == sig->parameters.size() - paramOffset - paramEndOffset) {
 
 		// Flag to make sure the argument types are valid
 		bool isMatchingArgTypes = true;
 
 		// For all params
-		for (size_t j = paramOffset; j < sig->parameters.size(); j++) {
+		for (size_t j = paramOffset; j < sig->parameters.size() - paramEndOffset; j++) {
 
 			// If they're not a type match, break
 			if (!this->IsMatchingTypes(this->TypeCheckNode(pCallNode->expressions[j - paramOffset]), sig->parameters[j].type)) {

@@ -107,7 +107,9 @@ private:
 
 	AAStackValue CompileAndRun(AAP_ParseResult input, std::wstring binaryoutputfile, std::wstring formattedoutputfile);
 
-	AAStackValue Run(AAProgram::Procedure* procedures, int entry);
+	AAStackValue Run(AAProgram::Procedure* procedures, AAStaticTypeEnvironment* staticProgramTypeEnvironment, int entry);
+
+	void exec(AAProgram::Procedure* procedures, aa::stack<AARuntimeEnvironment>& callstack, any_stack& opstack, AARuntimeEnvironment& execp);
 
 	AAStackValue Run(AAProgram* pProg);
 
@@ -148,6 +150,7 @@ private:
 	aa::set<AACSingleFunction> m_cppfunctions;
 
 	AAMemoryStore* m_heapMemory;
+	AAStaticTypeEnvironment* m_staticTypeEnvironment;
 
 	bool m_hasRuntimeError;
 	AAVM_RuntimeError m_lastRuntimeError;

@@ -30,6 +30,7 @@ AAVM::AAVM() {
 	m_startCompile = 0;
 
 	m_heapMemory = 0;
+	m_staticTypeEnvironment = 0;
 
 	m_logTopOfStackAfterExec = false;
 	m_logCompileMessages = false;
@@ -208,7 +209,7 @@ AAStackValue AAVM::Run(AAProgram* pProg) {
 	clock_t s = clock();
 
 	// Run the program from entry point
-	AAStackValue v = this->Run(pProg->m_procedures, entryPoint);
+	AAStackValue v = this->Run(pProg->m_procedures, pProg->GetTypeEnvironment(), entryPoint);
 
 	// Should we log execution?
 	if (m_logExecTime) {
@@ -229,20 +230,41 @@ AAStackValue AAVM::Run(AAProgram* pProg) {
 #define AAVM_CURRENTOP procedure[AAVM_PROC].opSequence[AAVM_OPI].op
 #define AAVM_GetArgument(i) procedure[AAVM_PROC].opSequence[AAVM_OPI].args[i]
 
-#define AAVM_ThrowRuntimeErr(exc, msg) this->WriteRuntimeError(AAVM_RuntimeError(exc, (msg).c_str(), execp, callstack)); return AAStackValue::None;
+#define AAVM_ThrowRuntimeErr(exc, msg) this->WriteRuntimeError(AAVM_RuntimeError(exc, (msg).c_str(), execp, callstack)); return /*AAStackValue::None*/;
 
-AAStackValue AAVM::Run(AAProgram::Procedure* procedure, int entry) {
+AAStackValue AAVM::Run(AAProgram::Procedure* procedure, AAStaticTypeEnvironment* staticProgramTypeEnvironment, int entry) {
 
 	any_stack stack = any_stack(1024); // Stack with 1 Kb storage --> Will have to be modular
 	aa::stack<AARuntimeEnvironment> callstack;
 
+	// Set static type environment
+	m_staticTypeEnvironment = staticProgramTypeEnvironment;
+
 	// Represents the VM's heap memory (We allocate this on the heap as well). We do this every time a program is executed
 	m_heapMemory = new AAMemoryStore(256);
+	m_heapMemory->SetStaticTypeEnvironment(m_staticTypeEnvironment);
 
+	// Create reuntime environment from entry point
 	AARuntimeEnvironment execp;
 	execp.opPointer = 0;
 	execp.procPointer = entry;
 	execp.venv = procedure[entry].venv->CloneSelf();
+
+	// Execute code
+	this->exec(procedure, callstack, stack, execp);
+
+	// Report the stack
+	AAStackValue val = this->ReportStack(stack);
+
+	// Release all allocated memory (No longer used)
+	m_heapMemory->Release();
+
+	// Return whatever's on top of the stack
+	return val;
+
+}
+
+void AAVM::exec(AAProgram::Procedure* procedure, aa::stack<AARuntimeEnvironment>& callstack, any_stack& stack, AARuntimeEnvironment& execp) {
 
 	while (AAVM_OPI < procedure[AAVM_PROC].opCount) {
 		switch (AAVM_CURRENTOP) {
@@ -374,17 +396,17 @@ AAStackValue AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 			break;
 		}
 		case AAByteCode::XCALL: {
-			
+
 			// Get function
 			int callProc = AAVM_GetArgument(0);
 			int argCount = AAVM_GetArgument(1);
-			
+
 			// Call the native function (The native function is also responsible for handling the return
 			this->m_cppfunctions.Apply(callProc).fPtr(this, stack);
 
 			// Did the call cause a runtime error?
 			if (this->m_hasRuntimeError) {
-				
+
 				// Update runtime environment
 				m_lastRuntimeError.errEnv = execp;
 
@@ -392,10 +414,10 @@ AAStackValue AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 				m_lastRuntimeError.callStack = callstack;
 
 				// Write error
-				this->WriteRuntimeError(m_lastRuntimeError); 
-				
+				this->WriteRuntimeError(m_lastRuntimeError);
+
 				// Stop execution
-				return AAStackValue::None;
+				return;
 
 			}
 
@@ -407,7 +429,7 @@ AAStackValue AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 		case AAByteCode::RET: {
 
 			if (callstack.Size() > 0) {
-				delete execp.venv;
+				execp.PopEnvironment(false);
 				execp = callstack.Pop();
 			} else {
 				AAVM_ThrowRuntimeErr("CallstackCorrupted", std::string("The callstack was unexpectedly corrupted"));
@@ -437,9 +459,64 @@ AAStackValue AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 		}
 		case AAByteCode::ALLOC: {
 			int allocsz = AAVM_GetArgument(0);
-			AAStackValue allocobj = AAStackValue(m_heapMemory->Alloc(allocsz));
-			stack.Push(allocobj);
+			stack.Push(m_heapMemory->Alloc(allocsz));
 			AAVM_OPI++;
+			break;
+		}
+		case AAByteCode::CTOR: { // TODO: Make call functionality better so we have less duplicate code
+
+			// Collect arguments
+			uint32_t typeID = (uint32_t)AAVM_GetArgument(0);
+			int callProc = AAVM_GetArgument(1);
+			bool isVM = AAVM_GetArgument(2);
+			size_t allocsize = AAVM_GetArgument(3);
+
+			AAMemoryPtr ptr = m_heapMemory->Alloc(allocsize);
+			AAObject* obj = ptr.get_object();
+			obj->SetType(m_staticTypeEnvironment->LookupType(typeID));
+
+			// Push as last argument
+			stack.Push(ptr);
+
+			if (isVM) {
+
+				// Call and forget
+				this->m_cppfunctions.Apply(callProc).fPtr(this, stack);
+
+				// Did the call cause a runtime error?
+				if (this->m_hasRuntimeError) {
+
+					// Update runtime environment
+					m_lastRuntimeError.errEnv = execp;
+
+					// Update callstack
+					m_lastRuntimeError.callStack = callstack;
+
+					// Write error
+					this->WriteRuntimeError(m_lastRuntimeError);
+
+					// Stop execution
+					return /*AAStackValue::None*/;
+
+				}
+
+				AAVM_OPI++;
+
+			} else {
+
+				if (callProc == -1) {
+					AAVM_ThrowRuntimeErr("FatalCompileError", "Call index " + std::to_string(callProc) + " is out of range!");
+				}
+
+				AAVM_OPI++; // Goto next step in current execution context
+				callstack.Push(execp);
+
+				AAVM_VENV = procedure[callProc].venv->CloneSelf();
+				AAVM_PROC = callProc;
+				AAVM_OPI = 0;
+
+			}
+
 			break;
 		}
 		case AAByteCode::ALLOCARRAY: {
@@ -533,15 +610,6 @@ AAStackValue AAVM::Run(AAProgram::Procedure* procedure, int entry) {
 		}
 
 	}
-
-	// Report the stack
-	AAStackValue val = this->ReportStack(stack);
-
-	// Release all allocated memory (No longer used)
-	m_heapMemory->Release();
-
-	// Return whatever's on top of the stack
-	return val;
 
 }
 
@@ -812,6 +880,9 @@ AAClassSignature* AAVM::RegisterClass(std::wstring typeName, AACClass cClass) {
 	// Class signature
 	AAClassSignature* cc = new AAClassSignature(typeName);
 
+	// Mark type as VM type
+	cc->type->isVMType = true;
+
 	// For each class method
 	for (auto& func : cClass.classMethods) {
 
@@ -923,7 +994,7 @@ void AAVM::LoadStandardLibrary() {
 
 	// Create object class
 	AACClass objectClass;
-	objectClass.classMethods.push_back(AACSingleFunction(L".ctor", &AAO_NewObject, AACType::ExportReferenceType, 0));
+	objectClass.classMethods.push_back(AACSingleFunction(L".ctor", &AAO_NewObject, AACType::Void, 0));
 	this->RegisterClass(L"object", objectClass); // IDEA: Rename to Any
 
 	// Create standard namespaces
@@ -1019,4 +1090,8 @@ void AAO_NewObject(AAVM* pAAVm, any_stack& stack) {
 	// Push string representation of primitive unto stack
 	stack.Push(argl.First());
 	*/ // We can do nothing here
+
+	// Pop object pointer from stack
+	stack.Pop(sizeof(AAMemoryPtr));
+
 }

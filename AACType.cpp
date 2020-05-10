@@ -20,9 +20,11 @@ AACType::AACType() {
 	this->isRefType = false;
 	this->isArrayType = false;
 	this->isEnum = false;
+	this->isVMType = false;
 	this->encapsulatedType = 0;
 	this->classSignature = 0;
 	this->enumSignature = 0;
+	this->constantID = 0;
 }
 
 AACType::AACType(AAClassSignature* sig) {
@@ -30,9 +32,11 @@ AACType::AACType(AAClassSignature* sig) {
 	this->isRefType = true;
 	this->isArrayType = false;
 	this->isEnum = false;
+	this->isVMType = false;
 	this->encapsulatedType = 0;
 	this->classSignature = sig;
 	this->enumSignature = 0;
+	this->constantID = 0;
 }
 
 AACType::AACType(std::wstring name) {
@@ -40,9 +44,11 @@ AACType::AACType(std::wstring name) {
 	this->isRefType = false;
 	this->isArrayType = false;
 	this->isEnum = false;
+	this->isVMType = false;
 	this->encapsulatedType = 0;
 	this->classSignature = 0;
 	this->enumSignature = 0;
+	this->constantID = 0;
 }
 
 AACType::AACType(AACEnumSignature* enumSignature) {
@@ -50,9 +56,11 @@ AACType::AACType(AACEnumSignature* enumSignature) {
 	this->isRefType = false;
 	this->isArrayType = false;
 	this->isEnum = true;
+	this->isVMType = false;
 	this->encapsulatedType = 0;
 	this->classSignature = 0;
 	this->enumSignature = enumSignature;
+	this->constantID = 0;
 }
 
 std::wstring AACType::GetFullname() {

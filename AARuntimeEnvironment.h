@@ -13,4 +13,15 @@ struct AARuntimeEnvironment {
 	// Variable environment at runtime
 	AAVarEnv* venv;
 
+	/// <summary>
+	/// Creates an instance of a runtime environment
+	/// </summary>
+	/// <returns></returns>
+	AARuntimeEnvironment();
+
+	/// <summary>
+	/// Pops the environment and the local variable scopes
+	/// </summary>
+	void PopEnvironment(bool self);
+
 };

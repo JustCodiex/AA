@@ -20,6 +20,7 @@ AAStackValue::AAStackValue(int64_t s) { m_type = AAPrimitiveType::int64; m_val =
 AAStackValue::AAStackValue(std::wstring ws) { m_type = AAPrimitiveType::string; m_val = AAVal(ws); }
 AAStackValue::AAStackValue(float r32) { m_type = AAPrimitiveType::real32; m_val = AAVal(r32); }
 AAStackValue::AAStackValue(double r64) { m_type = AAPrimitiveType::real64; m_val = AAVal(r64); }
+AAStackValue::AAStackValue(wchar_t w) { m_type = AAPrimitiveType::wchar; m_val = AAVal(w); }
 
 AAStackValue::AAStackValue(AAPrimitiveType type, AAVal val) {
 	m_val = val;

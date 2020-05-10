@@ -1,8 +1,5 @@
 START PROCEDURE 0 (<GlobalScope>):
-CONSTANTS:	[I32, 10]
-IDENTIFIERS:
-
-OPERATIONS:
+CONSTANTS:	[I32, 10]OPERATIONS:
 	[0000]  PUSHC, 0                        
 	[0001]  CALL, 1, 1                      ;; Calls: par
 END PROCEDURE;

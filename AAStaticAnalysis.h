@@ -129,4 +129,6 @@ private:
 	std::vector<AA_AST*>* m_workTrees;
 	size_t m_currentTreeIndex;
 
+	uint32_t m_typeIndex;
+
 };

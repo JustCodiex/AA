@@ -1,9 +1,6 @@
 START PROCEDURE 0 (<GlobalScope>):
-CONSTANTS:
-IDENTIFIERS:
-
 OPERATIONS:
-	[0]	CALL, 3, 0		;; Calls: main
+	[0000]  CALL, 3, 0                      ;; Calls: main
 END PROCEDURE;
 
 START PROCEDURE 1 (ExampleClass::ExampleClass):
@@ -11,29 +8,28 @@ CONSTANTS:	[I32, 10]
 IDENTIFIERS:
 	this;
 OPERATIONS:
-	[0]	SETVAR, 0
-	[1]	GETVAR, 0
-	[2]	XCALL, 3, 1		;; Calls: object::object
-	[3]	POP
-	[4]	GETVAR, 0
-	[5]	PUSHC, 0
-	[6]	SETFIELD, 0
-	[7]	GETVAR, 0
-	[8]	RET, 1
+	[0000]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
+	[0001]  GETVAR, 0                       
+	[0002]  XCALL, 2, 1                     ;; Calls: object::object
+	[0003]  GETVAR, 0                       
+	[0004]  PUSHC, 0                        
+	[0005]  SETFIELD, 0, 6                  ;; primitive: int32 [4 bytes]
+	[0006]  GETVAR, 0                       
+	[0007]  RET                             
 END PROCEDURE;
 
 START PROCEDURE 2 (ExampleClass::ByTen):
-CONSTANTS:
+
 IDENTIFIERS:
 	val;	this;
 OPERATIONS:
-	[0]	SETVAR, 0
-	[1]	SETVAR, 1
-	[2]	GETVAR, 0
-	[3]	GETVAR, 1
-	[4]	GETFIELD, 0
-	[5]	MUL
-	[6]	RET, 1
+	[0000]  SETVAR, 0, 6                    ;; primitive: int32 [4 bytes]
+	[0001]  SETVAR, 1, 14                   ;; primitive: refptr [16 bytes]
+	[0002]  GETVAR, 0                       
+	[0003]  GETVAR, 1                       
+	[0004]  GETFIELD, 0, 6                  ;; primitive: int32 [4 bytes]
+	[0005]  MUL, 6                          ;; primitive: int32 [4 bytes]
+	[0006]  RET                             
 END PROCEDURE;
 
 START PROCEDURE 3 (main):
@@ -41,12 +37,11 @@ CONSTANTS:	[I32, 5]
 IDENTIFIERS:
 	e;
 OPERATIONS:
-	[0]	HALLOC, 16
-	[1]	CALL, 1, 1		;; Calls: ExampleClass::ExampleClass
-	[2]	SETVAR, 0
-	[3]	GETVAR, 0
-	[4]	PUSHC, 0
-	[5]	CALL, 2, 2		;; Calls: ExampleClass::ByTen
-	[6]	RET, 1
+	[0000]  CTOR, 1, 1, 0, 4                
+	[0001]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
+	[0002]  GETVAR, 0                       
+	[0003]  PUSHC, 0                        
+	[0004]  CALL, 2, 2                      ;; Calls: ExampleClass::ByTen
+	[0005]  RET                             
 END PROCEDURE;
 

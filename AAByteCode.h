@@ -28,7 +28,7 @@ enum class AAByteCode : unsigned char {
 	GETVAR, // (Get var - pushes value of variable on top of stack, 1 argument[identifier ID])
 
 	SETFIELD, // (Set field, 2 arguments[field ID, primitive type])
-	GETFIELD, // (Get field, 2 arguments[field ID, size, primitive type])
+	GETFIELD, // (Get field, 2 arguments[field ID, primitive type])
 
 	GETELEM, // (Get element based on dynamic indexing, 1 argument[dimension])
 	SETELEM, // (Set element based on dynamic indexing, 1 argument[dimension])
@@ -56,9 +56,9 @@ enum class AAByteCode : unsigned char {
 	BAND, // (Bitwise And &, 1 argument [primitive type])
 	BOR, // (Bitwise Or |, 1 argument [primitive type])
 
-	ALLOC, // (Heap Allocate memory for a new object, 1 argument[size in bytes])
+	ALLOC, // (Heap Allocate memory for a new object, 1 argument[size in bytes]) |Not in use|
 	ALLOCARRAY, // (Heap Allocate memory for a new array, 2 arguments[primitive type, dimension count])
-	CTOR, // (Call constructor and bind type, 3 arguments[typeID, ctor, args])
+	CTOR, // (Call constructor and bind type, 4 arguments[typeID, ctor, isvm, allocsize]) |ALLOC is built into this argument|
 	
 	TRY, // ---
 	THROW, // ---

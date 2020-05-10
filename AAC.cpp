@@ -39,6 +39,9 @@ void AAC::ResetCompilerInternals() {
 	// Reset registered types and other static configurations
 	m_staticAnalyser->Reset(m_preregisteredFunctions, m_preregisteredClasses, m_preregisteredNamespaces);
 
+	// Reset registered compile types
+	m_byteTypes.Clear();
+
 }
 
 AAC_CompileResult AAC::CompileFromAbstractSyntaxTrees(std::vector<AA_AST*> trees) {
@@ -57,6 +60,9 @@ AAC_CompileResult AAC::CompileFromAbstractSyntaxTrees(std::vector<AA_AST*> trees
 		result.success = false;
 		return result;
 	}
+
+	// Compile types
+	m_byteTypes = this->CompileTypedata(senv);
 
 	// Compiled procedure results
 	aa::list<AAC::CompiledProcedure> compileResults;
@@ -207,10 +213,10 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileAST(AA_AST_NODE* pNode, Co
 			executionStack.Add(this->CompileAST(pNode->expressions[i], cTable, staticData));
 			if (i < pNode->expressions.size() - 1) {
 				if (pNode->expressions[i]->type == AA_AST_NODE_TYPE::binop && pNode->expressions[i]->content != L"=") {
-					executionStack.Add(CompiledAbstractExpression(AAByteCode::POP, 0, 0));
+					//executionStack.Add(CompiledAbstractExpression(AAByteCode::POP, 0, 0));
 				} else if (pNode->expressions[i]->type == AA_AST_NODE_TYPE::funcall && pNode->expressions[i]->HasTag("returns")) {
 					if (pNode->expressions[i]->tags["returns"] != 0) { // Calling a function that returns something (BUT, we're only interested in side-effects, thus, we also can't simplify this away)
-						executionStack.Add(CompiledAbstractExpression(AAByteCode::POP, 0, 0));
+						//executionStack.Add(CompiledAbstractExpression(AAByteCode::POP, 0, 0));
 					}
 				}
 			}
@@ -332,8 +338,9 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileBinaryOperation(AA_AST_NOD
 		opList.Add(HandleVarPush(cTable, pNode->expressions[0]->expressions[0]));
 		opList.Add(HandleStackPush(cTable, pNode->expressions[1], staticData));
 
-		binopCAE.argCount = 1;
+		binopCAE.argCount = 2;
 		binopCAE.argValues[0] = pNode->expressions[0]->expressions[1]->tags["fieldid"];
+		binopCAE.argValues[1] = pNode->expressions[0]->expressions[1]->tags["primitive"];
 
 	} else if (binopCAE.bc == AAByteCode::SETELEM) {
 	
@@ -455,6 +462,17 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileFunctionCall(AA_AST_NODE* 
 	callCAE.bc = (isVmCll) ? AAByteCode::XCALL : AAByteCode::CALL;
 	callCAE.argValues[0] = procID;
 	callCAE.argValues[1] = args;
+
+	if (pNode->HasTag("pop_size")) {
+
+		CompiledAbstractExpression popCAE;
+		popCAE.argCount = 1;
+		popCAE.bc = AAByteCode::POP;
+		popCAE.argValues[0] = pNode->tags["pop_size"];
+
+		opList.Add(popCAE);
+
+	}
 
 	opList.Add(callCAE);
 
@@ -1009,8 +1027,9 @@ AAC::CompiledAbstractExpression AAC::HandleFieldPush(AA_AST_NODE* pNode, AAStati
 
 	CompiledAbstractExpression pushCAE;
 	pushCAE.bc = AAByteCode::GETFIELD;
-	pushCAE.argCount = 1;
+	pushCAE.argCount = 2;
 	pushCAE.argValues[0] = pNode->tags["fieldid"];
+	pushCAE.argValues[1] = pNode->tags["primitive"];
 
 	return pushCAE;
 
@@ -1083,22 +1102,19 @@ aa::list<AAC::CompiledAbstractExpression> AAC::HandleCtorCall(AA_AST_NODE* pNode
 		allocSize = (size_t)pNode->tags["allocsz"]; // Hopefully, a temporary solution
 	}
 
-	CompiledAbstractExpression newCAE;
-	newCAE.argCount = 1;
-	newCAE.argValues[0] = allocSize;
-	newCAE.bc = AAByteCode::ALLOC;
-
-	opList.Add(newCAE);
-
+	// Push arguments to constructor
 	for (size_t i = 0; i < pNode->expressions.size(); i++) {
 		opList.Add(this->CompileAST(pNode->expressions[i], ctable, staticData));
 	}
 
+	// Add constructor call instruction
 	CompiledAbstractExpression callCAE;
-	callCAE.bc = (isVmCll) ? AAByteCode::XCALL : AAByteCode::CALL;
-	callCAE.argCount = 2;
-	callCAE.argValues[0] = procID;
-	callCAE.argValues[1] = args;
+	callCAE.bc = AAByteCode::CTOR;
+	callCAE.argCount = 4;
+	callCAE.argValues[0] = pNode->tags["typeID"];
+	callCAE.argValues[1] = procID;
+	callCAE.argValues[2] = isVmCll;
+	callCAE.argValues[3] = allocSize;
 
 	opList.Add(callCAE);
 
@@ -1179,7 +1195,7 @@ void AAC::ConstTableToByteCode(CompiledEnviornmentTable constTable, aa::bstream&
 			wss << lit.lit.c.val;
 			break;
 		case AALiteralType::String:
-			wss << (int)lit.lit.s.len;
+			wss << (int32_t)lit.lit.s.len;
 			wss << std::wstring(lit.lit.s.val);
 			break;
 		default:
@@ -1188,10 +1204,10 @@ void AAC::ConstTableToByteCode(CompiledEnviornmentTable constTable, aa::bstream&
 
 	}
 
-	wss << (int)constTable.identifiers.Size();
+	wss << (int32_t)constTable.identifiers.Size();
 
 	for (size_t i = 0; i < constTable.identifiers.Size(); i++) {
-		wss << (int)i;
+		wss << (int32_t)i;
 	}
 
 }
@@ -1206,6 +1222,92 @@ void AAC::ConvertToBytes(CompiledAbstractExpression expr, aa::bstream& bis) {
 
 }
 
+AAByteType AAC::ConvertTypeToBytes(AACType* pType, const aa::list<AACType*> typeList) {
+
+	if (pType) {
+		AAByteType outType = AAByteType(pType->GetFullname());
+		outType.constID = pType->constantID;
+		if (pType->isRefType) {
+			
+			// Handle other derivations
+			AAClassSignature* pClass = pType->classSignature;
+			if (pClass) {
+				unsigned int basePtr = pClass->basePtr;
+				if (basePtr != UINT32_MAX) {
+					AACType* baseType = pClass->extends.Apply(basePtr)->type;
+					if (baseType->name.compare(L"object") == 0) {
+						outType.baseTypePtr = AAByteType::_BasePtrObj;
+					} else {
+						outType.baseTypePtr = (uint16_t)typeList.IndexOf(baseType);
+					}
+				} else {
+					outType.baseTypePtr = AAByteType::_BasePtrObjNone;
+				}
+			} else {
+				printf("-->> Unknown compile error, expected class type, received unknown <<--");
+			}
+
+		}
+		return outType;
+	} else {
+		return AAByteType();
+	}
+
+}
+
+aa::list<AAByteType> AAC::CompileTypedata(AAStaticEnvironment staticCompileData) {
+
+	// Export type list and add a "null" buffer type
+	aa::list<AACType*> exportTypes;
+	exportTypes.Add(NULL);
+
+	// Add non-primitive types
+	exportTypes.Add(this->FetchTypedata(staticCompileData.globalNamespace));
+
+	// Map AACTypes to the respective AAByte types
+	aa::list<AAByteType> byteTypes = exportTypes.Map<AAByteType>(
+		[this, exportTypes](AACType*& type) {
+			return this->ConvertTypeToBytes(type, exportTypes);
+		}
+	);
+
+	// TODO: run through all types and correct pointers
+
+	if (exportTypes.Size() > 1) {
+		printf("-> Exporting some types now <-\n");
+	}
+
+	// Return types
+	return byteTypes;
+
+}
+
+aa::list<AACType*> AAC::FetchTypedata(AACNamespace* pNamespace) {
+
+	// The export types
+	aa::list<AACType*> exportTypes;
+
+	// For all subspaces
+	pNamespace->childspaces.ForEach(
+		[&exportTypes, this](AACNamespace*& subSpace) { 
+			exportTypes.Add(this->FetchTypedata(subSpace));
+		}
+	);
+
+	// For all types in namespace
+	pNamespace->types.ForEach(
+		[&exportTypes, this](AACType*& type) {
+			if (!aa::runtime::is_primitive_type(type)) {
+				exportTypes.Add(type); // add more checks before actually adding here
+			}
+		}
+	);
+
+	// Return all types to export
+	return exportTypes;
+
+}
+
 AAC_Out AAC::CompileFromProcedures(aa::list<CompiledProcedure> procedures, AAStaticEnvironment staticCompileData, int entryPoint) {
 
 	// Bytecode compilation result
@@ -1214,8 +1316,10 @@ AAC_Out AAC::CompileFromProcedures(aa::list<CompiledProcedure> procedures, AASta
 	// Byte stream
 	aa::bstream bis;
 
+	bis.write_bytes(10, m_version);
+
 	// Write procedure count
-	bis << (int)procedures.Size();
+	bis << (int32_t)procedures.Size();
 
 	// Write entry point (Pointer to the first operation to execute)
 	bis << entryPoint;
@@ -1227,7 +1331,7 @@ AAC_Out AAC::CompileFromProcedures(aa::list<CompiledProcedure> procedures, AASta
 		ConstTableToByteCode(procedures.At(p).procEnvironment, bis);
 
 		// Write amount of operations
-		bis << (int)procedures.At(p).procOperations.Size();
+		bis << (int32_t)procedures.At(p).procOperations.Size();
 
 		// Write all expressions in their compiled formats
 		for (size_t i = 0; i < procedures.At(p).procOperations.Size(); i++) {
@@ -1235,6 +1339,34 @@ AAC_Out AAC::CompileFromProcedures(aa::list<CompiledProcedure> procedures, AASta
 		}
 
 	}
+
+	// Fetch all byteTypes
+	//aa::list<AAByteType> byteTypes = this->CompileTypedata(staticCompileData);
+
+	if (m_byteTypes.Size() > 1) {
+
+		// Write exported type count
+		bis << (int32_t)(m_byteTypes.Size() - 1);
+
+		// Write all types
+		m_byteTypes.ForEach(
+			[&bis](AAByteType& byteType) {
+				if (byteType.typeName) { // Only write it if we have a valid name!
+					size_t count;
+					unsigned char* bytes = byteType.ToBytes(count);
+					bis.write_bytes(count, bytes);
+					delete[] bytes;
+				}
+			}
+		);
+
+	} else {
+
+		bis << (int32_t)0;
+
+	}
+
+	// TODO: For all byte types: write out
 
 	// Get size and allocate memory buffer
 	compileBytecodeResult.length = bis.length();
