@@ -56,10 +56,18 @@ void AAVM::Release() {
 }
 
 AAStackValue AAVM::CompileAndRunExpression(std::wstring input) {
-	return this->CompileAndRunExpression(input, L"", L"");
+	return this->CompileAndRunExpression(input, L"", L"", L"");
+}
+
+AAStackValue AAVM::CompileAndRunExpression(std::wstring input, std::wstring binaryoutputfile) {
+	return this->CompileAndRunExpression(input, binaryoutputfile, L"", L"");
 }
 
 AAStackValue AAVM::CompileAndRunExpression(std::wstring input, std::wstring binaryoutputfile, std::wstring formattedoutputfile) {
+	return this->CompileAndRunExpression(input, binaryoutputfile, formattedoutputfile, L"");
+}
+
+AAStackValue AAVM::CompileAndRunExpression(std::wstring input, std::wstring binaryoutputfile, std::wstring formattedoutputfile, std::wstring unparsefile) {
 
 	// Start compile clock
 	m_startCompile = clock();
@@ -68,11 +76,19 @@ AAStackValue AAVM::CompileAndRunExpression(std::wstring input, std::wstring bina
 	AAP_ParseResult result = m_parser->Parse(input);
 
 	// Return full result of compile and run
-	return this->CompileAndRun(result, binaryoutputfile, formattedoutputfile);
+	return this->CompileAndRun(result, binaryoutputfile, formattedoutputfile, unparsefile);
 
 }
 
+AAStackValue AAVM::CompileAndRunFile(std::wstring sourcefile, std::wstring binaryoutputfile) {
+	return this->CompileAndRunFile(sourcefile, binaryoutputfile, L"", L"");
+}
+
 AAStackValue AAVM::CompileAndRunFile(std::wstring sourcefile, std::wstring binaryoutputfile, std::wstring formattedoutputfile) {
+	return this->CompileAndRunFile(sourcefile, binaryoutputfile, formattedoutputfile, L"");
+}
+
+AAStackValue AAVM::CompileAndRunFile(std::wstring sourcefile, std::wstring binaryoutputfile, std::wstring formattedoutputfile, std::wstring unparsefile) {
 	
 	// Start compile clock
 	m_startCompile = clock();
@@ -81,7 +97,7 @@ AAStackValue AAVM::CompileAndRunFile(std::wstring sourcefile, std::wstring binar
 	AAP_ParseResult result = m_parser->Parse(std::wifstream(sourcefile));
 
 	// Return full result of compile and run
-	return this->CompileAndRun(result, binaryoutputfile, formattedoutputfile);
+	return this->CompileAndRun(result, binaryoutputfile, formattedoutputfile, unparsefile);
 
 }
 
@@ -120,13 +136,14 @@ AAStackValue AAVM::CompileAndRunFile(std::wstring sourcefile) {
 	return this->CompileAndRunFile(sourcefile, L"", L"");
 }
 
-AAStackValue AAVM::CompileAndRun(AAP_ParseResult result, std::wstring binaryoutputfile, std::wstring formattedoutputfile) {
+AAStackValue AAVM::CompileAndRun(AAP_ParseResult result, std::wstring binaryoutputfile, std::wstring formattedoutputfile, std::wstring unparsefile) {
 
 	// The the parser succeed?
 	if (result.success) {
 
-		// Set compiler output file
+		// Set compiler output files
 		m_compiler->SetOpListFile(formattedoutputfile);
+		m_compiler->SetUnparseFile(unparsefile);
 
 		// Compile all procedures into bytecode
 		AAC_CompileResult compileResult = m_compiler->CompileFromAbstractSyntaxTrees(result.result);

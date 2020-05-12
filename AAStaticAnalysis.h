@@ -2,6 +2,7 @@
 #include "AAClassCompiler.h"
 #include "AAC_Structs.h"
 #include "AATypeChecker.h"
+#include "AAVars.h"
 
 // Forward declare compiler
 class AAC;
@@ -77,6 +78,13 @@ public:
 	/// <param name="err">The error message that is filled out IF the method returns false</param>
 	/// <returns>True only if the function is following a valid control structure</returns>
 	bool VerifyFunctionControlPath(AAFuncSignature* sig, AAStaticEnvironment environment, AAC_CompileErrorMessage& err);
+
+	/// <summary>
+	/// Runs a vars check on the entire tree (Scope rules)
+	/// </summary>
+	/// <param name="pTree">Pointer to tree to fix</param>
+	/// <returns>True if no variable problems occured - false if any scope error occured</returns>
+	bool Vars(AA_AST* pTree);
 
 private:
 

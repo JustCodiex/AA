@@ -47,12 +47,19 @@ public:
 
 	AAC(AAVM* pVM);
 
+	/// <summary>
+	/// Setup internal compiler utilities
+	/// </summary>
 	void SetupCompiler();
 
 	AAC_CompileResult CompileFromAbstractSyntaxTrees(std::vector<AA_AST*> trees);
 
 	void SetOpListFile(std::wstring outFile) {
 		m_outfile = outFile;
+	}
+
+	void SetUnparseFile(std::wstring outFile) {
+		m_unparsefile = outFile;
 	}
 
 	AAClassCompiler* GetClassCompilerInstance() { return m_classCompiler; }
@@ -152,6 +159,7 @@ private:
 
 	int m_currentProcID;
 	std::wstring m_outfile;
+	std::wstring m_unparsefile;
 
 	AAVM* m_pAAVM;
 

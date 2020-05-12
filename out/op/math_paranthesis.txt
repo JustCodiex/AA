@@ -1,5 +1,6 @@
 START PROCEDURE 0 (<GlobalScope>):
-CONSTANTS:	[I32, 15][I32, 5][I32, 42][I32, 2]OPERATIONS:
+CONSTANTS:	[I32, 15][I32, 5][I32, 42][I32, 2]
+OPERATIONS:
 	[0000]  PUSHC, 0                        
 	[0001]  PUSHC, 1                        
 	[0002]  ADD, 6                          ;; primitive: int32 [4 bytes]

@@ -244,9 +244,10 @@ namespace aa {
 						AA_Literal lit = proc.procEnvironment.constValues.At(j);
 						o << L"[" << getLitType(lit.tp) << L", " << getLitValue(lit) << L"]";
 					}
+					o << "\n";
 				}
 				if (proc.procEnvironment.identifiers.Size() > 0) {
-					o << L"\nIDENTIFIERS:\n";
+					o << L"IDENTIFIERS:\n";
 					for (size_t j = 0; j < proc.procEnvironment.identifiers.Size(); j++) {
 						o << L"\t" << proc.procEnvironment.identifiers.At(j) << L";";
 					}

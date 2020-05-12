@@ -110,21 +110,18 @@ void AAFileStream_Write(AAVM* pAAVm, any_stack& stack) { // write string --> Nee
 		// Make sure the file is valid
 		if (fPtr) {
 
+			// Write whatever was on top of the stack
 			switch (top.get_type()) {
 			case AAPrimitiveType::refptr:
 				fPtr->WriteString(top.to_cpp<AAMemoryPtr>().get_object()->ToString());
 				break;
 			case AAPrimitiveType::wchar: {
-				wchar_t w = top.to_cpp<wchar_t>();
-				fPtr->WriteWchar(w);
+				fPtr->WriteWchar(top.to_cpp<wchar_t>());
 				break;
 			}
 			default:
 				break;
 			}
-
-			// Write msg
-			//fPtr->WriteString(str->ToString());
 
 			// Push (the pointer to) ourselves back onto the stack
 			stack.Push(ptr);

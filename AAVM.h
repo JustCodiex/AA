@@ -57,10 +57,14 @@ public:
 	AAStackValue Execute(unsigned char* bytes, unsigned long long len);
 
 	AAStackValue CompileAndRunFile(std::wstring sourcefile);
+	AAStackValue CompileAndRunFile(std::wstring sourcefile, std::wstring binaryoutputfile);
 	AAStackValue CompileAndRunFile(std::wstring sourcefile, std::wstring binaryoutputfile, std::wstring formattedoutputfile);
+	AAStackValue CompileAndRunFile(std::wstring sourcefile, std::wstring binaryoutputfile, std::wstring formattedoutputfile, std::wstring unparsefile);
 
 	AAStackValue CompileAndRunExpression(std::wstring input);
+	AAStackValue CompileAndRunExpression(std::wstring input, std::wstring binaryoutputfile);
 	AAStackValue CompileAndRunExpression(std::wstring input, std::wstring binaryoutputfile, std::wstring formattedoutputfile);
+	AAStackValue CompileAndRunExpression(std::wstring input, std::wstring binaryoutputfile, std::wstring formattedoutputfile, std::wstring unparsefile);
 
 	AAP* GetParser() { return m_parser; }
 	AAC* GetCompiler() { return m_compiler; }
@@ -107,7 +111,7 @@ public:
 
 private:
 
-	AAStackValue CompileAndRun(AAP_ParseResult input, std::wstring binaryoutputfile, std::wstring formattedoutputfile);
+	AAStackValue CompileAndRun(AAP_ParseResult input, std::wstring binaryoutputfile, std::wstring formattedoutputfile, std::wstring unparsefile);
 
 	AAStackValue Run(AAProgram::Procedure* procedures, AAStaticTypeEnvironment* staticProgramTypeEnvironment, int entry);
 

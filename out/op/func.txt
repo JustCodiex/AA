@@ -1,5 +1,6 @@
 START PROCEDURE 0 (<GlobalScope>):
-CONSTANTS:	[I32, 25][I32, 50][I32, 24]OPERATIONS:
+CONSTANTS:	[I32, 25][I32, 50][I32, 24]
+OPERATIONS:
 	[0000]  PUSHC, 0                        
 	[0001]  PUSHC, 1                        
 	[0002]  PUSHC, 2                        
@@ -8,7 +9,6 @@ CONSTANTS:	[I32, 25][I32, 50][I32, 24]OPERATIONS:
 END PROCEDURE;
 
 START PROCEDURE 1 (add):
-
 IDENTIFIERS:
 	b;	a;
 OPERATIONS:
@@ -21,7 +21,6 @@ OPERATIONS:
 END PROCEDURE;
 
 START PROCEDURE 2 (sub):
-
 IDENTIFIERS:
 	b;	a;
 OPERATIONS:

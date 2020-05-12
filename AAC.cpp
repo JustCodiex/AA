@@ -3,6 +3,7 @@
 #include "AAVal.h"
 #include <stack>
 #include "AAVM.h"
+#include "AAUnparser.h"
 
 AAC::AAC(AAVM* pVM) {
 
@@ -67,8 +68,15 @@ AAC_CompileResult AAC::CompileFromAbstractSyntaxTrees(std::vector<AA_AST*> trees
 	// Compiled procedure results
 	aa::list<AAC::CompiledProcedure> compileResults;
 
+	// The unparser
+	AAUnparser unparser;
+	unparser.Open(m_unparsefile);
+
 	// Compile all the trees into individual procedures
 	for (size_t i = 0; i < trees.size(); i++) {
+
+		// Unparse
+		unparser.Unparse(trees[i]);
 
 		// Get the node type
 		AA_AST_NODE_TYPE tp = trees[i]->GetRoot()->type;
@@ -82,6 +90,9 @@ AAC_CompileResult AAC::CompileFromAbstractSyntaxTrees(std::vector<AA_AST*> trees
 		compileResults.Add(this->CompileProcedureFromASTRootNode(trees[i]->GetRoot(), senv));
 
 	}
+
+	// Close the unparser
+	unparser.Close();
 
 	// Compile all procedures into bytecode
 	result.result = CompileFromProcedures(compileResults, senv, 0);

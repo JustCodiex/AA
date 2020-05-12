@@ -66,6 +66,13 @@ AAC_CompileErrorMessage AAStaticAnalysis::RunStaticAnalysis(std::vector<AA_AST*>
 	// Set to point to the working trees
 	this->m_workTrees = &trees;
 
+	// Run vars check on each tree
+	for (size_t i = 0; i < trees.size(); i++) {
+		if (!this->Vars(trees[i])) {
+			return err;
+		}
+	}
+
 	// The global domain
 	AACNamespace* globalDomain = 0;
 
@@ -1246,4 +1253,8 @@ AAC_CompileErrorMessage AAStaticAnalysis::ApplyInheritance(AAClassSignature* cla
 	// Return no compile error
 	return NO_COMPILE_ERROR_MESSAGE;
 
+}
+
+bool AAStaticAnalysis::Vars(AA_AST* pTree) {
+	return AAVars().Check(pTree);
 }

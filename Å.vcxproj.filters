@@ -201,6 +201,15 @@
     <ClCompile Include="AARuntimeEnvironment.cpp">
       <Filter>Source Files\VM\runtime</Filter>
     </ClCompile>
+    <ClCompile Include="AAVars.cpp">
+      <Filter>Source Files\compiler</Filter>
+    </ClCompile>
+    <ClCompile Include="AADecompiler.cpp">
+      <Filter>Source Files\compiler</Filter>
+    </ClCompile>
+    <ClCompile Include="AAUnparser.cpp">
+      <Filter>Source Files\parser</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="list.h">
@@ -367,6 +376,15 @@
     </ClInclude>
     <ClInclude Include="AAIntrPtr.h">
       <Filter>Header Files\VM</Filter>
+    </ClInclude>
+    <ClInclude Include="AAVars.h">
+      <Filter>Header Files\compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="AAUnparser.h">
+      <Filter>Header Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="AADecompiler.h">
+      <Filter>Header Files\compiler</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

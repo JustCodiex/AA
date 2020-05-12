@@ -1,5 +1,6 @@
 START PROCEDURE 0 (<GlobalScope>):
-CONSTANTS:	[I32, 4]OPERATIONS:
+CONSTANTS:	[I32, 4]
+OPERATIONS:
 	[0000]  PUSHC, 0                        
 	[0001]  CALL, 1, 1                      ;; Calls: factorial
 END PROCEDURE;

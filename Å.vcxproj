@@ -160,6 +160,7 @@
     <ClCompile Include="AACNamespace.cpp" />
     <ClCompile Include="AAConsole.cpp" />
     <ClCompile Include="AACType.cpp" />
+    <ClCompile Include="AADecompiler.cpp" />
     <ClCompile Include="AAExecute.cpp" />
     <ClCompile Include="AAFileStream.cpp" />
     <ClCompile Include="AAGarbageCollector.cpp" />
@@ -179,8 +180,10 @@
     <ClCompile Include="AAstdiolib.cpp" />
     <ClCompile Include="AAString.cpp" />
     <ClCompile Include="AATypeChecker.cpp" />
+    <ClCompile Include="AAUnparser.cpp" />
     <ClCompile Include="AAVal.cpp" />
     <ClCompile Include="AAVarEnv.cpp" />
+    <ClCompile Include="AAVars.cpp" />
     <ClCompile Include="AAVM.cpp" />
     <ClCompile Include="AA_AST.cpp" />
     <ClCompile Include="AA_PT.cpp" />
@@ -192,6 +195,7 @@
     <ClInclude Include="AAArray.h" />
     <ClInclude Include="AAAutoCodeGenerator.h" />
     <ClInclude Include="AAByteType.h" />
+    <ClInclude Include="AADecompiler.h" />
     <ClInclude Include="AAExecute.h" />
     <ClInclude Include="AAIntrPtr.h" />
     <ClInclude Include="AAModifier.h" />
@@ -227,8 +231,10 @@
     <ClInclude Include="AAstdiolib.h" />
     <ClInclude Include="AAString.h" />
     <ClInclude Include="AATypeChecker.h" />
+    <ClInclude Include="AAUnparser.h" />
     <ClInclude Include="AAVal.h" />
     <ClInclude Include="AAVarEnv.h" />
+    <ClInclude Include="AAVars.h" />
     <ClInclude Include="AAVM.h" />
     <ClInclude Include="AA_AST.h" />
     <ClInclude Include="AA_AST_NODE.h" />

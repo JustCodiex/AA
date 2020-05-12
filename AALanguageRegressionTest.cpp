@@ -77,107 +77,117 @@ bool VerifyTestResult(AAVM* pAAVM, AAStackValue result, AAStackValue expected, b
 
 }
 
-bool RunFileTest(AAVM* pAAVM, std::wstring fileinput, std::wstring fileoutputBinary, std::wstring fileoutputOpCodes, AAStackValue expectedoutput, bool compile, bool runtime) {
+bool RunFileTest(AAVM* pAAVM, std::wstring fileinput, std::wstring fileoutput, AAStackValue expectedoutput, bool compile, bool runtime) {
 
 	std::wcout << L"Testing file: " << fileinput << std::endl;
-	return VerifyTestResult(pAAVM, pAAVM->CompileAndRunFile(fileinput, fileoutputBinary, fileoutputOpCodes), expectedoutput, compile, runtime);	
+	return VerifyTestResult(pAAVM, 
+		pAAVM->CompileAndRunFile(fileinput, 
+			L"out\\bin\\" + fileoutput + L".aab", 
+			L"out\\op\\" + fileoutput + L".txt", 
+			L"out\\unparsed\\" + fileoutput + L".aa"
+		), 
+		expectedoutput, compile, runtime
+	);
 
 }
 
-bool RunExpressionTest(AAVM* pAAVM, std::wstring expression, std::wstring fileoutputBinary, std::wstring fileoutputOpCodes, AAStackValue expectedoutput, bool compile, bool runtime) {
+bool RunExpressionTest(AAVM* pAAVM, std::wstring expression, std::wstring fileoutput, AAStackValue expectedoutput, bool compile, bool runtime) {
 
-	std::wcout << L"Testing expression: '" << expression << L"'" << L" OpCodeFile: \"" << fileoutputOpCodes << L"\"" << std::endl;
-	return VerifyTestResult(pAAVM, pAAVM->CompileAndRunExpression(expression, fileoutputBinary, fileoutputOpCodes), expectedoutput, compile, runtime);
+	std::wstring fileOutputOpCodes = L"out\\op\\" + fileoutput + L".txt";
+	std::wstring fileOutputUnparsed = L"out\\unparsed\\" + fileoutput + L".aa";
+	std::wcout << L"Testing expression: '" << expression << L"';" << L" OpCodeFile: \"" << fileOutputOpCodes << L"\"; UnparseFile: '" << fileOutputUnparsed << L"'" << std::endl;
+	return VerifyTestResult(pAAVM, pAAVM->CompileAndRunExpression(expression, L"out\\bin\\" + fileoutput + L".aab", fileOutputOpCodes, fileOutputUnparsed), expectedoutput, compile, runtime);
+
 }
 
 void RunArithmeticTests(AAVM* pAAVM, int& s, int& f) {
 
 	// Test division operator
-	if (!RunExpressionTest(pAAVM, L"5+5*5;", L"out\\bin\\math_arithmetic_binding.aab", L"out\\op\\math_arithmetic_binding.txt", 30)) {
+	if (!RunExpressionTest(pAAVM, L"5+5*5;", L"math_arithmetic_binding", 30)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test division operator
-	if (!RunExpressionTest(pAAVM, L"5--5;", L"out\\bin\\math_negate4.aab", L"out\\op\\math_negate4.txt", 10)) {
+	if (!RunExpressionTest(pAAVM, L"5--5;", L"math_negate4", 10)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test division operator
-	if (!RunExpressionTest(pAAVM, L"5+-5;", L"out\\bin\\math_negate3.aab", L"out\\op\\math_negate3.txt", 0)) {
+	if (!RunExpressionTest(pAAVM, L"5+-5;", L"math_negate3", 0)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test division operator
-	if (!RunExpressionTest(pAAVM, L"5+(-5);", L"out\\bin\\math_negate2.aab", L"out\\op\\math_negate2.txt", 0)) {
+	if (!RunExpressionTest(pAAVM, L"5+(-5);", L"math_negate2", 0)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test division operator
-	if (!RunExpressionTest(pAAVM, L"-5;", L"out\\bin\\math_negate1.aab", L"out\\op\\math_negate1.txt", -5)) {
+	if (!RunExpressionTest(pAAVM, L"-5;", L"math_negate1", -5)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test division operator
-	if (!RunExpressionTest(pAAVM, L"((((5+6))));", L"out\\bin\\math_paranthesis3.aab", L"out\\op\\math_paranthesis3.txt", 11)) {
+	if (!RunExpressionTest(pAAVM, L"((((5+6))));", L"math_paranthesis3", 11)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test division operator
-	if (!RunExpressionTest(pAAVM, L"((15+5)*42)-(5/2);", L"out\\bin\\math_paranthesis2.aab", L"out\\op\\math_paranthesis2.txt", 838)) {
+	if (!RunExpressionTest(pAAVM, L"((15+5)*42)-(5/2);", L"math_paranthesis2", 838)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test division operator
-	if (!RunExpressionTest(pAAVM, L"(15+5)*42-(5/2);", L"out\\bin\\math_paranthesis.aab", L"out\\op\\math_paranthesis.txt", 838)) {
+	if (!RunExpressionTest(pAAVM, L"(15+5)*42-(5/2);", L"math_paranthesis", 838)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test division operator
-	if (!RunExpressionTest(pAAVM, L"15+5+7;", L"out\\bin\\math_add.aab", L"out\\op\\math_add.txt", 27)) {
+	if (!RunExpressionTest(pAAVM, L"15+5+7;", L"math_add", 27)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test division operator
-	if (!RunExpressionTest(pAAVM, L"15+5-7;", L"out\\bin\\math_sub.aab", L"out\\op\\math_sub.txt", 13)) {
+	if (!RunExpressionTest(pAAVM, L"15+5-7;", L"math_sub", 13)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test division operator
-	if (!RunExpressionTest(pAAVM, L"15*5;", L"out\\bin\\math_mul.aab", L"out\\op\\math_mul.txt", 75)) {
+	if (!RunExpressionTest(pAAVM, L"15*5;", L"math_mul", 75)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test division operator
-	if (!RunExpressionTest(pAAVM, L"15/5;", L"out\\bin\\math_div.aab", L"out\\op\\math_div.txt", 3)) {
+	if (!RunExpressionTest(pAAVM, L"15/5;", L"math_div", 3)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test modulo operator
-	if (!RunExpressionTest(pAAVM, L"15%5;", L"out\\bin\\math_mod.aab", L"out\\op\\math_mod.txt", 0)) {
+	if (!RunExpressionTest(pAAVM, L"15%5;", L"math_mod", 0)) {
 		f++;
 	} else {
 		s++;
@@ -188,21 +198,21 @@ void RunArithmeticTests(AAVM* pAAVM, int& s, int& f) {
 void RunVariableDeclerationTests(AAVM* pAAVM, int& s, int& f) {
 
 	// Test modulo operator
-	if (!RunExpressionTest(pAAVM, L"var x = (5+5)*5-2; x;", L"out\\bin\\variable_var_rhsop2.aab", L"out\\op\\variable_var_rhsop2.txt", 48)) {
+	if (!RunExpressionTest(pAAVM, L"var x = (5+5)*5-2; x;", L"variable_var_rhsop2", 48)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test modulo operator
-	if (!RunExpressionTest(pAAVM, L"var x = 5+5; x;", L"out\\bin\\variable_var_rhsop1.aab", L"out\\op\\variable_var_rhsop1.txt", 10)) {
+	if (!RunExpressionTest(pAAVM, L"var x = 5+5; x;", L"variable_var_rhsop1", 10)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test modulo operator
-	if (!RunExpressionTest(pAAVM, L"var x = 5; x;", L"out\\bin\\variable_var.aab", L"out\\op\\variable_var.txt", 5)) {
+	if (!RunExpressionTest(pAAVM, L"var x = 5; x;", L"variable_var", 5)) {
 		f++;
 	} else {
 		s++;
@@ -213,56 +223,56 @@ void RunVariableDeclerationTests(AAVM* pAAVM, int& s, int& f) {
 void RunBlockTests(AAVM* pAAVM, int& s, int& f) {
 
 	// Test modulo operator
-	if (!RunExpressionTest(pAAVM, L"{ float x = 1.5f; x = x + 1.25f; x; }", L"out\\bin\\block_with_type5.aab", L"out\\op\\block_with_type5.txt", 2.750000f)) {
+	if (!RunExpressionTest(pAAVM, L"{ float x = 1.5f; x = x + 1.25f; x; }", L"block_with_type5", 2.750000f)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test modulo operator
-	if (!RunExpressionTest(pAAVM, L"{ bool x = true; !x; }", L"out\\bin\\block_with_type4.aab", L"out\\op\\block_with_type4.txt", false)) {
+	if (!RunExpressionTest(pAAVM, L"{ bool x = true; !x; }", L"block_with_type4", false)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test modulo operator
-	if (!RunExpressionTest(pAAVM, L"{ float x = 1.5f; x; }", L"out\\bin\\block_with_type3.aab", L"out\\op\\block_with_type3.txt", 1.500000f)) {
+	if (!RunExpressionTest(pAAVM, L"{ float x = 1.5f; x; }", L"block_with_type3", 1.500000f)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test modulo operator
-	if (!RunExpressionTest(pAAVM, L"{ bool x = true; x; }", L"out\\bin\\block_with_type2.aab", L"out\\op\\block_with_type2.txt", true)) {
+	if (!RunExpressionTest(pAAVM, L"{ bool x = true; x; }", L"block_with_type2", true)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test modulo operator
-	if (!RunExpressionTest(pAAVM, L"{ int x = 5; x = x + 5; x; }", L"out\\bin\\block_with_type1.aab", L"out\\op\\block_with_type1.txt", 10)) {
+	if (!RunExpressionTest(pAAVM, L"{ int x = 5; x = x + 5; x; }", L"block_with_type1", 10)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test modulo operator
-	if (!RunExpressionTest(pAAVM, L"{ var x = 5; x = x + 5; x; }", L"out\\bin\\block_with_var3.aab", L"out\\op\\block_with_var3.txt", 10)) {
+	if (!RunExpressionTest(pAAVM, L"{ var x = 5; x = x + 5; x; }", L"block_with_var3", 10)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test modulo operator
-	if (!RunExpressionTest(pAAVM, L"{ var x = (5+5)*5-2; var y = 20; x - y; }", L"out\\bin\\block_with_var2.aab", L"out\\op\\block_with_var2.txt", 28)) {
+	if (!RunExpressionTest(pAAVM, L"{ var x = (5+5)*5-2; var y = 20; x - y; }", L"block_with_var2", 28)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test modulo operator
-	if (!RunExpressionTest(pAAVM, L"{ var x = (5+5)*5-2; x; }", L"out\\bin\\block_with_var1.aab", L"out\\op\\block_with_var1.txt", 48)) {
+	if (!RunExpressionTest(pAAVM, L"{ var x = (5+5)*5-2; x; }", L"block_with_var1", 48)) {
 		f++;
 	} else {
 		s++;
@@ -273,70 +283,70 @@ void RunBlockTests(AAVM* pAAVM, int& s, int& f) {
 void RunFunctionTests(AAVM* pAAVM, int& s, int& f) {
 
 	// Test modulo operator
-	if (!RunFileTest(pAAVM, L"testing\\func.aa", L"out\\bin\\func.aab", L"out\\op\\func.txt", 51)) {
+	if (!RunFileTest(pAAVM, L"testing\\func.aa", L"func", 51)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test modulo operator
-	if (!RunExpressionTest(pAAVM, L"int par(int x, int y) { x - y; } par(15+5,par(75,50));", L"out\\bin\\func_decl_test8.aab", L"out\\op\\func_decl_test8.txt", -5)) {
+	if (!RunExpressionTest(pAAVM, L"int par(int x, int y) { x - y; } par(15+5,par(75,50));", L"func_decl_test8", -5)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test modulo operator
-	if (!RunExpressionTest(pAAVM, L"int par(int x, int y) { x - y; } par(15+5,5);", L"out\\bin\\func_decl_test7.aab", L"out\\op\\func_decl_test7.txt", 15)) {
+	if (!RunExpressionTest(pAAVM, L"int par(int x, int y) { x - y; } par(15+5,5);", L"func_decl_test7", 15)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test modulo operator
-	if (!RunExpressionTest(pAAVM, L"int par(int x, int y) { x - y; } par(10, 5);", L"out\\bin\\func_decl_test6.aab", L"out\\op\\func_decl_test6.txt", 5)) {
+	if (!RunExpressionTest(pAAVM, L"int par(int x, int y) { x - y; } par(10, 5);", L"func_decl_test6", 5)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test modulo operator
-	if (!RunExpressionTest(pAAVM, L"int par(int z) { var x = z; x = x + 28; x; } par(10);", L"out\\bin\\func_decl_test5.aab", L"out\\op\\func_decl_test5.txt", 38)) {
+	if (!RunExpressionTest(pAAVM, L"int par(int z) { var x = z; x = x + 28; x; } par(10);", L"func_decl_test5", 38)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test modulo operator
-	if (!RunExpressionTest(pAAVM, L"int test() { var x = 0; x = x + 28; x; } test();", L"out\\bin\\func_decl_test4.aab", L"out\\op\\func_decl_test4.txt", 28)) {
+	if (!RunExpressionTest(pAAVM, L"int test() { var x = 0; x = x + 28; x; } test();", L"func_decl_test4", 28)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test modulo operator
-	if (!RunExpressionTest(pAAVM, L"int test() { 5; } test();", L"out\\bin\\func_decl_test3.aab", L"out\\op\\func_decl_test3.txt", 5)) {
+	if (!RunExpressionTest(pAAVM, L"int test() { 5; } test();", L"func_decl_test3", 5)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test for compile error (a void function returning something)
-	if (!RunExpressionTest(pAAVM, L"void test() { 5; }", L"out\\bin\\func_decl_test2.aab", L"out\\op\\func_decl_test2.txt", AAStackValue::None, true)) {
+	if (!RunExpressionTest(pAAVM, L"void test() { 5; }", L"func_decl_test2", AAStackValue::None, true)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test runtime callstack (Expectes some output from code)
-	if (!RunExpressionTest(pAAVM, L"void test() {  } void testb() {}", L"out\\bin\\func_decl_test1.aab", L"out\\op\\func_decl_test1.txt", AAStackValue::None, false, true)) {
+	if (!RunExpressionTest(pAAVM, L"void test() {  } void testb() {}", L"func_decl_test1", AAStackValue::None, false, true)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test recursion
-	if (!RunFileTest(pAAVM, L"testing\\recursion.aa", L"out\\bin\\recursion.aab", L"out\\op\\recursion.txt", 24)) {
+	if (!RunFileTest(pAAVM, L"testing\\recursion.aa", L"recursion", 24)) {
 		f++;
 	} else {
 		s++;
@@ -347,35 +357,35 @@ void RunFunctionTests(AAVM* pAAVM, int& s, int& f) {
 void RunIfStatementTests(AAVM* pAAVM, int& s, int& f) {
 
 	// Test modulo operator
-	if (!RunExpressionTest(pAAVM, L"if (6 < 5) { 25; } else if (4 < 5) { 27; } else { 30; }", L"out\\bin\\if3.aab", L"out\\op\\if3.txt", 27)) {
+	if (!RunExpressionTest(pAAVM, L"if (6 < 5) { 25; } else if (4 < 5) { 27; } else { 30; }", L"if3", 27)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test modulo operator
-	if (!RunExpressionTest(pAAVM, L"if (6 < 5) { 25; } else { 30; }", L"out\\bin\\if2.aab", L"out\\op\\if2.txt", 30)) {
+	if (!RunExpressionTest(pAAVM, L"if (6 < 5) { 25; } else { 30; }", L"if2", 30)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test modulo operator
-	if (!RunExpressionTest(pAAVM, L"if (5 < 6) { 25; }", L"out\\bin\\if1.aab", L"out\\op\\if1.txt", 25)) {
+	if (!RunExpressionTest(pAAVM, L"if (5 < 6) { 25; }", L"if1", 25)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test modulo operator
-	if (!RunExpressionTest(pAAVM, L"5 + 15 <= 10;", L"out\\bin\\cmp_leq2.aab", L"out\\op\\cmp_leq2.txt", false)) {
+	if (!RunExpressionTest(pAAVM, L"5 + 15 <= 10;", L"cmp_leq2", false)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test modulo operator
-	if (!RunExpressionTest(pAAVM, L"5 <= 10;", L"out\\bin\\cmp_leq1.aab", L"out\\op\\cmp_leq1.txt", true)) {
+	if (!RunExpressionTest(pAAVM, L"5 <= 10;", L"cmp_leq1", true)) {
 		f++;
 	} else {
 		s++;
@@ -387,21 +397,21 @@ void RunIfStatementTests(AAVM* pAAVM, int& s, int& f) {
 void RunLoopTests(AAVM* pAAVM, int& s, int& f) {
 
 	// Test dowhile loop
-	if (!RunFileTest(pAAVM, L"testing\\dowhile-loop.aa", L"out\\bin\\dowhile-loop.aab", L"out\\op\\dowhile-loop.txt", 10)) {
+	if (!RunFileTest(pAAVM, L"testing\\dowhile-loop.aa", L"dowhile-loop", 10)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test while loop
-	if (!RunFileTest(pAAVM, L"testing\\while-loop.aa", L"out\\bin\\while-loop.aab", L"out\\op\\while-loop.txt", 10)) {
+	if (!RunFileTest(pAAVM, L"testing\\while-loop.aa", L"while-loop", 10)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test for loop
-	if (!RunFileTest(pAAVM, L"testing\\for-loop.aa", L"out\\bin\\for-loop.aab", L"out\\op\\for-loop.txt", 90)) {
+	if (!RunFileTest(pAAVM, L"testing\\for-loop.aa", L"for-loop", 90)) {
 		f++;
 	} else {
 		s++;
@@ -412,35 +422,35 @@ void RunLoopTests(AAVM* pAAVM, int& s, int& f) {
 void RunClassTests(AAVM* pAAVM, int& s, int& f) {
 
 	// Test class ctor + class method access + 'new' keyword
-	if (!RunFileTest(pAAVM, L"testing\\class1.aa", L"out\\bin\\class1.aab", L"out\\op\\class1.txt", 55)) {
+	if (!RunFileTest(pAAVM, L"testing\\class1.aa", L"class1", 55)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test class for field access
-	if (!RunFileTest(pAAVM, L"testing\\class2.aa", L"out\\bin\\class2.aab", L"out\\op\\class2.txt", 10)) {
+	if (!RunFileTest(pAAVM, L"testing\\class2.aa", L"class2", 10)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test class for field access (2.0)
-	if (!RunFileTest(pAAVM, L"testing\\class3.aa", L"out\\bin\\class3.aab", L"out\\op\\class3.txt", 50)) {
+	if (!RunFileTest(pAAVM, L"testing\\class3.aa", L"class3", 50)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test class for field access (3.0)
-	if (!RunFileTest(pAAVM, L"testing\\class4.aa", L"out\\bin\\class4.aab", L"out\\op\\class4.txt", 40)) {
+	if (!RunFileTest(pAAVM, L"testing\\class4.aa", L"class4", 40)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test simple class inheritance
-	if (!RunFileTest(pAAVM, L"testing\\class5.aa", L"out\\bin\\class5.aab", L"out\\op\\class5.txt", 0)) {
+	if (!RunFileTest(pAAVM, L"testing\\class5.aa", L"class5", 0)) {
 		f++;
 	} else {
 		s++;
@@ -451,21 +461,21 @@ void RunClassTests(AAVM* pAAVM, int& s, int& f) {
 void RunArrayTests(AAVM* pAAVM, int& s, int& f) {
 
 	// Test array decleration
-	if (!RunFileTest(pAAVM, L"testing\\array1.aa", L"out\\bin\\array1.aab", L"out\\op\\array1.txt", AAStackValue::None)) {
+	if (!RunFileTest(pAAVM, L"testing\\array1.aa", L"array1", AAStackValue::None)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test array get from index
-	if (!RunFileTest(pAAVM, L"testing\\array2.aa", L"out\\bin\\array2.aab", L"out\\op\\array2.txt", 0)) {
+	if (!RunFileTest(pAAVM, L"testing\\array2.aa", L"array2", 0)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test update array value at index
-	if (!RunFileTest(pAAVM, L"testing\\array3.aa", L"out\\bin\\array3.aab", L"out\\op\\array3.txt", 11)) {
+	if (!RunFileTest(pAAVM, L"testing\\array3.aa", L"array3", 11)) {
 		f++;
 	} else {
 		s++;
@@ -478,7 +488,7 @@ void RunTextTests(AAVM* pAAVM, int& s, int& f) {
 	/** Char tests **/
 
 	// Test char
-	if (!RunFileTest(pAAVM, L"testing\\char1.aa", L"out\\bin\\char1.aab", L"out\\op\\char1.txt", (wchar_t)'A')) {
+	if (!RunFileTest(pAAVM, L"testing\\char1.aa", L"char1", (wchar_t)'A')) {
 		f++;
 	} else {
 		s++;
@@ -487,31 +497,31 @@ void RunTextTests(AAVM* pAAVM, int& s, int& f) {
 	/** String tests **/
 
 	// Test string
-	if (!RunFileTest(pAAVM, L"testing\\string1.aa", L"out\\bin\\string1.aab", L"out\\op\\string1.txt", std::wstring(L"This is a string - Hello from AA"))) {
+	if (!RunFileTest(pAAVM, L"testing\\string1.aa", L"string1", std::wstring(L"This is a string - Hello from AA"))) {
 		f++;
 	} else {
 		s++;
 	}
 
-	if (!RunFileTest(pAAVM, L"testing\\string2.aa", L"out\\bin\\string2.aab", L"out\\op\\string2.txt", 5)) {
+	if (!RunFileTest(pAAVM, L"testing\\string2.aa", L"string2", 5)) {
 		f++;
 	} else {
 		s++;
 	}
 
-	if (!RunFileTest(pAAVM, L"testing\\string3.aa", L"out\\bin\\string3.aab", L"out\\op\\string3.txt", std::wstring(L"Hello World"))) {
+	if (!RunFileTest(pAAVM, L"testing\\string3.aa", L"string3", std::wstring(L"Hello World"))) {
 		f++;
 	} else {
 		s++;
 	}
 
-	if (!RunFileTest(pAAVM, L"testing\\string4.aa", L"out\\bin\\string4.aab", L"out\\op\\string4.txt", std::wstring(L"Hello World"))) {
+	if (!RunFileTest(pAAVM, L"testing\\string4.aa", L"string4", std::wstring(L"Hello World"))) {
 		f++;
 	} else {
 		s++;
 	}
 
-	if (!RunFileTest(pAAVM, L"testing\\string5.aa", L"out\\bin\\string5.aab", L"out\\op\\string5.txt", std::wstring(L"Hello World"))) {
+	if (!RunFileTest(pAAVM, L"testing\\string5.aa", L"string5", std::wstring(L"Hello World"))) {
 		f++;
 	} else {
 		s++;
@@ -522,14 +532,14 @@ void RunTextTests(AAVM* pAAVM, int& s, int& f) {
 void RunNamespaceTests(AAVM* pAAVM, int& s, int& f) {
 
 	// Test namespaces are fetched correctly (Including the 'using X from Y' directive)
-	if (!RunFileTest(pAAVM, L"testing\\namespace1.aa", L"out\\bin\\namespace1.aab", L"out\\op\\namespace1.txt", 42)) {
+	if (!RunFileTest(pAAVM, L"testing\\namespace1.aa", L"namespace1", 42)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Nested namespace testing + simple 'using' directive
-	if (!RunFileTest(pAAVM, L"testing\\namespace2.aa", L"out\\bin\\namespace2.aab", L"out\\op\\namespace2.txt", 42)) {
+	if (!RunFileTest(pAAVM, L"testing\\namespace2.aa", L"namespace2", 42)) {
 		f++;
 	} else {
 		s++;
@@ -540,7 +550,7 @@ void RunNamespaceTests(AAVM* pAAVM, int& s, int& f) {
 void RunIOTests(AAVM* pAAVM, int& s, int& f) {
 
 	// IO functionality (and the using std::io) system
-	if (!RunFileTest(pAAVM, L"testing\\io1.aa", L"out\\bin\\io1.aab", L"out\\op\\io1.txt", 0)) {
+	if (!RunFileTest(pAAVM, L"testing\\io1.aa", L"io1", 0)) {
 		f++;
 	} else {
 		s++;
@@ -551,7 +561,7 @@ void RunIOTests(AAVM* pAAVM, int& s, int& f) {
 void RunEnumTests(AAVM* pAAVM, int& s, int& f) {
 
 	// Test if enums with functions can work
-	if (!RunFileTest(pAAVM, L"testing\\enum1.aa", L"out\\bin\\enum1.aab", L"out\\op\\enum1.txt", 0)) {
+	if (!RunFileTest(pAAVM, L"testing\\enum1.aa", L"enum1", 0)) {
 		f++;
 	} else {
 		s++;
