@@ -1,0 +1,6 @@
+{
+	{
+		var s = "This is a string - Hello from AA";
+		s;
+	};
+}

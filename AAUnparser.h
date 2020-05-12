@@ -26,9 +26,11 @@ public:
 
 private:
 
-	void Unparse(AA_AST_NODE* pNode);
+	std::wstring Unparse(AA_AST_NODE* pNode);
 
-	inline void WriteLine(std::wstring ln, ...);
+	inline std::wstring WriteToString(std::wstring ln, ...);
+
+	inline std::wstring WriteIndent();
 
 	inline void IncreaseIndent();
 	inline void DecreaseIndent();
