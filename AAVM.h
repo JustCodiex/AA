@@ -76,10 +76,12 @@ public:
 	void EnableCompilerLog(bool enable) { m_logCompileMessages = enable; }
 	void EnableExecutionTiming(bool enable) { m_logExecTime = enable; }
 	void EnableTopStackLogging(bool enable) { m_logTopOfStackAfterExec = enable; }
+	void EnableTraceLogging(bool enable) { m_logTrace = enable; }
 
 	bool IsCompilerLoggingEnabled() { return m_logCompileMessages; }
 	bool IsExecutionTimeLoggingEnabled() { return m_logExecTime; }
 	bool IsTopStackLoggingEnabled() { return m_logTopOfStackAfterExec; }
+	bool IsTraceLoggingEnabled() { return m_logTrace; }
 
 	int RegisterFunction(AACSingleFunction funcPtr);
 	int RegisterFunction(AACSingleFunction funcPtr, AACNamespace* domain);
@@ -136,6 +138,8 @@ private:
 
 	void StopAndLogCompile();
 
+	inline void Trace(const char* msg, ...);
+
 private:
 
 	AAP* m_parser;
@@ -146,6 +150,7 @@ private:
 	bool m_logExecTime;
 	bool m_logCompileMessages;
 	bool m_logTopOfStackAfterExec;
+	bool m_logTrace;
 
 	aa::set<AACSingleFunction> m_cppfunctions;
 

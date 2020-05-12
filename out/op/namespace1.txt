@@ -12,9 +12,10 @@ OPERATIONS:
 	[0001]  GETVAR, 0                       
 	[0002]  XCALL, 2, 1                     ;; Calls: object::object
 	[0003]  PUSHWS, 0                       
-	[0004]  XCALL, 0, 1                     ;; Calls: println
-	[0005]  GETVAR, 0                       
-	[0006]  RET                             
+	[0004]  WRAP, 13                        
+	[0005]  XCALL, 0, 1                     ;; Calls: println
+	[0006]  GETVAR, 0                       
+	[0007]  RET                             
 END PROCEDURE;
 
 START PROCEDURE 2 (StringList::StringList):
@@ -26,9 +27,10 @@ OPERATIONS:
 	[0001]  GETVAR, 0                       
 	[0002]  XCALL, 2, 1                     ;; Calls: object::object
 	[0003]  PUSHWS, 0                       
-	[0004]  XCALL, 0, 1                     ;; Calls: println
-	[0005]  GETVAR, 0                       
-	[0006]  RET                             
+	[0004]  WRAP, 13                        
+	[0005]  XCALL, 0, 1                     ;; Calls: println
+	[0006]  GETVAR, 0                       
+	[0007]  RET                             
 END PROCEDURE;
 
 START PROCEDURE 3 (main):

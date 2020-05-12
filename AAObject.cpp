@@ -140,7 +140,7 @@ namespace aa {
 			*pObject->Offset<int64_t>(offset) = value.to_cpp<int64_t>();
 			break;
 		case AAPrimitiveType::intptr:
-			*pObject->Offset<bool>(offset) = value.to_cpp<bool>(); // This is so undefined....
+			*pObject->Offset<AAIntPtr>(offset) = value.to_cpp<AAIntPtr>();
 			break;
 		case AAPrimitiveType::real32:
 			*pObject->Offset<float_t>(offset) = value.to_cpp<float_t>();
@@ -186,7 +186,7 @@ namespace aa {
 		case AAPrimitiveType::int64:
 			return AAStackValue(*pObject->Offset<int64_t>(offset));
 		case AAPrimitiveType::intptr:
-			return AAStackValue(*pObject->Offset<bool>(offset)); // TODO: 
+			return AAStackValue(*pObject->Offset<AAIntPtr>(offset));
 		case AAPrimitiveType::real32:
 			return AAStackValue(*pObject->Offset<float_t>(offset));
 		case AAPrimitiveType::real64:

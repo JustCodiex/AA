@@ -10,6 +10,7 @@ public:
 	void OpenWrite(std::wstring path);
 
 	void WriteString(std::wstring ws);
+	void WriteWchar(wchar_t);
 
 	int CloseStream();
 

@@ -159,6 +159,12 @@ namespace aa {
 		case AAByteCode::CTOR:
 			output = L"CTOR";
 			break;
+		case AAByteCode::WRAP:
+			output = L"WRAP";
+			break;
+		case AAByteCode::UNWRAP:
+			output = L"UNWRAP";
+			break;
 		default:
 			break;
 		}
@@ -218,7 +224,8 @@ namespace aa {
 	}
 
 	bool __is_arithmetic_code(AAByteCode code) {
-		return code == AAByteCode::ADD || code == AAByteCode::SUB || code == AAByteCode::MUL || code == AAByteCode::DIV || code == AAByteCode::MOD || code == AAByteCode::NNEG;
+		return code == AAByteCode::ADD || code == AAByteCode::SUB || code == AAByteCode::MUL || code == AAByteCode::DIV || code == AAByteCode::MOD || code == AAByteCode::NNEG ||
+			code == AAByteCode::CMPE || code == AAByteCode::CMPNE;
 	}
 
 	void dump_instructions(std::wstring file, std::vector<AAC::CompiledProcedure> procedures, AAVM* pAAVM) {

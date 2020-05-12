@@ -35,7 +35,7 @@ namespace aa {
             case AAPrimitiveType::refptr:
                 return AAStackValue(stack.Pop<AAMemoryPtr>());
             case AAPrimitiveType::intptr:
-                return AAStackValue(stack.Pop<void*>());
+                return AAStackValue(stack.Pop<AAIntPtr>());
             default:
                 break;
             }
@@ -88,7 +88,7 @@ namespace aa {
                 stack.Push(value.to_cpp<AAMemoryPtr>());
                 break;
             case AAPrimitiveType::intptr:
-                stack.Push(value.to_cpp<void*>());
+                stack.Push(value.to_cpp<AAIntPtr>());
                 break;
             default:
                 break;
@@ -112,7 +112,7 @@ namespace aa {
                 stack.Push<int32_t>((int32_t)lit.lit.i.val);
                 break;
             case AALiteralType::IntPtr:
-                stack.Push(lit.lit.ptr.ptr);
+                stack.Push(AAIntPtr(lit.lit.ptr.ptr));
                 break;
             case AALiteralType::Null:
                 stack.Push(AAMemoryPtr(0));

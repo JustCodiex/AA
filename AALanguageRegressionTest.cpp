@@ -612,10 +612,10 @@ bool RunRegressionTests(AAVM* pAAVM) {
 	RunNamespaceTests(pAAVM, successes, fails);
 
 	// Run IO tests
-	//RunIOTests(pAAVM, successes, fails);
+	RunIOTests(pAAVM, successes, fails);
 
 	// Run enum tests
-	//RunEnumTests(pAAVM, successes, fails);
+	RunEnumTests(pAAVM, successes, fails);
 
 	// Log regression test results
 	std::wcout << L"Regression test report:" << std::endl;

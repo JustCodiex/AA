@@ -103,7 +103,7 @@ namespace aa {
 	/// <param name="offset"></param>
 	/// <param name="val"></param>
 	template<typename T>
-	inline void SetVal(const AAObject* obj, size_t offset, const T& val) {
+	inline void SetVal(const AAObject* obj, size_t offset, T val) {
 		*(obj->Offset<T>(offset)) = val;
 	}
 

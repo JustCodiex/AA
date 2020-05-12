@@ -84,6 +84,9 @@ enum class AAByteCode : unsigned char {
 	CASTD2F, // f64 => f32
  	CASTD2L, // f64 => i64
 
+	WRAP, // (Wrap top of stack into a stackvalue - save the type, 1 argument[primitive type])
+	UNWRAP, // (Unwraps the top stack element from its associated stackvalue, 0 arguments)
+
 	BCKM, // (Backwards pattern match - pushes boolean value on stack, 4 arguments[func, vm{0,1}, args, stacksz])
 	BDOP, // (Break Down Object & Push, 0 arguments)
 

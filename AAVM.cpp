@@ -35,6 +35,7 @@ AAVM::AAVM() {
 	m_logTopOfStackAfterExec = false;
 	m_logCompileMessages = false;
 	m_logExecTime = false;
+	m_logTrace = false;
 
 	// Nothing has been run yet, thus we couldn't have a runtime error
 	m_hasRuntimeError = false;
@@ -401,8 +402,15 @@ void AAVM::exec(AAProgram::Procedure* procedure, aa::stack<AARuntimeEnvironment>
 			int callProc = AAVM_GetArgument(0);
 			int argCount = AAVM_GetArgument(1);
 
+			Trace("AAVM_OPI: %i\n", AAVM_OPI);
+
+
+			Trace(".xcall before %i\n", (int)stack.get_pointer());
+
 			// Call the native function (The native function is also responsible for handling the return
 			this->m_cppfunctions.Apply(callProc).fPtr(this, stack);
+
+			Trace(".xcall before %i\n", (int)stack.get_pointer());
 
 			// Did the call cause a runtime error?
 			if (this->m_hasRuntimeError) {
@@ -480,8 +488,12 @@ void AAVM::exec(AAProgram::Procedure* procedure, aa::stack<AARuntimeEnvironment>
 
 			if (isVM) {
 
+				Trace(".ctor before %i\n", (int)stack.get_pointer());
+
 				// Call and forget
 				this->m_cppfunctions.Apply(callProc).fPtr(this, stack);
+
+				Trace(".ctor after %i\n", (int)stack.get_pointer());
 
 				// Did the call cause a runtime error?
 				if (this->m_hasRuntimeError) {
@@ -594,6 +606,19 @@ void AAVM::exec(AAProgram::Procedure* procedure, aa::stack<AARuntimeEnvironment>
 		}
 		case AAByteCode::BCKM:
 			stack.Push(this->BackwardsPatternmatch(AAVM_GetArgument(0), AAVM_GetArgument(1), AAVM_GetArgument(2), AAVM_GetArgument(3), stack));
+			AAVM_OPI++;
+			break;
+		case AAByteCode::WRAP: {
+			//Trace("Before %i\n", (int)stack.get_pointer());
+			AAStackValue top = aa::vm::PopSomething((AAPrimitiveType)AAVM_GetArgument(0), stack);
+			//Trace("Pop %i\n", (int)stack.get_pointer());
+			stack.Push(top); // Push the popped stackvalue directly back unto the stack
+			//Trace("Push %i\n", (int)stack.get_pointer());
+			AAVM_OPI++;
+			break;
+		}
+		case AAByteCode::UNWRAP:
+			aa::vm::PushSomething(stack.Pop<AAStackValue>(), stack); // Pop as stack value and push unto stack
 			AAVM_OPI++;
 			break;
 		case AAByteCode::POP:
@@ -906,8 +931,18 @@ AAClassSignature* AAVM::RegisterClass(std::wstring typeName, AACClass cClass) {
 		// Function signature
 		AAFuncSignature* sig;
 
-		// Because it's a class method we always push the 'this' identifier -> Note, should not be the case if static (but not implemented yet)
-		func.params.insert(func.params.begin(), AAFuncParam(cc->type, L"this"));
+		// Add 'this' into the argument list
+		if (isCtor) {
+
+			// Because it's a class constrcutor we push it into the back
+			func.params.push_back(AAFuncParam(cc->type, L"this"));
+
+		} else {
+
+			// Because it's a class method we always push the 'this' identifier -> Note, should not be the case if static (but not implemented yet)
+			func.params.insert(func.params.begin(), AAFuncParam(cc->type, L"this"));
+
+		}
 
 		// Register the funcion and get the VMCall procID
 		this->RegisterFunction(func, sig, cClass.domain, true);
@@ -995,7 +1030,7 @@ void AAVM::LoadStandardLibrary() {
 	// Create object class
 	AACClass objectClass;
 	objectClass.classMethods.push_back(AACSingleFunction(L".ctor", &AAO_NewObject, AACType::Void, 0));
-	this->RegisterClass(L"object", objectClass); // IDEA: Rename to Any
+	this->RegisterClass(L"object", objectClass);
 
 	// Create standard namespaces
 	AACNamespace* __std = new AACNamespace(L"std", NULL);
@@ -1007,7 +1042,7 @@ void AAVM::LoadStandardLibrary() {
 	stdio_filestream.classMethods.push_back(AACSingleFunction(L".ctor", &AAFileStream_Open, AACType::ExportReferenceType, 1, AAFuncParam(AACTypeDef::String, L"_filepath")));
 	stdio_filestream.classMethods.push_back(AACSingleFunction(L"close", &AAFileStream_Close, AACType::Void, 0));
 	stdio_filestream.classOperators.push_back(AACClassOperator(L"<<", AACSingleFunction(L"writetofile", &AAFileStream_Write, AACType::ExportReferenceType, 1, AAFuncParam(AACType::Any, L"_content"))));
-	stdio_filestream.classFields.push_back(AACClassField(AACTypeDef::Int32, L"_selfptr"));
+	stdio_filestream.classFields.push_back(AACClassField(AACTypeDef::IntPtr, L"_selfptr"));
 
 	// Register the filestream class
 	this->RegisterClass(L"FileStream", stdio_filestream);
@@ -1070,6 +1105,17 @@ void AAVM::StopAndLogCompile() {
 		printf("Compile time: %fs\n", (float)(clock() - m_startCompile) / CLOCKS_PER_SEC);
 	}
 
+}
+
+void AAVM::Trace(const char* msg, ...) {
+#if _DEBUG
+	if (m_logTrace) {
+		va_list arglist;
+		va_start(arglist, msg);
+		vprintf(msg, arglist);
+		va_end(arglist);
+	}
+#endif
 }
 
 void AAO_ToString(AAVM* pAAVm, any_stack& stack) {

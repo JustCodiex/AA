@@ -8,17 +8,20 @@ OPERATIONS:
 	[0002]  PUSHWS, 1                       
 	[0003]  SETVAR, 1, 13                   ;; primitive: string [16 bytes]
 	[0004]  GETVAR, 0                       
-	[0005]  XCALL, 0, 1                     ;; Calls: println
-	[0006]  GETVAR, 1                       
-	[0007]  XCALL, 0, 1                     ;; Calls: println
-	[0008]  PUSHWS, 2                       
-	[0009]  PUSHWS, 1                       
-	[0010]  CONCAT                          
-	[0011]  XCALL, 0, 1                     ;; Calls: println
-	[0012]  GETVAR, 0                       
-	[0013]  PUSHWS, 3                       
-	[0014]  CONCAT                          
-	[0015]  GETVAR, 1                       
-	[0016]  CONCAT                          
+	[0005]  WRAP, 13                        
+	[0006]  XCALL, 0, 1                     ;; Calls: println
+	[0007]  GETVAR, 1                       
+	[0008]  WRAP, 13                        
+	[0009]  XCALL, 0, 1                     ;; Calls: println
+	[0010]  PUSHWS, 2                       
+	[0011]  PUSHWS, 1                       
+	[0012]  CONCAT                          
+	[0013]  WRAP, 13                        
+	[0014]  XCALL, 0, 1                     ;; Calls: println
+	[0015]  GETVAR, 0                       
+	[0016]  PUSHWS, 3                       
+	[0017]  CONCAT                          
+	[0018]  GETVAR, 1                       
+	[0019]  CONCAT                          
 END PROCEDURE;
 

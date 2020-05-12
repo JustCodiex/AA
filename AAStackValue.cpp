@@ -8,6 +8,7 @@ AAStackValue AAStackValue::Null = AAStackValue(AAPrimitiveType::refptr, AAVal(0)
 
 AAStackValue::AAStackValue() { m_type = AAPrimitiveType::Undefined; }
 AAStackValue::AAStackValue(AAMemoryPtr ptr) { m_type = AAPrimitiveType::refptr; m_val = AAVal(ptr); }
+AAStackValue::AAStackValue(AAIntPtr iPtr) { m_type = AAPrimitiveType::intptr, m_val = AAVal(iPtr); }
 AAStackValue::AAStackValue(signed char b) { m_type = AAPrimitiveType::sbyte; m_val = AAVal(b); }
 AAStackValue::AAStackValue(unsigned char b) { m_type = AAPrimitiveType::byte; m_val = AAVal(b); }
 AAStackValue::AAStackValue(bool b) { m_type = AAPrimitiveType::boolean; m_val = AAVal(b); }
@@ -79,7 +80,7 @@ std::wstring AAStackValue::ToString() {
 	case AAPrimitiveType::int64:
 		return std::to_wstring(m_val.Raw<int64_t>());
 	case AAPrimitiveType::intptr:
-		return L"undefined";// aa::wstring_hex(m_val.Raw<int>());
+		return aa::wstring_hex(m_val.Raw<AAIntPtr>().ptr);
 	case AAPrimitiveType::real32:
 		return std::to_wstring(m_val.Raw<float>());
 	case AAPrimitiveType::real64:

@@ -193,6 +193,7 @@
     <ClInclude Include="AAAutoCodeGenerator.h" />
     <ClInclude Include="AAByteType.h" />
     <ClInclude Include="AAExecute.h" />
+    <ClInclude Include="AAIntrPtr.h" />
     <ClInclude Include="AAModifier.h" />
     <ClInclude Include="AAB2F.h" />
     <ClInclude Include="AAByteCode.h" />

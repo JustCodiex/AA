@@ -1,6 +1,7 @@
 #pragma once
 #include "AAPrimitiveType.h"
 #include "AA_literals.h"
+#include "AAIntrPtr.h"
 #include "AAMemory.h"
 #include "AAVal.h"
 
@@ -9,7 +10,10 @@ class AAStackValue {
 public:
 
 	AAStackValue();
+
 	AAStackValue(AAMemoryPtr ptr);
+	AAStackValue(AAIntPtr iPtr);
+
 	AAStackValue(signed char b);
 	AAStackValue(unsigned char b);
 	AAStackValue(bool b);

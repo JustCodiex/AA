@@ -378,6 +378,17 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileBinaryOperation(AA_AST_NOD
 
 	opList.Add(binopCAE);
 
+	if (pNode->HasTag("pop_size")) {
+
+		CompiledAbstractExpression popCAE;
+		popCAE.argCount = 1;
+		popCAE.bc = AAByteCode::POP;
+		popCAE.argValues[0] = pNode->tags["pop_size"];
+
+		opList.Add(popCAE);
+
+	}
+
 	return opList;
 
 }
@@ -453,7 +464,10 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileFunctionCall(AA_AST_NODE* 
 
 	if (args > 0) {
 		for (AA_AST_NODE* pArg : pNode->expressions) {
-			opList.Add(this->HandleStackPush(cTable, pArg, staticData));
+			
+			aa::list<CompiledAbstractExpression> ops = this->HandleStackPush(cTable, pArg, staticData);
+			opList.Add(ops);
+
 		}
 	}
 
@@ -462,6 +476,8 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileFunctionCall(AA_AST_NODE* 
 	callCAE.bc = (isVmCll) ? AAByteCode::XCALL : AAByteCode::CALL;
 	callCAE.argValues[0] = procID;
 	callCAE.argValues[1] = args;
+
+	opList.Add(callCAE);
 
 	if (pNode->HasTag("pop_size")) {
 
@@ -473,8 +489,6 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileFunctionCall(AA_AST_NODE* 
 		opList.Add(popCAE);
 
 	}
-
-	opList.Add(callCAE);
 
 	return opList;
 
@@ -733,7 +747,8 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompilePatternBlock(AA_AST_NODE* 
 
 		CompiledAbstractExpression eq;
 		eq.bc = AAByteCode::CMPE;
-		eq.argCount = 0;
+		eq.argCount = 1;
+		eq.argValues[0] = cases[i]->expressions[0]->tags["primitive"];
 		condition.Add(eq);
 
 		CompiledAbstractExpression jmpiftrue;
@@ -1071,6 +1086,21 @@ aa::list<AAC::CompiledAbstractExpression> AAC::HandleStackPush(CompiledEnviornme
 		}
 	} else {
 		opList.Add(CompileAST(pNode, cTable, staticData));
+	}
+
+
+	// Does the argument contain the "wrap" tag -> wrap so 'Any' can accept it
+	if (pNode->HasTag("wrap")) {
+
+		// Wrap bytecode instruction
+		CompiledAbstractExpression wrapCAE;
+		wrapCAE.bc = AAByteCode::WRAP;
+		wrapCAE.argCount = 1;
+		wrapCAE.argValues[0] = pNode->tags["wrap"];
+
+		// Add to operations list
+		opList.Add(wrapCAE);
+
 	}
 
 	return opList;

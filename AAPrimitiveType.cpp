@@ -1,6 +1,8 @@
 #include "AAPrimitiveType.h"
 #include "AAMemory.h"
 #include "AACType.h"
+#include "AAIntrPtr.h"
+#include "AACEnum.h"
 
 namespace aa {
 
@@ -26,7 +28,7 @@ namespace aa {
 			case AAPrimitiveType::real64:
 				return 8;
 			case AAPrimitiveType::intptr:
-				return sizeof(uint32_t);
+				return sizeof(AAIntPtr);
 			case AAPrimitiveType::string:
 			case AAPrimitiveType::refptr:
 				return sizeof(AAMemoryPtr);
@@ -46,9 +48,18 @@ namespace aa {
 				return AAPrimitiveType::real32;
 			} else if (pStaticType == AACTypeDef::String) {
 				return AAPrimitiveType::string;
+			} else if (pStaticType == AACTypeDef::IntPtr) {
+				return AAPrimitiveType::intptr;
 			} else {
 				if (pStaticType->isArrayType || pStaticType->isRefType) {
 					return AAPrimitiveType::refptr;
+				} else if (pStaticType->isEnum) {
+					switch (pStaticType->enumSignature->literalType) {
+					case AALiteralType::Char:
+						return AAPrimitiveType::wchar;
+					default:
+						return AAPrimitiveType::int32;
+					}
 				} else {
 					return AAPrimitiveType::Undefined;
 				}
@@ -91,7 +102,7 @@ namespace aa {
 			case AAPrimitiveType::real64:
 				return L"real64";
 			case AAPrimitiveType::intptr:
-				return L"intpte";
+				return L"intptr";
 			case AAPrimitiveType::string:
 				return L"string";
 			case AAPrimitiveType::refptr:

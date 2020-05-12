@@ -365,5 +365,8 @@
     <ClInclude Include="AARuntimeTypeEnv.h">
       <Filter>Header Files\VM\runtime</Filter>
     </ClInclude>
+    <ClInclude Include="AAIntrPtr.h">
+      <Filter>Header Files\VM</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -22,6 +22,7 @@ bool isCompileInput = false; // The input is a compile target
 bool executeOutput = false; // Should we execute our output
 bool logCompileTime = false; // Should compile time be logged
 bool logExecuteTime = false; // Should execute time be logged
+bool logTrace = false; // Should trace be logged when running the VM
 bool printOutput = true; // Should execution output be logged
 bool pauseOnComplete = false; // Should we pause execution when VM is released?
 
@@ -97,6 +98,12 @@ int wmain(int argc, wchar_t** argv) {
             printOutput = false;
         } else if (wcscmp(argv[i], L"-pause") == 0) {
             pauseOnComplete = true;
+        } else if (wcscmp(argv[i], L"-trace") == 0) {
+#if _DEBUG
+            logTrace = true;
+#elif
+            wprintf(L"-trace is not enabled in RELEASE mode");
+#endif
         } else if (wcscmp(argv[i], L"-test_regressive") == 0) {
 #if _DEBUG
             enableRegTests = true;
@@ -133,6 +140,9 @@ int wmain(int argc, wchar_t** argv) {
 
     // Create the VM we'll be using
     AAVM* VM = AAVM::CreateNewVM(logExecuteTime, logCompileTime, printOutput);
+
+    // Set trace logging
+    VM->EnableTraceLogging(logTrace);
 
     // Set output stream
     VM->SetOutput(&std::cout);

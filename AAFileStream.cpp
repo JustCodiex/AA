@@ -13,8 +13,20 @@ void AAFileStream::OpenWrite(std::wstring path) {
 
 void AAFileStream::WriteString(std::wstring ws) {
 
-	// Write to stream
-	m_stream.write(ws.c_str(), ws.size());
+	if (m_stream.is_open()) {
+
+		// Write to stream
+		m_stream.write(ws.c_str(), ws.size());
+
+	}
+
+}
+
+void AAFileStream::WriteWchar(wchar_t w) {
+
+	if (m_stream.is_open()) {
+		m_stream << w;
+	}
 
 }
 

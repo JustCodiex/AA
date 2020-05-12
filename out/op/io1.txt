@@ -1,35 +1,31 @@
 START PROCEDURE 0 (<GlobalScope>):
-CONSTANTS:
-IDENTIFIERS:
-
 OPERATIONS:
-	[0]	CALL, 1, 0		;; Calls: main
+	[0000]  CALL, 1, 0                      ;; Calls: main
 END PROCEDURE;
 
 START PROCEDURE 1 (main):
-CONSTANTS:	[UTF-8, "test.txt"]	[UTF-8, "Hello File from Å"]	[C, \n]	[UTF-8, "Goodbye from Å"]	[I32, 0]
+CONSTANTS:	[UTF-8, "test.txt"][UTF-8, "Hello File from Å"][C, \n][UTF-8, "Goodbye from Å"][I32, 0]
 IDENTIFIERS:
 	fs;
 OPERATIONS:
-	[0]	HALLOC, 16
-	[1]	PUSHC, 0
-	[2]	XCALL, 5, 2		;; Calls: FileStream::FileStream
-	[3]	SETVAR, 0
-	[4]	GETVAR, 0
-	[5]	PUSHC, 1
-	[6]	XCALL, 7, 2		;; Calls: FileStream::writetofile
-	[7]	POP
-	[8]	GETVAR, 0
-	[9]	PUSHC, 2
-	[10]	XCALL, 7, 2		;; Calls: FileStream::writetofile
-	[11]	POP
-	[12]	GETVAR, 0
-	[13]	PUSHC, 3
-	[14]	XCALL, 7, 2		;; Calls: FileStream::writetofile
-	[15]	POP
-	[16]	GETVAR, 0
-	[17]	XCALL, 6, 1		;; Calls: FileStream::close
-	[18]	PUSHC, 4
-	[19]	RET, 1
+	[0000]  PUSHWS, 0                       
+	[0001]  CTOR, 0, 4, 1, 8                
+	[0002]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
+	[0003]  GETVAR, 0                       
+	[0004]  PUSHWS, 1                       
+	[0005]  WRAP, 13                        
+	[0006]  XCALL, 6, 2                     ;; Calls: FileStream::writetofile
+	[0007]  GETVAR, 0                       
+	[0008]  PUSHC, 2                        
+	[0009]  WRAP, 12                        
+	[0010]  XCALL, 6, 2                     ;; Calls: FileStream::writetofile
+	[0011]  GETVAR, 0                       
+	[0012]  PUSHWS, 3                       
+	[0013]  WRAP, 13                        
+	[0014]  XCALL, 6, 2                     ;; Calls: FileStream::writetofile
+	[0015]  GETVAR, 0                       
+	[0016]  XCALL, 5, 1                     ;; Calls: FileStream::close
+	[0017]  PUSHC, 4                        
+	[0018]  RET                             
 END PROCEDURE;
 

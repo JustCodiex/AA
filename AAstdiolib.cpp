@@ -1,6 +1,7 @@
 #include "AAstdiolib.h"
 #include "AAMemoryStore.h"
 #include "AAExecute.h"
+#include "AAIntrPtr.h"
 
 #pragma region std
 
@@ -21,15 +22,21 @@ void AAFileStream_Open(AAVM* pAAVm, any_stack& stack) {
 	// Did we manage to get pointer to ourselves?
 	if (self) {
 
+		// Convert path to string
+		std::wstring ws = pAAVm->GetHeap()->String(aa::vm::PopSomething(AAPrimitiveType::refptr, stack).to_cpp<AAMemoryPtr>())->ToString();
+
 		// Open file
 		AAFileStream* fptr = new AAFileStream();
-		fptr->OpenWrite(aa::vm::PopSomething(AAPrimitiveType::string, stack).ToString());
+		fptr->OpenWrite(ws);
 
 		// Did we manage to open the file?
 		if (fptr) {
 
+			// Get pointer to internal file stream
+			AAIntPtr iPtr = AAIntPtr((void*)fptr);
+
 			// Assign pointer
-			aa::SetVal(self, 0, AAVal(&fptr));
+			aa::SetVal(self, 0, iPtr);
 
 			// Push (the pointer to) self (this) unto the stack (because this acts as the .ctor
 			stack.Push(ptr);
@@ -62,7 +69,7 @@ void AAFileStream_Close(AAVM* pAAVm, any_stack& stack) {
 	if (self) {
 
 		// Close the file
-		int r = aa::GetVal<AAVal>(self, 0).ToValue<AAFileStream*>()->CloseStream();
+		int r = aa::GetVal<AAIntPtr>(self, 0).GetPtr<AAFileStream>()->CloseStream();
 
 		// Did we somehow fail to close?
 		if (r != 0) {
@@ -81,7 +88,10 @@ void AAFileStream_Close(AAVM* pAAVm, any_stack& stack) {
 
 }
 
-void AAFileStream_Write(AAVM* pAAVm, any_stack& stack) {
+void AAFileStream_Write(AAVM* pAAVm, any_stack& stack) { // write string --> Need variant for char and so forth
+
+	// Pop top element (we know this is a stack value because our argument is 'Any'
+	AAStackValue top = stack.Pop<AAStackValue>();
 
 	// Get pointer to object
 	AAMemoryPtr ptr = stack.Pop<AAMemoryPtr>();
@@ -92,14 +102,29 @@ void AAFileStream_Write(AAVM* pAAVm, any_stack& stack) {
 	// Did we manage to get pointer to ourselves?
 	if (self) {
 
+		AAIntPtr iPtr = aa::GetVal<AAIntPtr>(self, 0);
+
 		// Get the file pointer
-		AAFileStream* fPtr = (AAFileStream*)aa::GetVal<AAVal>(self, 0).ToValue<AAFileStream*>();
+		AAFileStream* fPtr = iPtr.GetPtr<AAFileStream>();
 
 		// Make sure the file is valid
 		if (fPtr) {
 
+			switch (top.get_type()) {
+			case AAPrimitiveType::refptr:
+				fPtr->WriteString(top.to_cpp<AAMemoryPtr>().get_object()->ToString());
+				break;
+			case AAPrimitiveType::wchar: {
+				wchar_t w = top.to_cpp<wchar_t>();
+				fPtr->WriteWchar(w);
+				break;
+			}
+			default:
+				break;
+			}
+
 			// Write msg
-			fPtr->WriteString(aa::vm::PopSomething(AAPrimitiveType::string, stack).ToString());
+			//fPtr->WriteString(str->ToString());
 
 			// Push (the pointer to) ourselves back onto the stack
 			stack.Push(ptr);

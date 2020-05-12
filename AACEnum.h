@@ -42,7 +42,7 @@ struct AACEnumSignature {
 
 	AACEnumSignature() {
 		this->name = L"INVALID_ENUM";
-		this->literalType = AALiteralType::Char;
+		this->literalType = AALiteralType::Int;
 		this->accessModifier = AAAccessModifier::PUBLIC;
 		this->domain = 0;
 		this->type = 0;
@@ -50,7 +50,7 @@ struct AACEnumSignature {
 
 	AACEnumSignature(std::wstring name) {
 		this->name = name;
-		this->literalType = AALiteralType::Char;
+		this->literalType = AALiteralType::Int;
 		this->accessModifier = AAAccessModifier::PUBLIC;
 		this->domain = 0;
 		this->type = new AACType(this);

@@ -148,6 +148,9 @@ void AAProgram::LoadOperations(Procedure& proc, aa::bwalker& bw) {
 		case AAByteCode::LNEG:
 		case AAByteCode::POP:
 		case AAByteCode::SUB:
+		case AAByteCode::WRAP:
+		case AAByteCode::CMPE:
+		case AAByteCode::CMPNE:
 			proc.opSequence[i].args = new int[1];
 			bw >> proc.opSequence[i].args[0];
 			break;

@@ -1,42 +1,39 @@
 START PROCEDURE 0 (<GlobalScope>):
-CONSTANTS:
-IDENTIFIERS:
-
 OPERATIONS:
-	[0]	CALL, 2, 0		;; Calls: main
+	[0000]  CALL, 2, 0                      ;; Calls: main
 END PROCEDURE;
 
 START PROCEDURE 1 (UniversityDepartment::GetString):
-CONSTANTS:	[I32, 0]	[UTF-8, "Computer Science"]	[I32, 4]	[UTF-8, "Political Science"]	[I32, 9]	[UTF-8, "Fine Arts"]	[B, T]
+CONSTANTS:	[I32, 0][UTF-8, "Computer Science"][I32, 4][UTF-8, "Political Science"][I32, 9][UTF-8, "Fine Arts"][B, T]
 IDENTIFIERS:
 	this;
 OPERATIONS:
-	[0]	SETVAR, 0
-	[1]	GETVAR, 0
-	[2]	PUSHC, 0
-	[3]	CMPE
-	[4]	JMPT, 11
-	[5]	GETVAR, 0
-	[6]	PUSHC, 2
-	[7]	CMPE
-	[8]	JMPT, 9
-	[9]	GETVAR, 0
-	[10]	PUSHC, 4
-	[11]	CMPE
-	[12]	JMPT, 7
-	[13]	PUSHC, 6
-	[14]	CMPE
-	[15]	JMPT, 6
-	[16]	PUSHC, 1
-	[17]	JMP, 7
-	[18]	PUSHC, 3
-	[19]	JMP, 5
-	[20]	PUSHC, 5
-	[21]	JMP, 3
-	[22]	GETVAR, 0
-	[23]	XCALL, 4, 1		;; Calls: object::ToString
-	[24]	JMP, 0
-	[25]	RET, 1
+	[0000]  SETVAR, 0, 6                    ;; primitive: int32 [4 bytes]
+	[0001]  GETVAR, 0                       
+	[0002]  PUSHC, 0                        
+	[0003]  CMPE, 6                         ;; primitive: int32 [4 bytes]
+	[0004]  JMPT, 11                        
+	[0005]  GETVAR, 0                       
+	[0006]  PUSHC, 2                        
+	[0007]  CMPE, 6                         ;; primitive: int32 [4 bytes]
+	[0008]  JMPT, 9                         
+	[0009]  GETVAR, 0                       
+	[0010]  PUSHC, 4                        
+	[0011]  CMPE, 6                         ;; primitive: int32 [4 bytes]
+	[0012]  JMPT, 7                         
+	[0013]  PUSHC, 6                        
+	[0014]  CMPE, 6                         ;; primitive: int32 [4 bytes]
+	[0015]  JMPT, 6                         
+	[0016]  PUSHWS, 1                       
+	[0017]  JMP, 7                          
+	[0018]  PUSHWS, 3                       
+	[0019]  JMP, 5                          
+	[0020]  PUSHWS, 5                       
+	[0021]  JMP, 3                          
+	[0022]  GETVAR, 0                       
+	[0023]  XCALL, 3, 1                     ;; Calls: object::ToString
+	[0024]  JMP, 0                          
+	[0025]  RET                             
 END PROCEDURE;
 
 START PROCEDURE 2 (main):
@@ -44,12 +41,13 @@ CONSTANTS:	[I32, 0]
 IDENTIFIERS:
 	testDep;
 OPERATIONS:
-	[0]	PUSHC, 0
-	[1]	SETVAR, 0
-	[2]	GETVAR, 0
-	[3]	CALL, 1, 1		;; Calls: UniversityDepartment::GetString
-	[4]	XCALL, 0, 1		;; Calls: println
-	[5]	PUSHC, 0
-	[6]	RET, 1
+	[0000]  PUSHC, 0                        
+	[0001]  SETVAR, 0, 6                    ;; primitive: int32 [4 bytes]
+	[0002]  GETVAR, 0                       
+	[0003]  CALL, 1, 1                      ;; Calls: UniversityDepartment::GetString
+	[0004]  WRAP, 13                        
+	[0005]  XCALL, 0, 1                     ;; Calls: println
+	[0006]  PUSHC, 0                        
+	[0007]  RET                             
 END PROCEDURE;
 

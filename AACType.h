@@ -112,4 +112,9 @@ struct AACTypeDef {
 	/// </summary>
 	static AACType* String;
 
+	/// <summary>
+	/// Integer pointer (Raw C++ pointer) 8 bytes, primitive type
+	/// </summary>
+	static AACType* IntPtr;
+
 };

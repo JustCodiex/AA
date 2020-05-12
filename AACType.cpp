@@ -13,6 +13,7 @@ AACType* AACTypeDef::Int32 = new AACType(L"int");
 AACType* AACTypeDef::Bool = new AACType(L"bool");
 AACType* AACTypeDef::Float32 = new AACType(L"float");
 AACType* AACTypeDef::Char = new AACType(L"char");
+AACType* AACTypeDef::IntPtr = new AACType(L"intptr");
 AACType* AACTypeDef::String = 0;
 
 AACType::AACType() {

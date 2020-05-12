@@ -318,57 +318,70 @@ AACType* AATypeChecker::TypeCheckBinaryOperation(AA_AST_NODE* pOpNode, AA_AST_NO
 			left->tags["primitive"] = (int)aa::runtime::runtimetype_from_statictype(typeLeft);
 			right->tags["primitive"] = (int)aa::runtime::runtimetype_from_statictype(typeRight);
 
-			// should be checking directly on the nodes if possible...
-			AACType* resultType = this->TypeCheckBinaryOperationOnPrimitive(pOpNode, typeLeft, typeRight);
-			pOpNode->tags["primitive"] = left->tags["primitive"];
-			pOpNode->tags["useCall"] = false;
+			if (left->tags["primitive"] == (int)AAPrimitiveType::refptr) {
 
-			/*if (resultType == AACType::ErrorType) {
+				std::wstring op = pOpNode->content;
+				AAClassSignature* ccLeft = FindCompiledClassOfType(typeLeft);
+				if (ccLeft->name == AACType::ErrorType->name) {
+					/*this->SetError(
+						AATypeChecker::Error(
+							"Unknown operand type '" + string_cast(typeLeft->GetFullname()) + "'",
+							__COUNTER__, pOpNode->position)
+					);
+					return AACType::ErrorType;/*/ return typeLeft; // TODO: Reenable this when array checking has been improved AND class field checking is possible
+				}
+
+				AAClassOperatorSignature ccop;
+				if (this->FindCompiledClassOperation(ccLeft, op, typeRight, ccop)) {
+
+					// Tag the operator node with the procID
+					pOpNode->tags["useCall"] = true;
+					pOpNode->tags["operatorProcID"] = ccop.method->procID;
+					pOpNode->tags["operatorIsVM"] = ccop.method->isVMFunc;
+
+					if (ccop.method->parameters.back().type == AACType::Any) {
+						right->tags["wrap"] = (int)aa::runtime::runtimetype_from_statictype(typeRight);
+					}
+
+					// Return the type of whatever the operator will return
+					return ccop.method->returnType;
+
+				} else if (op.compare(L"==") == 0) {
+					return AACTypeDef::Bool; // Comparrison operator => boolean result (not overloaded, thus we'll just compare pointers)
+				} else {
+					AATC_W_ERROR(
+						"Invalid operator '" + string_cast(op) + "' on left operand type '" + string_cast(typeLeft->GetFullname())
+						+ "' and right operand type '" + string_cast(typeRight->GetFullname()) + "'",
+						pOpNode->position,
+						aa::compiler_err::C_Invalid_Binary_Operator
+					);
+				}
+
+			} else {
+			
+				// should be checking directly on the nodes if possible...
+				AACType* resultType = this->TypeCheckBinaryOperationOnPrimitive(pOpNode, typeLeft, typeRight);
+				pOpNode->tags["primitive"] = left->tags["primitive"];
+				pOpNode->tags["useCall"] = false;
+
+				/*if (resultType == AACType::ErrorType) {
 				AATC_W_ERROR(
 					"Type mismsatch on binary operation '" + string_cast(pOpNode->content) + "', left operand: '"
 					+ string_cast(typeLeft->GetFullname()) + "' and right operand: '" + string_cast(typeRight->GetFullname()) + "'",
 					pOpNode->position,
 					aa::compiler_err::C_Mismatching_Types
 				);
-			} else {*/
+				} else {*/
+
 				return resultType; // Reenable once typechecking on field access and such has been implemented
-			//}
+
+				//}
+			}
+
+			
 		} else {
 
-			std::wstring op = pOpNode->content;
-			AAClassSignature* ccLeft = FindCompiledClassOfType(typeLeft);
-
-			if (ccLeft->name == AACType::ErrorType->name) {
-				/*this->SetError(
-					AATypeChecker::Error(
-						"Unknown operand type '" + string_cast(typeLeft->GetFullname()) + "'",
-						__COUNTER__, pOpNode->position)
-				);
-				return AACType::ErrorType;/*/ return typeLeft; // TODO: Reenable this when array checking has been improved AND class field checking is possible
-			}
-
-			AAClassOperatorSignature ccop;
-			if (this->FindCompiledClassOperation(ccLeft, op, typeRight, ccop)) {
-
-				// Tag the operator node with the procID
-				pOpNode->tags["useCall"] = true;
-				pOpNode->tags["operatorProcID"] = ccop.method->procID;
-				pOpNode->tags["operatorIsVM"] = ccop.method->isVMFunc;
-
-				// Return the type of whatever the operator will return
-				return ccop.method->returnType;
-
-			} else if (op.compare(L"==") == 0) {
-				printf("");
-				return AACTypeDef::Bool; // Comparrison operator => boolean result (not overloaded, thus we'll just compare pointers)
-			} else {
-				AATC_W_ERROR(
-					"Invalid operator '" + string_cast(op) + "' on left operand type '" + string_cast(typeLeft->GetFullname())
-					+ "' and right operand type '" + string_cast(typeRight->GetFullname()) + "'",
-					pOpNode->position,
-					aa::compiler_err::C_Invalid_Binary_Operator
-				);
-			}
+			return AACType::ErrorType; // something went wrong...
 
 		}
 
@@ -915,6 +928,8 @@ AACType* AATypeChecker::TypeCheckPatternMatchCase(AA_AST_NODE* pCaseNode, AACTyp
 			string_cast(pConditionType->GetFullname()) + "'",
 			pCaseNode->position
 		);
+	} else {
+		pCaseNode->expressions[0]->tags["primitive"] = (int)aa::runtime::runtimetype_from_statictype(conditionType);
 	}
 
 	// Typecheck body
@@ -1158,10 +1173,20 @@ bool AATypeChecker::IsTypeMatchingFunction(AAFuncSignature* sig, AA_AST_NODE* pC
 		// For all params
 		for (size_t j = paramOffset; j < sig->parameters.size() - paramEndOffset; j++) {
 
+			// Get the type
+			AACType* argType = this->TypeCheckNode(pCallNode->expressions[j - paramOffset]);
+
 			// If they're not a type match, break
-			if (!this->IsMatchingTypes(this->TypeCheckNode(pCallNode->expressions[j - paramOffset]), sig->parameters[j].type)) {
+			if (!this->IsMatchingTypes(argType, sig->parameters[j].type)) {
 				isMatchingArgTypes = false;
 				break;
+			} else {
+
+				// If any - we need to add a wrap
+				if (sig->parameters[j].type == AACType::Any) {
+					pCallNode->expressions[j - paramOffset]->tags["wrap"] = (int)aa::runtime::runtimetype_from_statictype(argType);
+				}
+
 			}
 
 		}
