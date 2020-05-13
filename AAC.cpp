@@ -1314,10 +1314,6 @@ aa::list<AAByteType> AAC::CompileTypedata(AAStaticEnvironment staticCompileData)
 
 	// TODO: run through all types and correct pointers
 
-	if (exportTypes.Size() > 1) {
-		printf("-> Exporting some types now <-\n");
-	}
-
 	// Return types
 	return byteTypes;
 

@@ -352,7 +352,6 @@ std::wstring AAUnparser::WriteToString(std::wstring ln, ...) {
 				wis << va_arg(args, double);
 				i++;
 			}
-			printf("");
 		} else {
 			wis << ln[i];
 		}
