@@ -44,7 +44,6 @@ std::wstring AAUnparser::Unparse(AA_AST_NODE* pNode) {
 	switch (pNode->type) {
 	case AA_AST_NODE_TYPE::funcbody:
 	case AA_AST_NODE_TYPE::classbody:
-	case AA_AST_NODE_TYPE::enumbody:
 	case AA_AST_NODE_TYPE::block: {
 		out += this->WriteToString(L"{\n");
 		this->IncreaseIndent();
@@ -121,10 +120,33 @@ std::wstring AAUnparser::Unparse(AA_AST_NODE* pNode) {
 		out = this->WriteToString(L"namespace %s %s", pNode->content, space_body);
 		break;
 	}
+	case AA_AST_NODE_TYPE::enumdecleration: {
+		std::wstring body = this->WriteToString(L"{\n");
+		this->IncreaseIndent();
+		for (size_t i = 0; i < pNode->expressions[AA_NODE_ENUMNODE_VALUES]->expressions.size(); i++) {
+			if (i < pNode->expressions[AA_NODE_ENUMNODE_VALUES]->expressions.size() - 1) {
+				body += this->WriteIndent() + pNode->expressions[AA_NODE_ENUMNODE_VALUES]->expressions[i]->content + L",\n"; // TODO: Unparse num value (incase it's a constant evaluation)
+			} else {
+				body += this->WriteIndent() + pNode->expressions[AA_NODE_ENUMNODE_VALUES]->expressions[i]->content + L"\n"; // TODO: Unparse num value (incase it's a constant evaluation)
+			}
+		}
+		for (size_t i = 0; i < pNode->expressions[AA_NODE_ENUMNODE_BODY]->expressions.size(); i++) {
+			std::wstring unparsed = this->WriteIndent() + this->WriteToString(this->Unparse(pNode->expressions[AA_NODE_ENUMNODE_BODY]->expressions[i]));
+			if (hasEnding(unparsed, L"}\n")) {
+				body += unparsed;
+			} else {
+				body += unparsed + L";\n";
+			}
+		}
+		this->DecreaseIndent();
+		body += this->WriteIndent() + this->WriteToString(L"}\n");
+		out = this->WriteToString(L"enum %s %s", pNode->content, body);
+		break;
+	}
 	case AA_AST_NODE_TYPE::memberaccess: {
 		std::wstring lhs = this->Unparse(pNode->expressions[0]);
 		std::wstring rhs = this->Unparse(pNode->expressions[1]);
-		out = this->WriteToString(L"%s.%s", lhs, rhs);
+		out = this->WriteToString(L"%s::%s", lhs, rhs);
 		break;
 	}
 	case AA_AST_NODE_TYPE::callaccess:
@@ -138,6 +160,16 @@ std::wstring AAUnparser::Unparse(AA_AST_NODE* pNode) {
 		std::wstring lhs = this->Unparse(pNode->expressions[0]);
 		std::wstring rhs = this->Unparse(pNode->expressions[1]);
 		out = this->WriteToString(L"%s.%s", lhs, rhs);
+		break;
+	}
+	case AA_AST_NODE_TYPE::enumvalueaccess: {
+		std::wstring lhs = this->Unparse(pNode->expressions[0]);
+		std::wstring rhs = this->Unparse(pNode->expressions[1]);
+		out = this->WriteToString(L"%s::%s", lhs, rhs);
+		break;
+	}
+	case AA_AST_NODE_TYPE::enumidentifier: {
+		out = pNode->content;
 		break;
 	}
 	case AA_AST_NODE_TYPE::whilestatement: {
@@ -205,6 +237,40 @@ std::wstring AAUnparser::Unparse(AA_AST_NODE* pNode) {
 	}
 	case AA_AST_NODE_TYPE::classctorcall: {
 		out = this->WriteToString(L"%s(%s)", pNode->content, this->UnparseList(pNode));
+		break;
+	}
+	case AA_AST_NODE_TYPE::usingstatement: {
+		out = this->WriteIndent() + this->WriteToString(L"using %s;\n", this->Unparse(pNode->expressions[0]));
+		break;
+	}
+	case AA_AST_NODE_TYPE::usingspecificstatement: {
+		out = this->WriteIndent() + this->WriteToString(L"using %s from %s;\n", pNode->content, pNode->expressions[0]->content);
+		break;
+	}
+	case AA_AST_NODE_TYPE::matchstatement: {
+		std::wstring on = this->Unparse(pNode->expressions[0]);
+		std::wstring cases = this->Unparse(pNode->expressions[1]);
+		out = this->WriteToString(L"%s match %s", on, cases);
+		break;
+	}
+	case AA_AST_NODE_TYPE::matchcaselist: {
+		std::wstring block = L"{\n";
+		this->IncreaseIndent();
+		for (size_t i = 0; i < pNode->expressions.size(); i++) {
+			std::wstring _case = this->Unparse(pNode->expressions[i]);
+			block += this->WriteIndent() + _case;
+			if (i < pNode->expressions.size() - 1) {
+				block[block.length() - 1] = ',';
+				block += L"\n";
+			}
+		}
+		this->DecreaseIndent();
+		block += this->WriteIndent() + L"}";
+		out = block;
+		break;
+	}
+	case AA_AST_NODE_TYPE::matchcasestatement: {
+		out = this->WriteToString(L"case %s => %s", this->Unparse(pNode->expressions[0]), this->Unparse(pNode->expressions[1]));
 		break;
 	}
 	case AA_AST_NODE_TYPE::stringliteral:

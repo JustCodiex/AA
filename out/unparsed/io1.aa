@@ -1,6 +1,7 @@
 {
 	main();
 }
+using std::io;
 int main() {
 	var fs = new FileStream("test.txt");
 	(fs << "Hello File from Å");

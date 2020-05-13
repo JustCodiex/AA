@@ -25,6 +25,7 @@ namespace nested {
 		}
 	}
 }
+using inlined::domain::fullon;
 int main() {
 	var t = new example();
 	var c = new coo();

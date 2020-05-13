@@ -19,6 +19,7 @@ namespace spaceB {
 		}
 	}
 }
+using StringList from spaceA;
 int main() {
 	var a = new StringList();
 	var b = new StringList();
