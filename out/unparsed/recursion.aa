@@ -1,3 +1,6 @@
 {
 	;
 }
+int factorial(int n) {
+	;
+}

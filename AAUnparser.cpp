@@ -1,6 +1,14 @@
 #include "AAUnparser.h"
 #include <stdarg.h>
 
+bool hasEnding(std::wstring const& fullString, std::wstring const& ending) {
+	if (fullString.length() >= ending.length()) {
+		return (0 == fullString.compare(fullString.length() - ending.length(), ending.length(), ending));
+	} else {
+		return false;
+	}
+}
+
 void AAUnparser::Open(std::wstring targetFile) {
 
 	if (targetFile.compare(L"") != 0) {
@@ -40,10 +48,15 @@ std::wstring AAUnparser::Unparse(AA_AST_NODE* pNode) {
 		out += this->WriteToString(L"{\n");
 		this->IncreaseIndent();
 		for (size_t i = 0; i < pNode->expressions.size(); i++) {
-			out += this->WriteIndent() + this->WriteToString(this->Unparse(pNode->expressions[i])) + L";\n";
+			std::wstring unparsed = this->WriteIndent() + this->WriteToString(this->Unparse(pNode->expressions[i]));
+			if (hasEnding(unparsed, L"}\n")) {
+				out += unparsed;
+			} else {
+				out += unparsed + L";\n";
+			}
 		}
 		this->DecreaseIndent();
-		out += this->WriteIndent() + this->WriteToString(L"}");
+		out += this->WriteIndent() + this->WriteToString(L"}\n");
 		break;
 	}
 	case AA_AST_NODE_TYPE::binop: {
@@ -78,9 +91,32 @@ std::wstring AAUnparser::Unparse(AA_AST_NODE* pNode) {
 		break;
 	}
 	case AA_AST_NODE_TYPE::fundecl: {
-
+		std::wstring rtype = pNode->expressions[AA_NODE_FUNNODE_RETURNTYPE]->content;
+		std::wstring body = this->Unparse(pNode->expressions[AA_NODE_FUNNODE_BODY]);
+		std::wstring args = this->Unparse(pNode->expressions[AA_NODE_FUNNODE_ARGLIST]);
+		out = this->WriteToString(L"%s %s(%s) %s", rtype, pNode->content, args, body);
 		break;
 	}
+	case AA_AST_NODE_TYPE::funarglist: {
+		std::wstring args = L"";
+		for (size_t i = 0; i < pNode->expressions.size(); i++) {
+			std::wstring arg = this->Unparse(pNode->expressions[i]);
+			if (i > 0) {
+				args += L", " + arg;
+			} else {
+				args = arg;
+			}
+		}
+		out = args;
+		break;
+	}
+	case AA_AST_NODE_TYPE::funarg: {
+		out = this->WriteToString(L"%s %s", this->Unparse(pNode->expressions[0]), pNode->content);
+		break;
+	}
+	case AA_AST_NODE_TYPE::typeidentifier:
+		out = pNode->content;
+		break;
 	case AA_AST_NODE_TYPE::stringliteral:
 		out = this->WriteToString(L"\"%s\"", pNode->content);
 		break;

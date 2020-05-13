@@ -1,3 +1,8 @@
 {
 	;
 }
+int main() {
+	var a = ;
+	var b = ;
+	42;
+}

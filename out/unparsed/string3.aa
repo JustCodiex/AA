@@ -3,5 +3,5 @@
 		var a = "Hello";
 		var b = "World";
 		((a + " ") + b);
-	};
+	}
 }

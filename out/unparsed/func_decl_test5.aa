@@ -1,3 +1,8 @@
 {
 	;
 }
+int par(int z) {
+	var x = z;
+	x = (x + 28);
+	x;
+}
