@@ -1,7 +1,18 @@
 {
 	main();
 }
+class ExampleClass {
+	var fieldx;
+	ExampleClass ExampleClass(ExampleClass this) {
+		object::object(this);
+		this.fieldx = 10;
+		this;
+	}
+	int ByTen(ExampleClass this, int val) {
+		(val * this.fieldx);
+	}
+}
 int main() {
-	var e = ;
+	var e = new ExampleClass();
 	ExampleClass::ByTen(e, 5);
 }

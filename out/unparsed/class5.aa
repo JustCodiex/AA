@@ -1,8 +1,28 @@
 {
 	main();
 }
+class Super {
+	Super Super(Super this) {
+		object::object(this);
+		println("Super .ctor called");
+		this;
+	}
+	void print(Super this) {
+		println("Super -> print");
+	}
+}
+class Sub {
+	Sub Sub(Sub this) {
+		Super::Super(this);
+		println("Sub .ctor called");
+		this;
+	}
+	void print(Sub this) {
+		println("Sub -> print");
+	}
+}
 int main() {
-	var instance = ;
+	var instance = new Sub();
 	Super::print(instance);
 	0;
 }

@@ -1,7 +1,15 @@
 {
 	main();
 }
+class ExampleClass {
+	var fieldx;
+	ExampleClass ExampleClass(ExampleClass this) {
+		object::object(this);
+		this.fieldx = 10;
+		this;
+	}
+}
 int main() {
-	var e = ;
-	e.;
+	var e = new ExampleClass();
+	e.fieldx;
 }

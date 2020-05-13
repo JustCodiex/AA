@@ -1,8 +1,26 @@
 {
 	main();
 }
+namespace spaceA {
+	class StringList {
+		StringList StringList(StringList this) {
+			object::object(this);
+			println("Hello World...");
+			this;
+		}
+	}
+}
+namespace spaceB {
+	class StringList {
+		StringList StringList(StringList this) {
+			object::object(this);
+			println("Goodbye World");
+			this;
+		}
+	}
+}
 int main() {
-	var a = ;
-	var b = ;
+	var a = new StringList();
+	var b = new StringList();
 	42;
 }

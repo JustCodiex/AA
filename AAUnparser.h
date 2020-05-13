@@ -32,6 +32,7 @@ private:
 	inline std::wstring WriteToString(std::wstring ln, ...);
 
 	inline std::wstring WriteIndent();
+	inline std::wstring WriteIndent(int offset);
 
 	inline void IncreaseIndent();
 	inline void DecreaseIndent();

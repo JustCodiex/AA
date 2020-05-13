@@ -2,10 +2,10 @@
 	main();
 }
 int main() {
-	var fs = ;
-	;
-	;
-	;
+	var fs = new FileStream("test.txt");
+	(fs << "Hello File from Å");
+	(fs << '\n');
+	(fs << "Goodbye from Å");
 	FileStream::close(fs);
 	0;
 }

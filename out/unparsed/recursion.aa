@@ -2,5 +2,9 @@
 	factorial(4);
 }
 int factorial(int n) {
-	;
+	if ((n <= 1)) {
+		1
+	} else {
+		(n * factorial((n - 1)))
+	};
 }

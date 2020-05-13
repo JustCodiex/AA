@@ -1,7 +1,16 @@
 {
 	main();
 }
+class ExampleClass {
+	ExampleClass ExampleClass(ExampleClass this) {
+		object::object(this);
+		this;
+	}
+	int arg(ExampleClass this, int v) {
+		v;
+	}
+}
 int main() {
-	var ex = ;
+	var ex = new ExampleClass();
 	(ExampleClass::arg(ex, 25) + ExampleClass::arg(ex, 30));
 }

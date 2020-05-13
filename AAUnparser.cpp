@@ -63,26 +63,10 @@ std::wstring AAUnparser::Unparse(AA_AST_NODE* pNode) {
 	case AA_AST_NODE_TYPE::binop: {
 		std::wstring left = this->Unparse(pNode->expressions[0]);
 		std::wstring right = this->Unparse(pNode->expressions[1]);
-		if (pNode->content.compare(L"+") == 0) {
-			out = this->WriteToString(L"(%s + %s)", left, right);
-		} else if (pNode->content.compare(L"*") == 0) {
-			out = this->WriteToString(L"(%s * %s)", left, right);
-		} else if (pNode->content.compare(L"-") == 0) {
-			out = this->WriteToString(L"(%s - %s)", left, right);
-		} else if (pNode->content.compare(L"/") == 0) {
-			out = this->WriteToString(L"(%s / %s)", left, right);
-		} else if (pNode->content.compare(L"%") == 0) {
-			out = this->WriteToString(L"(%s % %s)", left, right);
-		} else if (pNode->content.compare(L"=") == 0) {
+		if (pNode->content.compare(L"=") == 0) {
 			out = this->WriteToString(L"%s = %s", left, right);
-		} else if (pNode->content.compare(L">=") == 0) {
-			out = this->WriteToString(L"%s >= %s", left, right);
-		} else if (pNode->content.compare(L">") == 0) {
-			out = this->WriteToString(L"%s > %s", left, right);
-		} else if (pNode->content.compare(L"<") == 0) {
-			out = this->WriteToString(L"%s < %s", left, right);
-		} else if (pNode->content.compare(L"<=") == 0) {
-			out = this->WriteToString(L"%s <= %s", left, right);
+		} else {
+			out = this->WriteToString(L"(%s %s %s)", left, pNode->content, right);
 		}
 		break;
 	}
@@ -103,7 +87,12 @@ std::wstring AAUnparser::Unparse(AA_AST_NODE* pNode) {
 		std::wstring rtype = pNode->expressions[AA_NODE_FUNNODE_RETURNTYPE]->content;
 		std::wstring body = this->Unparse(pNode->expressions[AA_NODE_FUNNODE_BODY]);
 		std::wstring args = this->Unparse(pNode->expressions[AA_NODE_FUNNODE_ARGLIST]);
-		out = this->WriteToString(L"%s %s(%s) %s", rtype, pNode->content, args, body);
+		std::wstring name = pNode->content;
+		size_t k = name.find_last_of(':');
+		if (k != std::wstring::npos) {
+			name = name.substr(k + 1);
+		}
+		out = this->WriteToString(L"%s %s(%s) %s", rtype, name, args, body);
 		break;
 	}
 	case AA_AST_NODE_TYPE::funarglist: 
@@ -118,6 +107,20 @@ std::wstring AAUnparser::Unparse(AA_AST_NODE* pNode) {
 	case AA_AST_NODE_TYPE::funcall:
 		out = this->WriteToString(L"%s(%s)", pNode->content, this->UnparseList(pNode));
 		break;
+	case AA_AST_NODE_TYPE::classdecl:
+		out = this->WriteToString(L"class %s %s", pNode->content, this->Unparse(pNode->expressions[AA_NODE_CLASSNODE_BODY]));
+		break;
+	case AA_AST_NODE_TYPE::name_space: {
+		std::wstring space_body = L"{\n";
+		this->IncreaseIndent();
+		for (auto& element : pNode->expressions) {
+			space_body += this->WriteIndent() + this->Unparse(element);
+		}
+		this->DecreaseIndent();
+		space_body += this->WriteIndent() + L"}\n";
+		out = this->WriteToString(L"namespace %s %s", pNode->content, space_body);
+		break;
+	}
 	case AA_AST_NODE_TYPE::memberaccess: {
 		std::wstring lhs = this->Unparse(pNode->expressions[0]);
 		std::wstring rhs = this->Unparse(pNode->expressions[1]);
@@ -169,12 +172,59 @@ std::wstring AAUnparser::Unparse(AA_AST_NODE* pNode) {
 		out = str;
 		break;
 	}
+	case AA_AST_NODE_TYPE::ifstatement: {
+		out = this->WriteToString(L"if (%s) {\n", this->Unparse(pNode->expressions[0]));
+		this->IncreaseIndent();
+		out += this->WriteIndent() + this->WriteToString(L"%s\n", this->Unparse(pNode->expressions[1]));
+		this->DecreaseIndent();
+		out += this->WriteIndent() + L"}";
+		for (size_t i = 2; i < pNode->expressions.size(); i++) {
+			if (pNode->expressions[i]->type == AA_AST_NODE_TYPE::ifstatement) {
+				out += this->WriteToString(L" else if (%s) {\n", this->Unparse(pNode->expressions[i]->expressions[0]));
+				this->IncreaseIndent();
+				out += this->WriteIndent() + this->WriteToString(L"%s\n", this->Unparse(pNode->expressions[i]->expressions[1]));
+				this->DecreaseIndent();
+				out += this->WriteIndent() + L"}";
+			} else {
+				out += this->Unparse(pNode->expressions[i]);
+			}
+		}
+		break;
+	}
+	case AA_AST_NODE_TYPE::elsestatement: {
+		out = this->WriteToString(L" else {\n");
+		this->IncreaseIndent();
+		out += this->WriteIndent() + this->WriteToString(L"%s\n", this->Unparse(pNode->expressions[0]));
+		this->DecreaseIndent();
+		out += this->WriteIndent() + L"}";
+		break;
+	}
+	case AA_AST_NODE_TYPE::newstatement: {
+		out = this->WriteToString(L"new %s", this->Unparse(pNode->expressions[0]));
+		break;
+	}
+	case AA_AST_NODE_TYPE::classctorcall: {
+		out = this->WriteToString(L"%s(%s)", pNode->content, this->UnparseList(pNode));
+		break;
+	}
 	case AA_AST_NODE_TYPE::stringliteral:
 		out = this->WriteToString(L"\"%s\"", pNode->content);
 		break;
-	case AA_AST_NODE_TYPE::charliteral:
-		out = this->WriteToString(L"'%s'", pNode->content);
+	case AA_AST_NODE_TYPE::charliteral: {
+		std::wstring w = pNode->content;
+		if (pNode->content == L"\n") {
+			w = L"\\n";
+		} else if (pNode->content == L"\t") {
+			w = L"\\t";
+		} else if (pNode->content == L"\r") {
+			w = L"\\r";
+		} else if (pNode->content == L"\\") {
+			w = L"\\";
+		}
+		out = this->WriteToString(L"'%s'", w);
 		break;
+	}
+	case AA_AST_NODE_TYPE::field:
 	case AA_AST_NODE_TYPE::variable:
 	case AA_AST_NODE_TYPE::floatliteral:
 	case AA_AST_NODE_TYPE::boolliteral:
@@ -204,7 +254,13 @@ std::wstring AAUnparser::UnparseList(AA_AST_NODE* pNode) {
 }
 
 std::wstring AAUnparser::WriteIndent() {
-	return std::wstring(m_indent, '\t');
+	return this->WriteIndent(0);
+}
+
+std::wstring AAUnparser::WriteIndent(int offset) {
+	if (offset < 0)
+		offset = 0;
+	return std::wstring(m_indent + offset, '\t');
 }
 
 std::wstring AAUnparser::WriteToString(std::wstring ln, ...) {

@@ -1,8 +1,32 @@
 {
 	main();
 }
+namespace inlined {
+	namespace domain {
+		namespace fullon {
+			class example {
+				example example(example this) {
+					object::object(this);
+					println("Foo");
+					this;
+				}
+			}
+		}
+	}
+}
+namespace nested {
+	namespace dom {
+		class coo {
+			coo coo(coo this) {
+				object::object(this);
+				println("Fee");
+				this;
+			}
+		}
+	}
+}
 int main() {
-	var t = ;
-	var c = ;
+	var t = new example();
+	var c = new coo();
 	42;
 }
