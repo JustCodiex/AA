@@ -184,6 +184,7 @@
     <ClCompile Include="AAVal.cpp" />
     <ClCompile Include="AAVarEnv.cpp" />
     <ClCompile Include="AAVars.cpp" />
+    <ClCompile Include="AAVerifier.cpp" />
     <ClCompile Include="AAVM.cpp" />
     <ClCompile Include="AA_AST.cpp" />
     <ClCompile Include="AA_PT.cpp" />
@@ -235,6 +236,7 @@
     <ClInclude Include="AAVal.h" />
     <ClInclude Include="AAVarEnv.h" />
     <ClInclude Include="AAVars.h" />
+    <ClInclude Include="AAVerifier.h" />
     <ClInclude Include="AAVM.h" />
     <ClInclude Include="AA_AST.h" />
     <ClInclude Include="AA_AST_NODE.h" />

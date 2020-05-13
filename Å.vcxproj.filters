@@ -91,6 +91,12 @@
     <Filter Include="Source Files\VM\runtime">
       <UniqueIdentifier>{0fcd8b49-ca2d-424c-a273-fbe471de2b6e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\analysis">
+      <UniqueIdentifier>{50ada02b-9544-4092-a492-914a4036123d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\analysis">
+      <UniqueIdentifier>{73719336-9af1-4033-9efc-94647bc9dd67}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -117,9 +123,6 @@
     <ClCompile Include="AAVM.cpp">
       <Filter>Source Files\VM</Filter>
     </ClCompile>
-    <ClCompile Include="AATypeChecker.cpp">
-      <Filter>Source Files\compiler</Filter>
-    </ClCompile>
     <ClCompile Include="AALanguageRegressionTest.cpp">
       <Filter>Source Files\aatesting</Filter>
     </ClCompile>
@@ -132,15 +135,6 @@
     <ClCompile Include="AACFunction.cpp">
       <Filter>Source Files\VM\builtin</Filter>
     </ClCompile>
-    <ClCompile Include="AAStaticAnalysis.cpp">
-      <Filter>Source Files\compiler</Filter>
-    </ClCompile>
-    <ClCompile Include="AACNamespace.cpp">
-      <Filter>Source Files\compiler</Filter>
-    </ClCompile>
-    <ClCompile Include="AACType.cpp">
-      <Filter>Source Files\compiler</Filter>
-    </ClCompile>
     <ClCompile Include="AAFileStream.cpp">
       <Filter>Source Files\VM\builtin\std\io</Filter>
     </ClCompile>
@@ -149,9 +143,6 @@
     </ClCompile>
     <ClCompile Include="AAMemoryStore.cpp">
       <Filter>Source Files\VM\Memory</Filter>
-    </ClCompile>
-    <ClCompile Include="AAModifier.cpp">
-      <Filter>Source Files\compiler</Filter>
     </ClCompile>
     <ClCompile Include="AA_PT_Unflatten.cpp">
       <Filter>Source Files\parser</Filter>
@@ -201,14 +192,32 @@
     <ClCompile Include="AARuntimeEnvironment.cpp">
       <Filter>Source Files\VM\runtime</Filter>
     </ClCompile>
-    <ClCompile Include="AAVars.cpp">
-      <Filter>Source Files\compiler</Filter>
-    </ClCompile>
     <ClCompile Include="AADecompiler.cpp">
       <Filter>Source Files\compiler</Filter>
     </ClCompile>
     <ClCompile Include="AAUnparser.cpp">
       <Filter>Source Files\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="AAVars.cpp">
+      <Filter>Source Files\analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="AATypeChecker.cpp">
+      <Filter>Source Files\analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="AAStaticAnalysis.cpp">
+      <Filter>Source Files\analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="AAModifier.cpp">
+      <Filter>Source Files\analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="AACType.cpp">
+      <Filter>Source Files\analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="AACNamespace.cpp">
+      <Filter>Source Files\analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="AAVerifier.cpp">
+      <Filter>Source Files\analysis</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -245,17 +254,11 @@
     <ClInclude Include="AAVal.h">
       <Filter>Header Files\VM</Filter>
     </ClInclude>
-    <ClInclude Include="AATypeChecker.h">
-      <Filter>Header Files\compiler</Filter>
-    </ClInclude>
     <ClInclude Include="AACodePosition.h">
       <Filter>Header Files\parser</Filter>
     </ClInclude>
     <ClInclude Include="bwalker.h">
       <Filter>Header Files\util</Filter>
-    </ClInclude>
-    <ClInclude Include="AAFuncSignature.h">
-      <Filter>Header Files\compiler</Filter>
     </ClInclude>
     <ClInclude Include="AALanguageRegressionTest.h">
       <Filter>Header Files\aatesting</Filter>
@@ -290,20 +293,8 @@
     <ClInclude Include="AA_AST_NODE.h">
       <Filter>Header Files\parser</Filter>
     </ClInclude>
-    <ClInclude Include="AACNamespace.h">
-      <Filter>Header Files\compiler</Filter>
-    </ClInclude>
     <ClInclude Include="set.h">
       <Filter>Header Files\util</Filter>
-    </ClInclude>
-    <ClInclude Include="AAClassSignature.h">
-      <Filter>Header Files\compiler</Filter>
-    </ClInclude>
-    <ClInclude Include="AAStaticAnalysis.h">
-      <Filter>Header Files\compiler</Filter>
-    </ClInclude>
-    <ClInclude Include="AACType.h">
-      <Filter>Header Files\compiler</Filter>
     </ClInclude>
     <ClInclude Include="AAstdiolib.h">
       <Filter>Header Files\VM\builtin</Filter>
@@ -317,14 +308,8 @@
     <ClInclude Include="AAMemoryStore.h">
       <Filter>Header Files\VM\Memory</Filter>
     </ClInclude>
-    <ClInclude Include="AACEnum.h">
-      <Filter>Header Files\compiler</Filter>
-    </ClInclude>
     <ClInclude Include="AAMemory.h">
       <Filter>Header Files\VM\Memory</Filter>
-    </ClInclude>
-    <ClInclude Include="AAModifier.h">
-      <Filter>Header Files\compiler</Filter>
     </ClInclude>
     <ClInclude Include="AA_Node_Consts.h">
       <Filter>Header Files\parser</Filter>
@@ -377,14 +362,41 @@
     <ClInclude Include="AAIntrPtr.h">
       <Filter>Header Files\VM</Filter>
     </ClInclude>
-    <ClInclude Include="AAVars.h">
-      <Filter>Header Files\compiler</Filter>
-    </ClInclude>
     <ClInclude Include="AAUnparser.h">
       <Filter>Header Files\parser</Filter>
     </ClInclude>
     <ClInclude Include="AADecompiler.h">
       <Filter>Header Files\compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="AAVars.h">
+      <Filter>Header Files\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="AATypeChecker.h">
+      <Filter>Header Files\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="AAStaticAnalysis.h">
+      <Filter>Header Files\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="AAClassSignature.h">
+      <Filter>Header Files\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="AACNamespace.h">
+      <Filter>Header Files\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="AACType.h">
+      <Filter>Header Files\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="AAFuncSignature.h">
+      <Filter>Header Files\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="AAModifier.h">
+      <Filter>Header Files\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="AACEnum.h">
+      <Filter>Header Files\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="AAVerifier.h">
+      <Filter>Header Files\analysis</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
