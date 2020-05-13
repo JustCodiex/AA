@@ -1,5 +1,5 @@
 {
-	;
+	par(10, 5);
 }
 int par(int x, int y) {
 	(x - y);

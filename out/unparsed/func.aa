@@ -1,5 +1,5 @@
 {
-	;
+	add(25, sub(50, 24));
 }
 int add(int a, int b) {
 	(a + b);

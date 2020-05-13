@@ -2,9 +2,9 @@
 	{
 		var a = "Hello";
 		var b = "World";
-		;
-		;
-		;
+		println(a);
+		println(b);
+		println(("Hello " + "World"));
 		((a + " ") + b);
 	}
 }

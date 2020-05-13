@@ -1,8 +1,8 @@
 {
-	;
+	main();
 }
 int main() {
 	var testDep = ;
-	;
+	println(testDep.GetString());
 	0;
 }

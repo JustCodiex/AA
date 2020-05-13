@@ -27,6 +27,7 @@ public:
 private:
 
 	std::wstring Unparse(AA_AST_NODE* pNode);
+	std::wstring UnparseList(AA_AST_NODE* pNode);
 
 	inline std::wstring WriteToString(std::wstring ln, ...);
 

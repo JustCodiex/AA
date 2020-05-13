@@ -1,5 +1,5 @@
 {
-	;
+	par(10);
 }
 int par(int z) {
 	var x = z;

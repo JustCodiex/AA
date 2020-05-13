@@ -1,11 +1,11 @@
 {
-	;
+	main();
 }
 int main() {
 	var fs = ;
 	;
 	;
 	;
-	;
+	FileStream::close(fs);
 	0;
 }

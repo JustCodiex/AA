@@ -1,7 +1,7 @@
 {
-	;
+	main();
 }
 int main() {
 	var e = ;
-	;
+	ExampleClass::ByTen(e, 5);
 }

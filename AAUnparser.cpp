@@ -1,6 +1,7 @@
 #include "AAUnparser.h"
 #include <stdarg.h>
 
+// https://stackoverflow.com/questions/874134/find-out-if-string-ends-with-another-string-in-c
 bool hasEnding(std::wstring const& fullString, std::wstring const& ending) {
 	if (fullString.length() >= ending.length()) {
 		return (0 == fullString.compare(fullString.length() - ending.length(), ending.length(), ending));
@@ -74,6 +75,14 @@ std::wstring AAUnparser::Unparse(AA_AST_NODE* pNode) {
 			out = this->WriteToString(L"(%s % %s)", left, right);
 		} else if (pNode->content.compare(L"=") == 0) {
 			out = this->WriteToString(L"%s = %s", left, right);
+		} else if (pNode->content.compare(L">=") == 0) {
+			out = this->WriteToString(L"%s >= %s", left, right);
+		} else if (pNode->content.compare(L">") == 0) {
+			out = this->WriteToString(L"%s > %s", left, right);
+		} else if (pNode->content.compare(L"<") == 0) {
+			out = this->WriteToString(L"%s < %s", left, right);
+		} else if (pNode->content.compare(L"<=") == 0) {
+			out = this->WriteToString(L"%s <= %s", left, right);
 		}
 		break;
 	}
@@ -97,26 +106,69 @@ std::wstring AAUnparser::Unparse(AA_AST_NODE* pNode) {
 		out = this->WriteToString(L"%s %s(%s) %s", rtype, pNode->content, args, body);
 		break;
 	}
-	case AA_AST_NODE_TYPE::funarglist: {
-		std::wstring args = L"";
-		for (size_t i = 0; i < pNode->expressions.size(); i++) {
-			std::wstring arg = this->Unparse(pNode->expressions[i]);
-			if (i > 0) {
-				args += L", " + arg;
-			} else {
-				args = arg;
-			}
-		}
-		out = args;
+	case AA_AST_NODE_TYPE::funarglist: 
+		out = this->UnparseList(pNode);
 		break;
-	}
-	case AA_AST_NODE_TYPE::funarg: {
+	case AA_AST_NODE_TYPE::funarg:
 		out = this->WriteToString(L"%s %s", this->Unparse(pNode->expressions[0]), pNode->content);
 		break;
-	}
 	case AA_AST_NODE_TYPE::typeidentifier:
 		out = pNode->content;
 		break;
+	case AA_AST_NODE_TYPE::funcall:
+		out = this->WriteToString(L"%s(%s)", pNode->content, this->UnparseList(pNode));
+		break;
+	case AA_AST_NODE_TYPE::memberaccess: {
+		std::wstring lhs = this->Unparse(pNode->expressions[0]);
+		std::wstring rhs = this->Unparse(pNode->expressions[1]);
+		out = this->WriteToString(L"%s.%s", lhs, rhs);
+		break;
+	}
+	case AA_AST_NODE_TYPE::callaccess:
+	{
+		std::wstring lhs = this->Unparse(pNode->expressions[0]);
+		std::wstring rhs = this->Unparse(pNode->expressions[1]);
+		out = this->WriteToString(L"%s.%s", lhs, rhs.substr(rhs.find_last_of(':') + 1));
+		break;
+	}
+	case AA_AST_NODE_TYPE::fieldaccess: {
+		std::wstring lhs = this->Unparse(pNode->expressions[0]);
+		std::wstring rhs = this->Unparse(pNode->expressions[1]);
+		out = this->WriteToString(L"%s.%s", lhs, rhs);
+		break;
+	}
+	case AA_AST_NODE_TYPE::whilestatement: {
+		out = this->WriteToString(L"while (%s) %s", this->Unparse(pNode->expressions[0]), this->Unparse(pNode->expressions[1]));
+		break;
+	}
+	case AA_AST_NODE_TYPE::dowhilestatement: {
+		out = this->WriteToString(L"do %s%swhile (%s)", this->Unparse(pNode->expressions[1]), this->WriteIndent(), this->Unparse(pNode->expressions[0]));
+		break;
+	}
+	case AA_AST_NODE_TYPE::forstatement: {
+		out = this->WriteToString(L"for (%s; %s; %s) %s", 
+			this->Unparse(pNode->expressions[0]), 
+			this->Unparse(pNode->expressions[1]), 
+			this->Unparse(pNode->expressions[2]), 
+			this->Unparse(pNode->expressions[3]));
+		break;
+	}
+	case AA_AST_NODE_TYPE::forinit: {
+		out = this->Unparse(pNode->expressions[0]);
+		break;
+	}
+	case AA_AST_NODE_TYPE::forafterthought: {
+		out = this->Unparse(pNode->expressions[0]);
+		break;
+	}
+	case AA_AST_NODE_TYPE::condition: {
+		std::wstring str = L"";
+		for (auto& cond : pNode->expressions) {
+			str += this->Unparse(cond);
+		}
+		out = str;
+		break;
+	}
 	case AA_AST_NODE_TYPE::stringliteral:
 		out = this->WriteToString(L"\"%s\"", pNode->content);
 		break;
@@ -136,6 +188,19 @@ std::wstring AAUnparser::Unparse(AA_AST_NODE* pNode) {
 
 	return out;
 
+}
+
+std::wstring AAUnparser::UnparseList(AA_AST_NODE* pNode) {
+	std::wstring args = L"";
+	for (size_t i = 0; i < pNode->expressions.size(); i++) {
+		std::wstring arg = this->Unparse(pNode->expressions[i]);
+		if (i > 0) {
+			args += L", " + arg;
+		} else {
+			args = arg;
+		}
+	}
+	return args;
 }
 
 std::wstring AAUnparser::WriteIndent() {
