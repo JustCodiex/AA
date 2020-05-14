@@ -219,13 +219,14 @@ namespace aa {
 	}
 
 	bool __is_primitive_code(AAByteCode code) {
-		return code == AAByteCode::ADD || code == AAByteCode::SUB || code == AAByteCode::MUL || code == AAByteCode::DIV || 
-			code == AAByteCode::MOD || code == AAByteCode::NNEG || code == AAByteCode::SETVAR || code == AAByteCode::SETFIELD || code == AAByteCode::GETFIELD;
+		return code == AAByteCode::ADD || code == AAByteCode::SUB || code == AAByteCode::MUL || code == AAByteCode::DIV || code == AAByteCode::LE ||
+			code == AAByteCode::LEQ || code == AAByteCode::GE || code == AAByteCode::GEQ ||	code == AAByteCode::MOD || code == AAByteCode::NNEG || 
+			code == AAByteCode::SETVAR || code == AAByteCode::SETFIELD || code == AAByteCode::GETFIELD;
 	}
 
 	bool __is_arithmetic_code(AAByteCode code) {
-		return code == AAByteCode::ADD || code == AAByteCode::SUB || code == AAByteCode::MUL || code == AAByteCode::DIV || code == AAByteCode::MOD || code == AAByteCode::NNEG ||
-			code == AAByteCode::CMPE || code == AAByteCode::CMPNE;
+		return code == AAByteCode::ADD || code == AAByteCode::SUB || code == AAByteCode::MUL || code == AAByteCode::DIV || code == AAByteCode::MOD || code == AAByteCode::LE ||
+			code == AAByteCode::LEQ || code == AAByteCode::GE || code == AAByteCode::GEQ || code == AAByteCode::NNEG ||	code == AAByteCode::CMPE || code == AAByteCode::CMPNE;
 	}
 
 	void dump_instructions(std::wstring file, std::vector<AAC::CompiledProcedure> procedures, AAVM* pAAVM) {

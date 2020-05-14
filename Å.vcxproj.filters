@@ -228,6 +228,9 @@
     <ClCompile Include="AAControlpath.cpp">
       <Filter>Source Files\analysis\verifier</Filter>
     </ClCompile>
+    <ClCompile Include="AA_Node_Consts.cpp">
+      <Filter>Source Files\parser</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="list.h">

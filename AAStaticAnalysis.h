@@ -82,9 +82,10 @@ public:
 	/// <summary>
 	/// Runs a vars check on the entire tree (Scope rules)
 	/// </summary>
+	/// <param name="vars">Vars object to handle tree vars run</param>
 	/// <param name="pTree">Pointer to tree to fix</param>
 	/// <returns>True if no variable problems occured - false if any scope error occured</returns>
-	bool Vars(AA_AST* pTree);
+	bool Vars(AAVars vars, AA_AST* pTree);
 
 private:
 

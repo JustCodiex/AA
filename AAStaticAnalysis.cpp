@@ -2,6 +2,7 @@
 #include "astring.h"
 #include "AAC.h"
 #include "AAVal.h"
+#include "AAControlpath.h"
 
 using namespace aa::modifiers;
 
@@ -66,9 +67,12 @@ AAC_CompileErrorMessage AAStaticAnalysis::RunStaticAnalysis(std::vector<AA_AST*>
 	// Set to point to the working trees
 	this->m_workTrees = &trees;
 
+	// The tool for vars run
+	AAVars varsObj;
+
 	// Run vars check on each tree
 	for (size_t i = 0; i < trees.size(); i++) {
-		if (!this->Vars(trees[i])) {
+		if (!this->Vars(varsObj, trees[i])) {
 			return err;
 		}
 	}
@@ -110,6 +114,19 @@ AAC_CompileErrorMessage AAStaticAnalysis::RunStaticAnalysis(std::vector<AA_AST*>
 
 		// Simplify the abstract tree
 		trees[i]->Simplify();
+
+	}
+
+	// Verifier tool
+	AAControlpath pathVerifier;
+
+	// For all input trees, optimize
+	for (size_t i = 0; i < trees.size(); i++) {
+
+		// Verifies the control path of the tree
+		if (!pathVerifier.VerifyControlpath(trees[i])) {
+			printf("Detected error in control path");
+		}
 
 	}
 
@@ -1255,6 +1272,6 @@ AAC_CompileErrorMessage AAStaticAnalysis::ApplyInheritance(AAClassSignature* cla
 
 }
 
-bool AAStaticAnalysis::Vars(AA_AST* pTree) {
-	return AAVars().Check(pTree);
+bool AAStaticAnalysis::Vars(AAVars vars, AA_AST* pTree) {
+	return vars.Vars(pTree);
 }

@@ -188,6 +188,7 @@
     <ClCompile Include="AAVerifier.cpp" />
     <ClCompile Include="AAVM.cpp" />
     <ClCompile Include="AA_AST.cpp" />
+    <ClCompile Include="AA_Node_Consts.cpp" />
     <ClCompile Include="AA_PT.cpp" />
     <ClCompile Include="AA_PT_Unflatten.cpp" />
     <ClCompile Include="astring.cpp" />

@@ -5,6 +5,6 @@ OPERATIONS:
 	[0001]  PUSHC, 1                        
 	[0002]  ADD, 6                          ;; primitive: int32 [4 bytes]
 	[0003]  PUSHC, 2                        
-	[0004]  LEQ, 6                          
+	[0004]  LEQ, 6                          ;; primitive: int32 [4 bytes]
 END PROCEDURE;
 
