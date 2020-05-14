@@ -10,8 +10,8 @@ class Super {
 	void print(Super this) {
 		println("Super -> print");
 	}
-}
-class Sub {
+};
+class Sub : Super {
 	Sub Sub(Sub this) {
 		Super::Super(this);
 		println("Sub .ctor called");
@@ -20,7 +20,7 @@ class Sub {
 	void print(Sub this) {
 		println("Sub -> print");
 	}
-}
+};
 int main() {
 	var instance = new Sub();
 	Super::print(instance);

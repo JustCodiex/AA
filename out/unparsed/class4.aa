@@ -8,7 +8,7 @@ class Teacher {
 		this.age = a;
 		this;
 	}
-}
+};
 class SingleClass {
 	var level;
 	var teacher;
@@ -20,7 +20,7 @@ class SingleClass {
 	Teacher GetTeacher(SingleClass this) {
 		this.teacher;
 	}
-}
+};
 int main() {
 	var s = new SingleClass();
 	s.GetTeacher().age;

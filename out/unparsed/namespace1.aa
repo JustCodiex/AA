@@ -8,7 +8,7 @@ namespace spaceA {
 			println("Hello World...");
 			this;
 		}
-	}
+	};
 }
 namespace spaceB {
 	class StringList {
@@ -17,7 +17,7 @@ namespace spaceB {
 			println("Goodbye World");
 			this;
 		}
-	}
+	};
 }
 using StringList from spaceA;
 int main() {

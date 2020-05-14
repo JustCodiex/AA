@@ -106,9 +106,22 @@ std::wstring AAUnparser::Unparse(AA_AST_NODE* pNode) {
 	case AA_AST_NODE_TYPE::funcall:
 		out = this->WriteToString(L"%s(%s)", pNode->content, this->UnparseList(pNode));
 		break;
-	case AA_AST_NODE_TYPE::classdecl:
-		out = this->WriteToString(L"class %s %s", pNode->content, this->Unparse(pNode->expressions[AA_NODE_CLASSNODE_BODY]));
+	case AA_AST_NODE_TYPE::classdecl: {
+		std::wstring modifiers = L"";
+		std::wstring header = pNode->content;
+		std::wstring inherits = this->UnparseList(pNode->expressions[AA_NODE_CLASSNODE_INHERITANCE]);
+		if (inherits.size() > 0) {
+			header += L" : " + inherits;
+		}
+		if (pNode->expressions.size() >= AA_NODE_CLASSNODE_BODY) {
+			out = this->WriteToString(L"%sclass %s %s", modifiers, header, this->Unparse(pNode->expressions[AA_NODE_CLASSNODE_BODY]));
+			out[out.length() - 1] = ';';
+			out += L"\n";
+		} else {
+			out = this->WriteToString(L"%sclass %s;", modifiers, header, this->Unparse(pNode->expressions[AA_NODE_CLASSNODE_BODY]));
+		}
 		break;
+	}
 	case AA_AST_NODE_TYPE::name_space: {
 		std::wstring space_body = L"{\n";
 		this->IncreaseIndent();
@@ -369,4 +382,13 @@ void AAUnparser::IncreaseIndent() {
 }
 void AAUnparser::DecreaseIndent() {
 	m_indent--;
+}
+
+void AAUnparser::AddSemicolon(std::wstring& ws) {
+	if (ws[ws.length() - 1] == '\n') {
+		ws[ws.length() - 1] = ';';
+		ws += L";";
+	} else {
+		ws += L";";
+	}
 }

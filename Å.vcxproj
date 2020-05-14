@@ -159,6 +159,7 @@
     <ClCompile Include="AAClassCompiler.cpp" />
     <ClCompile Include="AACNamespace.cpp" />
     <ClCompile Include="AAConsole.cpp" />
+    <ClCompile Include="AAControlpath.cpp" />
     <ClCompile Include="AACType.cpp" />
     <ClCompile Include="AADecompiler.cpp" />
     <ClCompile Include="AAExecute.cpp" />
@@ -196,6 +197,7 @@
     <ClInclude Include="AAArray.h" />
     <ClInclude Include="AAAutoCodeGenerator.h" />
     <ClInclude Include="AAByteType.h" />
+    <ClInclude Include="AAControlpath.h" />
     <ClInclude Include="AADecompiler.h" />
     <ClInclude Include="AAExecute.h" />
     <ClInclude Include="AAIntrPtr.h" />

@@ -10,7 +10,7 @@ namespace inlined {
 					println("Foo");
 					this;
 				}
-			}
+			};
 		}
 	}
 }
@@ -22,7 +22,7 @@ namespace nested {
 				println("Fee");
 				this;
 			}
-		}
+		};
 	}
 }
 using inlined::domain::fullon;

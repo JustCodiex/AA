@@ -97,6 +97,12 @@
     <Filter Include="Source Files\analysis">
       <UniqueIdentifier>{73719336-9af1-4033-9efc-94647bc9dd67}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\analysis\verification">
+      <UniqueIdentifier>{90f3588a-4ab8-4107-9c0c-6a668e6a241f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\analysis\verifier">
+      <UniqueIdentifier>{a8b48dbf-aa12-4748-b6b8-3eebc02ed362}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -217,7 +223,10 @@
       <Filter>Source Files\analysis</Filter>
     </ClCompile>
     <ClCompile Include="AAVerifier.cpp">
-      <Filter>Source Files\analysis</Filter>
+      <Filter>Source Files\analysis\verifier</Filter>
+    </ClCompile>
+    <ClCompile Include="AAControlpath.cpp">
+      <Filter>Source Files\analysis\verifier</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -396,7 +405,10 @@
       <Filter>Header Files\analysis</Filter>
     </ClInclude>
     <ClInclude Include="AAVerifier.h">
-      <Filter>Header Files\analysis</Filter>
+      <Filter>Header Files\analysis\verification</Filter>
+    </ClInclude>
+    <ClInclude Include="AAControlpath.h">
+      <Filter>Header Files\analysis\verification</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

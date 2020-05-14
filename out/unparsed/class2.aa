@@ -8,7 +8,7 @@ class ExampleClass {
 		this.fieldx = 10;
 		this;
 	}
-}
+};
 int main() {
 	var e = new ExampleClass();
 	e.fieldx;

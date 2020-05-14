@@ -37,6 +37,8 @@ private:
 	inline void IncreaseIndent();
 	inline void DecreaseIndent();
 
+	void AddSemicolon(std::wstring& ws);
+
 private:
 
 	bool m_isOpen;

@@ -11,7 +11,7 @@ class ExampleClass {
 	int ByTen(ExampleClass this, int val) {
 		(val * this.fieldx);
 	}
-}
+};
 int main() {
 	var e = new ExampleClass();
 	ExampleClass::ByTen(e, 5);
