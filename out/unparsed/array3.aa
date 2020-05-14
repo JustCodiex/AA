@@ -1,7 +1,7 @@
 {
 	{
-		var arr = new ;
-		 = 11;
-		;
+		var arr = new int[10];
+		arr[5] = 11;
+		arr[5];
 	}
 }

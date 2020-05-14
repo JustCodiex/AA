@@ -303,6 +303,10 @@ std::wstring AAUnparser::Unparse(AA_AST_NODE* pNode) {
 		out = this->WriteToString(L"'%s'", w);
 		break;
 	}
+	case AA_AST_NODE_TYPE::index: {
+		out = this->WriteToString(L"%s[%s]", this->Unparse(pNode->expressions[0]), this->Unparse(pNode->expressions[1]));
+		break;
+	}
 	case AA_AST_NODE_TYPE::field:
 	case AA_AST_NODE_TYPE::variable:
 	case AA_AST_NODE_TYPE::floatliteral:

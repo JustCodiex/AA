@@ -26,11 +26,13 @@ private:
 
 	bool VarsClass(aa::VarsEnviornment& venv, AA_AST_NODE* pScope);
 
+	bool VarsEnum(aa::VarsEnviornment& venv, AA_AST_NODE* pScope);
+
+	bool VarsNamespace(aa::VarsEnviornment& venv, AA_AST_NODE* pScope);
+
 	bool VarsBranch(aa::VarsEnviornment& venv, AA_AST_NODE* pScope);
 
 	bool VarsForLoop(aa::VarsEnviornment& venv, AA_AST_NODE* pScope);
-
-	bool VarsWhileLoop(aa::VarsEnviornment& venv, AA_AST_NODE* pCondition, AA_AST_NODE* pBody);
 
 	bool VarsNode(aa::VarsEnviornment& venv, AA_AST_NODE* pScope);
 

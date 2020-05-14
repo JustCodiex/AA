@@ -12,7 +12,7 @@ OPERATIONS:
 	[0001]  SETVAR, 0, 6                    ;; primitive: int32 [4 bytes]
 	[0002]  GETVAR, 0                       
 	[0003]  PUSHC, 1                        
-	[0004]  LE, 6                           
+	[0004]  LE, 6                           ;; primitive: int32 [4 bytes]
 	[0005]  JMPF, 5                         
 	[0006]  GETVAR, 0                       
 	[0007]  PUSHC, 2                        
