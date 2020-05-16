@@ -11,23 +11,23 @@ bool VerifyTestResult(AAVM* pAAVM, AAStackValue result, AAStackValue expected, b
 
 		// Check compile error
 		if (anyCompileError && compile) {
-			std::wcout << L"Test Succeeded (Succesfully detected compile error)" << std::endl << std::endl;
+			std::wcout << L"Test Succeeded (Succesfully detected compile error)" << L"\n\n";
 			return true;
 		} else if (anyCompileError && !compile) {
-			std::wcout << L"Test Failed, unexpected compile error." << std::endl << std::endl;
+			std::wcout << L"Test Failed, unexpected compile error." << L"\n\n";
 			return false;
 		}
 
 		// Check compile error
 		if (anyRuntimeError && runtime) {
-			std::wcout << L"Test Succeeded (Succesfully detected runtime error)" << std::endl << std::endl;
+			std::wcout << L"Test Succeeded (Succesfully detected runtime error)" << L"\n\n";
 			return true;
 		} else if (anyRuntimeError && !runtime) {
-			std::wcout << L"Test Failed, unexpected runtime error." << std::endl << std::endl;
+			std::wcout << L"Test Failed, unexpected runtime error." << L"\n\n";
 			return false;
 		}
 
-		std::wcout << "Test failed unexpectedly" << std::endl << std::endl;
+		std::wcout << "Test failed unexpectedly" << L"\n\n";
 		return false;
 
 	} else {
@@ -48,7 +48,7 @@ bool VerifyTestResult(AAVM* pAAVM, AAStackValue result, AAStackValue expected, b
 
 			} else {
 
-				std::wcout << L"Test Failed, received 'null' but expected '" << expected.ToString() << "'" << std::endl << std::endl;
+				std::wcout << L"Test Failed, received 'null' but expected '" << expected.ToString() << "'" << L"\n\n";
 				return false;
 
 			}
@@ -65,9 +65,9 @@ bool VerifyTestResult(AAVM* pAAVM, AAStackValue result, AAStackValue expected, b
 
 		// Did we succeed?
 		if (success) {
-			std::wcout << L"Test Succeeded ('" << result.ToString() << L"' == '" << expected.ToString() << L"')" << std::endl << std::endl;
+			std::wcout << L"Test Succeeded ('" << result.ToString() << L"' == '" << expected.ToString() << L"')" << L"\n\n";
 		} else {
-			std::wcout << L"Test Failed, received '" << result.ToString() << L"' but expected '" << expected.ToString() << L"')" << std::endl << std::endl;
+			std::wcout << L"Test Failed, received '" << result.ToString() << L"' but expected '" << expected.ToString() << L"')" << L"\n\n";
 		}
 		
 		// Return result
@@ -79,7 +79,7 @@ bool VerifyTestResult(AAVM* pAAVM, AAStackValue result, AAStackValue expected, b
 
 bool RunFileTest(AAVM* pAAVM, std::wstring fileinput, std::wstring fileoutput, AAStackValue expectedoutput, bool compile, bool runtime) {
 
-	std::wcout << L"Testing file: " << fileinput << std::endl;
+	std::wcout << L"Testing file: " << fileinput << L"\n";
 	return VerifyTestResult(pAAVM, 
 		pAAVM->CompileAndRunFile(fileinput, 
 			L"out\\bin\\" + fileoutput + L".aab", 
@@ -95,7 +95,7 @@ bool RunExpressionTest(AAVM* pAAVM, std::wstring expression, std::wstring fileou
 
 	std::wstring fileOutputOpCodes = L"out\\op\\" + fileoutput + L".txt";
 	std::wstring fileOutputUnparsed = L"out\\unparsed\\" + fileoutput + L".aa";
-	std::wcout << L"Testing expression: '" << expression << L"';" << L" OpCodeFile: \"" << fileOutputOpCodes << L"\"; UnparseFile: '" << fileOutputUnparsed << L"'" << std::endl;
+	std::wcout << L"Testing expression: '" << expression << L"';" << L" OpCodeFile: \"" << fileOutputOpCodes << L"\"; UnparseFile: '" << fileOutputUnparsed << L"'" << L"\n";
 	return VerifyTestResult(pAAVM, pAAVM->CompileAndRunExpression(expression, L"out\\bin\\" + fileoutput + L".aab", fileOutputOpCodes, fileOutputUnparsed), expectedoutput, compile, runtime);
 
 }
@@ -628,9 +628,9 @@ bool RunRegressionTests(AAVM* pAAVM) {
 	RunEnumTests(pAAVM, successes, fails);
 
 	// Log regression test results
-	std::wcout << L"Regression test report:" << std::endl;
-	std::wcout << std::to_wstring(successes + fails) << L" Completed, " << std::to_wstring(successes) << L" succeeded, " << std::to_wstring(fails) << L" failed." << std::endl;
-	std::wcout << L"Tests completed in " << std::to_wstring((float)(clock() - start) / CLOCKS_PER_SEC) << L"s" << std::endl << std::endl;
+	std::wcout << L"Regression test report:" << L"\n";
+	std::wcout << std::to_wstring(successes + fails) << L" Completed, " << std::to_wstring(successes) << L" succeeded, " << std::to_wstring(fails) << L" failed." << L"\n";
+	std::wcout << L"Tests completed in " << std::to_wstring((float)(clock() - start) / CLOCKS_PER_SEC) << L"s" << L"\n\n";
 
 	// Disable logging
 	pAAVM->EnableCompilerLog(cmplog);
