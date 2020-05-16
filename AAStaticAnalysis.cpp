@@ -67,17 +67,6 @@ AAC_CompileErrorMessage AAStaticAnalysis::RunStaticAnalysis(std::vector<AA_AST*>
 	// Set to point to the working trees
 	this->m_workTrees = &trees;
 
-	// The tool for vars run
-	AAVars varsObj;
-
-	// Run vars check on each tree
-	for (size_t i = 0; i < trees.size(); i++) {
-		if (!this->Vars(varsObj, trees[i])) {
-			printf("Vars error!");
-			return err;
-		}
-	}
-
 	// The global domain
 	AACNamespace* globalDomain = 0;
 
@@ -129,6 +118,17 @@ AAC_CompileErrorMessage AAStaticAnalysis::RunStaticAnalysis(std::vector<AA_AST*>
 			printf("Detected error in control path");
 		}
 
+	}
+
+	// The tool for vars run
+	AAVars varsObj;
+
+	// Run vars check on each tree
+	for (size_t i = 0; i < trees.size(); i++) {
+		if (!this->Vars(varsObj, trees[i])) {
+			printf("Vars error!");
+			return err;
+		}
 	}
 
 	// Update last static environment

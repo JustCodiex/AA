@@ -1,7 +1,7 @@
 START PROCEDURE 0 (<GlobalScope>):
 CONSTANTS:	[F32, 1.500000]
 IDENTIFIERS:
-	x;
+	0$[x];
 OPERATIONS:
 	[0000]  PUSHC, 0                        
 	[0001]  SETVAR, 0, 10                   ;; primitive: real32 [4 bytes]

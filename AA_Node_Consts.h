@@ -28,14 +28,14 @@ namespace aa {
 		/// </summary>
 		/// <param name="pNode">AA_PT_NODE with type classdecl</param>
 		/// <returns></returns>
-		inline bool Class_HasBody(const AA_PT_NODE*& pNode);
+		bool Class_HasBody(const AA_PT_NODE* pNode);
 
 		/// <summary>
 		/// Check if the node has a body
 		/// </summary>
 		/// <param name="pNode">AA_AST_NODE with type classdecl</param>
 		/// <returns></returns>
-		inline bool Class_HasBody(const AA_AST_NODE*& pNode);
+		bool Class_HasBody(const AA_AST_NODE* pNode);
 
 	}
 }
@@ -72,14 +72,14 @@ namespace aa {
 		/// </summary>
 		/// <param name="pNode">AA_PT_NODE with type fundecl</param>
 		/// <returns></returns>
-		inline bool Function_HasBody(const AA_PT_NODE*& pNode);
+		bool Function_HasBody(const AA_PT_NODE* pNode);
 
 		/// <summary>
 		/// Check if the node has a body
 		/// </summary>
 		/// <param name="pNode">AA_AST_NODE with type fundecl</param>
 		/// <returns></returns>
-		inline bool Function_HasBody(const AA_AST_NODE*& pNode);
+		bool Function_HasBody(const AA_AST_NODE* pNode);
 
 	}
 }
@@ -106,14 +106,14 @@ namespace aa {
 		/// </summary>
 		/// <param name="pNode">AA_PT_NODE with type classdecl</param>
 		/// <returns></returns>
-		inline bool Enum_HasBody(const AA_PT_NODE*& pNode);
+		bool Enum_HasBody(const AA_PT_NODE* pNode);
 
 		/// <summary>
 		/// Check if the node has a body
 		/// </summary>
 		/// <param name="pNode">AA_AST_NODE with type classdecl</param>
 		/// <returns></returns>
-		inline bool Enum_HasBody(const AA_AST_NODE*& pNode);
+		bool Enum_HasBody(const AA_AST_NODE* pNode);
 
 	}
 }

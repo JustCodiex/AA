@@ -1,0 +1,11 @@
+{
+	{
+		var x = 5;
+		{
+			var x = (5 * x);
+			println(x);
+		}
+		println(x);
+		0;
+	}
+}

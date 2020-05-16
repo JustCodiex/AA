@@ -3,10 +3,5 @@
 #include <iostream>
 
 void AAConsole_PrintLn(AAVM* pAAVm, any_stack& stack) {
-	AAStackValue top = stack.Pop<AAStackValue>();
-	if (top.get_type() == AAPrimitiveType::refptr) {
-		std::wcout << top.ToString() << L"\n";
-	} else {
-		printf("");
-	}
+	std::wcout << stack.Pop<AAStackValue>().ToString() << L"\n";
 }

@@ -8,7 +8,7 @@ END PROCEDURE;
 START PROCEDURE 1 (par):
 CONSTANTS:	[I32, 28]
 IDENTIFIERS:
-	z;	x;
+	z;	1$[x];
 OPERATIONS:
 	[0000]  SETVAR, 0, 6                    ;; primitive: int32 [4 bytes]
 	[0001]  GETVAR, 0                       

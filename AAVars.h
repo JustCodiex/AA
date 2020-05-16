@@ -34,6 +34,8 @@ private:
 
 	bool VarsForLoop(aa::VarsEnviornment& venv, AA_AST_NODE* pScope);
 
+	bool VarsMatchCase(aa::VarsEnviornment& venv, AA_AST_NODE* pScope);
+
 	bool VarsNode(aa::VarsEnviornment& venv, AA_AST_NODE* pScope);
 
 };

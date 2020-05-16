@@ -1,0 +1,20 @@
+START PROCEDURE 0 (<GlobalScope>):
+CONSTANTS:	[I32, 5][I32, 0]
+IDENTIFIERS:
+	0$[x];	1$[x];
+OPERATIONS:
+	[0000]  PUSHC, 0                        
+	[0001]  SETVAR, 0, 6                    ;; primitive: int32 [4 bytes]
+	[0002]  PUSHC, 0                        
+	[0003]  GETVAR, 0                       
+	[0004]  MUL, 6                          ;; primitive: int32 [4 bytes]
+	[0005]  SETVAR, 1, 6                    ;; primitive: int32 [4 bytes]
+	[0006]  GETVAR, 1                       
+	[0007]  WRAP, 6                         
+	[0008]  XCALL, 0, 1                     ;; Calls: println
+	[0009]  GETVAR, 0                       
+	[0010]  WRAP, 6                         
+	[0011]  XCALL, 0, 1                     ;; Calls: println
+	[0012]  PUSHC, 1                        
+END PROCEDURE;
+

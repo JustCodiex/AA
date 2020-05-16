@@ -280,6 +280,17 @@ void RunBlockTests(AAVM* pAAVM, int& s, int& f) {
 
 }
 
+void RunScopeTests(AAVM* pAAVM, int& s, int& f) {
+
+	// Test scope with single variable
+	if (!RunFileTest(pAAVM, L"testing\\scope1.aa", L"scope1", 0)) {
+		f++;
+	} else {
+		s++;
+	}
+
+}
+
 void RunFunctionTests(AAVM* pAAVM, int& s, int& f) {
 
 	// Test modulo operator
@@ -599,6 +610,9 @@ bool RunRegressionTests(AAVM* pAAVM) {
 
 	// Run block tests
 	RunBlockTests(pAAVM, successes, fails);
+
+	// Run scope tests
+	RunScopeTests(pAAVM, successes, fails);
 
 	// Run text tests
 	RunTextTests(pAAVM, successes, fails);

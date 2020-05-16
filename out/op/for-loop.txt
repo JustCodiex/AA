@@ -6,7 +6,7 @@ END PROCEDURE;
 START PROCEDURE 1 (foo):
 CONSTANTS:	[I32, 0][I32, 10][I32, 1][I32, 2]
 IDENTIFIERS:
-	x;	i;
+	0$[x];	1$[i];
 OPERATIONS:
 	[0000]  PUSHC, 0                        
 	[0001]  SETVAR, 0, 6                    ;; primitive: int32 [4 bytes]

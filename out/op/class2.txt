@@ -20,7 +20,7 @@ END PROCEDURE;
 
 START PROCEDURE 2 (main):
 IDENTIFIERS:
-	e;
+	0$[e];
 OPERATIONS:
 	[0000]  CTOR, 1, 1, 0, 4                
 	[0001]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]

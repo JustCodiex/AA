@@ -1,7 +1,7 @@
 START PROCEDURE 0 (<GlobalScope>):
 CONSTANTS:	[I32, 5][I32, 2]
 IDENTIFIERS:
-	x;
+	0$[x];
 OPERATIONS:
 	[0000]  PUSHC, 0                        
 	[0001]  PUSHC, 0                        

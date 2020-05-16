@@ -316,8 +316,12 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 		for (size_t i = 0; i < nodes[nodeIndex]->childNodes.size(); i++) {
 			if (nodes[nodeIndex]->childNodes[i]->nodeType == AA_PT_NODE_TYPE::expression) {
 				nodes[nodeIndex]->childNodes[i] = this->CreateTree(nodes[nodeIndex]->childNodes[i]->childNodes, 0);
+			} else if (nodes[nodeIndex]->childNodes[i]->nodeType == AA_PT_NODE_TYPE::block) {
+				for (size_t j = 0; j < nodes[nodeIndex]->childNodes[i]->childNodes.size(); j++) {
+					nodes[nodeIndex]->childNodes[i]->childNodes[j] = this->CreateTree(nodes[nodeIndex]->childNodes[i]->childNodes[j]->childNodes, 0);
+				}
 			} else {
-				printf("Uhhh....");
+				printf("[AA_PT.Cpp@%i] Unable to expand node type %i", __LINE__, (int)nodes[nodeIndex]->childNodes[i]->nodeType);
 			}
 		}
 		nodeIndex++;

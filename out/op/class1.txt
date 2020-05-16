@@ -27,7 +27,7 @@ END PROCEDURE;
 START PROCEDURE 3 (main):
 CONSTANTS:	[I32, 25][I32, 30]
 IDENTIFIERS:
-	ex;
+	0$[ex];
 OPERATIONS:
 	[0000]  CTOR, 1, 1, 0, 0                
 	[0001]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]

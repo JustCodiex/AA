@@ -1,7 +1,7 @@
 START PROCEDURE 0 (<GlobalScope>):
 CONSTANTS:	[I32, 10][I32, 11][I32, 5]
 IDENTIFIERS:
-	arr;
+	0$[arr];
 OPERATIONS:
 	[0000]  PUSHC, 0                        
 	[0001]  ALLOCARRAY, 6, 1                

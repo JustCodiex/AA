@@ -46,7 +46,7 @@ END PROCEDURE;
 
 START PROCEDURE 4 (main):
 IDENTIFIERS:
-	s;
+	0$[s];
 OPERATIONS:
 	[0000]  CTOR, 2, 2, 0, 20               
 	[0001]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]

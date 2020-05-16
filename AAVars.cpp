@@ -68,26 +68,62 @@ bool AAVars::VarsFunction(VarsEnviornment& venv, AA_AST_NODE* pScope) {
 
 bool AAVars::VarsClass(VarsEnviornment& venv, AA_AST_NODE* pScope) {
 
+	// Backup current environment
 	VarsEnviornment _venv = VarsEnviornment(venv);
 
-	for (size_t i = 0; i < pScope->expressions.size(); i++) {
+	// Make sure the class actually has a body
+	if (aa::parsing::Class_HasBody(pScope)) {
 
-		if (pScope->expressions[i]->type == AA_AST_NODE_TYPE::fundecl) {
-			if (!this->VarsFunction(venv, pScope)) {
-				return false;
+		// Run through all elements in class
+		for (size_t i = 0; i < pScope->expressions[AA_NODE_CLASSNODE_BODY]->expressions.size(); i++) {
+
+			// Run vars on all functions
+			if (pScope->expressions[AA_NODE_CLASSNODE_BODY]->expressions[i]->type == AA_AST_NODE_TYPE::fundecl) {
+				if (!this->VarsFunction(venv, pScope->expressions[AA_NODE_CLASSNODE_BODY]->expressions[i])) {
+					return false;
+				}
 			}
+
 		}
 
 	}
 
+	// Restore enviornment
 	venv = _venv;
 
+	// Return true
 	return true;
 
 }
 
 bool AAVars::VarsEnum(aa::VarsEnviornment& venv, AA_AST_NODE* pScope) {
-	return this->VarsClass(venv, pScope);
+	
+	// Backup current environment
+	VarsEnviornment _venv = VarsEnviornment(venv);
+
+	// Make sure the class actually has a body
+	if (aa::parsing::Enum_HasBody(pScope)) {
+
+		// Run through all elements in class
+		for (size_t i = 0; i < pScope->expressions[AA_NODE_ENUMNODE_BODY]->expressions.size(); i++) {
+
+			// Run vars on all functions
+			if (pScope->expressions[AA_NODE_ENUMNODE_BODY]->expressions[i]->type == AA_AST_NODE_TYPE::fundecl) {
+				if (!this->VarsFunction(venv, pScope->expressions[AA_NODE_ENUMNODE_BODY]->expressions[i])) {
+					return false;
+				}
+			}
+
+		}
+
+	}
+
+	// Restore enviornment
+	venv = _venv;
+
+	// Return true
+	return true;
+
 }
 
 bool AAVars::VarsNamespace(aa::VarsEnviornment& venv, AA_AST_NODE* pScope) {
@@ -96,22 +132,8 @@ bool AAVars::VarsNamespace(aa::VarsEnviornment& venv, AA_AST_NODE* pScope) {
 
 	for (size_t i = 0; i < pScope->expressions.size(); i++) {
 
-		if (pScope->expressions[i]->type == AA_AST_NODE_TYPE::fundecl) {
-			if (!this->VarsFunction(venv, pScope)) {
-				return false;
-			}
-		}
-
-		if (pScope->expressions[i]->type == AA_AST_NODE_TYPE::classdecl) {
-			if (!this->VarsClass(venv, pScope)) {
-				return false;
-			}
-		}
-
-		if (pScope->expressions[i]->type == AA_AST_NODE_TYPE::enumdecleration) {
-			if (!this->VarsEnum(venv, pScope)) {
-				return false;
-			}
+		if (!this->VarsNode(venv, pScope->expressions[i])) {
+			return false;
 		}
 
 	}
@@ -172,6 +194,34 @@ bool AAVars::VarsForLoop(VarsEnviornment& venv, AA_AST_NODE* pScope) {
 
 }
 
+bool AAVars::VarsMatchCase(VarsEnviornment& venv, AA_AST_NODE* pScope) {
+
+	// Cpoy current envionment
+	VarsEnviornment _venv = VarsEnviornment(venv);
+
+	// For all condition elements
+	for (size_t i = 0; i < pScope->expressions[0]->expressions.size(); i++) {
+		if (pScope->expressions[0]->expressions[i]->type == AA_AST_NODE_TYPE::variable) {
+			if (pScope->expressions[0]->expressions[i]->content.compare(L"_") != 0) { // Make sure it's not the wildcard				
+				// In the condition, it's actually a variable declaration
+				pScope->expressions[0]->expressions[i]->tags["varsi"] = venv[pScope->expressions[0]->expressions[i]->content] = venv.size();
+			}
+		}
+	}
+
+	// Now run vars on the scope
+	if (!this->VarsNode(venv, pScope->expressions[1])) {
+		return false;
+	}
+
+	// Restore environment
+	venv = _venv;
+
+	// Return true
+	return true;
+
+}
+
 bool AAVars::VarsNode(VarsEnviornment& venv, AA_AST_NODE* pScope) {
 	if (pScope->type == AA_AST_NODE_TYPE::block || pScope->type == AA_AST_NODE_TYPE::funcbody) {
 		return this->VarsScope(venv, pScope);
@@ -195,6 +245,7 @@ bool AAVars::VarsNode(VarsEnviornment& venv, AA_AST_NODE* pScope) {
 		case AA_AST_NODE_TYPE::intliteral:
 		case AA_AST_NODE_TYPE::nullliteral:
 		case AA_AST_NODE_TYPE::stringliteral:
+		case AA_AST_NODE_TYPE::enumvalueaccess:
 			return true;
 		case AA_AST_NODE_TYPE::variable: {
 			auto lookup = venv.find(pScope->content);
@@ -209,7 +260,7 @@ bool AAVars::VarsNode(VarsEnviornment& venv, AA_AST_NODE* pScope) {
 			return this->VarsNode(venv, pScope->expressions[0]);
 		}
 		case AA_AST_NODE_TYPE::vardecl:
-			venv[pScope->content] = venv.size();
+			pScope->tags["varsi"] = venv[pScope->content] = venv.size();
 			return true;
 		case AA_AST_NODE_TYPE::callaccess: 
 			return this->VarsNode(venv, pScope->expressions[0]) && this->VarsNode(venv, pScope->expressions[1]);
@@ -229,6 +280,7 @@ bool AAVars::VarsNode(VarsEnviornment& venv, AA_AST_NODE* pScope) {
 		case AA_AST_NODE_TYPE::forinit:
 		case AA_AST_NODE_TYPE::forafterthought:
 		case AA_AST_NODE_TYPE::condition:
+		case AA_AST_NODE_TYPE::matchcaselist:
 			for (size_t i = 0; i < pScope->expressions.size(); i++) {
 				if (!this->VarsNode(venv, pScope->expressions[i])) {
 					return false;
@@ -259,10 +311,14 @@ bool AAVars::VarsNode(VarsEnviornment& venv, AA_AST_NODE* pScope) {
 			return true;
 		}
 		case AA_AST_NODE_TYPE::newstatement:
-			return this->VarsNode(venv, pScope->expressions[0]);
+			if (pScope->expressions[0]->type == AA_AST_NODE_TYPE::index) {
+				return this->VarsNode(venv, pScope->expressions[0]->expressions[1]); // cant just let next case handle it, as the x[y] will have x = some type and not a variable.
+			} else {
+				return this->VarsNode(venv, pScope->expressions[0]);
+			}
 		case AA_AST_NODE_TYPE::index:
 			if (pScope->expressions.size() == 2) {
-				return this->VarsNode(venv, pScope->expressions[1]);
+				return this->VarsNode(venv, pScope->expressions[0]) && this->VarsNode(venv, pScope->expressions[1]);
 			} else {
 				return false;
 			}
@@ -270,6 +326,10 @@ bool AAVars::VarsNode(VarsEnviornment& venv, AA_AST_NODE* pScope) {
 		case AA_AST_NODE_TYPE::usingspecificstatement:
 		case AA_AST_NODE_TYPE::usingstatement:
 			return true; // nothing to do in these cases
+		case AA_AST_NODE_TYPE::matchstatement:
+			return this->VarsNode(venv, pScope->expressions[0]) && this->VarsNode(venv, pScope->expressions[1]);
+		case AA_AST_NODE_TYPE::matchcasestatement:
+			return this->VarsMatchCase(venv, pScope);
 		default:
 			break;
 		}

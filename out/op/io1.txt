@@ -6,7 +6,7 @@ END PROCEDURE;
 START PROCEDURE 1 (main):
 CONSTANTS:	[UTF-8, "test.txt"][UTF-8, "Hello File from Å"][C, \n][UTF-8, "Goodbye from Å"][I32, 0]
 IDENTIFIERS:
-	fs;
+	0$[fs];
 OPERATIONS:
 	[0000]  PUSHWS, 0                       
 	[0001]  CTOR, 0, 4, 1, 8                

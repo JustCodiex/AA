@@ -10,9 +10,9 @@ AAObject* AAMemoryPtr::get_object() const {
 }
 
 const std::wstring AAMemoryPtr::get_memory_address_wstr() const {
-	return aa::wstring_hex(this->val);
+	return L"0x" + aa::wstring_hex(this->val);
 }
 
 const std::string AAMemoryPtr::get_memory_address_str() const {
-	return aa::string_hex(this->val);
+	return "0x" + aa::string_hex(this->val);
 }

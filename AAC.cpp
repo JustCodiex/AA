@@ -1038,12 +1038,13 @@ AAC::CompiledAbstractExpression AAC::HandleVarPush(CompiledEnviornmentTable& cTa
 	CompiledAbstractExpression pushCAE;
 	pushCAE.bc = AAByteCode::GETVAR;
 	pushCAE.argCount = 1;
-
-	if (cTable.identifiers.Contains(pNode->content)) {
-		pushCAE.argValues[0] = cTable.identifiers.IndexOf(pNode->content);
+	
+	if (pNode->HasTag("varsi")) {
+		pushCAE.argValues[0] = pNode->tags["varsi"];
 		return pushCAE;
 	} else {
-		printf("Using a variable before it's declared!\n");
+		pushCAE.argValues[0] = -1;
+		printf("[AAC.Cpp@%i] Using a variable before it's declared!\n", __LINE__);
 		return pushCAE;
 	}
 
@@ -1063,15 +1064,21 @@ AAC::CompiledAbstractExpression AAC::HandleFieldPush(AA_AST_NODE* pNode, AAStati
 
 int AAC::HandleDecl(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode) {
 
-	int i = -1;
+	/*int i = -1;
 	if (cTable.identifiers.Contains(pNode->content)) {
 		i = cTable.identifiers.IndexOf(pNode->content);
 	} else {
 		i = cTable.identifiers.Size();
 		cTable.identifiers.Add(pNode->content);
+	}*/
+
+	std::wstring scopedName = std::to_wstring(pNode->tags["varsi"]) + L"$[" + pNode->content + L"]";
+
+	if (!cTable.identifiers.Contains(scopedName)) {
+		cTable.identifiers.Add(scopedName);
 	}
 
-	return i;
+	return pNode->tags["varsi"];
 
 }
 
@@ -1098,7 +1105,6 @@ aa::list<AAC::CompiledAbstractExpression> AAC::HandleStackPush(CompiledEnviornme
 	} else {
 		opList.Add(CompileAST(pNode, cTable, staticData));
 	}
-
 
 	// Does the argument contain the "wrap" tag -> wrap so 'Any' can accept it
 	if (pNode->HasTag("wrap")) {

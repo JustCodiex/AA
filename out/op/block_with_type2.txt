@@ -1,7 +1,7 @@
 START PROCEDURE 0 (<GlobalScope>):
 CONSTANTS:	[B, T]
 IDENTIFIERS:
-	x;
+	0$[x];
 OPERATIONS:
 	[0000]  PUSHC, 0                        
 	[0001]  SETVAR, 0, 3                    ;; primitive: bool [1 bytes]

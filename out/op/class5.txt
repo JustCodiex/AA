@@ -61,7 +61,7 @@ END PROCEDURE;
 START PROCEDURE 5 (main):
 CONSTANTS:	[I32, 0]
 IDENTIFIERS:
-	instance;
+	0$[instance];
 OPERATIONS:
 	[0000]  CTOR, 2, 3, 0, 0                
 	[0001]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
