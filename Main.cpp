@@ -18,6 +18,7 @@ const char* VM_Version = "0.4.0"; // VM version
 
 bool enableRegTests = false; // Run regression tests
 bool outputAssembly = false; // Output an assembly file as well as a binary file
+bool outputUnparsed = false; // Output an unparsed variant of the file
 bool isCompileInput = false; // The input is a compile target
 bool executeOutput = false; // Should we execute our output
 bool logCompileTime = false; // Should compile time be logged
@@ -53,10 +54,18 @@ std::wstring getAssemblyOutputFile() {
     }
 }
 
+std::wstring getUnparseOutputFile() {
+    if (outputUnparsed) {
+        return outputFile.substr(0, outputFile.find_last_of('.')) + L"_unparsed.aa";
+    } else {
+        return L"";
+    }
+}
+
 void compileandexecute(AAVM* pAAVM) {
 
     // Compile and run the file
-    pAAVM->CompileAndRunFile(inputFile, outputFile, getAssemblyOutputFile());
+    pAAVM->CompileAndRunFile(inputFile, outputFile, getAssemblyOutputFile(), getUnparseOutputFile());
 
 }
 
@@ -110,6 +119,8 @@ int wmain(int argc, wchar_t** argv) {
 #else
             wprintf(L"Reggression tests not available");
 #endif
+        } else if (wcscmp(argv[i], L"-unparse") == 0) {
+            outputUnparsed = true;
         } else if (wcscmp(argv[i], L"-c") == 0) {
             isCompileInput = true;
             if (i + 1 < argc && argv[i+1][0] != '-') {
@@ -150,10 +161,11 @@ int wmain(int argc, wchar_t** argv) {
     // Is it compiler input?
     if (isCompileInput) {
 
+        // Determine if we should also execute the output
         if (executeOutput) {
-            //compileandexecute(VM);
+            compileandexecute(VM);
         } else {
-            //compileoutput(VM);
+            compileoutput(VM);
         }
 
     } else {
