@@ -1,0 +1,14 @@
+// The main function
+// Will do the tuple stuff in a basic format
+int main() {
+
+    // Declare the tuple, t
+    (int, int) t = (2,3);
+
+    // Return the tuple values timed with each other
+    t._1 * t._2;
+
+};
+
+// Call the main function
+main();
