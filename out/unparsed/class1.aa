@@ -11,6 +11,6 @@ class ExampleClass {
 	}
 };
 int main() {
-	var ex = new ExampleClass();
+	ExampleClass ex = new ExampleClass();
 	(ExampleClass::arg(ex, 25) + ExampleClass::arg(ex, 30));
 }

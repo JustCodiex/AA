@@ -79,7 +79,11 @@ std::wstring AAUnparser::Unparse(AA_AST_NODE* pNode) {
 		break;
 	}
 	case AA_AST_NODE_TYPE::vardecl: {
-		out = this->WriteToString(L"var %s", pNode->content);
+		if (pNode->expressions.size() > 0) {
+			out = this->WriteToString(L"%s %s", this->Unparse(pNode->expressions[0]), pNode->content);
+		} else {
+			out = this->WriteToString(L"var %s", pNode->content);
+		}
 		break;
 	}
 	case AA_AST_NODE_TYPE::fundecl: {

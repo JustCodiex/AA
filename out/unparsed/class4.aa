@@ -2,7 +2,7 @@
 	main();
 }
 class Teacher {
-	var age;
+	int age;
 	Teacher Teacher(int a, Teacher this) {
 		object::object(this);
 		this.age = a;
@@ -10,8 +10,8 @@ class Teacher {
 	}
 };
 class SingleClass {
-	var level;
-	var teacher;
+	int level;
+	Teacher teacher;
 	SingleClass SingleClass(SingleClass this) {
 		object::object(this);
 		this.teacher = new Teacher(40);
@@ -22,6 +22,6 @@ class SingleClass {
 	}
 };
 int main() {
-	var s = new SingleClass();
+	SingleClass s = new SingleClass();
 	s.GetTeacher().age;
 }

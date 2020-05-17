@@ -30,7 +30,7 @@ enum UniversityDepartment {
 	}
 }
 int main() {
-	var testDep = UniversityDepartment::ComputerScience;
+	UniversityDepartment testDep = UniversityDepartment::ComputerScience;
 	println(testDep.GetString());
 	0;
 }

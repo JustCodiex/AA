@@ -1,6 +1,6 @@
 {
 	{
-		var arr = new int[10];
+		int[] arr = new int[10];
 		arr[0];
 	}
 }

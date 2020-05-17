@@ -22,7 +22,7 @@ class Sub : Super {
 	}
 };
 int main() {
-	var instance = new Sub();
+	Super instance = new Sub();
 	Super::print(instance);
 	0;
 }

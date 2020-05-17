@@ -3,7 +3,7 @@
 }
 using std::io;
 int main() {
-	var fs = new FileStream("test.txt");
+	FileStream fs = new FileStream("test.txt");
 	(fs << "Hello File from Å");
 	(fs << '\n');
 	(fs << "Goodbye from Å");

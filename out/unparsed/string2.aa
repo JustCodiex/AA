@@ -1,6 +1,6 @@
 {
 	{
-		var s = "Hello";
+		string s = "Hello";
 		s.length();
 	}
 }

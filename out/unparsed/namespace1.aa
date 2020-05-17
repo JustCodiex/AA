@@ -21,7 +21,7 @@ namespace spaceB {
 }
 using StringList from spaceA;
 int main() {
-	var a = new StringList();
-	var b = new StringList();
+	StringList a = new StringList();
+	spaceB::StringList b = new StringList();
 	42;
 }
