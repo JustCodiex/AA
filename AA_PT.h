@@ -106,11 +106,9 @@ private:
 	
 	inline void HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& index);
 	inline void HandleKeywordCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex);
-	//AA_PT_NODE* HandleExpressionCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex);
+	inline void HandleTupleCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex);
 
 	inline void HandleIndexDecl(std::vector<AA_PT_NODE*>& nodes, size_t nodeIndex);
-
-	//inline bool HandleTupleCase(AA_PT_NODE* pNodeSource);
 
 	inline AA_PT_NODE* HandleFunctionDecleration(std::vector<AA_PT_NODE*>& nodes, size_t& from);
 	inline AA_PT_NODE* HandleVariableDecleration(std::vector<AA_PT_NODE*>& nodes, size_t& from);
@@ -126,6 +124,10 @@ private:
 	bool IsModifierKeyword(std::wstring ws);
 
 	bool IsLiteral(AA_PT_NODE* pNode);
+
+	bool IsOperator(AA_PT_NODE* pNode, std::wstring op, bool isBinary = true, bool isUnary = false);
+
+	bool ContainsSeperator(AA_PT_NODE* pNode, std::wstring seperator);
 
 	std::wstring FindClassDeclName(std::vector<AA_PT_NODE*>& nodes, const size_t from, AA_PT_NODE* pClassDeclNode);
 

@@ -182,7 +182,7 @@ std::vector<AALexicalResult> AALexer::Analyse(std::wistream& input) {
 				ws.str(L"");
 				current = AAToken::invalid;
 
-			} else if (IsCharacter(character) && (current == AAToken::identifier || current == AAToken::invalid)) {
+			} else if (IsIdentifier(character, current)) {
 				ws << character;
 				current = AAToken::identifier;
 			} else if (IsDigit(character) && (current == AAToken::intlit || current == AAToken::invalid)) {
@@ -467,5 +467,19 @@ AALexicalResult AALexer::Merge(std::vector<AALexicalResult> ls) {
 		content += ls[i].content;
 
 	return AALexicalResult(content, AAToken::invalid, pos);
+
+}
+
+bool AALexer::IsIdentifier(wchar_t character, AAToken currentToken) {
+
+	if (IsCharacter(character) && (currentToken == AAToken::identifier || currentToken == AAToken::invalid)) {
+		return true;
+	} else {
+		if (currentToken == AAToken::identifier && IsDigit(character)) { // Are we already considered to be an identifier?
+			return true;
+		} else {
+			return false;
+		}
+	}
 
 }

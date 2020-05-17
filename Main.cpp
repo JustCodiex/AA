@@ -65,7 +65,7 @@ std::wstring getUnparseOutputFile() {
 void compileandexecute(AAVM* pAAVM) {
 
     // Compile and run the file
-    //pAAVM->CompileAndRunFile(inputFile, outputFile, getAssemblyOutputFile(), getUnparseOutputFile());
+    pAAVM->CompileAndRunFile(inputFile, outputFile, getAssemblyOutputFile(), getUnparseOutputFile());
 
 }
 

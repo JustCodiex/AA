@@ -86,7 +86,7 @@ enum class AA_AST_NODE_TYPE {
 	nullliteral,
 
 	tupleval, // tuple value eg. (0,1,2,3,4)
-	tupledef, // tuple definition eg. (int, int, int, int, int)
+	tuplevardecl, // tuple definition eg. (int, int, int, int, int)
 	tupleaccess,
 
 };

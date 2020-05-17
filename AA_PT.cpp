@@ -159,7 +159,12 @@ AA_PT_NODE* AA_PT::CreateTree(std::vector<AA_PT_NODE*>& nodes, size_t from) {
 	size_t nodeIndex = from;
 
 	if (nodes.size() == 1 && nodes[from]->nodeType == AA_PT_NODE_TYPE::expression) {
-		return CreateExpressionTree(nodes, 0);
+		if (this->ContainsSeperator(nodes[from], L",")) {
+			this->HandleTupleCase(nodes, from);
+			return nodes[0];
+		} else {
+			return CreateExpressionTree(nodes, 0);
+		}
 	}
 
 	if (nodes.size() > 0 && (nodes[from]->nodeType == AA_PT_NODE_TYPE::block)) {
@@ -308,9 +313,16 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 		
 		break;
 	case AA_PT_NODE_TYPE::parameterlist:
-	case AA_PT_NODE_TYPE::expression: {
 		nodes[nodeIndex] = this->CreateExpressionTree(nodes, nodeIndex);
 		nodeIndex++;
+		break;
+	case AA_PT_NODE_TYPE::expression: {
+		if (this->ContainsSeperator(nodes[nodeIndex], L",")) {
+			this->HandleTupleCase(nodes, nodeIndex);
+		} else {
+			nodes[nodeIndex] = this->CreateExpressionTree(nodes, nodeIndex);
+			nodeIndex++;
+		}
 		break;
 	}
 	case AA_PT_NODE_TYPE::block: {
@@ -545,6 +557,40 @@ void AA_PT::HandleIndexDecl(std::vector<AA_PT_NODE*>& nodes, size_t nodeIndex) {
 
 }
 
+void AA_PT::HandleTupleCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
+
+	if (nodeIndex + 1 < nodes.size() && this->IsOperator(nodes[nodeIndex + 1], L"=>")) {
+		printf("[AA_PT.Cpp@%i] Detected lambda body\n", __LINE__);
+		_ASSERT_EXPR(false, "Not implemented");
+	} else {
+
+		// Set tuple
+		nodes[nodeIndex]->nodeType = AA_PT_NODE_TYPE::tupleval;
+		nodes[nodeIndex]->childNodes = this->CreateArgumentTree(nodes[nodeIndex]);
+
+		// Is a var(tuple) decl?
+		if (nodeIndex + 1 < nodes.size() && nodes[nodeIndex + 1]->nodeType == AA_PT_NODE_TYPE::identifier) {
+
+			// Create var declaration
+			AA_PT_NODE* tupleDeclNode = new AA_PT_NODE(AA_PT_NODE_TYPE::vardecleration, L"tupledecl", nodes[nodeIndex]->position);
+			tupleDeclNode->childNodes.push_back(nodes[nodeIndex]);
+			tupleDeclNode->childNodes.push_back(nodes[nodeIndex+1]);
+
+			// Assign decleration to current index
+			nodes[nodeIndex] = tupleDeclNode;
+
+			// Remove identifier
+			nodes.erase(nodes.begin() + nodeIndex + 1);
+
+		}
+
+		// go to next element
+		nodeIndex++;
+
+	}
+
+}
+
 AA_PT_NODE* AA_PT::HandleFunctionDecleration(std::vector<AA_PT_NODE*>& nodes, size_t& from) {
 	return this->CreateFunctionDecl(nodes, from);
 }
@@ -557,12 +603,19 @@ AA_PT_NODE* AA_PT::CreateExpressionTree(std::vector<AA_PT_NODE*>& nodes, size_t 
 
 	if (nodes[from]->nodeType == AA_PT_NODE_TYPE::expression && nodes[from]->childNodes.size() > 0) {
 
-		AA_PT_NODE* exp = CreateTree(nodes[from]->childNodes, 0); // Create a tree for the expression
-		while (exp->nodeType == AA_PT_NODE_TYPE::expression) { // As long as we have a single expression here, we break it down to smaller bits, incase we get input like (((5+5))).
-			exp = CreateTree(exp->childNodes, 0); // Create the tree for the sub expression
-		}
+		if (this->ContainsSeperator(nodes[from], L",")) {
+			this->HandleTupleCase(nodes, from);
+			return nodes[from];
+		} else {
 
-		return exp;
+			AA_PT_NODE* exp = CreateTree(nodes[from]->childNodes, 0); // Create a tree for the expression
+			while (exp->nodeType == AA_PT_NODE_TYPE::expression) { // As long as we have a single expression here, we break it down to smaller bits, incase we get input like (((5+5))).
+				exp = CreateTree(exp->childNodes, 0); // Create the tree for the sub expression
+			}
+
+			return exp;
+
+		}
 
 	} else if (nodes[from]->nodeType == AA_PT_NODE_TYPE::identifier && nodes[from]->childNodes.size() > 0) {
 	
@@ -614,8 +667,8 @@ std::vector<AA_PT_NODE*> AA_PT::CreateArgumentTree(AA_PT_NODE* pExpNode) {
 
 	std::vector<AA_PT_NODE*> nodes;
 
-	// Apply statement bindings (This might be unneccessary)
-	AA_PT_Unflatten::ApplyStatementBindings(pExpNode->childNodes);
+	// Apply syntax rules: TODO: Make all functions in unflattener recursive
+	AA_PT_Unflatten::ApplySyntaxRules(pExpNode->childNodes);
 
 	for (size_t i = 0; i < pExpNode->childNodes.size(); i++) {
 		
@@ -624,9 +677,6 @@ std::vector<AA_PT_NODE*> AA_PT::CreateArgumentTree(AA_PT_NODE* pExpNode) {
 		for (AA_PT_NODE* n : pExpNode->childNodes[i]->childNodes) {
 			argElements.push_back(n);
 		}
-
-		// Apply syntaax rules with the unflattener (This might be unneccessary)
-		AA_PT_Unflatten::ApplySyntaxRules(argElements);
 
 		AA_PT_NODE* arg = this->CreateTree(argElements, 0);
 
@@ -1393,4 +1443,26 @@ bool AA_PT::IsModifierKeyword(std::wstring ws) {
 
 bool AA_PT::IsLiteral(AA_PT_NODE* pNode) {
 	return pNode->nodeType >= AA_PT_NODE_TYPE::intliteral && pNode->nodeType <= AA_PT_NODE_TYPE::nullliteral;
+}
+
+bool AA_PT::IsOperator(AA_PT_NODE* pNode, std::wstring op, bool isBinary, bool isUnary) {
+	if (isBinary && isUnary) {
+		return (pNode->nodeType == AA_PT_NODE_TYPE::binary_operation || pNode->nodeType == AA_PT_NODE_TYPE::unary_operation) && pNode->content.compare(op) == 0;
+	} else if (isBinary && !isUnary) {
+		return (pNode->nodeType == AA_PT_NODE_TYPE::binary_operation && pNode->nodeType != AA_PT_NODE_TYPE::unary_operation) && pNode->content.compare(op) == 0;
+	} else {
+		return (pNode->nodeType != AA_PT_NODE_TYPE::binary_operation && pNode->nodeType == AA_PT_NODE_TYPE::unary_operation) && pNode->content.compare(op) == 0;
+	}
+}
+
+bool AA_PT::ContainsSeperator(AA_PT_NODE* pNode, std::wstring seperator) {
+
+	for (size_t i = 0; i < pNode->childNodes.size(); i++) {
+		if (pNode->childNodes[i]->nodeType == AA_PT_NODE_TYPE::seperator && pNode->childNodes[i]->content.compare(seperator) == 0) {
+			return true;
+		}
+	}
+
+	return false;
+
 }

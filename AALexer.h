@@ -52,6 +52,8 @@ private:
 	bool IsKeyword(std::wstring w);
 	bool IsSingleToken(wchar_t character, AAToken& token);
 
+	bool IsIdentifier(wchar_t character, AAToken currentToken);
+
 	void DetermineToken(std::wstringstream& wss, AAToken token, std::vector< AALexicalResult>& results, AACodePosition pos);
 
 	void JoinDecimal(std::vector<AALexicalResult>& results, size_t& i);

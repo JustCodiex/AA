@@ -60,20 +60,36 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 
 	}
 	case AA_PT_NODE_TYPE::vardecleration: {
-		if (pNode->childNodes[0]->content == L"var") {
+		if (pNode->childNodes[0]->content.compare(L"var") == 0) {
+			
 			AA_AST_NODE* varDeclVar = new AA_AST_NODE(pNode->childNodes[1]->content, AA_AST_NODE_TYPE::vardecl, pNode->position);
 			varDeclVar->tags = pNode->flags;
 			return varDeclVar;
+
+		} else if (pNode->content.compare(L"tupledecl") == 0) {
+			
+			AA_AST_NODE* tupleDecl = new AA_AST_NODE(pNode->childNodes[1]->content, AA_AST_NODE_TYPE::tuplevardecl, pNode->position);
+
+			for (auto& type : pNode->childNodes[0]->childNodes) {
+				tupleDecl->expressions.push_back(new AA_AST_NODE(type->content, AA_AST_NODE_TYPE::typeidentifier, type->position));
+			}
+
+			return tupleDecl;
+
 		} else { // When a specific type is specified
+			
 			AA_AST_NODE* varDeclType = new AA_AST_NODE(pNode->childNodes[1]->content, AA_AST_NODE_TYPE::vardecl, pNode->position);
+			
 			if (pNode->childNodes[0]->nodeType == AA_PT_NODE_TYPE::accessor) { // However, it could also be a member accessor (ie. we're trying to access a type in a namespace or a class subtype)
 				AA_AST_NODE* accessNode = this->AbstractNode(pNode->childNodes[0]);
 				varDeclType->expressions.push_back(accessNode);
 			} else { // default is of course a type identifier
 				varDeclType->expressions.push_back(new AA_AST_NODE(pNode->childNodes[0]->content, AA_AST_NODE_TYPE::typeidentifier, pNode->position));
 			}
+		
 			varDeclType->tags = pNode->flags;
 			return varDeclType;
+		
 		}
 	}
 	case AA_PT_NODE_TYPE::fundecleration: {
