@@ -19,9 +19,12 @@ enum class AA_PT_NODE_TYPE {
 	funcbody,
 	classbody,
 	enumbody,
+
 	lambdabody,
+	lambdaparams,
 
 	expression,
+	parameterlist,
 	condition,
 
 	usingstatement,
@@ -80,14 +83,21 @@ enum class AA_PT_NODE_TYPE {
 	modifier,
 
 	intliteral,
+	uintliteral,
 	shortliteral,
+	ushortliteral,
 	longliteral,
+	ulongliteral,
 	doubleliteral,
 	floatliteral,
 	stringliteral,
 	charliteral,
 	booliterral,
+	byteliteral,
 	nullliteral,
+
+	tupleval, // tuple value eg. (0,1,2,3,4)
+	tupleaccess,
 
 };
 

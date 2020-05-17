@@ -62,10 +62,10 @@ void AA_PT_Unflatten::ApplyAccessorBindings(std::vector<AA_PT_NODE*>& nodes) {
 
 					nodes[i]->childNodes.push_back(nodes[i - 1]);
 
-					if (i + 2 < (int)nodes.size() && nodes[i + 2]->nodeType == AA_PT_NODE_TYPE::expression) {
+					if (i + 2 < (int)nodes.size() && nodes[i + 2]->nodeType == AA_PT_NODE_TYPE::parameterlist) {
 
 						AA_PT_NODE* rhsNode = new AA_PT_NODE(nodes[i + 1]->position);
-						rhsNode->nodeType = AA_PT_NODE_TYPE::expression;
+						rhsNode->nodeType = AA_PT_NODE_TYPE::parameterlist;
 						rhsNode->childNodes.push_back(nodes[i + 1]);
 						rhsNode->childNodes.push_back(nodes[i + 2]);
 
@@ -107,11 +107,13 @@ void AA_PT_Unflatten::ApplyFunctionBindings(std::vector<AA_PT_NODE*>& nodes) {
 			ApplyFunctionBindings(nodes[i]->childNodes);
 
 		} else if (nodes[i]->nodeType == AA_PT_NODE_TYPE::identifier) {
-			if (i + 1 < (int)nodes.size() && nodes[i + 1]->nodeType == AA_PT_NODE_TYPE::expression) {
+			if (i + 1 < (int)nodes.size() && nodes[i + 1]->nodeType == AA_PT_NODE_TYPE::expression) {				
 				if (i - 1 > 0 && nodes[i - 1]->nodeType == AA_PT_NODE_TYPE::binary_operation) {
 					ApplyFunctionBindings(nodes[i + 1]->childNodes);
 					nodes[i]->childNodes.push_back(nodes[i + 1]);
 					//nodes.erase(nodes.begin() + i + 1);
+				} else {
+					nodes[i + 1]->nodeType = AA_PT_NODE_TYPE::parameterlist;
 				}
 			}
 		} /*else if (nodes[i]->nodeType == AA_PT_NODE_TYPE::keyword) {

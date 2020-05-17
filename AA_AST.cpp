@@ -291,6 +291,13 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 	}
 	case AA_PT_NODE_TYPE::modifier:
 		return new AA_AST_NODE(pNode->content, AA_AST_NODE_TYPE::modifier, pNode->position);
+	case AA_PT_NODE_TYPE::tupleval: {
+		AA_AST_NODE* pTupleValNode = new AA_AST_NODE(L"", AA_AST_NODE_TYPE::tupleval, pNode->position);
+		for (size_t i = 0; i < pNode->childNodes.size(); i++) {
+			pTupleValNode->expressions.push_back(this->AbstractNode(pNode->childNodes[i]));
+		}
+		return pTupleValNode;
+	}
 	case AA_PT_NODE_TYPE::intliteral:
 	case AA_PT_NODE_TYPE::charliteral:
 	case AA_PT_NODE_TYPE::floatliteral:

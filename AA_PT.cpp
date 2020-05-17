@@ -237,7 +237,7 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 			// if the next segment is an argument list (expression), it's a func decl with type != void
 			// If not, it's most likely a variable decleration
 
-			if (nodeIndex + 2 < nodes.size() && nodes[nodeIndex + 2]->nodeType == AA_PT_NODE_TYPE::expression) {
+			if (nodeIndex + 2 < nodes.size() && nodes[nodeIndex + 2]->nodeType == AA_PT_NODE_TYPE::parameterlist) {
 				nodes[nodeIndex] = this->HandleFunctionDecleration(nodes, nodeIndex);
 			} else {
 				nodes[nodeIndex] = this->HandleVariableDecleration(nodes, nodeIndex);
@@ -246,7 +246,7 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 			// Goto next element
 			nodeIndex++;
 
-		} else if (nodeIndex + 1 < nodes.size() && nodes[nodeIndex + 1]->nodeType == AA_PT_NODE_TYPE::expression) {
+		} else if (nodeIndex + 1 < nodes.size() && nodes[nodeIndex + 1]->nodeType == AA_PT_NODE_TYPE::parameterlist) {
 			
 			if (nodeIndex + 2 < nodes.size() && nodes[nodeIndex + 2]->nodeType == AA_PT_NODE_TYPE::block) {
 
@@ -307,6 +307,7 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 		this->HandleKeywordCase(nodes, nodeIndex);
 		
 		break;
+	case AA_PT_NODE_TYPE::parameterlist:
 	case AA_PT_NODE_TYPE::expression: {
 		nodes[nodeIndex] = this->CreateExpressionTree(nodes, nodeIndex);
 		nodeIndex++;
@@ -398,7 +399,7 @@ void AA_PT::HandleKeywordCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex
 
 	} else if (nodes[nodeIndex]->content.compare(L"new") == 0) {
 
-		if (nodeIndex + 2 < nodes.size() && (nodes[nodeIndex + 2]->nodeType == AA_PT_NODE_TYPE::expression || nodes[nodeIndex + 2]->nodeType == AA_PT_NODE_TYPE::indexing)) {
+		if (nodeIndex + 2 < nodes.size() && (nodes[nodeIndex + 2]->nodeType == AA_PT_NODE_TYPE::parameterlist || nodes[nodeIndex + 2]->nodeType == AA_PT_NODE_TYPE::indexing)) {
 
 			if (nodes[nodeIndex + 1]->nodeType == AA_PT_NODE_TYPE::identifier && nodes[nodeIndex+2]->nodeType != AA_PT_NODE_TYPE::indexing) {
 
@@ -581,6 +582,15 @@ AA_PT_NODE* AA_PT::CreateExpressionTree(std::vector<AA_PT_NODE*>& nodes, size_t 
 
 		return nodes[from];
 
+	} else if (nodes[from]->nodeType == AA_PT_NODE_TYPE::parameterlist) {
+		
+		AA_PT_NODE* exp = CreateTree(nodes[from]->childNodes, 0); // Create a tree for the expression
+		while (exp->nodeType == AA_PT_NODE_TYPE::expression || exp->nodeType == AA_PT_NODE_TYPE::parameterlist) { // As long as we have a single expression here, we break it down to smaller bits, incase we get input like (((5+5))).
+			exp = CreateTree(exp->childNodes, 0); // Create the tree for the sub expression
+		}
+
+		return exp;
+
 	} else {
 
 		return nodes[from];
@@ -621,7 +631,7 @@ std::vector<AA_PT_NODE*> AA_PT::CreateArgumentTree(AA_PT_NODE* pExpNode) {
 		AA_PT_NODE* arg = this->CreateTree(argElements, 0);
 
 		// For some reason we get some problems with expressions in accessors here => so we have to add in this. TODO: Fix later
-		if (arg->nodeType == AA_PT_NODE_TYPE::accessor && arg->childNodes[1]->nodeType == AA_PT_NODE_TYPE::expression) {
+		if (arg->nodeType == AA_PT_NODE_TYPE::accessor && arg->childNodes[1]->nodeType == AA_PT_NODE_TYPE::parameterlist) {
 			arg->childNodes[1] = this->CreateTree(arg->childNodes[1]->childNodes, 0);
 		}
 
@@ -766,13 +776,13 @@ std::wstring AA_PT::FindClassDeclName(std::vector<AA_PT_NODE*>& nodes, const siz
 
 AA_PT_NODE* AA_PT::CreateConstructorDecl(std::vector<AA_PT_NODE*>& nodes, size_t from) {
 
-	if (nodes[from + 1]->nodeType != AA_PT_NODE_TYPE::expression) {
-		printf("Err: Expected function argument list");
+	if (nodes[from + 1]->nodeType != AA_PT_NODE_TYPE::parameterlist) {
+		printf("Err: Expected constructor argument list");
 		return 0;
 	}
 
 	if (nodes[from + 2]->nodeType != AA_PT_NODE_TYPE::block) {
-		printf("Err: Expected function body");
+		printf("Err: Expected constructor body");
 		return 0;
 	}
 
@@ -811,7 +821,7 @@ AA_PT_NODE* AA_PT::CreateFunctionDecl(std::vector<AA_PT_NODE*>& nodes, size_t fr
 		return 0;
 	}
 
-	if (nodes[from + 2]->nodeType != AA_PT_NODE_TYPE::expression) {
+	if (nodes[from + 2]->nodeType != AA_PT_NODE_TYPE::parameterlist) {
 		printf("Err: Expected argument list");
 		return 0;
 	}
@@ -959,7 +969,7 @@ AA_PT_NODE* AA_PT::CreateEnumDecl(std::vector<AA_PT_NODE*>& nodes, size_t from) 
 		nodes.erase(nodes.begin() + from + 1, nodes.begin() + from + 3);
 
 	} else {
-		SetError(AA_PT::Error("Expected namespace identifier", 0, nodes[from]->position));
+		SetError(AA_PT::Error("Expected enum identifier", 0, nodes[from]->position));
 		return NULL;
 	}
 
@@ -1005,7 +1015,7 @@ AA_PT_NODE* AA_PT::CreateEnumValueList(AA_PT_NODE* pBlockNode) {
 		}
 
 	}
-	 // TODO: Throw error if we have to identifiers following each other
+	 // TODO: Throw error if we have two identifiers following each other
 	return pValListNode;
 
 }
@@ -1113,7 +1123,7 @@ AA_PT_NODE* AA_PT::CreatePatternCase(std::vector<AA_PT_NODE*> nodes) {
 	pExpressionNode->childNodes.push_back(this->CreateTree(expression, 0));
 
 	// For some reason we get some problems with expressions in accessors here => so we have to add in this. TODO: Fix later
-	if (pExpressionNode->childNodes[0]->nodeType == AA_PT_NODE_TYPE::accessor && pExpressionNode->childNodes[0]->childNodes[1]->nodeType == AA_PT_NODE_TYPE::expression) {
+	if (pExpressionNode->childNodes[0]->nodeType == AA_PT_NODE_TYPE::accessor && pExpressionNode->childNodes[0]->childNodes[1]->nodeType == AA_PT_NODE_TYPE::parameterlist) {
 		pExpressionNode->childNodes[0]->childNodes[1] = this->CreateTree(pExpressionNode->childNodes[0]->childNodes[1]->childNodes, 0);
 	}
 
@@ -1379,4 +1389,8 @@ bool AA_PT::IsModifierKeyword(std::wstring ws) {
 	return 
 		ws.compare(L"override") == 0 || ws.compare(L"virtual") == 0 || ws.compare(L"abstract") == 0 ||
 		ws.compare(L"sealed") == 0 || ws.compare(L"tagged") == 0;
+}
+
+bool AA_PT::IsLiteral(AA_PT_NODE* pNode) {
+	return pNode->nodeType >= AA_PT_NODE_TYPE::intliteral && pNode->nodeType <= AA_PT_NODE_TYPE::nullliteral;
 }

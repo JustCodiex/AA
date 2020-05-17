@@ -56,6 +56,10 @@ enum class AAByteCode : unsigned char {
 	BAND, // (Bitwise And &, 1 argument [primitive type])
 	BOR, // (Bitwise Or |, 1 argument [primitive type])
 
+	TUPLECMP, // (Compares two tuples, 0 arguments)
+	TUPLECTOR, // (Construct a tuple, 1+n arguments[tuple count, { primitive type }^n : n = tuple count])
+	TUPLEGET, // (Get the value at specified int in a tuple, 1 argument[tuple index])
+
 	ALLOC, // (Heap Allocate memory for a new object, 1 argument[size in bytes]) |Not in use|
 	ALLOCARRAY, // (Heap Allocate memory for a new array, 2 arguments[primitive type, dimension count])
 	CTOR, // (Call constructor and bind type, 4 arguments[typeID, ctor, isvm, allocsize]) |ALLOC is built into this argument|
@@ -89,5 +93,7 @@ enum class AAByteCode : unsigned char {
 
 	BCKM, // (Backwards pattern match - pushes boolean value on stack, 4 arguments[func, vm{0,1}, args, stacksz])
 	BDOP, // (Break Down Object & Push, 0 arguments)
+
+	EXTTAG, // (Extract tags from object and put into tuple, 0 arguments)
 
 };
