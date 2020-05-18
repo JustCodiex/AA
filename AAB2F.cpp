@@ -168,8 +168,8 @@ namespace aa {
 		case AAByteCode::TUPLECMP:
 			output = L"TUPLECMP";
 			break;
-		case AAByteCode::TUPLECTOR:
-			output = L"TUPLECTOR";
+		case AAByteCode::TUPLENEW:
+			output = L"TUPLENEW";
 			break;
 		case AAByteCode::TUPLEGET:
 			output = L"TUPLEGET";

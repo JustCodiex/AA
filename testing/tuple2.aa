@@ -5,21 +5,21 @@
     if (n == 0) {
         sequence; // Simply return the sequence
     } else {
-        (sequence._1, fib_seq((sequence._2, sequence._1 + sequence._2), n - 1)._1); // Return the number
+        fib_seq((sequence._2, sequence._1 + sequence._2), n - 1); // Return the number
     }
 
 };
 
 // Calculate the fib number after n times
 int fib(int n) {
-    (int, int) last = fib_seq((0,1), n - 1);
+    (int, int) last = fib_seq((0,1), n);
     last._1 + last._2;
 };
 
-// Calculate the sum of the typle values
+// Calculate the sum of the tuple values
 int sum((int,int) t) {
     t._1 + t._2;
-}
+};
 
 // Our main working function
 int main() {
@@ -35,7 +35,7 @@ int main() {
     // Calculate the sum of f1 + f2
     sum((f1, f2));
 
-}
+};
 
 // Call the main function to test it all
 main();

@@ -57,7 +57,7 @@ enum class AAByteCode : unsigned char {
 	BOR, // (Bitwise Or |, 1 argument [primitive type])
 
 	TUPLECMP, // (Compares two tuples, 0 arguments)
-	TUPLECTOR, // (Construct a tuple, 1+n arguments[tuple count, { primitive type }^n : n = tuple count])
+	TUPLENEW, // (Construct a tuple, 1+n arguments[tuple count, { primitive type }^n : n = tuple count])
 	TUPLEGET, // (Get the value at specified int in a tuple, 1 argument[tuple index])
 
 	ALLOC, // (Heap Allocate memory for a new object, 1 argument[size in bytes]) |Not in use|

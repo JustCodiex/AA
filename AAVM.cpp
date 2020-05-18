@@ -642,7 +642,7 @@ void AAVM::exec(AAProgram::Procedure* procedure, aa::stack<AARuntimeEnvironment>
 			stack.Pop(AAVM_GetArgument(0));
 			AAVM_OPI++;
 			break;
-		case AAByteCode::TUPLECTOR: {
+		case AAByteCode::TUPLENEW: {
 			int count = AAVM_GetArgument(0);
 			aa::array<AAPrimitiveType> types = aa::array<AAPrimitiveType>(count);
 			aa::array<AAVal> values = aa::array<AAVal>(count);

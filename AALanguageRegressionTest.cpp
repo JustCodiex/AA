@@ -580,6 +580,17 @@ void RunEnumTests(AAVM* pAAVM, int& s, int& f) {
 
 }
 
+void RunTupleTests(AAVM* pAAVM, int& s, int& f) {
+
+	// Test a simple tuple creation
+	if (!RunFileTest(pAAVM, L"testing\\tuple1.aa", L"tuple1", 6)) {
+		f++;
+	} else {
+		s++;
+	}
+
+}
+
 bool RunRegressionTests(AAVM* pAAVM) {
 
 	bool cmplog, execlog, stacklog;
@@ -628,6 +639,9 @@ bool RunRegressionTests(AAVM* pAAVM) {
 
 	// Run array tests
 	RunArrayTests(pAAVM, successes, fails);
+
+	// Run tuple tests
+	RunTupleTests(pAAVM, successes, fails);
 
 	// Run class tests
 	RunClassTests(pAAVM, successes, fails);

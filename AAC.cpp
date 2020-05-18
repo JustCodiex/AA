@@ -1123,7 +1123,7 @@ Instructions AAC::HandleTuplePush(CompiledEnviornmentTable& cTable, AA_AST_NODE*
 
 	// Tuple constructor instruction
 	Instruction tupleCtor;
-	tupleCtor.bc = AAByteCode::TUPLECTOR;
+	tupleCtor.bc = AAByteCode::TUPLENEW;
 	tupleCtor.argCount = pNode->expressions.size() + 1; // Note the current limitation of 7 tuple values
 	tupleCtor.argValues[0] = tupleCtor.argCount - 1;
 

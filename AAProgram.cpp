@@ -173,7 +173,7 @@ void AAProgram::LoadOperations(Procedure& proc, aa::bwalker& bw) {
 			bw >> proc.opSequence[i].args[2];
 			bw >> proc.opSequence[i].args[3];
 			break;
-		case AAByteCode::TUPLECTOR: {
+		case AAByteCode::TUPLENEW: {
 			int tupleSize = 0;
 			bw >> tupleSize;
 			proc.opSequence[i].args = new int[tupleSize + 1];
