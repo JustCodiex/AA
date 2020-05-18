@@ -646,7 +646,7 @@ void AAVM::exec(AAProgram::Procedure* procedure, aa::stack<AARuntimeEnvironment>
 			int count = AAVM_GetArgument(0);
 			aa::array<AAPrimitiveType> types = aa::array<AAPrimitiveType>(count);
 			aa::array<AAVal> values = aa::array<AAVal>(count);
-			for (size_t i = 0; i < count; i++) {
+			for (int i = 0; i < count; i++) {
 				types[count - i - 1] = (AAPrimitiveType)AAVM_GetArgument(i + 1);
 				values[count - i - 1] = aa::vm::PopSomething(types[count - i - 1], stack).as_val();
 			}

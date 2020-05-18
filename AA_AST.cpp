@@ -94,12 +94,30 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 	}
 	case AA_PT_NODE_TYPE::fundecleration: {
 		
+		// Create function declaration
 		AA_AST_NODE* funDecl = new AA_AST_NODE(pNode->content, AA_AST_NODE_TYPE::fundecl, pNode->position);
-		funDecl->expressions.push_back(new AA_AST_NODE(pNode->childNodes[AA_NODE_FUNNODE_RETURNTYPE]->content, AA_AST_NODE_TYPE::typeidentifier, pNode->position));
+
+		// Convert return type
+		if (pNode->childNodes[AA_NODE_FUNNODE_RETURNTYPE]->nodeType == AA_PT_NODE_TYPE::tupleval) {
+			AA_AST_NODE* tupleIdentifier = new AA_AST_NODE(L"(<...>)", AA_AST_NODE_TYPE::tupletypeidentifier, pNode->position);
+			for (size_t i = 0; i < pNode->childNodes[AA_NODE_FUNNODE_RETURNTYPE]->childNodes.size(); i++) {
+				tupleIdentifier->expressions.push_back(new AA_AST_NODE( // Add type to tuple type
+					pNode->childNodes[AA_NODE_FUNNODE_RETURNTYPE]->childNodes[i]->content, 
+					AA_AST_NODE_TYPE::typeidentifier, 
+					pNode->childNodes[AA_NODE_FUNNODE_RETURNTYPE]->childNodes[i]->position)
+				);
+			}
+			funDecl->expressions.push_back(tupleIdentifier);
+		} else {
+			funDecl->expressions.push_back(new AA_AST_NODE(pNode->childNodes[AA_NODE_FUNNODE_RETURNTYPE]->content, AA_AST_NODE_TYPE::typeidentifier, pNode->position));
+		}
+
+		// Convert arguments and modifiers
 		funDecl->expressions.push_back(this->AbstractNode(pNode->childNodes[AA_NODE_FUNNODE_ARGLIST]));
 		funDecl->expressions.push_back(this->AbstractNode(pNode->childNodes[AA_NODE_FUNNODE_MODIFIER]));
 
-		if (AA_NODE_FUNNODE_BODY < pNode->childNodes.size()) {
+		// Convert the body (if any)
+		if (aa::parsing::Function_HasBody(pNode)) {
 			funDecl->expressions.push_back(this->AbstractNode(pNode->childNodes[AA_NODE_FUNNODE_BODY]));
 		} else {
 			// print stuff ...
@@ -131,7 +149,19 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 	}
 	case AA_PT_NODE_TYPE::funarg: {
 		AA_AST_NODE* arg = new AA_AST_NODE(pNode->content, AA_AST_NODE_TYPE::funarg, pNode->position);
-		arg->expressions.push_back(new AA_AST_NODE(pNode->childNodes[0]->content, AA_AST_NODE_TYPE::typeidentifier, pNode->childNodes[0]->position));
+		if (pNode->childNodes[0]->nodeType == AA_PT_NODE_TYPE::tupleval) {
+			AA_AST_NODE* tupleIdentifier = new AA_AST_NODE(L"(<...>)", AA_AST_NODE_TYPE::tupletypeidentifier, pNode->position);
+			for (size_t i = 0; i < pNode->childNodes[0]->childNodes.size(); i++) {
+				tupleIdentifier->expressions.push_back(new AA_AST_NODE( // Add type to tuple type
+					pNode->childNodes[0]->childNodes[i]->content,
+					AA_AST_NODE_TYPE::typeidentifier,
+					pNode->childNodes[0]->childNodes[i]->position)
+				);
+			}
+			arg->expressions.push_back(tupleIdentifier);
+		} else {
+			arg->expressions.push_back(new AA_AST_NODE(pNode->childNodes[0]->content, AA_AST_NODE_TYPE::typeidentifier, pNode->childNodes[0]->position));
+		}
 		return arg;
 	}
 	case AA_PT_NODE_TYPE::condition: {

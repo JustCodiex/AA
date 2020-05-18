@@ -92,7 +92,7 @@ std::wstring AAUnparser::Unparse(AA_AST_NODE* pNode) {
 		break;
 	}
 	case AA_AST_NODE_TYPE::fundecl: {
-		std::wstring rtype = pNode->expressions[AA_NODE_FUNNODE_RETURNTYPE]->content;
+		std::wstring rtype = this->Unparse(pNode->expressions[AA_NODE_FUNNODE_RETURNTYPE]);
 		std::wstring body = this->Unparse(pNode->expressions[AA_NODE_FUNNODE_BODY]);
 		std::wstring args = this->Unparse(pNode->expressions[AA_NODE_FUNNODE_ARGLIST]);
 		std::wstring name = pNode->content;
@@ -326,6 +326,9 @@ std::wstring AAUnparser::Unparse(AA_AST_NODE* pNode) {
 		out = this->WriteToString(L"%s %s", ws, pNode->content);
 		break;
 	}
+	case AA_AST_NODE_TYPE::tupletypeidentifier: 
+		out = this->WriteToString(L"%s", this->UnparseTuple(pNode));
+		break;
 	case AA_AST_NODE_TYPE::field:
 	case AA_AST_NODE_TYPE::variable:
 	case AA_AST_NODE_TYPE::floatliteral:

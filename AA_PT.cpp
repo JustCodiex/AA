@@ -261,11 +261,14 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 				nodes[nodeIndex] = this->CreateConstructorDecl(nodes, nodeIndex);
 
 			} else {
-
+				/*
 				AA_PT_NODE* funcallNode = new AA_PT_NODE(nodes[nodeIndex]->position);
 				funcallNode->content = nodes[nodeIndex]->content;
 				funcallNode->nodeType = AA_PT_NODE_TYPE::funccall;
 				funcallNode->childNodes = this->CreateArgumentTree(nodes[nodeIndex + 1]);
+				*/
+
+				AA_PT_NODE* funcallNode = this->HandleFunctionCall(nodes[nodeIndex], nodes[nodeIndex + 1]);
 
 				nodes.erase(nodes.begin() + nodeIndex, nodes.begin() + nodeIndex + 2);
 				nodes.insert(nodes.begin() + nodeIndex, funcallNode);
@@ -571,16 +574,26 @@ void AA_PT::HandleTupleCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) 
 		// Is a var(tuple) decl?
 		if (nodeIndex + 1 < nodes.size() && nodes[nodeIndex + 1]->nodeType == AA_PT_NODE_TYPE::identifier) {
 
-			// Create var declaration
-			AA_PT_NODE* tupleDeclNode = new AA_PT_NODE(AA_PT_NODE_TYPE::vardecleration, L"tupledecl", nodes[nodeIndex]->position);
-			tupleDeclNode->childNodes.push_back(nodes[nodeIndex]);
-			tupleDeclNode->childNodes.push_back(nodes[nodeIndex+1]);
+			// Is it a funcion declaration?
+			if (nodeIndex + 2 < nodes.size() && nodes[nodeIndex + 2]->nodeType == AA_PT_NODE_TYPE::parameterlist) {
 
-			// Assign decleration to current index
-			nodes[nodeIndex] = tupleDeclNode;
+				// Create function declaration from this
+				nodes[nodeIndex] = this->HandleFunctionDecleration(nodes, nodeIndex);
 
-			// Remove identifier
-			nodes.erase(nodes.begin() + nodeIndex + 1);
+			} else {
+
+				// Create var declaration
+				AA_PT_NODE* tupleDeclNode = new AA_PT_NODE(AA_PT_NODE_TYPE::vardecleration, L"tupledecl", nodes[nodeIndex]->position);
+				tupleDeclNode->childNodes.push_back(nodes[nodeIndex]);
+				tupleDeclNode->childNodes.push_back(nodes[nodeIndex + 1]);
+
+				// Assign decleration to current index
+				nodes[nodeIndex] = tupleDeclNode;
+
+				// Remove identifier
+				nodes.erase(nodes.begin() + nodeIndex + 1);
+
+			}
 
 		}
 
@@ -600,7 +613,6 @@ AA_PT_NODE* AA_PT::HandleVariableDecleration(std::vector<AA_PT_NODE*>& nodes, si
 }
 
 AA_PT_NODE* AA_PT::CreateExpressionTree(std::vector<AA_PT_NODE*>& nodes, size_t from) {
-
 	if (nodes[from]->nodeType == AA_PT_NODE_TYPE::expression && nodes[from]->childNodes.size() > 0) {
 
 		if (this->ContainsSeperator(nodes[from], L",")) {
@@ -613,20 +625,32 @@ AA_PT_NODE* AA_PT::CreateExpressionTree(std::vector<AA_PT_NODE*>& nodes, size_t 
 				exp = CreateTree(exp->childNodes, 0); // Create the tree for the sub expression
 			}
 
-			return exp;
+			if (exp->childNodes.size() > 0 && exp->childNodes[0]->nodeType == AA_PT_NODE_TYPE::parameterlist) {
+				return this->HandleFunctionCall(exp, exp->childNodes[0]);
+			} else {
+				return exp;
+			}
 
 		}
 
 	} else if (nodes[from]->nodeType == AA_PT_NODE_TYPE::identifier && nodes[from]->childNodes.size() > 0) {
 	
-		AA_PT_NODE* funcallNode = new AA_PT_NODE(nodes[from]->position);
-		funcallNode->content = nodes[from]->content;
-		funcallNode->nodeType = AA_PT_NODE_TYPE::funccall;
-		funcallNode->childNodes = this->CreateArgumentTree(nodes[from]);
+		//AA_PT_NODE* funcallNode = new AA_PT_NODE(nodes[from]->position);
+		//funcallNode->content = nodes[from]->content;
+		//funcallNode->nodeType = AA_PT_NODE_TYPE::funccall;
+
+		// This is the annoying bug thing in unflatten, for some a good reason we bind the param list to the variable
+		// Meaning we need to look into the first child element first
+		bool useChild = nodes[from]->childNodes.size() > 0 && nodes[from]->childNodes[0]->nodeType == AA_PT_NODE_TYPE::parameterlist;
+		/*if (nodes[from]->childNodes.size() > 0 && nodes[from]->childNodes[0]->nodeType == AA_PT_NODE_TYPE::parameterlist) {
+			funcallNode->childNodes = this->CreateArgumentTree(nodes[from]->childNodes[0]);
+		} else {
+			funcallNode->childNodes = this->CreateArgumentTree(nodes[from]);
+		}
 
 		nodes[from] = funcallNode;
-
-		return funcallNode;
+		*/
+		return nodes[from] = this->HandleFunctionCall(nodes[from], (useChild) ? (nodes[from]->childNodes[0]) : (nodes[from]));
 
 	} else if (nodes[from]->nodeType == AA_PT_NODE_TYPE::accessor) {
 	
@@ -652,6 +676,17 @@ AA_PT_NODE* AA_PT::CreateExpressionTree(std::vector<AA_PT_NODE*>& nodes, size_t 
 
 }
 
+AA_PT_NODE* AA_PT::HandleFunctionCall(AA_PT_NODE* pIdentifierNode, AA_PT_NODE* pParamList) {
+
+	AA_PT_NODE* funcallNode = new AA_PT_NODE(pIdentifierNode->position);
+	funcallNode->content = pIdentifierNode->content;
+	funcallNode->nodeType = AA_PT_NODE_TYPE::funccall;
+	funcallNode->childNodes = this->CreateArgumentTree(pParamList);
+
+	return funcallNode;
+
+}
+
 std::vector<AA_PT_NODE*> AA_PT::CreateDeclerativeBody(std::vector<AA_PT_NODE*> nodes) {
 
 	size_t i = 0;
@@ -666,6 +701,8 @@ std::vector<AA_PT_NODE*> AA_PT::CreateDeclerativeBody(std::vector<AA_PT_NODE*> n
 std::vector<AA_PT_NODE*> AA_PT::CreateArgumentTree(AA_PT_NODE* pExpNode) {
 
 	std::vector<AA_PT_NODE*> nodes;
+
+	
 
 	// Apply syntax rules: TODO: Make all functions in unflattener recursive
 	AA_PT_Unflatten::ApplySyntaxRules(pExpNode->childNodes);
@@ -921,6 +958,20 @@ AA_PT_NODE* AA_PT::CreateArgList(AA_PT_NODE* pExpNode, AA_PT_NODE_TYPE outType, 
 
 				i++;
 				i++;
+
+			}
+		} else if (pExpNode->childNodes[i]->nodeType == AA_PT_NODE_TYPE::expression) {
+			if (i + 1 < pExpNode->childNodes.size() && pExpNode->childNodes[i + 1]->nodeType == AA_PT_NODE_TYPE::identifier) {
+
+				std::wstring argName = pExpNode->childNodes[i + 1]->content;
+				this->HandleTupleCase(pExpNode->childNodes, i);
+
+				AA_PT_NODE* arg = new AA_PT_NODE(pExpNode->childNodes[i-1]->position);
+				arg->nodeType = elementType;
+				arg->content = argName;
+				arg->childNodes.push_back(pExpNode->childNodes[i - 1]->childNodes[0]);
+
+				argList->childNodes.push_back(arg);
 
 			}
 		} else if (pExpNode->childNodes[i]->nodeType == AA_PT_NODE_TYPE::seperator && pExpNode->childNodes[i]->content == L",") {

@@ -66,7 +66,7 @@ public:
 	void Reset(std::vector<AAFuncSignature*> funcs, std::vector<AAClassSignature*> classes, std::vector<AACNamespace*> namespaces);
 
 	/// <summary>
-	/// 
+	/// Get the result of the static analysis in a static environment representation
 	/// </summary>
 	/// <returns></returns>
 	AAStaticEnvironment GetResult() { return m_lastStaticEnv; }
@@ -116,6 +116,8 @@ private:
 
 	bool CanInheritFunction(AAClassSignature* pChildSig, AAFuncSignature* pToInherit, AAC_CompileErrorMessage& compileErr);
 
+	std::wstring TypeIdentifierToString(AA_AST_NODE* pNode, AACNamespace* domain, AAStaticEnvironment& senv);
+
 	AACType* GetTypeFromName(std::wstring tName, AACNamespace* domain, AAStaticEnvironment& senv);
 
 	int GetReturnCount(AAFuncSignature* funcSig);
@@ -134,6 +136,7 @@ private:
 	AAC* m_compilerPointer;
 
 	AAStaticEnvironment m_lastStaticEnv;
+	AADynamicTypeEnvironment* m_dynamicTypeEnvironment;
 
 	std::vector<AA_AST*>* m_workTrees;
 	size_t m_currentTreeIndex;

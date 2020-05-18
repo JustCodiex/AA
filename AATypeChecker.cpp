@@ -7,13 +7,16 @@
 #define AATC_W_ERROR(__msg, __pos, __err) this->SetError(AATypeChecker::Error(__msg, __err, __pos)); return AACType::ErrorType
 #define AATC_ERROR(__msg, __pos) AATC_W_ERROR((__msg), (__pos), (aa::compiler_err::C_Unclassified_Type))
 
-AATypeChecker::AATypeChecker(AA_AST* pTree, AAStaticEnvironment* senv) {
+AATypeChecker::AATypeChecker(AA_AST* pTree, AAStaticEnvironment* pStaticEnvionment, AADynamicTypeEnvironment * pDynamicEnvironment) {
 	
 	// Set the tree to work with
 	m_currentTree = pTree;
 
-	// Set environment
-	m_senv = senv;
+	// Set the static environment
+	m_senv = pStaticEnvionment;
+
+	// Set the dynamic environment
+	m_dynamicTypeEnvironment = pDynamicEnvironment;
 
 	// We dont have any error to start with
 	m_hasEnyErr = false;
@@ -23,6 +26,9 @@ AATypeChecker::AATypeChecker(AA_AST* pTree, AAStaticEnvironment* senv) {
 
 	// Set the local statement namespace to 0
 	m_localStatementNamespace = 0;
+
+	// Define the typemapper
+	m_typeMappingLambda = [this](std::wstring nodeType) { return this->FindType(nodeType); };
 
 }
 
@@ -164,6 +170,10 @@ AACType* AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 			return t;
 		}
 	}
+	case AA_AST_NODE_TYPE::tupletypeidentifier: {
+		std::wstring formalTuple = aa::type::FormalizeTuple(node, m_typeMappingLambda);
+		return this->m_dynamicTypeEnvironment->FindType(formalTuple, m_typeMappingLambda);
+	}
 	case AA_AST_NODE_TYPE::tupleval: {
 		aa::list<AACType*> alltypes;
 		for (auto& sub : node->expressions) {
@@ -175,15 +185,21 @@ AACType* AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 				// TODO: Error
 			}
 		}
-		AACType* pTupleType = this->m_dynamicTypes.FindType(this->FormalizeTuple(alltypes), this); // TODO: Add if not found
-		return pTupleType;
+		return this->m_dynamicTypeEnvironment->FindType(aa::type::FormalizeTuple(alltypes), m_typeMappingLambda); // TODO: Add if not found
 	}
 	case AA_AST_NODE_TYPE::funarg: {
-		AACType* t = this->FindType(node->expressions[0]->content);
-		if (t == AACType::ErrorType) {
-			AATC_W_ERROR("Undefined type  '" + string_cast(node->expressions[0]->content) + "' in argument", node->position, aa::compiler_err::C_Invalid_Type);
+		if (node->expressions[0]->type == AA_AST_NODE_TYPE::typeidentifier) {
+			AACType* t = this->FindType(node->expressions[0]->content);
+			if (t == AACType::ErrorType) {
+				AATC_W_ERROR("Undefined type  '" + string_cast(node->expressions[0]->content) + "' in argument", node->position, aa::compiler_err::C_Invalid_Type);
+			} else {
+				return t;
+			}
+		} else if (node->expressions[0]->type == AA_AST_NODE_TYPE::tupletypeidentifier) {
+			return this->TypeCheckNode(node->expressions[0]);
 		} else {
-			return t;
+			printf("[AATypeChecker.Cpp@%i] Undefined node type in function argument", __LINE__);
+			break;
 		}
 	}
 	case AA_AST_NODE_TYPE::ifstatement:
@@ -469,14 +485,14 @@ AACType* AATypeChecker::TypeCheckBinaryIndex(AA_AST_NODE* pOpNode, AA_AST_NODE* 
 AACType* AATypeChecker::TypeCheckBinaryTupleDecl(AA_AST_NODE* pOpNode, AA_AST_NODE* left, AA_AST_NODE* right) {
 
 	// Formalize the tuple name
-	std::wstring tupleFormalTypename = this->FormalizeTuple(left);
+	std::wstring tupleFormalTypename = aa::type::FormalizeTuple(left, m_typeMappingLambda);
 
 	// Find the left type (in case it was declared before)
-	AACType* leftType = this->m_dynamicTypes.FindType(tupleFormalTypename, this);
+	AACType* leftType = this->m_dynamicTypeEnvironment->FindType(tupleFormalTypename, m_typeMappingLambda);
 
 	// Register the tuple if it was not found
 	if (leftType == AACType::ErrorType) {
-		leftType = this->m_dynamicTypes.AddType(tupleFormalTypename, this); // Register the type
+		leftType = this->m_dynamicTypeEnvironment->AddType(tupleFormalTypename, m_typeMappingLambda); // Register the type
 	}
 
 	// Set the type of the left side
@@ -828,7 +844,7 @@ AACType* AATypeChecker::TypeCheckCtorAndFindBestMatch(AACNamespace* pDomain, AA_
 AACType* AATypeChecker::TypeCheckFuncDecl(AA_AST_NODE* pDeclNode) {
 
 	// Do we have a body that also needs type verification/checking?
-	if (pDeclNode->expressions.size() >= AA_NODE_FUNNODE_BODY) {
+	if (aa::parsing::Function_HasBody(pDeclNode)) {
 		
 		// Make a copy of the current variable environment
 		AAVarTypeEnv vtenv = AAVarTypeEnv(m_vtenv);
@@ -858,7 +874,7 @@ AACType* AATypeChecker::TypeCheckFuncDecl(AA_AST_NODE* pDeclNode) {
 		}
 
 		// Type verify body
-		this->TypeCheckNode(pDeclNode->expressions[AA_NODE_FUNNODE_BODY]);
+		AACType* pBodyType = this->TypeCheckNode(pDeclNode->expressions[AA_NODE_FUNNODE_BODY]);
 
 		// Reset variable types
 		m_vtenv = vtenv;
@@ -866,7 +882,10 @@ AACType* AATypeChecker::TypeCheckFuncDecl(AA_AST_NODE* pDeclNode) {
 	}
 
 	// Return the type the function returns
-	return this->TypeCheckNode(pDeclNode->expressions[AA_NODE_FUNNODE_RETURNTYPE]);
+	AACType* returnType = this->TypeCheckNode(pDeclNode->expressions[AA_NODE_FUNNODE_RETURNTYPE]);
+
+	// Return that
+	return returnType;
 
 }
 
@@ -1225,7 +1244,7 @@ AACType* AATypeChecker::TypeOf(AAId var) {
 
 bool AATypeChecker::IsValidType(AACType* t) {
 	if (!m_senv->availableTypes.Contains(t)) {
-		return t == AACType::Void;
+		return t == AACType::Void || m_dynamicTypeEnvironment->IsValidDynamicType(t);
 	} else {
 		return true;
 	}	
@@ -1403,104 +1422,5 @@ AACNamespace* AATypeChecker::FindNamespaceFromFlattenedPath(AACNamespace* root, 
 		}
 
 	}
-
-}
-
-std::wstring AATypeChecker::FormalizeTuple(AA_AST_NODE* pTupleNode) {
-
-	// String to build
-	std::wstringstream wss;
-
-	// Add opener
-	wss << L"(";
-
-	// Loop through all types
-	for (size_t i = 0; i < pTupleNode->expressions.size(); i++) {
-		wss << this->FindType(pTupleNode->expressions[i]->content)->GetFullname();
-		if (i < pTupleNode->expressions.size()-1) {
-			wss << ",";
-		}
-	}
-
-	// Add ender
-	wss << L")";
-
-	// Return the string
-	return wss.str();
-
-}
-
-std::wstring AATypeChecker::FormalizeTuple(aa::list<AACType*> types) {
-
-	// String to build
-	std::wstringstream wss;
-
-	// Add opener
-	wss << L"(";
-
-	// Loop through all types
-	for (size_t i = 0; i < types.Size(); i++) {
-		wss << types.At(i)->GetFullname();
-		if (i < types.Size() - 1) {
-			wss << ",";
-		}
-	}
-
-	// Add ender
-	wss << L")";
-
-	// Return the string
-	return wss.str();
-
-}
-
-AACType* AATypeChecker::DynamicTypeSet::FindType(std::wstring format, AATypeChecker* pTypeChecker) {
-	
-	if (this->registeredTypes.find(format) != this->registeredTypes.end()) {
-		return this->registeredTypes[format];
-	}
-
-	return AACType::ErrorType;
-
-}
-
-AACType* AATypeChecker::DynamicTypeSet::AddType(std::wstring format, AATypeChecker* pTypeChecker) {
-	
-	aa::list<AACType*> types;
-
-	if (format[0] == '(') { // tuple
-		this->registeredTypes[format] = new AACType(format, this->UnpackTuple(format, pTypeChecker));
-		return this->registeredTypes[format];
-	} else { // Arrays
-		_ASSERT(false); // Not implemented
-	}
-
-	return AACType::ErrorType;
-
-}
-
-aa::list<AACType*> AATypeChecker::DynamicTypeSet::UnpackTuple(std::wstring format, AATypeChecker* pTypeChecker) {
-
-	aa::list<AACType*> types;
-
-	format = format.substr(1);
-	while (format.length() > 0) {
-		size_t i = 0;
-		if ((i = format.find_first_of(',')) == std::wstring::npos) {
-			if ((i = format.find_first_of(')')) == std::wstring::npos) {
-				break;
-			}
-		}
-		AACType* pType = pTypeChecker->FindType(format.substr(0, i));
-		if (pType != AACType::ErrorType) {
-			types.Add(pType);
-		} else {
-			wprintf(L"Unknown type found at tuple type argument %i, tuple = ('%s')", ((int)types.Size() + 1), format.c_str());
-			return aa::list<AACType*>();
-		}
-		format = format.substr(i + 1);
-	}
-
-	return types;
 
 }

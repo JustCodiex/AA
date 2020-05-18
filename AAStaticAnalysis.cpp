@@ -40,6 +40,9 @@ AAStaticAnalysis::AAStaticAnalysis(AAC* pCompiler) {
 	// Set type index to 0
 	this->m_typeIndex = 0;
 
+	// Create the dynamic type environment
+	this->m_dynamicTypeEnvironment = new AADynamicTypeEnvironment;
+
 }
 
 void AAStaticAnalysis::Reset(std::vector<AAFuncSignature*> funcs, std::vector<AAClassSignature*> classes, std::vector<AACNamespace*> namespaces) {
@@ -61,6 +64,9 @@ void AAStaticAnalysis::Reset(std::vector<AAFuncSignature*> funcs, std::vector<AA
 
 	// Reset the type index
 	m_typeIndex = 0;
+
+	// Resets the dynamic environment
+	m_dynamicTypeEnvironment->WipeClean();
 
 }
 
@@ -150,7 +156,7 @@ AAC_CompileErrorMessage AAStaticAnalysis::RunStaticAnalysis(std::vector<AA_AST*>
 bool AAStaticAnalysis::RunTypecheckAnalysis(AA_AST* pTree, AAStaticEnvironment& senv, AATypeChecker::Error& typeError) {
 
 	// Run a complete type-check on the tree
-	AATypeChecker checker = AATypeChecker(pTree, &senv);
+	AATypeChecker checker = AATypeChecker(pTree, &senv, this->m_dynamicTypeEnvironment);
 
 	// Run type checker
 	if (!checker.TypeCheck()) {
@@ -890,7 +896,7 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterFunction(AA_AST_NODE* pNode, A
 
 	// Set basic function data
 	sig->name = pNode->content;
-	sig->returnType = this->GetTypeFromName(pNode->expressions[AA_NODE_FUNNODE_RETURNTYPE]->content, domain, senv);
+	sig->returnType = this->GetTypeFromName(this->TypeIdentifierToString(pNode->expressions[AA_NODE_FUNNODE_RETURNTYPE], domain, senv), domain, senv);
 	sig->node = pNode;
 	sig->isCompilerGenerated = pNode->HasTag("__ctorgen");
 
@@ -907,7 +913,7 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterFunction(AA_AST_NODE* pNode, A
 
 		AAFuncParam param;
 		param.identifier = arg->content;
-		param.type = this->GetTypeFromName(arg->expressions[0]->content, domain, senv);
+		param.type = this->GetTypeFromName(this->TypeIdentifierToString(arg->expressions[0], domain, senv), domain, senv);
 
 		// Did the function return the error type?
 		if (param.type == AACType::ErrorType) {
@@ -1155,11 +1161,37 @@ int AAStaticAnalysis::VerifyFunctionControlPath(AA_AST_NODE* pNode, AAStaticEnvi
 
 }
 
+std::wstring AAStaticAnalysis::TypeIdentifierToString(AA_AST_NODE* pNode, AACNamespace* domain, AAStaticEnvironment& senv) {
+
+	if (pNode->type == AA_AST_NODE_TYPE::typeidentifier) {
+		return pNode->content;
+	} else if (pNode->type == AA_AST_NODE_TYPE::tupletypeidentifier) {
+		auto typeMapper = [this, domain, &senv](std::wstring name) { return this->GetTypeFromName(name, domain, senv); };
+		std::wstring formalTupleTypeName = aa::type::FormalizeTuple(pNode, typeMapper);
+		this->m_dynamicTypeEnvironment->AddTypeIfNotFound(formalTupleTypeName, typeMapper);
+		return formalTupleTypeName;
+	}
+
+	return L"";
+
+}
+
 AACType* AAStaticAnalysis::GetTypeFromName(std::wstring tName, AACNamespace* domain, AAStaticEnvironment& senv) {
+
+	// If the typename is not given, we definately can't find it
+	if (tName.compare(L"") == 0) {
+		return AACType::ErrorType;
+	}
 
 	// If the type is void, simply return that
 	if (tName.compare(L"void") == 0) {
 		return AACType::Void;
+	}
+
+	// Lookupp in dynamic type environment
+	AACType* dynamicType = this->m_dynamicTypeEnvironment->FindType(tName, [this, domain, &senv](std::wstring ws) { return this->GetTypeFromName(ws, domain, senv); });
+	if (dynamicType != AACType::ErrorType) {
+		return dynamicType;
 	}
 
 	// Index of matching type

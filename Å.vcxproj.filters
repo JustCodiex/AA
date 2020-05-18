@@ -103,6 +103,12 @@
     <Filter Include="Source Files\analysis\verifier">
       <UniqueIdentifier>{a8b48dbf-aa12-4748-b6b8-3eebc02ed362}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\analysis\type">
+      <UniqueIdentifier>{3a20b2f4-b4e3-4724-84e6-6fa2bbdfd840}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\analysis\type">
+      <UniqueIdentifier>{90e991be-4646-4610-92e6-71d1946343b2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -207,16 +213,10 @@
     <ClCompile Include="AAVars.cpp">
       <Filter>Source Files\analysis</Filter>
     </ClCompile>
-    <ClCompile Include="AATypeChecker.cpp">
-      <Filter>Source Files\analysis</Filter>
-    </ClCompile>
     <ClCompile Include="AAStaticAnalysis.cpp">
       <Filter>Source Files\analysis</Filter>
     </ClCompile>
     <ClCompile Include="AAModifier.cpp">
-      <Filter>Source Files\analysis</Filter>
-    </ClCompile>
-    <ClCompile Include="AACType.cpp">
       <Filter>Source Files\analysis</Filter>
     </ClCompile>
     <ClCompile Include="AACNamespace.cpp">
@@ -233,6 +233,15 @@
     </ClCompile>
     <ClCompile Include="AATuple.cpp">
       <Filter>Source Files\VM</Filter>
+    </ClCompile>
+    <ClCompile Include="AATypeChecker.cpp">
+      <Filter>Source Files\analysis\type</Filter>
+    </ClCompile>
+    <ClCompile Include="AACType.cpp">
+      <Filter>Source Files\analysis\type</Filter>
+    </ClCompile>
+    <ClCompile Include="AADynamicTypeEnvironment.cpp">
+      <Filter>Source Files\analysis\type</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -386,9 +395,6 @@
     <ClInclude Include="AAVars.h">
       <Filter>Header Files\analysis</Filter>
     </ClInclude>
-    <ClInclude Include="AATypeChecker.h">
-      <Filter>Header Files\analysis</Filter>
-    </ClInclude>
     <ClInclude Include="AAStaticAnalysis.h">
       <Filter>Header Files\analysis</Filter>
     </ClInclude>
@@ -396,9 +402,6 @@
       <Filter>Header Files\analysis</Filter>
     </ClInclude>
     <ClInclude Include="AACNamespace.h">
-      <Filter>Header Files\analysis</Filter>
-    </ClInclude>
-    <ClInclude Include="AACType.h">
       <Filter>Header Files\analysis</Filter>
     </ClInclude>
     <ClInclude Include="AAFuncSignature.h">
@@ -421,6 +424,15 @@
     </ClInclude>
     <ClInclude Include="array.h">
       <Filter>Header Files\util</Filter>
+    </ClInclude>
+    <ClInclude Include="AATypeChecker.h">
+      <Filter>Header Files\analysis\type</Filter>
+    </ClInclude>
+    <ClInclude Include="AACType.h">
+      <Filter>Header Files\analysis\type</Filter>
+    </ClInclude>
+    <ClInclude Include="AADynamicTypeEnviornment.h">
+      <Filter>Header Files\analysis\type</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

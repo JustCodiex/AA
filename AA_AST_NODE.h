@@ -88,6 +88,7 @@ enum class AA_AST_NODE_TYPE {
 	tupleval, // tuple value eg. (0,1,2,3,4)
 	tuplevardecl, // tuple definition eg. (int, int, int, int, int)
 	tupleaccess,
+	tupletypeidentifier, // like tuple var decl but for use in typeidentifer cases
 
 };
 

@@ -1,14 +1,41 @@
-// The main function
-// Will do the tuple stuff in a basic format
-int main() {
+// Calculate fib sequence
+(int, int) fib_seq((int, int) sequence, int n) {
 
-    // Declare the tuple, t
-    (int, int) t = (2,3);
-
-    // Return the tuple values timed with each other
-    t._1 * t._2;
+    // If n == 0, we've reached the end of the seuqnce we're to calculate
+    if (n == 0) {
+        sequence; // Simply return the sequence
+    } else {
+        fib_seq((sequence._2, sequence._1 + sequence._2), n - 1); // Return the number
+    }
 
 };
 
-// Call the main function
+// Calculate the fib number after n times
+int fib(int n) {
+    (int, int) last = fib_seq((0,1), n);
+    last._1 + last._2;
+};
+
+// Calculate the sum of the tuple values
+int sum((int,int) t) {
+    t._1 + t._2;
+};
+
+// Our main working function
+int main() {
+
+    // Calculate the fib number for 4
+    int f1 = fib(4);
+    println(f1);
+
+    // Calculate the fib number for 12
+    int f2 = fib(12);
+    println(f2);
+
+    // Calculate the sum of f1 + f2
+    sum((f1, f2));
+
+};
+
+// Call the main function to test it all
 main();

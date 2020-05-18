@@ -162,6 +162,7 @@
     <ClCompile Include="AAControlpath.cpp" />
     <ClCompile Include="AACType.cpp" />
     <ClCompile Include="AADecompiler.cpp" />
+    <ClCompile Include="AADynamicTypeEnvironment.cpp" />
     <ClCompile Include="AAExecute.cpp" />
     <ClCompile Include="AAFileStream.cpp" />
     <ClCompile Include="AAGarbageCollector.cpp" />
@@ -201,6 +202,7 @@
     <ClInclude Include="AAByteType.h" />
     <ClInclude Include="AAControlpath.h" />
     <ClInclude Include="AADecompiler.h" />
+    <ClInclude Include="AADynamicTypeEnviornment.h" />
     <ClInclude Include="AAExecute.h" />
     <ClInclude Include="AAIntrPtr.h" />
     <ClInclude Include="AAModifier.h" />

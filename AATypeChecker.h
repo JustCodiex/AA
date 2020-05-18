@@ -1,8 +1,6 @@
 #pragma once
+#include "AADynamicTypeEnviornment.h"
 #include "AAClassCompiler.h"
-#include "AACNamespace.h"
-#include "AA_AST.h"
-#include "list.h"
 #include <vector>
 #include <map>
 
@@ -13,26 +11,6 @@ struct AAStaticEnvironment;
 struct AACNamespace;
 
 class AATypeChecker {
-
-private:
-
-	/// <summary>
-	/// Container for keeping track of dynamically found types (tuples, arrays, and generics [anything using the encapsulated types])
-	/// </summary>
-	struct DynamicTypeSet {
-
-		/// <summary>
-		/// Map from standardized type format to the registered type
-		/// </summary>
-		std::map<std::wstring, AACType*> registeredTypes;
-
-		AACType* FindType(std::wstring format, AATypeChecker* pTypeChecker);
-
-		AACType* AddType(std::wstring format, AATypeChecker* pTypeChecker);
-
-		aa::list<AACType*> UnpackTuple(std::wstring format, AATypeChecker* pTypeChecker);
-
-	};
 
 public:
 
@@ -62,13 +40,33 @@ public:
 
 public:
 
-	AATypeChecker(AA_AST* pTree, AAStaticEnvironment* senv);
+	AATypeChecker(AA_AST* pTree, AAStaticEnvironment* pStaticEnvionment, AADynamicTypeEnvironment* pDynamicEnvironment);
 
-	bool TypeCheck(); // Run a type-check on the tree
+	/// <summary>
+	/// Run a type-check on the tree given in the constructor
+	/// </summary>
+	/// <returns>True if typecheck generated a valid type. False if an unknown or mismatch in type was found</returns>
+	bool TypeCheck();
 
+	/// <summary>
+	/// Check the supplied node for its static type
+	/// </summary>
+	/// <param name="node">The AST node to typecheck</param>
+	/// <returns>Pointer to type that was found</returns>
 	AACType* TypeCheckNode(AA_AST_NODE* node);
 
+	/// <summary>
+	/// Retrieve the error message that was generated during the typecheck (Call TypeCheck to generate and determine if there was an error)
+	/// </summary>
+	/// <returns>The last error message that was generated</returns>
 	AATypeChecker::Error GetErrorMessage() { return m_errMsg; }
+
+	/// <summary>
+	/// Get the type in the current environment from the string representation
+	/// </summary>
+	/// <param name="t">The string representation of the type</param>
+	/// <returns>The found type. ErrorType if none was found.</returns>
+	AACType* FindType(std::wstring t);
 
 private:
 
@@ -122,17 +120,11 @@ private:
 	bool IsValidType(AACType* t);
 	bool IsNumericType(AACType* t);
 
-	AACType* FindType(std::wstring t);
-
 	bool IsTypeMatchingFunction(AAFuncSignature* sig, AA_AST_NODE* pCallNode);
 	bool IsMatchingTypes(AACType* tCompare, AACType* tExpected);
 
 	AAClassSignature* FindCompiledClassOfType(AACType* type);
 	bool FindCompiledClassOperation(AAClassSignature* cc, std::wstring operatorType, AACType* right, AAClassOperatorSignature& op);
-
-	std::wstring FormalizeTuple(AA_AST_NODE* pTupleNode);
-	std::wstring FormalizeTuple(aa::list<AACType*> types);
-	//std::wstring FormalizeArray(AA_AST_NODE* pArrayNode);
 
 	std::wstring FlattenNamespacePath(AA_AST_NODE* pNode);
 	AACNamespace* FindNamespaceFromFlattenedPath(AACNamespace* root, std::wstring path);
@@ -163,7 +155,12 @@ private:
 	// The current, local, namespace for a statement. Warning! Must be properly cleared after use
 	AACNamespace* m_localStatementNamespace;
 
-	// All dynamically found types
-	DynamicTypeSet m_dynamicTypes;
+	// The dynamic type environment
+	AADynamicTypeEnvironment* m_dynamicTypeEnvironment;
+
+	// The type-fetcher lambda for external mapping use
+	std::function<AACType* (std::wstring)> m_typeMappingLambda;
+
+	friend class AADynamicTypeEnvironment;
 
 };
