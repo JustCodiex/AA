@@ -589,6 +589,13 @@ void RunTupleTests(AAVM* pAAVM, int& s, int& f) {
 		s++;
 	}
 
+	// Test a tuple variant of generating fibonacci numbers
+	if (!RunFileTest(pAAVM, L"testing\\tuple2.aa", L"tuple2", 385)) {
+		f++;
+	} else {
+		s++;
+	}
+
 }
 
 bool RunRegressionTests(AAVM* pAAVM) {

@@ -1,0 +1,90 @@
+START PROCEDURE 0 (<GlobalScope>):
+OPERATIONS:
+	[0000]  CALL, 4, 0                      ;; Calls: main
+END PROCEDURE;
+
+START PROCEDURE 1 (fib_seq):
+CONSTANTS:	[I32, 0][I32, 1]
+IDENTIFIERS:
+	n;	sequence;
+OPERATIONS:
+	[0000]  SETVAR, 0, 6                    ;; primitive: int32 [4 bytes]
+	[0001]  SETVAR, 1, 16                   ;; primitive: tuple [8 bytes]
+	[0002]  GETVAR, 0                       
+	[0003]  PUSHC, 0                        
+	[0004]  CMPE, 6                         ;; primitive: int32 [4 bytes]
+	[0005]  JMPF, 2                         
+	[0006]  GETVAR, 1                       
+	[0007]  JMP, 12                         
+	[0008]  GETVAR, 1                       
+	[0009]  TUPLEGET, 1                     
+	[0010]  GETVAR, 1                       
+	[0011]  TUPLEGET, 0                     
+	[0012]  GETVAR, 1                       
+	[0013]  TUPLEGET, 1                     
+	[0014]  ADD, 6                          ;; primitive: int32 [4 bytes]
+	[0015]  TUPLENEW, 2, 6, 6               
+	[0016]  GETVAR, 0                       
+	[0017]  PUSHC, 1                        
+	[0018]  SUB, 6                          ;; primitive: int32 [4 bytes]
+	[0019]  CALL, 1, 2                      ;; Calls: fib_seq
+	[0020]  RET                             
+END PROCEDURE;
+
+START PROCEDURE 2 (fib):
+CONSTANTS:	[I32, 0][I32, 1]
+IDENTIFIERS:
+	n;	1$[last];
+OPERATIONS:
+	[0000]  SETVAR, 0, 6                    ;; primitive: int32 [4 bytes]
+	[0001]  PUSHC, 0                        
+	[0002]  PUSHC, 1                        
+	[0003]  TUPLENEW, 2, 6, 6               
+	[0004]  GETVAR, 0                       
+	[0005]  CALL, 1, 2                      ;; Calls: fib_seq
+	[0006]  SETVAR, 1, 16                   ;; primitive: tuple [8 bytes]
+	[0007]  GETVAR, 1                       
+	[0008]  TUPLEGET, 0                     
+	[0009]  GETVAR, 1                       
+	[0010]  TUPLEGET, 1                     
+	[0011]  ADD, 6                          ;; primitive: int32 [4 bytes]
+	[0012]  RET                             
+END PROCEDURE;
+
+START PROCEDURE 3 (sum):
+IDENTIFIERS:
+	t;
+OPERATIONS:
+	[0000]  SETVAR, 0, 16                   ;; primitive: tuple [8 bytes]
+	[0001]  GETVAR, 0                       
+	[0002]  TUPLEGET, 0                     
+	[0003]  GETVAR, 0                       
+	[0004]  TUPLEGET, 1                     
+	[0005]  ADD, 6                          ;; primitive: int32 [4 bytes]
+	[0006]  RET                             
+END PROCEDURE;
+
+START PROCEDURE 4 (main):
+CONSTANTS:	[I32, 4][I32, 12]
+IDENTIFIERS:
+	0$[f1];	1$[f2];
+OPERATIONS:
+	[0000]  PUSHC, 0                        
+	[0001]  CALL, 2, 1                      ;; Calls: fib
+	[0002]  SETVAR, 0, 6                    ;; primitive: int32 [4 bytes]
+	[0003]  GETVAR, 0                       
+	[0004]  WRAP, 6                         
+	[0005]  XCALL, 0, 1                     ;; Calls: println
+	[0006]  PUSHC, 1                        
+	[0007]  CALL, 2, 1                      ;; Calls: fib
+	[0008]  SETVAR, 1, 6                    ;; primitive: int32 [4 bytes]
+	[0009]  GETVAR, 1                       
+	[0010]  WRAP, 6                         
+	[0011]  XCALL, 0, 1                     ;; Calls: println
+	[0012]  GETVAR, 0                       
+	[0013]  GETVAR, 1                       
+	[0014]  TUPLENEW, 2, 6, 6               
+	[0015]  CALL, 3, 1                      ;; Calls: sum
+	[0016]  RET                             
+END PROCEDURE;
+

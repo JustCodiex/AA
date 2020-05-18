@@ -98,9 +98,19 @@ bool AADynamicTypeEnvironment::IsValidDynamicType(AACType* pType) {
 
 void AADynamicTypeEnvironment::WipeClean() {
 
+	// Make sure we have content to clean (This is called even when empty)
 	if (m_registeredTypes.size() > 0) {
 
-		printf("");
+		// For all registered types
+		for (auto& typePair : m_registeredTypes) {
+			
+			// We delete this dynamic type ==> So it doesn't hang around
+			delete typePair.second;
+
+		}
+
+		// Clear the type map
+		m_registeredTypes.clear();
 
 	}
 
