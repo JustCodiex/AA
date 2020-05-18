@@ -1,9 +1,8 @@
 #pragma once
-#include "AAPrimitiveType.h"
+#include "AATuple.h"
 #include "AA_literals.h"
 #include "AAIntrPtr.h"
 #include "AAMemory.h"
-#include "AAVal.h"
 
 class AAStackValue {
 
@@ -12,6 +11,7 @@ public:
 	AAStackValue();
 
 	AAStackValue(AAMemoryPtr ptr);
+	AAStackValue(AATuple tuple);
 	AAStackValue(AAIntPtr iPtr);
 
 	AAStackValue(signed char b);
@@ -36,7 +36,7 @@ public:
 	AAStackValue(AA_Literal lit);
 	AAStackValue(AAPrimitiveType type, AAVal val);
 
-	AAPrimitiveType get_type();
+	AAPrimitiveType get_type() const;
 
 	std::wstring ToString();
 
@@ -45,9 +45,9 @@ public:
 		return m_val.Raw<T>();
 	}
 
-	bool is_string();
+	bool is_string() const;
 
-	bool is_nil();
+	bool is_nil() const;
 
 	bool is_same_value(const AAStackValue& value) const;
 

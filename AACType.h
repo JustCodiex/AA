@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include "list.h"
 
 struct AACNamespace;
 struct AAClassSignature;
@@ -13,11 +14,13 @@ struct AACType {
 	std::wstring name;
 	bool isRefType;
 	bool isArrayType;
+	bool isTupleType;
 	bool isEnum;
 	bool isVMType;
-	AACType* encapsulatedType;
 	AAClassSignature* classSignature;
 	AACEnumSignature* enumSignature;
+
+	aa::list<AACType*> encapsulatedTypes;
 
 	uint32_t constantID; // The unique ID associated with the type
 
@@ -25,6 +28,7 @@ struct AACType {
 	AACType(std::wstring name);
 	AACType(AAClassSignature* classSignature);
 	AACType(AACEnumSignature* enumSignature);
+	AACType(std::wstring name, aa::list<AACType*> tupleSignature); // sets isTupleType to true!
 
 	/// <summary>
 	/// 
@@ -43,6 +47,19 @@ struct AACType {
 	/// </summary>
 	/// <returns></returns>
 	std::wstring GetFullname(); // Definition in AACNamespace.cpp
+
+	/// <summary>
+	/// Get the first encapsulated type
+	/// </summary>
+	/// <returns>Returns the first encapsulated type (ErrorType if none)</returns>
+	AACType* GetEncapsulatedType();
+
+	/// <summary>
+	/// Get the n'th encapsulated type
+	/// </summary>
+	/// <param name="index">The index of the type</param>
+	/// <returns></returns>
+	AACType* GetEncapsulatedType(size_t index);
 
 	bool operator==(AACType other) {
 		bool n = other.name.compare(this->name) == 0;
@@ -88,9 +105,34 @@ struct AACType {
 struct AACTypeDef {
 
 	/// <summary>
-	/// Integer (32-bit AKA 4 byte) primitive type
+	/// Signed Short (16-bit AKA 2 byte) primitive type
+	/// </summary>
+	static AACType* Int16;
+
+	/// <summary>
+	/// Signed Integer (32-bit AKA 4 byte) primitive type
 	/// </summary>
 	static AACType* Int32;
+
+	/// <summary>
+	/// Signed Long (64-bit AKA 8 byte) primitive type
+	/// </summary>
+	static AACType* Int64;
+
+	/// <summary>
+	/// Unsigned Integer (16-bit AKA 2 byte) primitive type
+	/// </summary>
+	static AACType* UInt16;
+
+	/// <summary>
+	/// Unsigned Integer (32-bit AKA 4 byte) primitive type
+	/// </summary>
+	static AACType* UInt32;
+
+	/// <summary>
+	/// Unsigned Integer (64-bit AKA 8 byte) primitive type
+	/// </summary>
+	static AACType* UInt64;
 
 	/// <summary>
 	/// Boolean type
@@ -98,12 +140,27 @@ struct AACTypeDef {
 	static AACType* Bool;
 
 	/// <summary>
+	/// Unsigned Byte (8-bit AKA 1 byte) primitive type
+	/// </summary>
+	static AACType* Byte;
+
+	/// <summary>
+	/// Signed Byte (8-bit AKA 1 byte) primitive type
+	/// </summary>
+	static AACType* SByte;
+
+	/// <summary>
 	/// Float (32-bit AKA 4 byte) primitive type
 	/// </summary>
 	static AACType* Float32;
 
 	/// <summary>
-	/// Unsigned char, 8-bit (1 byte)
+	/// Double (64-bit AKA 8 byte) primitive type
+	/// </summary>
+	static AACType* Float64;
+
+	/// <summary>
+	/// Unsigned wide char, 16-bit (2 byte)
 	/// </summary>
 	static AACType* Char;
 

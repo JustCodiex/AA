@@ -3,6 +3,7 @@
 #include "AACType.h"
 #include "AAIntrPtr.h"
 #include "AACEnum.h"
+#include "AATuple.h"
 
 namespace aa {
 
@@ -32,6 +33,8 @@ namespace aa {
 			case AAPrimitiveType::string:
 			case AAPrimitiveType::refptr:
 				return sizeof(AAMemoryPtr);
+			case AAPrimitiveType::tuple:
+				return sizeof(AATuple);
 			default:
 				return 0;
 			}
@@ -40,12 +43,28 @@ namespace aa {
 		const AAPrimitiveType runtimetype_from_statictype(AACType* pStaticType) {
 			if (pStaticType == AACTypeDef::Int32) {
 				return AAPrimitiveType::int32;
+			} else if (pStaticType == AACTypeDef::UInt32) {
+				return AAPrimitiveType::uint32;
+			} else if (pStaticType == AACTypeDef::Int16) {
+				return AAPrimitiveType::int16;
+			} else if (pStaticType == AACTypeDef::UInt16) {
+				return AAPrimitiveType::uint16;
+			} else if (pStaticType == AACTypeDef::Int64) {
+				return AAPrimitiveType::int64;
+			} else if (pStaticType == AACTypeDef::UInt64) {
+				return AAPrimitiveType::uint64;
+			} else if (pStaticType == AACTypeDef::SByte) {
+				return AAPrimitiveType::sbyte;
+			} else if (pStaticType == AACTypeDef::Byte) {
+				return AAPrimitiveType::byte;
 			} else if (pStaticType == AACTypeDef::Bool) {
 				return AAPrimitiveType::boolean;
 			} else if (pStaticType == AACTypeDef::Char) {
 				return AAPrimitiveType::wchar;
 			} else if (pStaticType == AACTypeDef::Float32) {
 				return AAPrimitiveType::real32;
+			} else if (pStaticType == AACTypeDef::Float64) {
+				return AAPrimitiveType::real64;
 			} else if (pStaticType == AACTypeDef::String) {
 				return AAPrimitiveType::string;
 			} else if (pStaticType == AACTypeDef::IntPtr) {
@@ -60,6 +79,8 @@ namespace aa {
 					default:
 						return AAPrimitiveType::int32;
 					}
+				} else if (pStaticType->isTupleType) {
+					return AAPrimitiveType::tuple;
 				} else {
 					return AAPrimitiveType::Undefined;
 				}
@@ -107,6 +128,8 @@ namespace aa {
 				return L"string";
 			case AAPrimitiveType::refptr:
 				return L"refptr";
+			case AAPrimitiveType::tuple:
+				return L"tuple";
 			default:
 				return L"nil";
 			}

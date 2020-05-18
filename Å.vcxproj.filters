@@ -231,6 +231,9 @@
     <ClCompile Include="AA_Node_Consts.cpp">
       <Filter>Source Files\parser</Filter>
     </ClCompile>
+    <ClCompile Include="AATuple.cpp">
+      <Filter>Source Files\VM</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="list.h">
@@ -412,6 +415,12 @@
     </ClInclude>
     <ClInclude Include="AAControlpath.h">
       <Filter>Header Files\analysis\verification</Filter>
+    </ClInclude>
+    <ClInclude Include="AATuple.h">
+      <Filter>Header Files\VM</Filter>
+    </ClInclude>
+    <ClInclude Include="array.h">
+      <Filter>Header Files\util</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

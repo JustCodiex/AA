@@ -22,6 +22,7 @@ AAStackValue::AAStackValue(std::wstring ws) { m_type = AAPrimitiveType::string; 
 AAStackValue::AAStackValue(float r32) { m_type = AAPrimitiveType::real32; m_val = AAVal(r32); }
 AAStackValue::AAStackValue(double r64) { m_type = AAPrimitiveType::real64; m_val = AAVal(r64); }
 AAStackValue::AAStackValue(wchar_t w) { m_type = AAPrimitiveType::wchar; m_val = AAVal(w); }
+AAStackValue::AAStackValue(AATuple t) { m_type = AAPrimitiveType::tuple; m_val = AAVal(t); }
 
 AAStackValue::AAStackValue(AAPrimitiveType type, AAVal val) {
 	m_val = val;
@@ -63,7 +64,7 @@ AAStackValue::AAStackValue(AA_Literal lit) {
 	}
 }
 
-AAPrimitiveType AAStackValue::get_type() {
+AAPrimitiveType AAStackValue::get_type() const {
 	return this->m_type;
 }
 
@@ -114,14 +115,16 @@ std::wstring AAStackValue::ToString() {
 		return std::to_wstring(m_val.Raw<uint64_t>());
 	case AAPrimitiveType::wchar:
 		return std::wstring(1, m_val.Raw<wchar_t>());
+	case AAPrimitiveType::tuple:
+		return m_val.Raw<AATuple>().ToString();
 	default:
 		return L"nil";
 	}
 }
 
-bool AAStackValue::is_string() { return m_type == AAPrimitiveType::string; }
+bool AAStackValue::is_string() const { return m_type == AAPrimitiveType::string; }
 
-bool AAStackValue::is_nil() { return m_type == AAPrimitiveType::Undefined; }
+bool AAStackValue::is_nil() const { return m_type == AAPrimitiveType::Undefined; }
 
 AAVal AAStackValue::as_val() const { return m_val; }
 

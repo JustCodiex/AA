@@ -9,9 +9,17 @@ AACType* AACType::Any = new AACType(L"Any");
 AACType* AACType::ErrorType = new AACType(L"ErrType");
 AACType* AACType::ExportReferenceType = new AACType(L"ExportReferenceType");
 
+AACType* AACTypeDef::Int16 = new AACType(L"short");
 AACType* AACTypeDef::Int32 = new AACType(L"int");
+AACType* AACTypeDef::Int64 = new AACType(L"long");
+AACType* AACTypeDef::UInt16 = new AACType(L"ushort");
+AACType* AACTypeDef::UInt32 = new AACType(L"uint");
+AACType* AACTypeDef::UInt64 = new AACType(L"ulong");
 AACType* AACTypeDef::Bool = new AACType(L"bool");
+AACType* AACTypeDef::Byte = new AACType(L"byte");
+AACType* AACTypeDef::SByte = new AACType(L"sbyte");
 AACType* AACTypeDef::Float32 = new AACType(L"float");
+AACType* AACTypeDef::Float64 = new AACType(L"double");
 AACType* AACTypeDef::Char = new AACType(L"char");
 AACType* AACTypeDef::IntPtr = new AACType(L"intptr");
 AACType* AACTypeDef::String = 0;
@@ -21,8 +29,8 @@ AACType::AACType() {
 	this->isRefType = false;
 	this->isArrayType = false;
 	this->isEnum = false;
+	this->isTupleType = false;
 	this->isVMType = false;
-	this->encapsulatedType = 0;
 	this->classSignature = 0;
 	this->enumSignature = 0;
 	this->constantID = 0;
@@ -33,8 +41,8 @@ AACType::AACType(AAClassSignature* sig) {
 	this->isRefType = true;
 	this->isArrayType = false;
 	this->isEnum = false;
+	this->isTupleType = false;
 	this->isVMType = false;
-	this->encapsulatedType = 0;
 	this->classSignature = sig;
 	this->enumSignature = 0;
 	this->constantID = 0;
@@ -45,8 +53,8 @@ AACType::AACType(std::wstring name) {
 	this->isRefType = false;
 	this->isArrayType = false;
 	this->isEnum = false;
+	this->isTupleType = false;
 	this->isVMType = false;
-	this->encapsulatedType = 0;
 	this->classSignature = 0;
 	this->enumSignature = 0;
 	this->constantID = 0;
@@ -57,11 +65,24 @@ AACType::AACType(AACEnumSignature* enumSignature) {
 	this->isRefType = false;
 	this->isArrayType = false;
 	this->isEnum = true;
+	this->isTupleType = false;
 	this->isVMType = false;
-	this->encapsulatedType = 0;
 	this->classSignature = 0;
 	this->enumSignature = enumSignature;
 	this->constantID = 0;
+}
+
+AACType::AACType(std::wstring name, aa::list<AACType*> tupleSignature) {
+	this->name = name;
+	this->isRefType = false;
+	this->isArrayType = false;
+	this->isEnum = false;
+	this->isTupleType = true;
+	this->isVMType = false;
+	this->classSignature = 0;
+	this->enumSignature = 0;
+	this->constantID = 0;
+	this->encapsulatedTypes = tupleSignature;
 }
 
 std::wstring AACType::GetFullname() {
@@ -75,15 +96,32 @@ std::wstring AACType::GetFullname() {
 AACType* AACType::AsArrayType() {
 	AACType* t = new AACType(this->name + L"[]");
 	t->isArrayType = true;
-	t->encapsulatedType = this;
+	t->encapsulatedTypes.Add(this);
 	t->isRefType = true;
 	t->isEnum = false;
 	return t;
 }
 
 AACType* AACType::GetArrayType() {
-	if (this->isArrayType && this->encapsulatedType) {
-		return this->encapsulatedType;
+	AACType* encapped = this->GetEncapsulatedType();
+	if (encapped && this->isArrayType) {
+		return encapped;
+	} else {
+		return AACType::ErrorType;
+	}
+}
+
+AACType* AACType::GetEncapsulatedType() {
+	if (this->encapsulatedTypes.Size() > 0) {
+		return this->encapsulatedTypes.First();
+	} else {
+		return AACType::ErrorType;
+	}
+}
+
+AACType* AACType::GetEncapsulatedType(size_t index) {
+	if (index >= 0 && index < this->encapsulatedTypes.Size()) {
+		return this->encapsulatedTypes.At(index);
 	} else {
 		return AACType::ErrorType;
 	}

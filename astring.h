@@ -28,4 +28,8 @@ namespace aa {
 		return s.str();
 	}
 
+	unsigned int wstring_trail(std::wstring ws);
+
+	unsigned int string_trail(std::string str);
+
 }

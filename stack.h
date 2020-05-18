@@ -24,7 +24,7 @@ namespace aa {
 			return m_stack[index];
 		}
 
-		size_t Size() {
+		size_t Size() const {
 			return m_len;
 		}
 

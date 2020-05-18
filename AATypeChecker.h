@@ -14,6 +14,26 @@ struct AACNamespace;
 
 class AATypeChecker {
 
+private:
+
+	/// <summary>
+	/// Container for keeping track of dynamically found types (tuples, arrays, and generics [anything using the encapsulated types])
+	/// </summary>
+	struct DynamicTypeSet {
+
+		/// <summary>
+		/// Map from standardized type format to the registered type
+		/// </summary>
+		std::map<std::wstring, AACType*> registeredTypes;
+
+		AACType* FindType(std::wstring format, AATypeChecker* pTypeChecker);
+
+		AACType* AddType(std::wstring format, AATypeChecker* pTypeChecker);
+
+		aa::list<AACType*> UnpackTuple(std::wstring format, AATypeChecker* pTypeChecker);
+
+	};
+
 public:
 
 	// Struct containing information about an error that has occured in the type checker
@@ -53,16 +73,28 @@ public:
 private:
 
 	AACType* TypeCheckClassDotCallAccessorOperation(AA_AST_NODE* pAccessorNode, AA_AST_NODE* left, AA_AST_NODE* right);
-	AACType* TypeCheckClassDotFieldAccessorOperation(AA_AST_NODE* pAccessorNode, AA_AST_NODE* left, AA_AST_NODE* right);
+	AACType* TypeCheckClassDotFieldAccessorOperation(AA_AST_NODE* pAccessorNode, AACType* pLeftType, AA_AST_NODE* left, AA_AST_NODE* right);
 	AACType* TypeCheckClassCtorCall(AA_AST_NODE* pCallNode);
-	AACType* TypeCheckMemberAccessorOperation(AA_AST_NODE* pAccessorNode, AA_AST_NODE* left, AA_AST_NODE* right);
-	AACType* TypeCheckBinaryOperation(AA_AST_NODE* pOpNode, AA_AST_NODE* left, AA_AST_NODE* right);
-	AACType* TypeCheckUnaryOperation(AA_AST_NODE* pOpNode, AA_AST_NODE* right);
-	AACType* TypeCheckCallOperation(AA_AST_NODE* pCallNode);
-	AACType* TypeCheckConditionalBlock(AA_AST_NODE* pConditionalNode);
-	AACType* TypeCheckIndexOperation(AA_AST_NODE* pIndexNode);
-	AACType* TypeCheckUsingOperation(AA_AST_NODE* pUseNode);
 	AACType* TypeCheckNewStatement(AA_AST_NODE* pNewStatement);
+
+	AACType* TypeCheckTupleAccessorOperation(AA_AST_NODE* pAccessorNode, AACType* pLeftType, AA_AST_NODE* left, AA_AST_NODE* right);
+	AACType* TypeCheckMemberAccessorOperation(AA_AST_NODE* pAccessorNode, AA_AST_NODE* left, AA_AST_NODE* right);
+	AACType* TypeCheckIndexOperation(AA_AST_NODE* pIndexNode);
+
+	AACType* TypeCheckUnaryOperation(AA_AST_NODE* pOpNode, AA_AST_NODE* right);	
+	AACType* TypeCheckCallOperation(AA_AST_NODE* pCallNode);
+	
+	AACType* TypeCheckConditionalBlock(AA_AST_NODE* pConditionalNode);
+
+	AACType* TypeCheckUsingOperation(AA_AST_NODE* pUseNode);
+	
+	AACType* TypeCheckBinaryOperation(AA_AST_NODE* pOpNode, AA_AST_NODE* left, AA_AST_NODE* right);
+	inline AACType* TypeCheckBinaryVarDecl(AA_AST_NODE* pOpNode, AA_AST_NODE* left, AA_AST_NODE* right);
+	inline AACType* TypeCheckBinaryIndex(AA_AST_NODE* pOpNode, AA_AST_NODE* left, AA_AST_NODE* right);
+	inline AACType* TypeCheckBinaryTupleDecl(AA_AST_NODE* pOpNode, AA_AST_NODE* left, AA_AST_NODE* right);
+	inline AACType* TypeCheckBinaryAssignment(AA_AST_NODE* pOpNode, AA_AST_NODE* left, AA_AST_NODE* right, AACType* leftType, AACType* rightType);
+	inline AACType* TypeCheckBinaryOperatorCall(AA_AST_NODE* pOpNode, AA_AST_NODE* left, AA_AST_NODE* right, AACType* leftType, AACType* rightType);
+	inline AACType* TypeCheckBinaryOperatorOp(AA_AST_NODE* pOpNode, AA_AST_NODE* left, AA_AST_NODE* right, AACType* leftType, AACType* rightType);
 
 	AACType* TypeCheckPatternMatchBlock(AA_AST_NODE* pMatchNode);
 	AACType* TypeCheckPatternMatchCase(AA_AST_NODE* pCaseNode, AACType* conditionType);
@@ -98,6 +130,10 @@ private:
 	AAClassSignature* FindCompiledClassOfType(AACType* type);
 	bool FindCompiledClassOperation(AAClassSignature* cc, std::wstring operatorType, AACType* right, AAClassOperatorSignature& op);
 
+	std::wstring FormalizeTuple(AA_AST_NODE* pTupleNode);
+	std::wstring FormalizeTuple(aa::list<AACType*> types);
+	//std::wstring FormalizeArray(AA_AST_NODE* pArrayNode);
+
 	std::wstring FlattenNamespacePath(AA_AST_NODE* pNode);
 	AACNamespace* FindNamespaceFromFlattenedPath(AACNamespace* root, std::wstring path);
 
@@ -126,5 +162,8 @@ private:
 
 	// The current, local, namespace for a statement. Warning! Must be properly cleared after use
 	AACNamespace* m_localStatementNamespace;
+
+	// All dynamically found types
+	DynamicTypeSet m_dynamicTypes;
 
 };

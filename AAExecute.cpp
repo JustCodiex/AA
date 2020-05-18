@@ -36,6 +36,8 @@ namespace aa {
                 return AAStackValue(stack.Pop<AAMemoryPtr>());
             case AAPrimitiveType::intptr:
                 return AAStackValue(stack.Pop<AAIntPtr>());
+            case AAPrimitiveType::tuple:
+                return AAStackValue(stack.Pop<AATuple>());
             default:
                 break;
             }
@@ -44,9 +46,11 @@ namespace aa {
 
         }
 
-        void PushSomething(AAStackValue value, any_stack& stack) {
+        void PushSomething(const AAStackValue& value, any_stack& stack) {
 
-            switch (value.get_type()) {
+            PushSomething(value.get_type(), value.as_val(), stack);
+
+            /*switch (value.get_type()) {
             case AAPrimitiveType::boolean:
                 stack.Push(value.to_cpp<bool>());
                 break;
@@ -90,6 +94,62 @@ namespace aa {
             case AAPrimitiveType::intptr:
                 stack.Push(value.to_cpp<AAIntPtr>());
                 break;
+            case AAPrimitiveType::tuple:
+                stack.Push(value.to_cpp<AATuple>());
+            default:
+                break;
+            }*/
+
+        }
+
+        void PushSomething(const AAPrimitiveType& type, const AAVal& value, any_stack& stack) {
+
+            switch (type) {
+            case AAPrimitiveType::boolean:
+                stack.Push(value.Raw<bool>());
+                break;
+            case AAPrimitiveType::byte:
+                stack.Push(value.Raw<unsigned char>());
+                break;
+            case AAPrimitiveType::sbyte:
+                stack.Push(value.Raw<signed char>());
+                break;
+            case AAPrimitiveType::int16:
+                stack.Push(value.Raw<int16_t>());
+                break;
+            case AAPrimitiveType::int32:
+                stack.Push(value.Raw<int32_t>());
+                break;
+            case AAPrimitiveType::int64:
+                stack.Push(value.Raw<int64_t>());
+                break;
+            case AAPrimitiveType::uint16:
+                stack.Push(value.Raw<uint16_t>());
+                break;
+            case AAPrimitiveType::uint32:
+                stack.Push(value.Raw<uint32_t>());
+                break;
+            case AAPrimitiveType::uint64:
+                stack.Push(value.Raw<uint64_t>());
+                break;
+            case AAPrimitiveType::real32:
+                stack.Push(value.Raw<float_t>());
+                break;
+            case AAPrimitiveType::real64:
+                stack.Push(value.Raw<double_t>());
+                break;
+            case AAPrimitiveType::wchar:
+                stack.Push(value.Raw<wchar_t>());
+                break;
+            case AAPrimitiveType::string:
+            case AAPrimitiveType::refptr:
+                stack.Push(value.Raw<AAMemoryPtr>());
+                break;
+            case AAPrimitiveType::intptr:
+                stack.Push(value.Raw<AAIntPtr>());
+                break;
+            case AAPrimitiveType::tuple:
+                stack.Push(value.Raw<AATuple>());
             default:
                 break;
             }

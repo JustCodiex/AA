@@ -29,6 +29,8 @@ enum class AAPrimitiveType : unsigned char { // 1 byte
 	refptr, // never expose (AAMemoryPtr)
 	intptr, // never expose (void*)
 
+	tuple, // Some tuple (it will keep track of tupes by itself!)
+
 };
 
 struct AACType;

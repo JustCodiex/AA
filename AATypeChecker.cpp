@@ -70,7 +70,12 @@ AACType* AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 		}
 	case AA_AST_NODE_TYPE::fieldaccess:
 		if (node->content.compare(L".") == 0) {
-			return this->TypeCheckClassDotFieldAccessorOperation(node, node->expressions[0], node->expressions[1]);
+			AACType* leftType = this->TypeCheckNode(node->expressions[0]);
+			if (leftType->isRefType) {
+				return this->TypeCheckClassDotFieldAccessorOperation(node, leftType, node->expressions[0], node->expressions[1]);
+			} else if (leftType->isTupleType) {
+				return this->TypeCheckTupleAccessorOperation(node, leftType, node->expressions[0], node->expressions[1]);
+			}
 		} else {
 			break;
 		}
@@ -159,6 +164,20 @@ AACType* AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 			return t;
 		}
 	}
+	case AA_AST_NODE_TYPE::tupleval: {
+		aa::list<AACType*> alltypes;
+		for (auto& sub : node->expressions) {
+			AACType* pTupleValType = this->TypeCheckNode(sub);
+			if (pTupleValType != AACType::ErrorType) {
+				sub->tags["primitive"] = (int)aa::runtime::runtimetype_from_statictype(pTupleValType);
+				alltypes.Add(pTupleValType);
+			} else {
+				// TODO: Error
+			}
+		}
+		AACType* pTupleType = this->m_dynamicTypes.FindType(this->FormalizeTuple(alltypes), this); // TODO: Add if not found
+		return pTupleType;
+	}
 	case AA_AST_NODE_TYPE::funarg: {
 		AACType* t = this->FindType(node->expressions[0]->content);
 		if (t == AACType::ErrorType) {
@@ -236,58 +255,18 @@ AACType* AATypeChecker::TypeCheckBinaryOperation(AA_AST_NODE* pOpNode, AA_AST_NO
 	// Is it a declerative assignment operation?
 	if (left->type == AA_AST_NODE_TYPE::vardecl) {
 		
-		// declare left and right type
-		AACType* typeLeft = 0;
-		AACType* typeRight = 0;
+		// Invoke the binary var decl typecheck;
+		return this->TypeCheckBinaryVarDecl(pOpNode, left, right);
 
-		// Does LHS contain a vardecl with a specific type?
-		if (left->expressions.size() > 0) {
-			typeLeft = m_vtenv[left->content] = this->TypeCheckNode(left->expressions[0]);
-			typeRight = this->TypeCheckNode(right);
-		} else { // Does LHS contain a vardecl without a specific type (eg. var or val)
-			typeRight = typeLeft = m_vtenv[left->content] = this->TypeCheckNode(right);
-		}
+	} else if (left->type == AA_AST_NODE_TYPE::tuplevardecl) {
 		
-		// reset local namespace
-		m_localStatementNamespace = 0;
-
-		// Do these types match each other?
-		if (this->IsMatchingTypes(typeRight, typeLeft)) {
-
-			// Set the primitive type
-			pOpNode->tags["primitive"] = (int)aa::runtime::runtimetype_from_statictype(typeLeft);
-
-			// return the left type
-			return typeLeft;
-
-		} else {
-
-			// Set error message
-			AATC_W_ERROR(
-				"Type mismsatch on binary operation '" + string_cast(pOpNode->content) + "', left operand: '"
-				+ string_cast(typeLeft->GetFullname()) + "' and right operand: '" + string_cast(typeRight->GetFullname()) + "'",
-				pOpNode->position,
-				aa::compiler_err::C_Mismatching_Types
-			);
-		
-		}
+		// Invoke the binary tuple decl typecheck
+		return this->TypeCheckBinaryTupleDecl(pOpNode, left, right);
 
 	} else if (left->type == AA_AST_NODE_TYPE::index) {
 
-		AACType* typeLeft = this->TypeCheckNode(left);
-		AACType* typeRight = this->TypeCheckNode(right);
-
-		// Is it a legal operation (We may have to do more checks here in the future...
-		if (IsMatchingTypes(typeRight, typeLeft->encapsulatedType)) {
-			return typeLeft;
-		} else {
-			AATC_W_ERROR(
-				"Type mismsatch on binary operation '" + string_cast(pOpNode->content) + "', left operand: '"
-				+ string_cast(typeLeft->GetFullname()) + "' and right operand: '" + string_cast(typeRight->GetFullname()) + "'",
-				pOpNode->position,
-				aa::compiler_err::C_Mismatching_Types
-			);
-		}
+		// Invoke the binary indexing typecheck
+		return this->TypeCheckBinaryIndex(pOpNode, left, right);
 
 	} else {
 
@@ -296,21 +275,7 @@ AACType* AATypeChecker::TypeCheckBinaryOperation(AA_AST_NODE* pOpNode, AA_AST_NO
 		
 		if (pOpNode->content.compare(L"=") == 0) { // Assignment (Not overloadable)
 
-			// Is legal assignment?
-			if (IsMatchingTypes(typeRight, typeLeft)) {
-
-				// Set the primitive type
-				pOpNode->tags["primitive"] = (int)aa::runtime::runtimetype_from_statictype(typeLeft);
-
-				return typeLeft;
-			} else {
-				AATC_W_ERROR(
-					"Type mismsatch on assignment operation, left operand '"
-					+ string_cast(typeLeft->GetFullname()) + "' cannot be assigned to right operand type: '" + string_cast(typeRight->GetFullname()) + "'",
-					pOpNode->position,
-					aa::compiler_err::C_Mismatching_Types
-				);
-			}
+			return this->TypeCheckBinaryAssignment(pOpNode, left, right, typeLeft, typeRight);
 
 		} else if (aa::runtime::is_primitive_type(typeLeft) && aa::runtime::is_primitive_type(typeRight)) {
 			
@@ -320,65 +285,14 @@ AACType* AATypeChecker::TypeCheckBinaryOperation(AA_AST_NODE* pOpNode, AA_AST_NO
 
 			if (left->tags["primitive"] == (int)AAPrimitiveType::refptr) {
 
-				std::wstring op = pOpNode->content;
-				AAClassSignature* ccLeft = FindCompiledClassOfType(typeLeft);
-				if (ccLeft->name == AACType::ErrorType->name) {
-					/*this->SetError(
-						AATypeChecker::Error(
-							"Unknown operand type '" + string_cast(typeLeft->GetFullname()) + "'",
-							__COUNTER__, pOpNode->position)
-					);
-					return AACType::ErrorType;/*/ return typeLeft; // TODO: Reenable this when array checking has been improved AND class field checking is possible
-				}
-
-				AAClassOperatorSignature ccop;
-				if (this->FindCompiledClassOperation(ccLeft, op, typeRight, ccop)) {
-
-					// Tag the operator node with the procID
-					pOpNode->tags["useCall"] = true;
-					pOpNode->tags["operatorProcID"] = ccop.method->procID;
-					pOpNode->tags["operatorIsVM"] = ccop.method->isVMFunc;
-
-					if (ccop.method->parameters.back().type == AACType::Any) {
-						right->tags["wrap"] = (int)aa::runtime::runtimetype_from_statictype(typeRight);
-					}
-
-					// Return the type of whatever the operator will return
-					return ccop.method->returnType;
-
-				} else if (op.compare(L"==") == 0) {
-					return AACTypeDef::Bool; // Comparrison operator => boolean result (not overloaded, thus we'll just compare pointers)
-				} else {
-					AATC_W_ERROR(
-						"Invalid operator '" + string_cast(op) + "' on left operand type '" + string_cast(typeLeft->GetFullname())
-						+ "' and right operand type '" + string_cast(typeRight->GetFullname()) + "'",
-						pOpNode->position,
-						aa::compiler_err::C_Invalid_Binary_Operator
-					);
-				}
+				return this->TypeCheckBinaryOperatorCall(pOpNode, left, right, typeLeft, typeRight);
 
 			} else {
 			
-				// should be checking directly on the nodes if possible...
-				AACType* resultType = this->TypeCheckBinaryOperationOnPrimitive(pOpNode, typeLeft, typeRight);
-				pOpNode->tags["primitive"] = left->tags["primitive"];
-				pOpNode->tags["useCall"] = false;
+				return this->TypeCheckBinaryOperatorOp(pOpNode, left, right, typeLeft, typeRight);
 
-				/*if (resultType == AACType::ErrorType) {
-				AATC_W_ERROR(
-					"Type mismsatch on binary operation '" + string_cast(pOpNode->content) + "', left operand: '"
-					+ string_cast(typeLeft->GetFullname()) + "' and right operand: '" + string_cast(typeRight->GetFullname()) + "'",
-					pOpNode->position,
-					aa::compiler_err::C_Mismatching_Types
-				);
-				} else {*/
-
-				return resultType; // Reenable once typechecking on field access and such has been implemented
-
-				//}
 			}
 
-			
 		} else {
 
 			return AACType::ErrorType; // something went wrong...
@@ -386,6 +300,93 @@ AACType* AATypeChecker::TypeCheckBinaryOperation(AA_AST_NODE* pOpNode, AA_AST_NO
 		}
 
 	}
+
+}
+
+AACType* AATypeChecker::TypeCheckBinaryAssignment(AA_AST_NODE* pOpNode, AA_AST_NODE* left, AA_AST_NODE* right, AACType* typeLeft, AACType* typeRight) {
+
+	// Is legal assignment?
+	if (IsMatchingTypes(typeRight, typeLeft)) {
+
+		// Set the primitive type
+		pOpNode->tags["primitive"] = (int)aa::runtime::runtimetype_from_statictype(typeLeft);
+
+		return typeLeft;
+	} else {
+		AATC_W_ERROR(
+			"Type mismsatch on assignment operation, left operand '"
+			+ string_cast(typeLeft->GetFullname()) + "' cannot be assigned to right operand type: '" + string_cast(typeRight->GetFullname()) + "'",
+			pOpNode->position,
+			aa::compiler_err::C_Mismatching_Types
+		);
+	}
+
+
+}
+
+AACType* AATypeChecker::TypeCheckBinaryOperatorCall(AA_AST_NODE* pOpNode, AA_AST_NODE* left, AA_AST_NODE* right, AACType* typeLeft, AACType* typeRight) {
+
+
+	std::wstring op = pOpNode->content;
+	AAClassSignature* ccLeft = FindCompiledClassOfType(typeLeft);
+	if (ccLeft->name == AACType::ErrorType->name) {
+		/*this->SetError(
+			AATypeChecker::Error(
+				"Unknown operand type '" + string_cast(typeLeft->GetFullname()) + "'",
+				__COUNTER__, pOpNode->position)
+		);
+		return AACType::ErrorType;/*/ return typeLeft; // TODO: Reenable this when array checking has been improved AND class field checking is possible
+	}
+
+	AAClassOperatorSignature ccop;
+	if (this->FindCompiledClassOperation(ccLeft, op, typeRight, ccop)) {
+
+		// Tag the operator node with the procID
+		pOpNode->tags["useCall"] = true;
+		pOpNode->tags["operatorProcID"] = ccop.method->procID;
+		pOpNode->tags["operatorIsVM"] = ccop.method->isVMFunc;
+
+		if (ccop.method->parameters.back().type == AACType::Any) {
+			right->tags["wrap"] = (int)aa::runtime::runtimetype_from_statictype(typeRight);
+		}
+
+		// Return the type of whatever the operator will return
+		return ccop.method->returnType;
+
+	} else if (op.compare(L"==") == 0) {
+		return AACTypeDef::Bool; // Comparrison operator => boolean result (not overloaded, thus we'll just compare pointers)
+	} else {
+		AATC_W_ERROR(
+			"Invalid operator '" + string_cast(op) + "' on left operand type '" + string_cast(typeLeft->GetFullname())
+			+ "' and right operand type '" + string_cast(typeRight->GetFullname()) + "'",
+			pOpNode->position,
+			aa::compiler_err::C_Invalid_Binary_Operator
+		);
+	}
+
+
+}
+
+AACType* AATypeChecker::TypeCheckBinaryOperatorOp(AA_AST_NODE* pOpNode, AA_AST_NODE* left, AA_AST_NODE* right, AACType* typeLeft, AACType* typeRight) {
+
+
+	// should be checking directly on the nodes if possible...
+	AACType* resultType = this->TypeCheckBinaryOperationOnPrimitive(pOpNode, typeLeft, typeRight);
+	pOpNode->tags["primitive"] = left->tags["primitive"];
+	pOpNode->tags["useCall"] = false;
+
+	/*if (resultType == AACType::ErrorType) {
+	AATC_W_ERROR(
+		"Type mismsatch on binary operation '" + string_cast(pOpNode->content) + "', left operand: '"
+		+ string_cast(typeLeft->GetFullname()) + "' and right operand: '" + string_cast(typeRight->GetFullname()) + "'",
+		pOpNode->position,
+		aa::compiler_err::C_Mismatching_Types
+	);
+	} else {*/
+
+	return resultType; // Reenable once typechecking on field access and such has been implemented
+
+	//}
 
 }
 
@@ -402,6 +403,97 @@ AACType* AATypeChecker::TypeCheckBinaryOperationOnPrimitive(AA_AST_NODE* pOpNode
 
 	// Return thte lhs type (is equal to rhs)
 	return typeLeft;
+
+}
+
+AACType* AATypeChecker::TypeCheckBinaryVarDecl(AA_AST_NODE* pOpNode, AA_AST_NODE* left, AA_AST_NODE* right) {
+
+	// declare left and right type
+	AACType* typeLeft = 0;
+	AACType* typeRight = 0;
+
+	// Does LHS contain a vardecl with a specific type?
+	if (left->expressions.size() > 0) {
+		typeLeft = m_vtenv[left->content] = this->TypeCheckNode(left->expressions[0]);
+		typeRight = this->TypeCheckNode(right);
+	} else { // Does LHS contain a vardecl without a specific type (eg. var or val)
+		typeRight = typeLeft = m_vtenv[left->content] = this->TypeCheckNode(right);
+	}
+
+	// reset local namespace
+	m_localStatementNamespace = 0;
+
+	// Do these types match each other?
+	if (this->IsMatchingTypes(typeRight, typeLeft)) {
+
+		// Set the primitive type
+		pOpNode->tags["primitive"] = (int)aa::runtime::runtimetype_from_statictype(typeLeft);
+
+		// return the left type
+		return typeLeft;
+
+	} else {
+
+		// Set error message
+		AATC_W_ERROR(
+			"Type mismsatch on binary operation '" + string_cast(pOpNode->content) + "', left operand: '"
+			+ string_cast(typeLeft->GetFullname()) + "' and right operand: '" + string_cast(typeRight->GetFullname()) + "'",
+			pOpNode->position,
+			aa::compiler_err::C_Mismatching_Types
+		);
+
+	}
+
+}
+
+AACType* AATypeChecker::TypeCheckBinaryIndex(AA_AST_NODE* pOpNode, AA_AST_NODE* left, AA_AST_NODE* right) {
+
+	// Typecheck left and right
+	AACType* typeLeft = this->TypeCheckNode(left);
+	AACType* typeRight = this->TypeCheckNode(right);
+
+	// Is it a legal operation (We may have to do more checks here in the future...
+	if (IsMatchingTypes(typeRight, typeLeft->GetEncapsulatedType())) {
+		return typeLeft;
+	} else {
+		AATC_W_ERROR(
+			"Type mismsatch on binary operation '" + string_cast(pOpNode->content) + "', left operand: '"
+			+ string_cast(typeLeft->GetFullname()) + "' and right operand: '" + string_cast(typeRight->GetFullname()) + "'",
+			pOpNode->position,
+			aa::compiler_err::C_Mismatching_Types
+		);
+	}
+
+}
+
+AACType* AATypeChecker::TypeCheckBinaryTupleDecl(AA_AST_NODE* pOpNode, AA_AST_NODE* left, AA_AST_NODE* right) {
+
+	// Formalize the tuple name
+	std::wstring tupleFormalTypename = this->FormalizeTuple(left);
+
+	// Find the left type (in case it was declared before)
+	AACType* leftType = this->m_dynamicTypes.FindType(tupleFormalTypename, this);
+
+	// Register the tuple if it was not found
+	if (leftType == AACType::ErrorType) {
+		leftType = this->m_dynamicTypes.AddType(tupleFormalTypename, this); // Register the type
+	}
+
+	// Set the type of the left side
+	m_vtenv[left->content] = leftType;
+
+	// Typecheck right side
+	AACType* rightType = this->TypeCheckNode(right);
+
+	// Set the primitive type
+	pOpNode->tags["primitive"] = (int)aa::runtime::runtimetype_from_statictype(leftType);
+
+	// Matching types?
+	if (rightType != AACType::ErrorType && leftType == rightType) {
+		return AACType::Void; // Assignment always returns void
+	} else {
+		return AACType::ErrorType;
+	}
 
 }
 
@@ -502,13 +594,10 @@ AACType* AATypeChecker::TypeCheckClassDotCallAccessorOperation(AA_AST_NODE* pAcc
 
 }
 
-AACType* AATypeChecker::TypeCheckClassDotFieldAccessorOperation(AA_AST_NODE* pAccessorNode, AA_AST_NODE* left, AA_AST_NODE* right) {
-
-	// Check types on the left
-	AACType* l = this->TypeCheckNode(left);
+AACType* AATypeChecker::TypeCheckClassDotFieldAccessorOperation(AA_AST_NODE* pAccessorNode, AACType* pLeftType, AA_AST_NODE* left, AA_AST_NODE* right) {
 
 	// Get class from lhs
-	AAClassSignature* cc = this->FindCompiledClassOfType(l);
+	AAClassSignature* cc = this->FindCompiledClassOfType(pLeftType);
 
 	// Make sure we got a valid class from this
 	if (cc->name == AACType::ErrorType->name) {
@@ -536,6 +625,49 @@ AACType* AATypeChecker::TypeCheckClassDotFieldAccessorOperation(AA_AST_NODE* pAc
 		return AACType::ErrorType;
 
 	}
+
+}
+
+AACType* AATypeChecker::TypeCheckTupleAccessorOperation(AA_AST_NODE* pAccessorNode, AACType* pLeftType, AA_AST_NODE* left, AA_AST_NODE* right) {
+
+	// Make sure right element is a field
+	if (right->type == AA_AST_NODE_TYPE::field) {
+
+		// Get index of field
+		unsigned int field = aa::wstring_trail(right->content);
+
+		// Make sure index is inside the bounds of the tuple
+		if (field >= 1 && field <= pLeftType->encapsulatedTypes.Size()) {
+
+			// Update node type to tupleaccess
+			pAccessorNode->type = AA_AST_NODE_TYPE::tupleaccess;
+
+			// Get the tuple type
+			AACType* pTupleFieldType = pLeftType->encapsulatedTypes.At(field - 1);
+
+			// Tag some stuff
+			pAccessorNode->tags["primitive"] = (int)aa::runtime::runtimetype_from_statictype(pTupleFieldType);
+			pAccessorNode->tags["tupleindex"] = field - 1;
+
+			// Return the type found at that index
+			return pTupleFieldType;
+
+		} else {
+
+			// Tuple index is out of bounds
+			AATC_W_ERROR(
+				"Tuple value index '" + std::to_string(field) + "' is outside tuple bounds",
+				right->position,
+				aa::compiler_err::C_Invalid_Tuple_Index
+			);
+
+		}
+
+	} else {
+		printf("[AATypeChecker.Cpp@%i] Unexpected node type!", __LINE__);
+	}
+
+	return AACType::ErrorType;
 
 }
 
@@ -750,7 +882,7 @@ AACType* AATypeChecker::TypeCheckNewStatement(AA_AST_NODE* pNewStatement) {
 		AACType* tp = this->FindType(pNewStatement->expressions[0]->expressions[0]->content + L"[]"); // Put an additional [] on, such that it picks up the correct type
 		if (this->IsValidType(tp)) {
 
-			pNewStatement->tags["primitive"] = (int)aa::runtime::runtimetype_from_statictype(tp->encapsulatedType);
+			pNewStatement->tags["primitive"] = (int)aa::runtime::runtimetype_from_statictype(tp->GetEncapsulatedType());
 
 			return tp;
 		}
@@ -1271,5 +1403,104 @@ AACNamespace* AATypeChecker::FindNamespaceFromFlattenedPath(AACNamespace* root, 
 		}
 
 	}
+
+}
+
+std::wstring AATypeChecker::FormalizeTuple(AA_AST_NODE* pTupleNode) {
+
+	// String to build
+	std::wstringstream wss;
+
+	// Add opener
+	wss << L"(";
+
+	// Loop through all types
+	for (size_t i = 0; i < pTupleNode->expressions.size(); i++) {
+		wss << this->FindType(pTupleNode->expressions[i]->content)->GetFullname();
+		if (i < pTupleNode->expressions.size()-1) {
+			wss << ",";
+		}
+	}
+
+	// Add ender
+	wss << L")";
+
+	// Return the string
+	return wss.str();
+
+}
+
+std::wstring AATypeChecker::FormalizeTuple(aa::list<AACType*> types) {
+
+	// String to build
+	std::wstringstream wss;
+
+	// Add opener
+	wss << L"(";
+
+	// Loop through all types
+	for (size_t i = 0; i < types.Size(); i++) {
+		wss << types.At(i)->GetFullname();
+		if (i < types.Size() - 1) {
+			wss << ",";
+		}
+	}
+
+	// Add ender
+	wss << L")";
+
+	// Return the string
+	return wss.str();
+
+}
+
+AACType* AATypeChecker::DynamicTypeSet::FindType(std::wstring format, AATypeChecker* pTypeChecker) {
+	
+	if (this->registeredTypes.find(format) != this->registeredTypes.end()) {
+		return this->registeredTypes[format];
+	}
+
+	return AACType::ErrorType;
+
+}
+
+AACType* AATypeChecker::DynamicTypeSet::AddType(std::wstring format, AATypeChecker* pTypeChecker) {
+	
+	aa::list<AACType*> types;
+
+	if (format[0] == '(') { // tuple
+		this->registeredTypes[format] = new AACType(format, this->UnpackTuple(format, pTypeChecker));
+		return this->registeredTypes[format];
+	} else { // Arrays
+		_ASSERT(false); // Not implemented
+	}
+
+	return AACType::ErrorType;
+
+}
+
+aa::list<AACType*> AATypeChecker::DynamicTypeSet::UnpackTuple(std::wstring format, AATypeChecker* pTypeChecker) {
+
+	aa::list<AACType*> types;
+
+	format = format.substr(1);
+	while (format.length() > 0) {
+		size_t i = 0;
+		if ((i = format.find_first_of(',')) == std::wstring::npos) {
+			if ((i = format.find_first_of(')')) == std::wstring::npos) {
+				break;
+			}
+		}
+		AACType* pType = pTypeChecker->FindType(format.substr(0, i));
+		if (pType != AACType::ErrorType) {
+			types.Add(pType);
+		} else {
+			wprintf(L"Unknown type found at tuple type argument %i, tuple = ('%s')", ((int)types.Size() + 1), format.c_str());
+			return aa::list<AACType*>();
+		}
+		format = format.substr(i + 1);
+	}
+
+	return types;
 
 }

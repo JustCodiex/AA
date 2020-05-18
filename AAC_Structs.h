@@ -61,6 +61,11 @@ namespace aa {
 		const int C_Invalid_Binary_Operator = 202;
 
 		/// <summary>
+		/// The tuple index is out of bounds (ie. (0,1,2)._5) 
+		/// </summary>
+		const int C_Invalid_Tuple_Index = 211;
+
+		/// <summary>
 		/// The function being called is undefined
 		/// </summary>
 		const int C_Undefined_Function = 311;

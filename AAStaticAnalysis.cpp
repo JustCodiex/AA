@@ -8,10 +8,18 @@ using namespace aa::modifiers;
 
 aa::list<AACType*> _getdeftypeenv() {
 	aa::list<AACType*> types;
+	types.Add(AACTypeDef::Byte);
+	types.Add(AACTypeDef::SByte);
 	types.Add(AACTypeDef::Bool);
 	types.Add(AACTypeDef::Char);
 	types.Add(AACTypeDef::Float32);
+	types.Add(AACTypeDef::Float64);
+	types.Add(AACTypeDef::Int16);
 	types.Add(AACTypeDef::Int32);
+	types.Add(AACTypeDef::Int64);
+	types.Add(AACTypeDef::UInt16);
+	types.Add(AACTypeDef::UInt32);
+	types.Add(AACTypeDef::UInt64);
 	return types;
 }
 
@@ -506,6 +514,8 @@ AAC_CompileErrorMessage AAStaticAnalysis::FetchStaticDeclerationsFromASTNode(AA_
 				}
 
 			}
+
+
 
 		} else {
 

@@ -74,6 +74,9 @@ public:
 
 private:
 
+	typedef CompiledAbstractExpression Instruction;
+	typedef aa::list<Instruction> Instructions;
+
 	/*
 	** Private compiler methods
 	*/
@@ -94,31 +97,39 @@ private:
 	** AST_NODE -> Bytecode functions
 	*/
 
-	aa::list<CompiledAbstractExpression> CompileAST(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
-	aa::list<CompiledAbstractExpression> CompileBinaryOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
-	aa::list<CompiledAbstractExpression> CompileUnaryOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
-	aa::list<CompiledAbstractExpression> CompileAccessorOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
-	aa::list<CompiledAbstractExpression> CompileEnumAccessorOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
-	aa::list<CompiledAbstractExpression> CompileConditionalBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
-	aa::list<CompiledAbstractExpression> CompileFunctionCall(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
-	aa::list<CompiledAbstractExpression> CompileFuncArgs(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
-	aa::list<CompiledAbstractExpression> CompileForBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
-	aa::list<CompiledAbstractExpression> CompileWhileBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
-	aa::list<CompiledAbstractExpression> CompileDoWhileBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
-	aa::list<CompiledAbstractExpression> CompileNewStatement(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
+	Instructions CompileAST(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
+	
+	Instructions CompileBinaryOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
+	Instructions CompileUnaryOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
+	
+	Instructions CompileAccessorOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
+	Instructions CompileEnumAccessorOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
+	Instructions CompileTupleAccessorOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
 
-	aa::list<CompiledAbstractExpression> CompilePatternBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
-	aa::list<CompiledAbstractExpression> CompilePatternCondition(aa::list<CompiledAbstractExpression> match, AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
+	Instructions CompileFunctionCall(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
+	Instructions CompileFuncArgs(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
+	
+	Instructions CompileConditionalBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
+	Instructions CompileForBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
+	Instructions CompileWhileBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
+	Instructions CompileDoWhileBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
 
-	aa::list<CompiledAbstractExpression> HandleCtorCall(AA_AST_NODE* pNode, CompiledEnviornmentTable& ctable, AAStaticEnvironment staticData);
-	aa::list<CompiledAbstractExpression> HandleStackPush(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode, AAStaticEnvironment staticData);
-	aa::list<CompiledAbstractExpression> HandleMemberCall(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
-	aa::list<CompiledAbstractExpression> HandleIndexPush(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
+	Instructions CompileNewStatement(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
 
-	CompiledAbstractExpression HandleVarPush(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode);
-	CompiledAbstractExpression HandleFieldPush(AA_AST_NODE* pNode, AAStaticEnvironment staticData);
-	CompiledAbstractExpression HandleConstPush(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode);
-	CompiledAbstractExpression HandleConstPush(CompiledEnviornmentTable& ctable, AA_Literal lit);
+	Instructions CompilePatternBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
+	Instructions CompilePatternCondition(aa::list<Instruction> match, AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
+
+	Instructions HandleCtorCall(AA_AST_NODE* pNode, CompiledEnviornmentTable& ctable, AAStaticEnvironment staticData);
+	Instructions HandleMemberCall(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
+
+	Instructions HandleStackPush(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode, AAStaticEnvironment staticData);
+	Instructions HandleIndexPush(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
+	Instructions HandleTuplePush(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode, AAStaticEnvironment staticData);
+
+	Instruction HandleVarPush(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode);
+	Instruction HandleFieldPush(AA_AST_NODE* pNode, AAStaticEnvironment staticData);
+	Instruction HandleConstPush(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode);
+	Instruction HandleConstPush(CompiledEnviornmentTable& ctable, AA_Literal lit);
 
 	int HandleDecl(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode);
 
@@ -134,10 +145,10 @@ private:
 	AAByteCode GetBytecodeFromBinaryOperator(std::wstring ws, AA_AST_NODE_TYPE lhsType);
 	AAByteCode GetBytecodeFromUnaryOperator(std::wstring ws);
 
-	AAByteType ConvertTypeToBytes(AACType* pCType, const aa::list<AACType*> typeList);
+	AAByteType ConvertTypeToBytes(AACType* pCType, aa::list<AACType*>& typeList);
 
 	// Check if the stack will return as many values as it says it will 
-	bool VerifyFunctionCallstack(aa::list<CompiledAbstractExpression> body, int expected, int args, AAStaticEnvironment staticData);
+	bool VerifyFunctionCallstack(aa::list<Instruction> body, int expected, int args, AAStaticEnvironment staticData);
 	int CalcStackSzAfterOperation(CompiledAbstractExpression op, AAStaticEnvironment staticData);
 
 	/*
@@ -145,7 +156,7 @@ private:
 	*/
 
 	void ConstTableToByteCode(CompiledEnviornmentTable constTable, aa::bstream& bis);
-	void ConvertToBytes(CompiledAbstractExpression expr, aa::bstream& bis);
+	void ConvertToBytes(Instruction expr, aa::bstream& bis);
 
 	/*
 	** Compiler State Functions

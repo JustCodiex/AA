@@ -180,6 +180,7 @@
     <ClCompile Include="AAStaticAnalysis.cpp" />
     <ClCompile Include="AAstdiolib.cpp" />
     <ClCompile Include="AAString.cpp" />
+    <ClCompile Include="AATuple.cpp" />
     <ClCompile Include="AATypeChecker.cpp" />
     <ClCompile Include="AAUnparser.cpp" />
     <ClCompile Include="AAVal.cpp" />
@@ -234,6 +235,7 @@
     <ClInclude Include="AAStaticAnalysis.h" />
     <ClInclude Include="AAstdiolib.h" />
     <ClInclude Include="AAString.h" />
+    <ClInclude Include="AATuple.h" />
     <ClInclude Include="AATypeChecker.h" />
     <ClInclude Include="AAUnparser.h" />
     <ClInclude Include="AAVal.h" />
@@ -249,6 +251,7 @@
     <ClInclude Include="AA_PT_NODE.h" />
     <ClInclude Include="AA_PT_Unflatten.h" />
     <ClInclude Include="any_stack.h" />
+    <ClInclude Include="array.h" />
     <ClInclude Include="astring.h" />
     <ClInclude Include="bstream.h" />
     <ClInclude Include="bwalker.h" />

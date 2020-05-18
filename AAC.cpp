@@ -5,6 +5,9 @@
 #include "AAVM.h"
 #include "AAUnparser.h"
 
+typedef AAC::CompiledAbstractExpression Instruction;
+typedef aa::list<Instruction> Instructions;
+
 AAC::AAC(AAVM* pVM) {
 
 	// Set VM
@@ -203,10 +206,10 @@ AAC_CompileErrorMessage AAC::RunStaticOperations(std::vector<AA_AST*>& trees, AA
 
 }
 
-aa::list<AAC::CompiledAbstractExpression> AAC::CompileAST(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
+Instructions AAC::CompileAST(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
 
-	// Stack
-	aa::list<CompiledAbstractExpression> executionStack;
+	// Instruction list
+	Instructions executionStack;
 
 	switch (pNode->type) {
 	case AA_AST_NODE_TYPE::binop: {
@@ -300,6 +303,18 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileAST(AA_AST_NODE* pNode, Co
 		executionStack.Add(this->CompileEnumAccessorOperation(pNode, cTable, staticData));
 		break;
 	}
+	case AA_AST_NODE_TYPE::index: {
+		executionStack.Add(HandleIndexPush(pNode, cTable, staticData));
+		break;
+	}
+	case AA_AST_NODE_TYPE::matchstatement: {
+		executionStack.Add(this->CompilePatternBlock(pNode, cTable, staticData));
+		break;
+	}
+	case AA_AST_NODE_TYPE::tupleaccess: {
+		executionStack.Add(this->CompileTupleAccessorOperation(pNode, cTable, staticData));
+		break;
+	}
 	// Implicit return
 	case AA_AST_NODE_TYPE::variable:
 	case AA_AST_NODE_TYPE::intliteral:
@@ -313,14 +328,6 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileAST(AA_AST_NODE* pNode, Co
 		executionStack.Add(HandleStackPush(cTable, pNode, staticData));
 		break;
 	}
-	case AA_AST_NODE_TYPE::index: {
-		executionStack.Add(HandleIndexPush(pNode, cTable, staticData));
-		break;
-	}
-	case AA_AST_NODE_TYPE::matchstatement: {
-		executionStack.Add(this->CompilePatternBlock(pNode, cTable, staticData));
-		break;
-	}
 	default:
 		break;
 	}
@@ -329,16 +336,16 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileAST(AA_AST_NODE* pNode, Co
 
 }
 
-aa::list<AAC::CompiledAbstractExpression> AAC::CompileBinaryOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
+Instructions AAC::CompileBinaryOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
 
-	aa::list<CompiledAbstractExpression> opList;
+	Instructions opList;
 
 	CompiledAbstractExpression binopCAE;
 	binopCAE.argCount = 0;
 	binopCAE.bc = GetBytecodeFromBinaryOperator(pNode->content, pNode->expressions[0]->type);
 
 	if (binopCAE.bc == AAByteCode::SETVAR) {
-
+		
 		binopCAE.argCount = 2;
 		binopCAE.argValues[0] = HandleDecl(cTable, pNode->expressions[0]);
 		binopCAE.argValues[1] = pNode->tags["primitive"];
@@ -404,9 +411,9 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileBinaryOperation(AA_AST_NOD
 
 }
 
-aa::list<AAC::CompiledAbstractExpression> AAC::CompileUnaryOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
+Instructions AAC::CompileUnaryOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
 
-	aa::list<CompiledAbstractExpression> opList;
+	Instructions opList;
 
 	CompiledAbstractExpression unopCAE;
 	unopCAE.argCount = 1;
@@ -420,9 +427,9 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileUnaryOperation(AA_AST_NODE
 
 }
 
-aa::list<AAC::CompiledAbstractExpression> AAC::CompileAccessorOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
+Instructions AAC::CompileAccessorOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
 
-	aa::list<CompiledAbstractExpression> opList;
+	Instructions opList;
 
 	opList.Add(this->CompileAST(pNode->expressions[0], cTable, staticData)); // CALL ACCESS NOT HANDLEs => Implement that
 	opList.Add(this->CompileAST(pNode->expressions[1], cTable, staticData));
@@ -431,10 +438,10 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileAccessorOperation(AA_AST_N
 
 }
 
-aa::list<AAC::CompiledAbstractExpression> AAC::CompileEnumAccessorOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
+Instructions AAC::CompileEnumAccessorOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
 
 	// Operation opcode list
-	aa::list<CompiledAbstractExpression> opList;
+	Instructions opList;
 
 	// Is it a enumvalueaccess? (This is checked beforehand, this function might be used for more later)
 	if (pNode->type == AA_AST_NODE_TYPE::enumvalueaccess) {
@@ -454,9 +461,31 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileEnumAccessorOperation(AA_A
 
 }
 
-aa::list<AAC::CompiledAbstractExpression> AAC::CompileFunctionCall(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
+Instructions AAC::CompileTupleAccessorOperation(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
 
-	aa::list<CompiledAbstractExpression> opList;
+	// Operation opcode list
+	Instructions opList;
+
+	// Put LHS unto stack
+	opList.Add(this->CompileAST(pNode->expressions[0], cTable, staticData));
+
+	// The tuple value fetch instruction
+	Instruction tupleAccess;
+	tupleAccess.bc = AAByteCode::TUPLEGET;
+	tupleAccess.argCount = 1;
+	tupleAccess.argValues[0] = pNode->tags["tupleindex"];
+
+	// Add the acces operation to oplist
+	opList.Add(tupleAccess);
+
+	// Return instructions
+	return opList;
+
+}
+
+Instructions AAC::CompileFunctionCall(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
+
+	Instructions opList;
 
 	int procID = -1;
 	if (pNode->HasTag("calls")) {
@@ -505,7 +534,7 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileFunctionCall(AA_AST_NODE* 
 
 }
 
-aa::list<AAC::CompiledAbstractExpression> AAC::CompileFuncArgs(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
+Instructions AAC::CompileFuncArgs(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
 
 	// Get the argument list
 	AA_AST_NODE* pArgList = pNode->expressions[AA_NODE_FUNNODE_ARGLIST];
@@ -538,7 +567,7 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileFuncArgs(AA_AST_NODE* pNod
 
 }
 
-aa::list<AAC::CompiledAbstractExpression> AAC::CompileConditionalBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
+Instructions AAC::CompileConditionalBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
 
 	// Operations list
 	aa::list<CompiledAbstractExpression> opList;
@@ -594,7 +623,7 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileConditionalBlock(AA_AST_NO
 
 }
 
-aa::list<AAC::CompiledAbstractExpression> AAC::CompileForBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
+Instructions AAC::CompileForBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
 
 	// Operations list
 	aa::list<CompiledAbstractExpression> opList;
@@ -636,7 +665,7 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileForBlock(AA_AST_NODE* pNod
 
 }
 
-aa::list<AAC::CompiledAbstractExpression> AAC::CompileWhileBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
+Instructions AAC::CompileWhileBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
 
 	// Operations list
 	aa::list<CompiledAbstractExpression> opList;
@@ -672,7 +701,7 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileWhileBlock(AA_AST_NODE* pN
 
 }
 
-aa::list<AAC::CompiledAbstractExpression> AAC::CompileDoWhileBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
+Instructions AAC::CompileDoWhileBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
 
 	// Operations list
 	aa::list<CompiledAbstractExpression> opList;
@@ -699,7 +728,7 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileDoWhileBlock(AA_AST_NODE* 
 
 }
 
-aa::list<AAC::CompiledAbstractExpression> AAC::CompileNewStatement(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
+Instructions AAC::CompileNewStatement(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
 
 	// Operations list
 	aa::list<CompiledAbstractExpression> opList;
@@ -733,28 +762,28 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompileNewStatement(AA_AST_NODE* 
 
 }
 
-aa::list<AAC::CompiledAbstractExpression> AAC::CompilePatternBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
+Instructions AAC::CompilePatternBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
 
 	// Operations list
-	aa::list<CompiledAbstractExpression> opList;
+	Instructions opList;
 
 	// Compile LHS
-	aa::list<CompiledAbstractExpression> matchon = this->CompileAST(pNode->expressions[0], cTable, staticData);
+	Instructions matchon = this->CompileAST(pNode->expressions[0], cTable, staticData);
 
 	// Get the list of cases
 	std::vector<AA_AST_NODE*> cases = pNode->expressions[1]->expressions;
 
 	// Keep track of conditions
-	aa::list<aa::list<CompiledAbstractExpression>> conditions;
+	aa::list<Instructions> conditions;
 
 	// Keep track of bodies
-	aa::list<aa::list<CompiledAbstractExpression>> bodies;
+	aa::list<Instructions> bodies;
 
 	// For each case in match list
 	for (size_t i = 0; i < cases.size(); i++) {
 
 		// Compile the condition (We cannot compile it as usual)
-		aa::list<CompiledAbstractExpression> condition = this->CompilePatternCondition(matchon, cases[i]->expressions[0]->expressions[0], cTable, staticData);
+		Instructions condition = this->CompilePatternCondition(matchon, cases[i]->expressions[0]->expressions[0], cTable, staticData);
 
 		CompiledAbstractExpression eq;
 		eq.bc = AAByteCode::CMPE;
@@ -769,7 +798,7 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompilePatternBlock(AA_AST_NODE* 
 		condition.Add(jmpiftrue);
 		conditions.Add(condition);
 
-		aa::list<CompiledAbstractExpression> body = this->CompileAST(cases[i]->expressions[1], cTable, staticData);
+		Instructions body = this->CompileAST(cases[i]->expressions[1], cTable, staticData);
 		CompiledAbstractExpression jmptoend;
 		jmptoend.bc = AAByteCode::JMP;
 		jmptoend.argCount = 1;
@@ -819,10 +848,10 @@ aa::list<AAC::CompiledAbstractExpression> AAC::CompilePatternBlock(AA_AST_NODE* 
 
 }
 
-aa::list<AAC::CompiledAbstractExpression> AAC::CompilePatternCondition(aa::list<CompiledAbstractExpression> match, AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
+Instructions AAC::CompilePatternCondition(aa::list<CompiledAbstractExpression> match, AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
 
 	// Operations list
-	aa::list<CompiledAbstractExpression> opList;
+	Instructions opList;
 
 	if (pNode->type == AA_AST_NODE_TYPE::funcall) {
 
@@ -890,7 +919,7 @@ bool AAC::IsVariable(AA_AST_NODE_TYPE type) {
 }
 
 bool AAC::IsDecleration(AA_AST_NODE_TYPE type) {
-	return type == AA_AST_NODE_TYPE::vardecl;
+	return type == AA_AST_NODE_TYPE::vardecl || type == AA_AST_NODE_TYPE::tuplevardecl;
 }
 
 bool AAC::IsEnumeration(AA_AST_NODE_TYPE type) {
@@ -1082,9 +1111,38 @@ int AAC::HandleDecl(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode) {
 
 }
 
-aa::list<AAC::CompiledAbstractExpression> AAC::HandleStackPush(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode, AAStaticEnvironment staticData) {
+Instructions AAC::HandleTuplePush(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode, AAStaticEnvironment staticData) {
 
-	aa::list<CompiledAbstractExpression> opList;
+	// Operation list
+	Instructions opList;
+
+	// For all tuple elements - push them unto the stack
+	for (auto& tupleElement : pNode->expressions) {
+		opList.Add(this->CompileAST(tupleElement, cTable, staticData));
+	}
+
+	// Tuple constructor instruction
+	Instruction tupleCtor;
+	tupleCtor.bc = AAByteCode::TUPLECTOR;
+	tupleCtor.argCount = pNode->expressions.size() + 1; // Note the current limitation of 7 tuple values
+	tupleCtor.argValues[0] = tupleCtor.argCount - 1;
+
+	// Define type for all tuple elements
+	for (int i = 0; i < tupleCtor.argValues[0]; i++) { // TODO: Encode into a single 8 byte (2 ints) numeric, this way we can store *unlimited* tuple sizes
+		tupleCtor.argValues[i + 1] = pNode->expressions[i]->tags["primitive"];
+	}
+
+	// Add tuple ctor to operation list
+	opList.Add(tupleCtor);
+
+	// Return operations list
+	return opList;
+
+}
+
+Instructions AAC::HandleStackPush(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode, AAStaticEnvironment staticData) {
+
+	Instructions opList;
 
 	if (IsConstant(pNode->type)) {
 		opList.Add(this->HandleConstPush(cTable, pNode));
@@ -1102,6 +1160,8 @@ aa::list<AAC::CompiledAbstractExpression> AAC::HandleStackPush(CompiledEnviornme
 			lit.lit.i.val = pNode->tags["enumval"];
 			opList.Add(this->HandleConstPush(cTable, lit));
 		}
+	} else if (pNode->type == AA_AST_NODE_TYPE::tupleval) {
+		opList.Add(this->HandleTuplePush(cTable, pNode, staticData));
 	} else {
 		opList.Add(CompileAST(pNode, cTable, staticData));
 	}
@@ -1124,10 +1184,10 @@ aa::list<AAC::CompiledAbstractExpression> AAC::HandleStackPush(CompiledEnviornme
 
 }
 
-aa::list<AAC::CompiledAbstractExpression> AAC::HandleCtorCall(AA_AST_NODE* pNode, CompiledEnviornmentTable& ctable, AAStaticEnvironment staticData) {
+Instructions AAC::HandleCtorCall(AA_AST_NODE* pNode, CompiledEnviornmentTable& ctable, AAStaticEnvironment staticData) {
 
 	// List containing the operations generated
-	aa::list<CompiledAbstractExpression> opList;
+	Instructions opList;
 
 	int procID = -1;
 	if (pNode->HasTag("calls")) {
@@ -1169,10 +1229,10 @@ aa::list<AAC::CompiledAbstractExpression> AAC::HandleCtorCall(AA_AST_NODE* pNode
 
 }
 
-aa::list<AAC::CompiledAbstractExpression> AAC::HandleMemberCall(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
+Instructions AAC::HandleMemberCall(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
 
 	// The op list to get from member call
-	aa::list<CompiledAbstractExpression> opList;
+	Instructions opList;
 
 	// Create a temporary node
 	AA_AST_NODE* tempNode = new AA_AST_NODE(pNode->expressions[1]->content, AA_AST_NODE_TYPE::funcall, pNode->expressions[0]->position);
@@ -1191,7 +1251,7 @@ aa::list<AAC::CompiledAbstractExpression> AAC::HandleMemberCall(AA_AST_NODE* pNo
 
 }
 
-aa::list<AAC::CompiledAbstractExpression> AAC::HandleIndexPush(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
+Instructions AAC::HandleIndexPush(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
 
 	// The op list to get from member call
 	aa::list<CompiledAbstractExpression> opList;
@@ -1259,7 +1319,7 @@ void AAC::ConstTableToByteCode(CompiledEnviornmentTable constTable, aa::bstream&
 
 }
 
-void AAC::ConvertToBytes(CompiledAbstractExpression expr, aa::bstream& bis) {
+void AAC::ConvertToBytes(Instruction expr, aa::bstream& bis) {
 
 	bis << (unsigned char)expr.bc;
 
@@ -1269,7 +1329,7 @@ void AAC::ConvertToBytes(CompiledAbstractExpression expr, aa::bstream& bis) {
 
 }
 
-AAByteType AAC::ConvertTypeToBytes(AACType* pType, const aa::list<AACType*> typeList) {
+AAByteType AAC::ConvertTypeToBytes(AACType* pType, aa::list<AACType*>& typeList) {
 
 	if (pType) {
 		AAByteType outType = AAByteType(pType->GetFullname());
@@ -1313,7 +1373,7 @@ aa::list<AAByteType> AAC::CompileTypedata(AAStaticEnvironment staticCompileData)
 
 	// Map AACTypes to the respective AAByte types
 	aa::list<AAByteType> byteTypes = exportTypes.Map<AAByteType>(
-		[this, exportTypes](AACType*& type) {
+		[this, &exportTypes](AACType*& type) {
 			return this->ConvertTypeToBytes(type, exportTypes);
 		}
 	);

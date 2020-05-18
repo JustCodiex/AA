@@ -10,6 +10,11 @@ bool hasEnding(std::wstring const& fullString, std::wstring const& ending) {
 	}
 }
 
+AAUnparser::AAUnparser() {
+	this->m_indent = 0;
+	this->m_isOpen = false;
+}
+
 void AAUnparser::Open(std::wstring targetFile) {
 
 	if (targetFile.compare(L"") != 0) {
@@ -173,6 +178,7 @@ std::wstring AAUnparser::Unparse(AA_AST_NODE* pNode) {
 		out = this->WriteToString(L"%s.%s", lhs, rhs.substr(rhs.find_last_of(':') + 1));
 		break;
 	}
+	case AA_AST_NODE_TYPE::tupleaccess:
 	case AA_AST_NODE_TYPE::fieldaccess: {
 		std::wstring lhs = this->Unparse(pNode->expressions[0]);
 		std::wstring rhs = this->Unparse(pNode->expressions[1]);
@@ -311,6 +317,15 @@ std::wstring AAUnparser::Unparse(AA_AST_NODE* pNode) {
 		out = this->WriteToString(L"%s[%s]", this->Unparse(pNode->expressions[0]), this->Unparse(pNode->expressions[1]));
 		break;
 	}
+	case AA_AST_NODE_TYPE::tupleval: {
+		out = this->WriteToString(L"%s", this->UnparseTuple(pNode));
+		break;
+	}
+	case AA_AST_NODE_TYPE::tuplevardecl: {
+		std::wstring ws = this->UnparseTuple(pNode);
+		out = this->WriteToString(L"%s %s", ws, pNode->content);
+		break;
+	}
 	case AA_AST_NODE_TYPE::field:
 	case AA_AST_NODE_TYPE::variable:
 	case AA_AST_NODE_TYPE::floatliteral:
@@ -338,6 +353,25 @@ std::wstring AAUnparser::UnparseList(AA_AST_NODE* pNode) {
 		}
 	}
 	return args;
+}
+
+std::wstring AAUnparser::UnparseTuple(AA_AST_NODE* pNode) {
+
+	std::wstringstream wss;
+	wss << L"(";
+
+	// Loop through all types
+	for (size_t i = 0; i < pNode->expressions.size(); i++) {
+		wss << this->Unparse(pNode->expressions[i]);
+		if (i < pNode->expressions.size() - 1) {
+			wss << ", ";
+		}
+	}
+
+	wss << L")";
+
+	return wss.str();
+
 }
 
 std::wstring AAUnparser::WriteIndent() {

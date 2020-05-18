@@ -31,12 +31,12 @@ public:
 	void Free();
 
 	template<typename T>
-	T Raw() {
+	T Raw() const {
 		return *reinterpret_cast<T*>(m_data);
 	}
 
 	template<>
-	std::wstring Raw() {
+	std::wstring Raw() const {
 		return std::wstring(reinterpret_cast<const wchar_t*>(m_data));
 	}
 

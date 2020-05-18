@@ -7,6 +7,8 @@ class AAUnparser {
 
 public:
 
+	AAUnparser();
+
 	/// <summary>
 	/// Open the file to write unparsed data to
 	/// </summary>
@@ -28,6 +30,7 @@ private:
 
 	std::wstring Unparse(AA_AST_NODE* pNode);
 	std::wstring UnparseList(AA_AST_NODE* pNode);
+	std::wstring UnparseTuple(AA_AST_NODE* pNode);
 
 	inline std::wstring WriteToString(std::wstring ln, ...);
 

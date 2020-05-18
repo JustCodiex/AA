@@ -642,6 +642,27 @@ void AAVM::exec(AAProgram::Procedure* procedure, aa::stack<AARuntimeEnvironment>
 			stack.Pop(AAVM_GetArgument(0));
 			AAVM_OPI++;
 			break;
+		case AAByteCode::TUPLECTOR: {
+			int count = AAVM_GetArgument(0);
+			aa::array<AAPrimitiveType> types = aa::array<AAPrimitiveType>(count);
+			aa::array<AAVal> values = aa::array<AAVal>(count);
+			for (size_t i = 0; i < count; i++) {
+				types[count - i - 1] = (AAPrimitiveType)AAVM_GetArgument(i + 1);
+				values[count - i - 1] = aa::vm::PopSomething(types[count - i - 1], stack).as_val();
+			}
+			aa::vm::PushSomething(AAStackValue(AATuple(types, values)), stack);
+			AAVM_OPI++;
+			break;
+		}
+		case AAByteCode::TUPLEGET: {
+			AATuple tuple = aa::vm::PopSomething(AAPrimitiveType::tuple, stack).to_cpp<AATuple>();
+			int index = AAVM_GetArgument(0);
+			AAPrimitiveType pushType = tuple.TypeAt(index);
+			AAVal pushVal = tuple.ValueAt(index);
+			aa::vm::PushSomething(pushType, pushVal, stack);
+			AAVM_OPI++;
+			break;
+		}
 		case AAByteCode::NOP:
 			AAVM_OPI++;
 			break;

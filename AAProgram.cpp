@@ -151,6 +151,7 @@ void AAProgram::LoadOperations(Procedure& proc, aa::bwalker& bw) {
 		case AAByteCode::WRAP:
 		case AAByteCode::CMPE:
 		case AAByteCode::CMPNE:
+		case AAByteCode::TUPLEGET:
 			proc.opSequence[i].args = new int[1];
 			bw >> proc.opSequence[i].args[0];
 			break;
@@ -172,6 +173,16 @@ void AAProgram::LoadOperations(Procedure& proc, aa::bwalker& bw) {
 			bw >> proc.opSequence[i].args[2];
 			bw >> proc.opSequence[i].args[3];
 			break;
+		case AAByteCode::TUPLECTOR: {
+			int tupleSize = 0;
+			bw >> tupleSize;
+			proc.opSequence[i].args = new int[tupleSize + 1];
+			proc.opSequence[i].args[0] = tupleSize;
+			for (size_t j = 0; j < tupleSize; j++) {
+				bw >> proc.opSequence[i].args[j + 1];
+			}
+			break;
+		}
 		default:
 			proc.opSequence[i].args = 0;
 			break;

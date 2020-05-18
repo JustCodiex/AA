@@ -165,7 +165,17 @@ namespace aa {
 		case AAByteCode::UNWRAP:
 			output = L"UNWRAP";
 			break;
+		case AAByteCode::TUPLECMP:
+			output = L"TUPLECMP";
+			break;
+		case AAByteCode::TUPLECTOR:
+			output = L"TUPLECTOR";
+			break;
+		case AAByteCode::TUPLEGET:
+			output = L"TUPLEGET";
+			break;
 		default:
+			output = L"_undefined_(" + std::to_wstring((int)CAE.bc) + L")";
 			break;
 		}
 		for (int i = 0; i < CAE.argCount; i++) {

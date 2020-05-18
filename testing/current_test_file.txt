@@ -1,178 +1,22 @@
 START PROCEDURE 0 (<GlobalScope>):
-CONSTANTS:
-IDENTIFIERS:
-
 OPERATIONS:
-	[0]	CALL, 9, 0		;; Calls: main
+	[0000]  CALL, 1, 0                      ;; Calls: main
 END PROCEDURE;
 
-START PROCEDURE 1 (Leaf::Leaf):
-CONSTANTS:
+START PROCEDURE 1 (main):
+CONSTANTS:	[I32, 2][I32, 3]
 IDENTIFIERS:
-	this;
+	0$[t];
 OPERATIONS:
-	[0]	SETVAR, 0
-	[1]	GETVAR, 0
-	[2]	RET, 1
-END PROCEDURE;
-
-START PROCEDURE 2 (Leaf::Equals):
-CONSTANTS:	[B, T]
-IDENTIFIERS:
-	_other;	this;
-OPERATIONS:
-	[0]	SETVAR, 0
-	[1]	SETVAR, 1
-	[2]	PUSHC, 0
-	[3]	RET, 1
-END PROCEDURE;
-
-START PROCEDURE 3 (Leaf::ToString):
-CONSTANTS:	[UTF-8, "Leaf("]	[UTF-8, ")"]
-IDENTIFIERS:
-	this;
-OPERATIONS:
-	[0]	SETVAR, 0
-	[1]	PUSHC, 0
-	[2]	PUSHC, 1
-	[3]	XCALL, 2, 2		;; Calls: string::concat
-	[4]	RET, 1
-END PROCEDURE;
-
-START PROCEDURE 4 (Leaf):
-CONSTANTS:
-IDENTIFIERS:
-
-OPERATIONS:
-	[0]	HALLOC, 0
-	[1]	CALL, 1, 1		;; Calls: Leaf::Leaf
-	[2]	RET, 1
-END PROCEDURE;
-
-START PROCEDURE 5 (Node::Node):
-CONSTANTS:
-IDENTIFIERS:
-	right;	left;	value;	this;
-OPERATIONS:
-	[0]	SETVAR, 0
-	[1]	SETVAR, 1
-	[2]	SETVAR, 2
-	[3]	SETVAR, 3
-	[4]	GETVAR, 3
-	[5]	GETVAR, 2
-	[6]	SETFIELD, 0
-	[7]	GETVAR, 3
-	[8]	GETVAR, 1
-	[9]	SETFIELD, 1
-	[10]	GETVAR, 3
-	[11]	GETVAR, 0
-	[12]	SETFIELD, 2
-	[13]	GETVAR, 3
-	[14]	RET, 1
-END PROCEDURE;
-
-START PROCEDURE 6 (Node::Equals):
-CONSTANTS:
-IDENTIFIERS:
-	_other;	this;
-OPERATIONS:
-	[0]	SETVAR, 0
-	[1]	SETVAR, 1
-	[2]	GETVAR, 1
-	[3]	GETFIELD, 0
-	[4]	GETVAR, 0
-	[5]	GETFIELD, 0
-	[6]	CMPE
-	[7]	GETVAR, 1
-	[8]	GETFIELD, 1
-	[9]	GETVAR, 0
-	[10]	GETFIELD, 1
-	[11]	CMPE
-	[12]	LAND
-	[13]	GETVAR, 1
-	[14]	GETFIELD, 2
-	[15]	GETVAR, 0
-	[16]	GETFIELD, 2
-	[17]	CMPE
-	[18]	LAND
-	[19]	RET, 1
-END PROCEDURE;
-
-START PROCEDURE 7 (Node::ToString):
-CONSTANTS:	[UTF-8, "Node("]	[UTF-8, ", "]	[UTF-8, ")"]
-IDENTIFIERS:
-	this;
-OPERATIONS:
-	[0]	SETVAR, 0
-	[1]	PUSHC, 0
-	[2]	PUSHC, 1
-	[3]	GETVAR, 0
-	[4]	GETFIELD, 2
-	[5]	XCALL, 2, 2		;; Calls: string::concat
-	[6]	PUSHC, 1
-	[7]	GETVAR, 0
-	[8]	GETFIELD, 1
-	[9]	XCALL, 2, 2		;; Calls: string::concat
-	[10]	GETVAR, 0
-	[11]	GETFIELD, 0
-	[12]	PUSHC, 2
-	[13]	ADD
-	[14]	XCALL, 2, 2		;; Calls: string::concat
-	[15]	XCALL, 2, 2		;; Calls: string::concat
-	[16]	XCALL, 2, 2		;; Calls: string::concat
-	[17]	RET, 1
-END PROCEDURE;
-
-START PROCEDURE 8 (Node):
-CONSTANTS:
-IDENTIFIERS:
-	right;	left;	value;
-OPERATIONS:
-	[0]	SETVAR, 0
-	[1]	SETVAR, 1
-	[2]	SETVAR, 2
-	[3]	HALLOC, 48
-	[4]	GETVAR, 2
-	[5]	GETVAR, 1
-	[6]	GETVAR, 0
-	[7]	CALL, 5, 4		;; Calls: Node::Node
-	[8]	RET, 1
-END PROCEDURE;
-
-START PROCEDURE 9 (main):
-CONSTANTS:	[I32, 10]	[I32, 5]	[I32, 2]	[I32, 0]
-IDENTIFIERS:
-	tree;	topValue;	v;
-OPERATIONS:
-	[0]	PUSHC, 0
-	[1]	PUSHC, 1
-	[2]	PUSHC, 2
-	[3]	CALL, 4, 0		;; Calls: Leaf
-	[4]	CALL, 4, 0		;; Calls: Leaf
-	[5]	CALL, 8, 3		;; Calls: Node
-	[6]	CALL, 4, 0		;; Calls: Leaf
-	[7]	CALL, 8, 3		;; Calls: Node
-	[8]	CALL, 4, 0		;; Calls: Leaf
-	[9]	CALL, 8, 3		;; Calls: Node
-	[10]	SETVAR, 0
-	[11]	GETVAR, 0
-	[12]	BDOP
-	[13]	BCKM, 4, 0, 0, 0
-	[14]	CMPE
-	[15]	JMPT, 8
-	[16]	GETVAR, 0
-	[17]	BDOP
-	[18]	PUSHN
-	[19]	PUSHN
-	[20]	GETVAR, 2
-	[21]	BCKM, 8, 0, 3, 0
-	[22]	CMPE
-	[23]	JMPT, 2
-	[24]	PUSHC, 3
-	[25]	JMP, 2
-	[26]	GETVAR, 2
-	[27]	JMP, 0
-	[28]	SETVAR, 1
-	[29]	RET, 1
+	[0000]  PUSHC, 0                        
+	[0001]  PUSHC, 1                        
+	[0002]  TUPLECTOR, 2, 6, 6              
+	[0003]  SETVAR, 0, 16                   ;; primitive: tuple [8 bytes]
+	[0004]  GETVAR, 0                       
+	[0005]  TUPLEGET, 0                     
+	[0006]  GETVAR, 0                       
+	[0007]  TUPLEGET, 1                     
+	[0008]  MUL, 6                          ;; primitive: int32 [4 bytes]
+	[0009]  RET                             
 END PROCEDURE;
 

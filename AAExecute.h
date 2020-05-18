@@ -1,5 +1,6 @@
 #pragma once
 #include "AAStackValue.h"
+#include "AATuple.h"
 #include "AAByteCode.h"
 #include "any_stack.h"
 
@@ -63,7 +64,9 @@ namespace aa {
 
 		AAStackValue PopSomething(AAPrimitiveType primitiveType, any_stack& stack);
 
-		void PushSomething(AAStackValue value, any_stack& stack);
+		void PushSomething(const AAStackValue& value, any_stack& stack);
+
+		void PushSomething(const AAPrimitiveType& type, const AAVal& value, any_stack& stack);
 
 		void PushConstant(AA_Literal lit, any_stack& stack);
 

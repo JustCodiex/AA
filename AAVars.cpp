@@ -259,6 +259,7 @@ bool AAVars::VarsNode(VarsEnviornment& venv, AA_AST_NODE* pScope) {
 		case AA_AST_NODE_TYPE::fieldaccess: {
 			return this->VarsNode(venv, pScope->expressions[0]);
 		}
+		case AA_AST_NODE_TYPE::tuplevardecl:
 		case AA_AST_NODE_TYPE::vardecl:
 			pScope->tags["varsi"] = venv[pScope->content] = venv.size();
 			return true;
@@ -330,6 +331,15 @@ bool AAVars::VarsNode(VarsEnviornment& venv, AA_AST_NODE* pScope) {
 			return this->VarsNode(venv, pScope->expressions[0]) && this->VarsNode(venv, pScope->expressions[1]);
 		case AA_AST_NODE_TYPE::matchcasestatement:
 			return this->VarsMatchCase(venv, pScope);
+		case AA_AST_NODE_TYPE::tupleval:
+			for (size_t i = 0; i < pScope->expressions.size(); i++) {
+				if (!this->VarsNode(venv, pScope->expressions[i])) {
+					return false;
+				}
+			}
+			return true;
+		case AA_AST_NODE_TYPE::tupleaccess:
+			return this->VarsNode(venv, pScope->expressions[0]); // We only need to do vars on the tuple reference - not the index
 		default:
 			break;
 		}
