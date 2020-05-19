@@ -1,0 +1,148 @@
+TODO:
+	Virtual functions
+	Pattern matching on tuples
+	Pattern matching on tagged classes
+		&& and || operators
+	Multiple files (Compile Units)
+		Make it so a file is a single Compile Unit ==> Can no longer generate multiple trees
+	Implement control path verifier
+	Implement stack verifier
+	Constant keyword
+		Simple syntax ==> "const int k = 42;"
+						  "const var k = 42;"
+	Closures
+		Lambda bodies
+		Curying
+	Arrays in one dimension
+		A correct implementation using the dynamic environment
+	Return/Break
+		return statement
+		break statement
+	Operator overloading
+		Simple syntax ==> "static bool operator ==(T a, T b) { ... true/false; }"
+						  "static int operator [](int index) { ... }"
+						  "static int operator [](int column, int row) { ... }"
+							use: "const var k = matrix[0,0];"
+	Implicit/explicit conversion/casting
+		Implicit syntax ==> "static implicit operator V(U o) { ... };"			// Allow implicit conversion from U to V
+							use: "V v = new U();"
+		Explicit Syntax ==> "static explicit operator V(U o) { ... };"			// Require a definitive cast
+							use: "V v = (V)(new U());"
+	Getters & Setters
+		Getter syntax ==> "class example { int k { get => 0; } }"						// Implicit readonly getter
+						  "class example { int v; int k { get => this.v; } }"			// Getter of other class member
+		Setter syntax ==> "class example { int v; int k { set => this.v = value; } }"
+	Generics
+		Simple syntax		==>	"class example<T> {}"
+		Conditional syntax	==>	"class example<T> where T : U {}""
+								"class example<T> where T : Numeric {}"		// T is numeric
+								"class example<T> where T : ~Numeric {}"   // T is not numeric (cannot inherit from integer types, floats, etc)
+
+		[Concept - think C++ templates]
+		Absolute syntax		==> "class example[I] where I = int { int compileTimeFixed = new int[I]; }" // Here I takes an absolute value at compile time 
+																										// and example[I] will have its own type! (think of fixed-size vectors)
+																										// example[5] != example[6]
+	Access modifiers
+	Static Classes
+		Simple syntax ==> "static class something {}"
+		Object syntax ==> "static tagged class something : other {}" // Scala object equivalent (So will fit into pattern matching)
+	Interfaces
+	Nested classes, interfaces, methods, functions etc...
+	Upper-Lower bound inheritance
+		Lower-bound syntax	==> "class example<U> where U <: V {}"		// U can only inherit from subtypes of V
+		Upper-bound syntax	==> "class example<U> where U >: V {}"		// U can only inherit from the types V is subtyping
+	Any keyword
+	Optional
+		Simple syntax ==> "void input(Optional<T> i) { i match { Some(t) => /* Do stuff with t */, None => println("No input") }; }"	// With pattern match
+					  ==> "int input(Optional<T> i) { i.GetOrElese(0); }"																// With GetOrElse
+					  ==> "int input(Input? i) { i.GetOrElse(0);}"																		// Syntactic sugar (Input? == Optional<Input>)
+	Optional operators
+		QMark syntax		==> "var x = null; x ?? new Example();"		// Will return the example instance (lazy evaluation, if x != null, the RHS will not be executed) (Lua, x or y)
+							==> "var x = null; x ? new Example();"		// Will return the example instance (not lazy evaluation, if x != null, the RHS will be executed) 
+	Ternary operator
+		Simple syntax ==> "(x == 0)?true:false;"		// Not much to explain...
+	Arrays in multiple dimensions
+		Simple syntax ==> "int[,,] cubic = new int[4,2,6];"
+	Jagged arrays
+		Simple syntax ==> "int[][][] cubic = new int[5][][]; cubic[0] = new int[4][]; cubic[0][0] = new int[2]; ..."
+	Array operations
+		Slice syntax	==>	"int[] x = new int[10]; var s = x[2..7];"	// Grabs elements, x[2,3,4,5,6]
+		Reverse syntax	==>	"int[] x = new int[10]; int k = x[^1]"		// Grabs the last element
+		Length operator ==>	"int[] x = new int[10]; int len = #x;"		// Grabs the length of the element in the first dimension
+	Sizeof operator
+		Simple syntax	==> "int ulong_size = sizeof(ulong);"			// Determines the size of the ulong data type
+	Nameof operator
+		Simple syntax	==> "int ulong_size = sizeof(ulong); nameof(ulong_size) + nameof(ulong)" // Will produce the string "ulong_sizeulong" --> Returns the string represenation of something 
+																								 // Evaluated at compile time
+	is operator
+		Simple syntax	==> "x is Object;"								// Determines if x is an instance of Object
+	as operator
+		Simple syntax	==> "Object o = x as Object;"					// Gracefully reinterprets x as an object
+	alias operator
+		Simple syntax	==> "alias Integer = int;"						// Alias Integer to int (Integer will then mean int)
+						==> "alias debug = println"						// Alias debug to println (debug("message") == println("message"));
+	String interpolation
+		Simple syntax	==> "string s = $"{testfunc()}";"
+	Lazy evaluation
+		Simple syntax ==> "lazy var x = 5*5*5*5*5*5*5*5*5*5*5*5;"		// The expression is only evaluated when referenced
+					  ==> "const lazy var x = 5*5*5*5*5*5*5*5*5*5*5;"	// The expression is only evaluated when first referenced. The result is then saved in the variable
+	Local Static Variable
+		Simple syntax ==> "int save(int x) { static int y = x*x; y; }"	// The value of y is saved and bound locally to the function (Same as in C++)
+	Try/catch/finally
+		Catch syntax ==> "try { code } catch (Some<Exception> ex) { ex match { case VMException() => ""; ... }; }"
+		Throw syntax ==> "throw VMException("This is a VM exception - somehow thrown from AA and not by the VM");"
+	Initializers
+		Vector syntax ==> "int[] x = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, ... };"
+		Tuple syntax  ==> "(string, bool)[] d = { ("Hello", false), ("World", true), ... };"
+		Map syntax	  ==> "(int, float)[] m = { (5 -> 5.0f), (8 -> 8.0f), ... }"
+	Optional parameters
+		Simple syntax ==> "void print(string message, bool debug = false) { ... };"		// Here the print function will assume debug is false if not specified
+							use: "print("message");"										// Expands to: "print(message = "message", debug = false)"
+							use: "print("message", false);"									// Expands to: "print(message = "message", debug = false)"
+							use: "print("message", true);"									// Expands to: "print(message = "message", debug = true)"
+	Foreach loop
+	Attributes
+		Simple syntax		==> "[Serialize] class data { ... }"
+								"[Obsolete("Please use the actual operator...")] int add(int x, int y) { x + y; }"
+		Custom attribute	==> "attribute attrib { ... }"
+	Events
+		Simple syntax ==> "event () => Int e;"											// event declaration
+						  "event (Int, Int) => Int e; e += (int a, int b) => a+b;"		// event declaration and subsription (-= unsubscribes -- keep in mind the closure must be the same)
+						  "event () => void callback; callback();"						// event invocation
+						  "event () => void callback; callback.invoke();"				// event invocation
+	Constexpr keyword
+		Simple syntax	==> "constexpr int add(int x, int y) { return x + y; }"							// Compiler will evaluate function at compile time (This will require constant values)
+																										// Will only compile if it can run the function at compile time
+		Implicit syntax ==> "const int add(const int x, const int y) { return x + y; }; add(1,1)"		// All operands are constant and known -> will do the same as above
+		VM argument		==> "-optimize"
+	Preprocessing
+		__LINE__			==> Current line
+		__FILE__			==> Current file
+		DEFINE def (x)		==> def = x							// Define def to be x (simple substitution, think define from C++)
+		UNDEF def			==> undefines def
+	Libraries
+		.aalib
+		(better linking)
+	Execution
+		.aexe (Runs VM with compiled code as input)
+	Standard library
+		...
+		Math-library
+		GUI-library [Make cross-platform]
+		Image-processing
+		...
+	Cross-platform [Å version = V1.0]... probably some time in 2022 or 2023
+		Linux support
+		MacOS (maybe)
+	Cross-Compiler
+		Å to C#
+		Å to Java
+		Å to Scala
+		Å to C++
+		Å to Lua (+ helper libraries)
+	Asynchronous programming
+		async
+		threading
+	Insource-bytecode
+		Simple syntax ==> "int add(int x, int y) { [Compile(AAByteCode, stackcheck = false)] { [GETVAR, 0]; [GETVAR, 1]; [ADD, 6] } }"	// Instructs the compiler to "accept" whatever is in the next scope
+																																		// And simply add those instructions.

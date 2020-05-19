@@ -109,6 +109,9 @@
     <Filter Include="Source Files\analysis\type">
       <UniqueIdentifier>{90e991be-4646-4610-92e6-71d1946343b2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Text Files">
+      <UniqueIdentifier>{8bbff6be-fc76-4e94-98e7-9fa1c116cef6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -434,5 +437,10 @@
     <ClInclude Include="AADynamicTypeEnviornment.h">
       <Filter>Header Files\analysis\type</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="TODO.txt">
+      <Filter>Text Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>
