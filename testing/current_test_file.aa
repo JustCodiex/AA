@@ -1,41 +1,44 @@
-// Calculate fib sequence
-(int, int) fib_seq((int, int) sequence, int n) {
+// Super class
+class Super {
 
-    // If n == 0, we've reached the end of the seuqnce we're to calculate
-    if (n == 0) {
-        sequence; // Simply return the sequence
-    } else {
-        fib_seq((sequence._2, sequence._1 + sequence._2), n - 1); // Return the number
+    // Super .ctor
+    Super() {
+        println("Super .ctor called");
+    }
+
+    // Virtual function (can be overriden)
+    virtual void print() {
+        println("Super -> print"); // <-- We don't expect this to be called
     }
 
 };
 
-// Calculate the fib number after n times
-int fib(int n) {
-    (int, int) last = fib_seq((0,1), n);
-    last._1 + last._2;
+// Sub class (it inherits from Super)
+class Sub : Super {
+
+    // .ctor for Sub (Which will implicitly call Super::.ctor first)
+    Sub() {
+        println("Sub .ctor called");
+    }
+
+    // Override the print function we were given
+    override void print() {
+        println("Sub -> print"); // <-- This is one we expect to be called
+    }
+
 };
 
-// Calculate the sum of the tuple values
-int sum((int,int) t) {
-    t._1 + t._2;
-};
-
-// Our main working function
+// Our main function
 int main() {
 
-    // Calculate the fib number for 4
-    int f1 = fib(4);
-    println(f1);
+    // Create a new sub object and store it in a variable for a Super object
+    Super instance = new Sub();
+    instance.print(); // Call print function (Should call Sub::print)
 
-    // Calculate the fib number for 12
-    int f2 = fib(12);
-    println(f2);
-
-    // Calculate the sum of f1 + f2
-    sum((f1, f2));
+    // Return 0
+    0;
 
 };
 
-// Call the main function to test it all
+// Call the main function
 main();

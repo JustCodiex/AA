@@ -981,7 +981,7 @@ AAC_CompileErrorMessage AAStaticAnalysis::HandleInheritanceFrom(AAClassSignature
 
 	// Merge functions
 	child->methods.Merge(super->methods,
-		[&err, child, this](AAFuncSignature* sig) { return this->CanInheritFunction(child, sig, err); },
+		[&err, child, super, this](AAFuncSignature* sig) { return this->CanInheritFunction(child, super, sig, err); },
 		[child, &senv](AAFuncSignature* sig) {
 			AAFuncSignature* nSig = new AAFuncSignature(*sig);
 			nSig->name = child->name + L"::" + nSig->GetName();
@@ -1019,7 +1019,7 @@ AAC_CompileErrorMessage AAStaticAnalysis::HandleInheritanceFrom(AACEnumSignature
 
 }
 
-bool AAStaticAnalysis::CanInheritFunction(AAClassSignature* pChildSig, AAFuncSignature* pToInherit, AAC_CompileErrorMessage& compileErr) {
+bool AAStaticAnalysis::CanInheritFunction(AAClassSignature* pChildSig, AAClassSignature* pBaseSig, AAFuncSignature* pToInherit, AAC_CompileErrorMessage& compileErr) {
 
 	// No compile error from here
 	compileErr = NO_COMPILE_ERROR_MESSAGE;
@@ -1027,6 +1027,46 @@ bool AAStaticAnalysis::CanInheritFunction(AAClassSignature* pChildSig, AAFuncSig
 	// We don't inherit class constructors
 	if (pToInherit->isClassCtor) {
 		return false;
+	}
+
+	// Is it a virtual function?
+	if (aa::modifiers::ContainsFlag(pToInherit->storageModifier, AAStorageModifier::VIRTUAL)) {
+
+		// Matched method index
+		int matchMethodIndex;
+
+		// Find the first matching index
+		if (pChildSig->methods.FindFirstIndex([pToInherit](AAFuncSignature*& childSig) { return childSig->IsValidOverride(pToInherit); }, matchMethodIndex)) {
+			
+			// Fetching the overridden methods
+			AAFuncSignature* pOverriddenMethod = pChildSig->methods.Apply(matchMethodIndex);
+
+			// Set override
+			pOverriddenMethod->overrides = pToInherit;
+
+			// Is valid?
+			if (pBaseSig->classVTable) {
+
+				// Register the function in the inheriting functions virtual table
+				pBaseSig->classVTable->RegisterFunction(pChildSig, pOverriddenMethod);
+
+				// Don't inherit ==> We have an overload
+				return false;
+
+			} else {
+
+				// Error message
+				compileErr.errorMsg = "Attempting to override virtual function - but found no VTable";
+				compileErr.errorSource = pOverriddenMethod->node->position;
+				compileErr.errorType = 0;
+
+				// Return false
+				return false;
+
+			}
+
+		}
+
 	}
 
 	// Is this a virtual method? (Only inherit if it's not overloaded
@@ -1266,6 +1306,36 @@ AAC_CompileErrorMessage AAStaticAnalysis::ApplyInheritance(AACNamespace* domain,
 
 }
 
+AAC_CompileErrorMessage AAStaticAnalysis::RegisterVirtualFunctions(AAClassSignature* classSig, AAFuncSignature* funcSig) const {
+
+	// Is it a virtual function?
+	if (aa::modifiers::ContainsFlag(funcSig->storageModifier, AAStorageModifier::VIRTUAL)) {
+
+		// If class doesn't have a VTable
+		if (classSig->classVTable == 0) {
+
+			// Create the vtable
+			classSig->CreateVTable();
+
+		}
+
+		// Add as virtual function to the class's vtable
+		if (!classSig->classVTable->AddVirtualFunction(funcSig)) {
+			printf("[AAStaticAnalysis@%i] Some error...", __LINE__);
+		}
+
+		// Return compile error message
+		return NO_COMPILE_ERROR_MESSAGE;
+
+	} else {
+		
+		// Return compile error message
+		return NO_COMPILE_ERROR_MESSAGE;
+
+	}
+
+}
+
 AAC_CompileErrorMessage AAStaticAnalysis::ApplyInheritance(AAClassSignature* classSig, AAStaticEnvironment& senv) {
 
 	// TODO: Something smarter than simply merging (eg. create an actual inheritance tree)
@@ -1295,6 +1365,11 @@ AAC_CompileErrorMessage AAStaticAnalysis::ApplyInheritance(AAClassSignature* cla
 		err.errorType = 0;
 		return err;
 
+	}
+
+	// Create vtables if applicable
+	if (!classSig->methods.ForAll([&err, &senv, classSig, this](AAFuncSignature*& fSig) { return COMPILE_OK(err = this->RegisterVirtualFunctions(classSig, fSig)); })) {
+		return err;
 	}
 
 	// Inherit stuff

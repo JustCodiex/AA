@@ -5,19 +5,16 @@ TODO:
 		&& and || operators
 	Multiple files (Compile Units)
 		Make it so a file is a single Compile Unit ==> Can no longer generate multiple trees
-	Implement control path verifier
-	Implement stack verifier
 	Constant keyword
 		Simple syntax ==> "const int k = 42;"
 						  "const var k = 42;"
 	Closures
 		Lambda bodies
-		Curying
-	Arrays in one dimension
-		A correct implementation using the dynamic environment
-	Return/Break
-		return statement
-		break statement
+			Simple syntax ==> "const var l = () => { 5; }"					// Simple lambda definition
+								use: "int k = l();"
+		Lambda captures
+		Currying
+			Simple syntax ==> "const var add = (int a, int b) => { a + b; }; const var increment = (int n) => add(1); println(increment(6));"		// Gives 7
 	Operator overloading
 		Simple syntax ==> "static bool operator ==(T a, T b) { ... true/false; }"
 						  "static int operator [](int index) { ... }"
@@ -28,7 +25,15 @@ TODO:
 							use: "V v = new U();"
 		Explicit Syntax ==> "static explicit operator V(U o) { ... };"			// Require a definitive cast
 							use: "V v = (V)(new U());"
-	Getters & Setters
+	Arrays in one dimension
+		A correct implementation using the dynamic environment
+	Return/Break
+		return statement
+		break statement
+	Implement control path verifier
+		Add pop statements where relevant (finally fix regression test io1)
+	Implement stack verifier
+	Getters & Setters (Class properties)
 		Getter syntax ==> "class example { int k { get => 0; } }"						// Implicit readonly getter
 						  "class example { int v; int k { get => this.v; } }"			// Getter of other class member
 		Setter syntax ==> "class example { int v; int k { set => this.v = value; } }"
@@ -36,18 +41,21 @@ TODO:
 		Simple syntax		==>	"class example<T> {}"
 		Conditional syntax	==>	"class example<T> where T : U {}""
 								"class example<T> where T : Numeric {}"		// T is numeric
-								"class example<T> where T : ~Numeric {}"   // T is not numeric (cannot inherit from integer types, floats, etc)
+								"class example<T> where T !: Numeric {}"   // T is not numeric (cannot inherit from integer types, floats, etc)
 
 		[Concept - think C++ templates]
 		Absolute syntax		==> "class example[I] where I = int { int compileTimeFixed = new int[I]; }" // Here I takes an absolute value at compile time 
 																										// and example[I] will have its own type! (think of fixed-size vectors)
 																										// example[5] != example[6]
-	Access modifiers
 	Static Classes
 		Simple syntax ==> "static class something {}"
 		Object syntax ==> "static tagged class something : other {}" // Scala object equivalent (So will fit into pattern matching)
 	Interfaces
-	Nested classes, interfaces, methods, functions etc...
+		Simple syntax ==> "interface IInterface { <field>, <property>, <method>, <method<() { <...> }; }"	// Allow fields, properties and methods. Methods may have default implementation.
+	Access modifiers
+		simple syntax		==> "public class example {}"												// declares example class public
+							==> "private class example {}"												// declares example class prive (file only)
+		Nested classes, interfaces, methods, functions etc...
 	Upper-Lower bound inheritance
 		Lower-bound syntax	==> "class example<U> where U <: V {}"		// U can only inherit from subtypes of V
 		Upper-bound syntax	==> "class example<U> where U >: V {}"		// U can only inherit from the types V is subtyping

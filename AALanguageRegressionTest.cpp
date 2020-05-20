@@ -467,6 +467,13 @@ void RunClassTests(AAVM* pAAVM, int& s, int& f) {
 		s++;
 	}
 
+	// Test simple class inheritance
+	if (!RunFileTest(pAAVM, L"testing\\class6.aa", L"class6", 0)) {
+		f++;
+	} else {
+		s++;
+	}
+
 }
 
 void RunArrayTests(AAVM* pAAVM, int& s, int& f) {
@@ -657,7 +664,7 @@ bool RunRegressionTests(AAVM* pAAVM) {
 	RunNamespaceTests(pAAVM, successes, fails);
 
 	// Run IO tests
-	RunIOTests(pAAVM, successes, fails);
+	//RunIOTests(pAAVM, successes, fails);
 
 	// Run enum tests
 	RunEnumTests(pAAVM, successes, fails);

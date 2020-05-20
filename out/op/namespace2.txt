@@ -38,9 +38,9 @@ CONSTANTS:	[I32, 42]
 IDENTIFIERS:
 	0$[t];	1$[c];
 OPERATIONS:
-	[0000]  CTOR, 1, 1, 0, 0                
+	[0000]  CTOR, 1, 1, 0                   
 	[0001]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
-	[0002]  CTOR, 2, 2, 0, 0                
+	[0002]  CTOR, 2, 2, 0                   
 	[0003]  SETVAR, 1, 14                   ;; primitive: refptr [16 bytes]
 	[0004]  PUSHC, 0                        
 	[0005]  RET                             

@@ -154,9 +154,11 @@
     <ClCompile Include="AAArray.cpp" />
     <ClCompile Include="AAAutoCodeGeneratorcpp.cpp" />
     <ClCompile Include="AAB2F.cpp" />
+    <ClCompile Include="AAByteType.cpp" />
     <ClCompile Include="AAC.cpp" />
     <ClCompile Include="AACFunction.cpp" />
     <ClCompile Include="AAClassCompiler.cpp" />
+    <ClCompile Include="AAClassSignature.cpp" />
     <ClCompile Include="AACNamespace.cpp" />
     <ClCompile Include="AAConsole.cpp" />
     <ClCompile Include="AAControlpath.cpp" />
@@ -165,6 +167,7 @@
     <ClCompile Include="AADynamicTypeEnvironment.cpp" />
     <ClCompile Include="AAExecute.cpp" />
     <ClCompile Include="AAFileStream.cpp" />
+    <ClCompile Include="AAFuncSignature.cpp" />
     <ClCompile Include="AAGarbageCollector.cpp" />
     <ClCompile Include="AALanguageRegressionTest.cpp" />
     <ClCompile Include="AALexer.cpp" />
@@ -172,6 +175,7 @@
     <ClCompile Include="AAMemoryStore.cpp" />
     <ClCompile Include="AAModifier.cpp" />
     <ClCompile Include="AAObject.cpp" />
+    <ClCompile Include="AAObjectType.cpp" />
     <ClCompile Include="AAP.cpp" />
     <ClCompile Include="AAPrimitiveType.cpp" />
     <ClCompile Include="AAProgram.cpp" />
@@ -189,6 +193,7 @@
     <ClCompile Include="AAVars.cpp" />
     <ClCompile Include="AAVerifier.cpp" />
     <ClCompile Include="AAVM.cpp" />
+    <ClCompile Include="AAVTable.cpp" />
     <ClCompile Include="AA_AST.cpp" />
     <ClCompile Include="AA_Node_Consts.cpp" />
     <ClCompile Include="AA_PT.cpp" />
@@ -224,6 +229,7 @@
     <ClInclude Include="AAMemory.h" />
     <ClInclude Include="AAMemoryStore.h" />
     <ClInclude Include="AAObject.h" />
+    <ClInclude Include="AAObjectType.h" />
     <ClInclude Include="AAPrimitiveType.h" />
     <ClInclude Include="AARuntimeEnvironment.h" />
     <ClInclude Include="AACodePosition.h" />
@@ -245,6 +251,7 @@
     <ClInclude Include="AAVars.h" />
     <ClInclude Include="AAVerifier.h" />
     <ClInclude Include="AAVM.h" />
+    <ClInclude Include="AAVTable.h" />
     <ClInclude Include="AA_AST.h" />
     <ClInclude Include="AA_AST_NODE.h" />
     <ClInclude Include="AA_literals.h" />

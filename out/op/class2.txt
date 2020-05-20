@@ -22,7 +22,7 @@ START PROCEDURE 2 (main):
 IDENTIFIERS:
 	0$[e];
 OPERATIONS:
-	[0000]  CTOR, 1, 1, 0, 4                
+	[0000]  CTOR, 1, 1, 0                   
 	[0001]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
 	[0002]  GETVAR, 0                       
 	[0003]  GETFIELD, 0, 6                  ;; primitive: int32 [4 bytes]

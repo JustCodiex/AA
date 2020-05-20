@@ -2,14 +2,12 @@
 #include "astring.h"
 #include "AAVM.h"
 
-#pragma region AAObject
-
 AAObject::AAObject(size_t size) {
-	m_size = size;
-	m_data = new unsigned char[size];
-	m_base = 0;
-	m_type = 0;
-	memset(m_data, 0, size);
+	this->m_size = size;
+	this->m_data = new unsigned char[size];
+	this->m_base = 0;
+	this->m_type = 0;
+	memset(this->m_data, 0, size);
 }
 
 void AAObject::SetType(AAObjectType* type) {
@@ -17,23 +15,32 @@ void AAObject::SetType(AAObjectType* type) {
 	this->m_type = type;
 }
 
-void AAObject::SetInheritance(AAObject* pBase, AAObjectType* type)  {
-	this->m_type = type;
-	this->m_base = pBase;
+void AAObject::CreateInheritance(AAStaticTypeEnvironment* pStaticTypeEnv) {
+
+	if (this->m_type->m_baseType == 0 && this->m_type->m_baseTypeIndex > 0) {
+		this->m_type->m_baseType = pStaticTypeEnv->LookupType((uint32_t)m_type->m_baseTypeIndex);
+	}
+
+	if (this->m_type->m_baseType) {
+		this->m_base = new AAObject(this->m_type->m_baseType->GetSize());
+		this->m_base->SetType(this->m_type->m_baseType);
+		this->m_base->CreateInheritance(pStaticTypeEnv);
+	}
+
 }
 
 void AAObject::Release() {
 
 	// We also release the base
-	if (m_base) {
-		m_base->Release();
-		m_base = 0;
+	if (this->m_base) {
+		this->m_base->Release();
+		this->m_base = 0;
 	}
 
 	// Delete data and self
-	if (m_data) {
-		delete[] m_data;
-		m_data = 0;
+	if (this->m_data) {
+		delete[] this->m_data;
+		this->m_data = 0;
 	}
 
 	// Delete self
@@ -50,23 +57,23 @@ const size_t AAObject::GetSize() const {
 }
 
 const size_t AAObject::GetBaseOffset() const {
-	if (m_base) {
-		return m_base->GetBaseOffset() + m_base->GetSize();
+	if (this->m_base) {
+		return this->m_base->GetBaseOffset() + this->m_base->GetSize();
 	} else {
 		return 0;
 	}
 }
 
 const bool AAObject::IsTypeOf(AAObjectType* type) const {
-	return (m_type) ? (m_type == type) : false;
+	return (this->m_type) ? (this->m_type == type) : false;
 }
 
 AAObjectType* AAObject::GetType() const {
-	return m_type;
+	return this->m_type;
 }
 
 bool AAObject::Deconstruct() {
-	if (m_type->IsTaggedType()) {
+	if (this->m_type->IsTaggedType()) {
 		return true;
 	} else {
 		return false;
@@ -74,51 +81,29 @@ bool AAObject::Deconstruct() {
 }
 
 void AAObject::OffsetChunk(unsigned char** dst, size_t offset, size_t cnkSize) {
-	if (m_base) {
-		if (offset < m_base->GetSize()) {
-			return m_base->OffsetChunk(dst, offset, cnkSize);
+	if (this->m_base) {
+		if (offset < this->m_base->GetSize()) {
+			return this->m_base->OffsetChunk(dst, offset, cnkSize);
 		} else {
-			offset -= m_base->GetSize();
+			offset -= this->m_base->GetSize();
 		}
 	}
-	memcpy(*dst, m_data + offset, cnkSize);
+	memcpy(*dst, this->m_data + offset, cnkSize);
 }
 
-#pragma endregion
-
-#pragma region AAObjectType 
-
-AAObjectType::AAObjectType() {
-	m_taggedFieldCount = -1; // Must be -1 if not a tagged class
-	m_taggedFieldTypes = 0;
-	m_baseType = 0;
-	m_typename = L"Object";
+int AAObject::GetVirtualFunctionPtr(const int& procID) const {
+	return this->GetVirtualFunctionPtr(procID, m_type->GetTypeID());
 }
 
-AAObjectType::AAObjectType(std::wstring _typename) {
-	m_baseType = 0;
-	m_taggedFieldCount = -1; // Must be -1 if not a tagged class
-	m_taggedFieldTypes = 0;
-	m_typename = _typename;
-}
+int AAObject::GetVirtualFunctionPtr(const int& procID, const uint32_t& typeID) const {
 
-bool AAObjectType::IsTaggedType() {
-	return this->m_taggedFieldCount >= 0;
-}
-
-bool AAObjectType::IsInstanceOf(AAObjectType* pBaseType) {
-	if (m_baseType) {
-		return m_baseType == pBaseType || m_baseType->IsInstanceOf(pBaseType);
+	if (this->m_type->HasVTable()) {
+		return this->m_type->m_vtable->GetFunctionPtr(procID, typeID);
 	} else {
-		return this == pBaseType;
+		return this->m_base->GetVirtualFunctionPtr(procID, typeID);
 	}
-}
 
-const std::wstring AAObjectType::GetName() const {
-	return m_typename;
 }
-
-#pragma endregion
 
 namespace aa {
 

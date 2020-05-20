@@ -93,6 +93,10 @@ private:
 
 	bool ExtractGlobalScope(std::vector<AA_AST*>& trees);
 
+	/*
+	* Type pre-registering
+	*/
+
 	AAC_CompileErrorMessage PreregisterTypes(AA_AST_NODE* pNode, AACNamespace* domain, AAStaticEnvironment& senv);
 
 	AAC_CompileErrorMessage FetchStaticDeclerationsFromTrees(AACNamespace* globalDomain, AAStaticEnvironment& senv);
@@ -103,10 +107,17 @@ private:
 	AAC_CompileErrorMessage RegisterEnum(AA_AST_NODE* pNode, AACEnumSignature*& sig, AACNamespace* domain, AAStaticEnvironment& senv);
 
 	AAC_CompileErrorMessage VerifyDeclarations(AACNamespace* domain, AAStaticEnvironment environment);
+
+	/*
+	* Inheritance methods
+	*/
+
 	AAC_CompileErrorMessage VerifyInheritanceCircularDependency(AAClassSignature* signatureA, AAClassSignature* signatureB);
 
 	AAC_CompileErrorMessage ApplyInheritance(AACNamespace* domain, AAStaticEnvironment& senv);
 	AAC_CompileErrorMessage ApplyInheritance(AAClassSignature* classSig, AAStaticEnvironment& senv);
+
+	AAC_CompileErrorMessage RegisterVirtualFunctions(AAClassSignature* classSig, AAFuncSignature* funcSig) const;
 
 	AAC_CompileErrorMessage HandleObjectInheritance(AAClassSignature* sig, AAStaticEnvironment& senv);
 	AAC_CompileErrorMessage HandleObjectInheritance(AACEnumSignature* sig, AAStaticEnvironment& senv);
@@ -114,7 +125,11 @@ private:
 	AAC_CompileErrorMessage HandleInheritanceFrom(AAClassSignature* child, AAClassSignature* super, AAStaticEnvironment& senv);
 	AAC_CompileErrorMessage HandleInheritanceFrom(AACEnumSignature* child, AAClassSignature* super, AAStaticEnvironment& senv);
 
-	bool CanInheritFunction(AAClassSignature* pChildSig, AAFuncSignature* pToInherit, AAC_CompileErrorMessage& compileErr);
+	bool CanInheritFunction(AAClassSignature* pSubSig, AAClassSignature* pBaseSig, AAFuncSignature* pToInherit, AAC_CompileErrorMessage& compileErr);
+
+	/*
+	* Type methods
+	*/
 
 	std::wstring TypeIdentifierToString(AA_AST_NODE* pNode, AACNamespace* domain, AAStaticEnvironment& senv);
 

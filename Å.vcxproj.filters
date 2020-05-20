@@ -112,6 +112,12 @@
     <Filter Include="Text Files">
       <UniqueIdentifier>{8bbff6be-fc76-4e94-98e7-9fa1c116cef6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\VM\meta">
+      <UniqueIdentifier>{d0d7a548-e2f3-435e-8413-9c8645f59c92}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\VM\meta">
+      <UniqueIdentifier>{cedf0097-6f8b-4dc3-aed4-7174b636cc45}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -246,6 +252,21 @@
     <ClCompile Include="AADynamicTypeEnvironment.cpp">
       <Filter>Source Files\analysis\type</Filter>
     </ClCompile>
+    <ClCompile Include="AAClassSignature.cpp">
+      <Filter>Source Files\compiler</Filter>
+    </ClCompile>
+    <ClCompile Include="AAFuncSignature.cpp">
+      <Filter>Source Files\compiler</Filter>
+    </ClCompile>
+    <ClCompile Include="AAByteType.cpp">
+      <Filter>Source Files\bytecode</Filter>
+    </ClCompile>
+    <ClCompile Include="AAObjectType.cpp">
+      <Filter>Source Files\VM\meta</Filter>
+    </ClCompile>
+    <ClCompile Include="AAVTable.cpp">
+      <Filter>Source Files\VM\meta</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="list.h">
@@ -347,9 +368,6 @@
     <ClInclude Include="AAAutoCodeGenerator.h">
       <Filter>Header Files\compiler</Filter>
     </ClInclude>
-    <ClInclude Include="AAObject.h">
-      <Filter>Header Files\VM</Filter>
-    </ClInclude>
     <ClInclude Include="AAStackValue.h">
       <Filter>Header Files\VM</Filter>
     </ClInclude>
@@ -436,6 +454,15 @@
     </ClInclude>
     <ClInclude Include="AADynamicTypeEnviornment.h">
       <Filter>Header Files\analysis\type</Filter>
+    </ClInclude>
+    <ClInclude Include="AAObject.h">
+      <Filter>Header Files\VM</Filter>
+    </ClInclude>
+    <ClInclude Include="AAObjectType.h">
+      <Filter>Header Files\VM\meta</Filter>
+    </ClInclude>
+    <ClInclude Include="AAVTable.h">
+      <Filter>Header Files\VM\meta</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

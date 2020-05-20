@@ -692,18 +692,29 @@ AACType* AATypeChecker::TypeCheckCallOperation(AA_AST_NODE* pCallNode) {
 	// Find the first AAFuncSignature matching our conditions
 	aa::set<AAFuncSignature*> sigs = m_senv->availableFunctions.FindAll([pCallNode](AAFuncSignature*& sig) { return sig->name == pCallNode->content; });
 
+	// Make sure we have functions to work with
 	if (sigs.Size() > 0) {
 
+		// Find best matching function from this
 		AAFuncSignature* sig = sigs.FindFirst([this, pCallNode](AAFuncSignature*& sig) { return this->IsTypeMatchingFunction(sig, pCallNode); });
 
+		// Make sure we found something
 		if (sig != 0) {
 
+			// Add some compiler data
 			pCallNode->tags["calls"] = (int)sig->procID;
 			pCallNode->tags["isVM"] = sig->isVMFunc;
 			pCallNode->tags["args"] = (int)sig->parameters.size();
 			pCallNode->tags["returns"] = (sig->returnType == AACType::Void) ? 0 : 1;
 
+			// If the matching function is virtual
+			if (aa::modifiers::ContainsFlag(sig->storageModifier, AAStorageModifier::VIRTUAL)) {
+				pCallNode->tags["isVirtualCall"] = true;
+			}
+
+			// Return the type returned
 			return sig->returnType;
+
 		} else {
 
 			// No function overload was found matching argument list

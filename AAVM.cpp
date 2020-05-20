@@ -413,6 +413,32 @@ void AAVM::exec(AAProgram::Procedure* procedure, aa::stack<AARuntimeEnvironment>
 
 			break;
 		}
+		case AAByteCode::VCALL: {
+
+			// Get object from stack
+			AAMemoryPtr ptr = aa::vm::PopSomething(AAPrimitiveType::refptr, stack).to_cpp<AAMemoryPtr>();
+			AAObject* pCaller = ptr.get_object();
+			
+			// Put back on stack
+			stack.Push(ptr);
+
+			// Fetch actual procedure to call
+			int callProc = pCaller->GetVirtualFunctionPtr(AAVM_GetArgument(0));
+
+			// Make sure it's a valid procedure
+			if (callProc == -1) {
+				AAVM_ThrowRuntimeErr("FatalCompileError", "Call index " + std::to_string(callProc) + " is out of range!");
+			}
+
+			AAVM_OPI++;
+			callstack.Push(execp);
+
+			AAVM_VENV = procedure[callProc].venv->CloneSelf();
+			AAVM_PROC = callProc;
+			AAVM_OPI = 0;
+
+			break;
+		}
 		case AAByteCode::XCALL: {
 
 			// Get function
@@ -420,8 +446,6 @@ void AAVM::exec(AAProgram::Procedure* procedure, aa::stack<AARuntimeEnvironment>
 			int argCount = AAVM_GetArgument(1);
 
 			Trace("AAVM_OPI: %i\n", AAVM_OPI);
-
-
 			Trace(".xcall before %i\n", (int)stack.get_pointer());
 
 			// Call the native function (The native function is also responsible for handling the return
@@ -494,11 +518,19 @@ void AAVM::exec(AAProgram::Procedure* procedure, aa::stack<AARuntimeEnvironment>
 			uint32_t typeID = (uint32_t)AAVM_GetArgument(0);
 			int callProc = AAVM_GetArgument(1);
 			bool isVM = AAVM_GetArgument(2);
-			size_t allocsize = AAVM_GetArgument(3);
+			size_t allocsize = 0;//AAVM_GetArgument(3);
 
+			// Lookup the type we're creating
+			AAObjectType* pObjectType = this->m_staticTypeEnvironment->LookupType(typeID);
+			allocsize = pObjectType->GetSize();
+
+			// Allocate the memory
 			AAMemoryPtr ptr = m_heapMemory->Alloc(allocsize);
+
+			// Setup object
 			AAObject* obj = ptr.get_object();
-			obj->SetType(m_staticTypeEnvironment->LookupType(typeID));
+			obj->SetType(pObjectType);
+			obj->CreateInheritance(m_staticTypeEnvironment);
 
 			// Push as last argument
 			stack.Push(ptr);
@@ -717,24 +749,7 @@ inline T __writesck(any_stack stack, std::ostream* pOutstream, bool logTopOfStac
 	return t;
 }
 
-AAStackValue AAVM::ReportStack(/*aa::stack<AAStackValue>*/ any_stack& stack) {
-
-	/*if (stack.Size() == 1) {
-		AAStackValue v = stack.Pop();
-		if (m_outStream && m_logTopOfStackAfterExec) {
-			std::wstring ws = v.ToString();
-			m_outStream->write(string_cast(ws).c_str(), ws.length());
-			m_outStream->write("", 1);
-			m_outStream->write("\n", 1);
-		}
-		return v;
-	} else {
-		if (stack.Size() > 1) {
-			const char* msg = "<Warning!> More than one element remained on the stack!\n";
-			m_outStream->write(msg, strlen(msg));
-		}
-		return AAStackValue::None;
-	}*/
+AAStackValue AAVM::ReportStack(any_stack& stack) {
 
 	if (stack.is_empty()) {
 		stack.Release(false);

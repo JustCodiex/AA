@@ -13,10 +13,45 @@ namespace aa {
 			m_buffer.push_back(byte);
 		}
 
+		void operator <<(int16_t si) {
+			unsigned char bytes[2];
+			memcpy(bytes, &si, 2);
+			for (int i = 0; i < 2; i++)
+				m_buffer.push_back(bytes[i]);
+		}
+
 		void operator <<(int32_t si) {
 			unsigned char bytes[4];
 			memcpy(bytes, &si, 4);
 			for (int i = 0; i < 4; i++)
+				m_buffer.push_back(bytes[i]);
+		}
+
+		void operator <<(int64_t si) {
+			unsigned char bytes[8];
+			memcpy(bytes, &si, 8);
+			for (int i = 0; i < 8; i++)
+				m_buffer.push_back(bytes[i]);
+		}
+
+		void operator <<(uint16_t si) {
+			unsigned char bytes[2];
+			memcpy(bytes, &si, 2);
+			for (int i = 0; i < 2; i++)
+				m_buffer.push_back(bytes[i]);
+		}
+
+		void operator <<(uint32_t si) {
+			unsigned char bytes[4];
+			memcpy(bytes, &si, 4);
+			for (int i = 0; i < 4; i++)
+				m_buffer.push_back(bytes[i]);
+		}
+
+		void operator <<(uint64_t si) {
+			unsigned char bytes[8];
+			memcpy(bytes, &si, 8);
+			for (int i = 0; i < 8; i++)
 				m_buffer.push_back(bytes[i]);
 		}
 
@@ -25,6 +60,13 @@ namespace aa {
 			memcpy(bytes, &wc, 2);
 			for (int i = 0; i < 2; i++)
 				m_buffer.push_back(bytes[i]);
+		}
+
+		void operator <<(wchar_t* wstr) {
+			size_t len = wcslen(wstr) + 1;
+			for (size_t i = 0; i < len; i++) {
+				(*this) << wstr[i];
+			}
 		}
 
 		void operator <<(float_t f) {

@@ -7,6 +7,9 @@
 
 struct AACNamespace;
 
+/// <summary>
+/// Represents a function parameter (type and name)
+/// </summary>
 struct AAFuncParam {
 	AACType* type;
 	std::wstring identifier;
@@ -18,14 +21,17 @@ struct AAFuncParam {
 		this->type = type;
 		this->identifier = identifier;
 	}
-	bool operator==(AAFuncParam other) {
-		return identifier == other.identifier;
+	bool operator==(AAFuncParam other) const{
+		return identifier.compare(other.identifier) == 0;
 	}
-	bool operator!=(AAFuncParam other) {
+	bool operator!=(AAFuncParam other) const {
 		return !(*this == other);
 	}
 };
 
+/// <summary>
+/// Static representation of a function signature
+/// </summary>
 struct AAFuncSignature {
 
 	AACType* returnType;
@@ -115,67 +121,34 @@ struct AAFuncSignature {
 	/// <returns></returns>
 	std::wstring GetFullname(); // Definition in AACNamespace.cpp
 
-	std::wstring GetName() {
-		if (isClassMethod) {
-			return this->name.substr(this->name.find_last_of(':') + 1);
-		} else {
-			return this->name;
-		}
-	}
+	std::wstring GetName() const;
+
+	/// <summary>
+	/// Retrieve a functional signature
+	/// </summary>
+	/// <param name="ignoreClass"></param>
+	/// <returns></returns>
+	const std::wstring GetFunctionalSignature(bool ignoreClass, bool ignoreName = false) const;
 
 	bool Equals(AAFuncSignature* other) {
 		return *this == *other;
 	}
 
-	bool EqualsParams(std::vector<AAFuncParam> params, bool ignoreFirst = false) {
-		if (this->parameters.size() == params.size()) {
-			for (size_t i = (ignoreFirst)?1:0; i < this->parameters.size(); i++) {
-				if (this->parameters[i].type != params[i].type) {
-					return false;
-				}
-			}
-			return true;
-		} else {
-			return false;
-		}
-	}
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="params"></param>
+	/// <param name="ignoreFirst"></param>
+	/// <returns></returns>
+	bool EqualsParams(std::vector<AAFuncParam> params, bool ignoreFirst = false);
 
 	/// <summary>
 	/// Check if the given function can be overriden by the function
 	/// </summary>
 	/// <param name="other">Function to compare with</param>
 	/// <returns>True if function is a valid override for 'other' function</returns>
-	bool IsValidOverride(AAFuncSignature* other) {
-		//if (this->storageModifier == AAStorageModifier::OVERRIDE) {
-			if (this->GetName().compare(other->GetName()) == 0) {
-				if (this->returnType == other->returnType && this->EqualsParams(other->parameters, other->isClassCtor && this->isClassCtor)) {
-					return true;
-				} else {
-					return false;
-				}
-			} else {
-				return false;
-			}
-		/*} else {
-			return false;
-		}*/
-	}
+	bool IsValidOverride(AAFuncSignature* other);
 
-	bool operator==(AAFuncSignature other) {
-		if (this->name.compare(other.name) == 0 && this->domain == other.domain) {
-			if (this->parameters.size() == other.parameters.size()) {
-				for (size_t p = 0; p < this->parameters.size(); p++) {
-					if (this->parameters[p] != other.parameters[p]) {
-						return false;
-					}
-				}
-				return true;
-			} else {
-				return false;
-			}
-		} else {
-			return false;
-		}
-	}
+	bool operator==(AAFuncSignature other) const;
 
 };

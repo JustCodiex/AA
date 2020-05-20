@@ -1,4 +1,5 @@
 #include "AAProgram.h"
+#include "AAByteType.h"
 
 AAProgram::AAProgram() {
 	m_entryPoint = -1;
@@ -45,7 +46,7 @@ bool AAProgram::LoadProgram(unsigned char* bytes, unsigned long long length) {
 	m_types = new AAStaticTypeEnvironment(typecount);
 
 	// Load types
-	for (size_t i = 0; i < typecount; i++) {
+	for (int i = 0; i < typecount; i++) {
 
 		// Load type
 		LoadType(bw);
@@ -160,12 +161,18 @@ void AAProgram::LoadOperations(Procedure& proc, aa::bwalker& bw) {
 		case AAByteCode::SETVAR:
 		case AAByteCode::CALL:
 		case AAByteCode::XCALL:
+		case AAByteCode::VCALL:
 		case AAByteCode::ALLOCARRAY:
 			proc.opSequence[i].args = new int[2];
 			bw >> proc.opSequence[i].args[0];
 			bw >> proc.opSequence[i].args[1];
 			break;
 		case AAByteCode::CTOR:
+			proc.opSequence[i].args = new int[3];
+			bw >> proc.opSequence[i].args[0];
+			bw >> proc.opSequence[i].args[1];
+			bw >> proc.opSequence[i].args[2];
+			break;
 		case AAByteCode::BCKM:
 			proc.opSequence[i].args = new int[4];
 			bw >> proc.opSequence[i].args[0];
@@ -178,7 +185,7 @@ void AAProgram::LoadOperations(Procedure& proc, aa::bwalker& bw) {
 			bw >> tupleSize;
 			proc.opSequence[i].args = new int[tupleSize + 1];
 			proc.opSequence[i].args[0] = tupleSize;
-			for (size_t j = 0; j < tupleSize; j++) {
+			for (int j = 0; j < tupleSize; j++) {
 				bw >> proc.opSequence[i].args[j + 1];
 			}
 			break;
@@ -195,23 +202,77 @@ void AAProgram::LoadOperations(Procedure& proc, aa::bwalker& bw) {
 void AAProgram::LoadType(aa::bwalker& bw) {
 
 	std::wstring typeName = bw.read_cstring();
-	uint16_t basePtr = UINT16_MAX;
-	unsigned char extendCount = 0;
+	uint16_t basePtr = UINT16_MAX, typesize = 0;
+	unsigned char typeVariant = 0, extendCount = 0, hasVtable = 0;
 	uint16_t* extendPtrs = 0;
 	uint32_t constUID;
 
+	// Read in base data
+	bw >> typeVariant;
+	bw >> typesize;
 	bw >> basePtr;
 	bw >> constUID;
 	bw >> extendCount;
 
+	// Alloc type
+	AAObjectType* pType = new AAObjectType(typeName, typesize, constUID, basePtr);
+
+	// Allocate memory for additional extensions
 	extendPtrs = new uint16_t[extendCount];
 	
+	// Loop through all extensions
 	for (size_t i = 0; i < extendCount; i++) {
 		bw >> extendPtrs[i];
 	}
 
-	// Alloc type
-	AAObjectType* pType = new AAObjectType(typeName);
+	// Add inheritances
+	pType->SetInheritance(extendCount, extendPtrs);
+
+	// If reference type
+	if ((AAByteTypeVariant)typeVariant == AAByteTypeVariant::Ref) {
+
+		// Read if we have a vtable
+		bw >> hasVtable;
+
+		// Read vtable if found
+		if (hasVtable) {
+
+			// Create VTable
+			AAVTable* pTypeVTable = new AAVTable;
+
+			uint16_t vtablelen, vtablefunc, vtablefunclen, vtablesub; // VTable length (virtual functions), VTable function index, vTable function substitute
+			uint32_t vtablecptr; // VTable class pointer
+
+			// Read VTable length
+			bw >> vtablelen;
+
+			// For all elements in VTable
+			for (uint16_t i = 0; i < vtablelen; i++) {
+
+				// Load through all vtables
+				bw >> vtablefunc;
+				bw >> vtablefunclen;
+
+				// Loop through all potential overrides
+				for (uint16_t j = 0; j < vtablefunclen; j++) {
+
+					// Read tuple
+					bw >> vtablecptr;
+					bw >> vtablesub;
+
+					// Register
+					pTypeVTable->SetFunctionPtr(vtablefunc, vtablecptr, vtablesub);
+
+				}
+
+			}
+
+			// Set the VTable
+			pType->SetVTable(pTypeVTable);
+
+		}
+
+	}
 
 	// Insert type
 	m_types->InsertType(constUID, pType);

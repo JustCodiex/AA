@@ -45,12 +45,32 @@ namespace aa {
 		/// <param name="mapFunction">Mapping function</param>
 		/// <returns></returns>
 		template<typename U>
-		array<U> Map(std::function<U(T)> mapFunction) const {
+		array<U> map(std::function<U(T)> mapFunction) const {
 			array<U> u = array<U>(m_length);
 			for (size_t i = 0; i < m_length; i++) {
 				u[i] = mapFunction(m_content[i]);
 			}
 			return u;
+		}
+
+		/// <summary>
+		/// Perform action with all elements of array as input (Use for loop - no mutation)
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		void for_each(std::function<void(T)> action) const {
+			for (size_t i = 0; i < m_length; i++) {
+				action(m_content[i]);
+			}
+		}
+
+		/// <summary>
+		/// Perform action on all elements of array (Use for mutation)
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		void for_each(std::function<void(T&)> action)  {
+			for (size_t i = 0; i < m_length; i++) {
+				action(m_content[i]);
+			}
 		}
 
 	private:

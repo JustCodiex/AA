@@ -9,7 +9,7 @@ IDENTIFIERS:
 	0$[fs];
 OPERATIONS:
 	[0000]  PUSHWS, 0                       
-	[0001]  CTOR, 0, 4, 1, 8                
+	[0001]  CTOR, 0, 4, 1                   
 	[0002]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
 	[0003]  GETVAR, 0                       
 	[0004]  PUSHWS, 1                       

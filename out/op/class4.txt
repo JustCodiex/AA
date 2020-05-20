@@ -28,7 +28,7 @@ OPERATIONS:
 	[0002]  XCALL, 2, 1                     ;; Calls: object::object
 	[0003]  GETVAR, 0                       
 	[0004]  PUSHC, 0                        
-	[0005]  CTOR, 1, 1, 0, 4                
+	[0005]  CTOR, 1, 1, 0                   
 	[0006]  SETFIELD, 1, 14                 ;; primitive: refptr [16 bytes]
 	[0007]  GETVAR, 0                       
 	[0008]  RET                             
@@ -48,7 +48,7 @@ START PROCEDURE 4 (main):
 IDENTIFIERS:
 	0$[s];
 OPERATIONS:
-	[0000]  CTOR, 2, 2, 0, 20               
+	[0000]  CTOR, 2, 2, 0                   
 	[0001]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
 	[0002]  GETVAR, 0                       
 	[0003]  CALL, 3, 1                      ;; Calls: SingleClass::GetTeacher

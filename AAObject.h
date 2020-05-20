@@ -1,37 +1,10 @@
 #pragma once
-#include "AAModifier.h"
+#include "AAObjectType.h"
 #include "AAStackValue.h"
+#include "AAModifier.h"
 #include "stack.h"
 
-/// <summary>
-/// Object type that contains all the metadata around a specific object
-/// </summary>
-class AAObjectType {
-
-public:
-
-	AAObjectType();
-
-	AAObjectType(std::wstring _typename);
-
-	bool IsTaggedType();
-
-	bool IsInstanceOf(AAObjectType* pBaseType);
-
-	const std::wstring GetName() const;
-
-private:
-
-	std::wstring m_typename;
-
-	int16_t m_taggedFieldCount;
-	size_t* m_taggedFieldTypes;
-
-	AAObjectType* m_baseType;
-
-	friend class AAObject;
-
-};
+class AAStaticTypeEnvironment; // Static type data
 
 /// <summary>
 /// Object in memory
@@ -43,7 +16,7 @@ public:
 	AAObject(size_t szInMemory);
 
 	void SetType(AAObjectType* type);
-	void SetInheritance(AAObject* pBase, AAObjectType* type);
+	void CreateInheritance(AAStaticTypeEnvironment* pStaticEnvironment);
 
 	/// <summary>
 	/// Releases the data used by the object AND the object itself
@@ -80,6 +53,9 @@ public:
 	const size_t GetBaseOffset() const;
 
 	const bool IsTypeOf(AAObjectType* type) const;
+
+	int GetVirtualFunctionPtr(const int& procID) const;
+	int GetVirtualFunctionPtr(const int& procID, const uint32_t& typeID) const;
 
 	AAObjectType* GetType() const;
 

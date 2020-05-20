@@ -74,6 +74,11 @@ size_t AAClassCompiler::CalculateMemoryUse(AAClassSignature* cc) {
 		}
 	);
 
+	// VTable involved?
+	/*if (cc->classVTable != 0) {
+		total += aa::runtime::size_of_type(AAPrimitiveType::intptr);
+	}*/
+
 	// Return total
 	return total;
 

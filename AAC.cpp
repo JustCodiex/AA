@@ -497,10 +497,8 @@ Instructions AAC::CompileFunctionCall(AA_AST_NODE* pNode, CompiledEnviornmentTab
 		args = pNode->tags["args"];
 	}
 
-	bool isVmCll = false;
-	if (pNode->HasTag("isVM")) {
-		isVmCll = pNode->tags["isVM"];
-	}
+	bool isVmCll = (bool)pNode->tags["isVM"];
+	bool isVirtualCll = pNode->HasTag("isVirtualCall");
 
 	if (args > 0) {
 		for (AA_AST_NODE* pArg : pNode->expressions) {
@@ -511,9 +509,16 @@ Instructions AAC::CompileFunctionCall(AA_AST_NODE* pNode, CompiledEnviornmentTab
 		}
 	}
 
+	AAByteCode callMode = AAByteCode::CALL;
+	if (isVmCll) {
+		callMode = AAByteCode::XCALL;
+	} else if (isVirtualCll) {
+		callMode = AAByteCode::VCALL; // TODO: Add a fetch vtable call or something here, because at the moment arguments are NOT supported (VM calls also are not supported)
+	}
+
 	CompiledAbstractExpression callCAE;
 	callCAE.argCount = 2;
-	callCAE.bc = (isVmCll) ? AAByteCode::XCALL : AAByteCode::CALL;
+	callCAE.bc = callMode;
 	callCAE.argValues[0] = procID;
 	callCAE.argValues[1] = args;
 
@@ -1217,11 +1222,11 @@ Instructions AAC::HandleCtorCall(AA_AST_NODE* pNode, CompiledEnviornmentTable& c
 	// Add constructor call instruction
 	CompiledAbstractExpression callCAE;
 	callCAE.bc = AAByteCode::CTOR;
-	callCAE.argCount = 4;
+	callCAE.argCount = 3;
 	callCAE.argValues[0] = pNode->tags["typeID"];
 	callCAE.argValues[1] = procID;
 	callCAE.argValues[2] = isVmCll;
-	callCAE.argValues[3] = allocSize;
+	//callCAE.argValues[3] = allocSize;
 
 	opList.Add(callCAE);
 
@@ -1329,6 +1334,45 @@ void AAC::ConvertToBytes(Instruction expr, aa::bstream& bis) {
 
 }
 
+AAByteVTable* AAC::ConvertClassVTableToBinary(AAClassSignature* pClass) {
+
+	// Fetch the vtable
+	AAClassVirtualTable* pVTable = pClass->classVTable;
+
+	// VTable result
+	AAByteVTable* vTableOut = new AAByteVTable;
+	vTableOut->vtable = _vtable(pVTable->virtualFunctions.size());
+
+	size_t i = 0;
+	for (auto& pair : pVTable->virtualFunctions) {
+
+		// The functions map
+		aa::array<_vtablefunc> funcs = aa::array<_vtablefunc>(pair.second.Size());
+
+		// counter
+		size_t j = 0;
+
+		// For each virtual function
+		pair.second.ForEach(
+			[&funcs, &j](std::pair<AAClassSignature*, AAFuncSignature*>& v) {  
+				funcs[j] = _vtablefunc(v.first->type->constantID, v.second->procID);
+				j++;
+			}
+		);
+
+		// Assign to binary vtable
+		vTableOut->vtable[i] = _vtableelem(pClass->FindMethodFromFunctionalSignature(pair.first)->procID, funcs);
+
+		// Goto next vtable entry
+		i++;
+
+	}
+
+	// Return the vtable
+	return vTableOut;
+
+}
+
 AAByteType AAC::ConvertTypeToBytes(AACType* pType, aa::list<AACType*>& typeList) {
 
 	if (pType) {
@@ -1339,6 +1383,7 @@ AAByteType AAC::ConvertTypeToBytes(AACType* pType, aa::list<AACType*>& typeList)
 			// Handle other derivations
 			AAClassSignature* pClass = pType->classSignature;
 			if (pClass) {
+				outType.unmanagedSize = (uint16_t)this->m_classCompiler->CalculateMemoryUse(pClass);
 				unsigned int basePtr = pClass->basePtr;
 				if (basePtr != UINT32_MAX) {
 					AACType* baseType = pClass->extends.Apply(basePtr)->type;
@@ -1349,6 +1394,9 @@ AAByteType AAC::ConvertTypeToBytes(AACType* pType, aa::list<AACType*>& typeList)
 					}
 				} else {
 					outType.baseTypePtr = AAByteType::_BasePtrObjNone;
+				}
+				if (pClass->classVTable != 0) {
+					outType.vtable = this->ConvertClassVTableToBinary(pClass);
 				}
 			} else {
 				printf("-->> Unknown compile error, expected class type, received unknown <<--");
@@ -1443,9 +1491,6 @@ AAC_Out AAC::CompileFromProcedures(aa::list<CompiledProcedure> procedures, AASta
 
 	}
 
-	// Fetch all byteTypes
-	//aa::list<AAByteType> byteTypes = this->CompileTypedata(staticCompileData);
-
 	if (m_byteTypes.Size() > 1) {
 
 		// Write exported type count
@@ -1468,8 +1513,6 @@ AAC_Out AAC::CompileFromProcedures(aa::list<CompiledProcedure> procedures, AASta
 		bis << (int32_t)0;
 
 	}
-
-	// TODO: For all byte types: write out
 
 	// Get size and allocate memory buffer
 	compileBytecodeResult.length = bis.length();

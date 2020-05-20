@@ -147,6 +147,8 @@ private:
 
 	AAByteType ConvertTypeToBytes(AACType* pCType, aa::list<AACType*>& typeList);
 
+	AAByteVTable* ConvertClassVTableToBinary(AAClassSignature* pClass);
+
 	// Check if the stack will return as many values as it says it will 
 	bool VerifyFunctionCallstack(aa::list<Instruction> body, int expected, int args, AAStaticEnvironment staticData);
 	int CalcStackSzAfterOperation(CompiledAbstractExpression op, AAStaticEnvironment staticData);
