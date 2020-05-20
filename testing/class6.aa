@@ -23,7 +23,7 @@ class Sub : Super {
 
     // Override the print function we were given
     override void print() {
-        println("Sub -> print"); // <-- This is one we expect to be called
+        println("Sub -> print"); // <-- This is the one we expect to be called
     }
 
 };

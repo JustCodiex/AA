@@ -1,5 +1,5 @@
-TODO:
-	Virtual functions
+ï»¿TODO:
+	Virtual functions âœ”
 	Pattern matching on tuples
 	Pattern matching on tagged classes
 		&& and || operators
@@ -139,15 +139,15 @@ TODO:
 		GUI-library [Make cross-platform]
 		Image-processing
 		...
-	Cross-platform [Å version = V1.0]... probably some time in 2022 or 2023
+	Cross-platform [Ã… version = V1.0]... probably some time in 2022 or 2023
 		Linux support
 		MacOS (maybe)
 	Cross-Compiler
-		Å to C#
-		Å to Java
-		Å to Scala
-		Å to C++
-		Å to Lua (+ helper libraries)
+		Ã… to C#
+		Ã… to Java
+		Ã… to Scala
+		Ã… to C++
+		Ã… to Lua (+ helper libraries)
 	Asynchronous programming
 		async
 		threading
