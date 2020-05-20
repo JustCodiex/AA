@@ -47,21 +47,21 @@ public:
 	bool IsInstanceOf(AAObjectType* pBaseType);
 
 	/// <summary>
-	/// 
+	/// Retrieve the name of the type
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>Full name of type</returns>
 	const std::wstring GetName() const;
 
 	/// <summary>
-	/// 
+	/// Set the VTable associated with the type
 	/// </summary>
-	/// <param name="pVtable"></param>
+	/// <param name="pVtable">The type</param>
 	void SetVTable(AAVTable* pVtable);
 
 	/// <summary>
-	/// 
+	/// Does the object type have a VTable?
 	/// </summary>
-	/// <returns></returns>
+	/// <returns>True if VTable is found</returns>
 	const bool HasVTable() const;
 
 private:

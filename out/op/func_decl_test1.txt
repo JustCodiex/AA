@@ -1,10 +1,12 @@
-START PROCEDURE 0 (test):
-OPERATIONS:
-	[0000]  RET                             
-END PROCEDURE;
+Å Bytecode for: out\op\func_decl_test1.txt
+BYTECODE PROCEDURES:
+	START PROCEDURE 0 (test):
+	OPERATIONS:
+		[0000]  RET                             
+	END PROCEDURE;
 
-START PROCEDURE 1 (testb):
-OPERATIONS:
-	[0000]  RET                             
-END PROCEDURE;
-
+	START PROCEDURE 1 (testb):
+	OPERATIONS:
+		[0000]  RET                             
+	END PROCEDURE;
+END BYTECODE PROCEDURES

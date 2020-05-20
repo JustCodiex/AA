@@ -1,27 +1,29 @@
-START PROCEDURE 0 (<GlobalScope>):
-CONSTANTS:	[UTF-8, "Hello"][UTF-8, "World"][UTF-8, "Hello "][UTF-8, "World"][UTF-8, " "]
-IDENTIFIERS:
-	0$[a];	1$[b];
-OPERATIONS:
-	[0000]  PUSHWS, 0                       
-	[0001]  SETVAR, 0, 13                   ;; primitive: string [16 bytes]
-	[0002]  PUSHWS, 1                       
-	[0003]  SETVAR, 1, 13                   ;; primitive: string [16 bytes]
-	[0004]  GETVAR, 0                       
-	[0005]  WRAP, 13                        
-	[0006]  XCALL, 0, 1                     ;; Calls: println
-	[0007]  GETVAR, 1                       
-	[0008]  WRAP, 13                        
-	[0009]  XCALL, 0, 1                     ;; Calls: println
-	[0010]  PUSHWS, 2                       
-	[0011]  PUSHWS, 3                       
-	[0012]  CONCAT                          
-	[0013]  WRAP, 13                        
-	[0014]  XCALL, 0, 1                     ;; Calls: println
-	[0015]  GETVAR, 0                       
-	[0016]  PUSHWS, 4                       
-	[0017]  CONCAT                          
-	[0018]  GETVAR, 1                       
-	[0019]  CONCAT                          
-END PROCEDURE;
-
+Å Bytecode for: out\op\string5.txt
+BYTECODE PROCEDURES:
+	START PROCEDURE 0 (<GlobalScope>):
+	CONSTANTS:	[UTF-8, "Hello"][UTF-8, "World"][UTF-8, "Hello "][UTF-8, "World"][UTF-8, " "]
+	IDENTIFIERS:
+		0$[a];		1$[b];
+	OPERATIONS:
+		[0000]  PUSHWS, 0                       
+		[0001]  SETVAR, 0, 13                   ;; primitive: string [16 bytes]
+		[0002]  PUSHWS, 1                       
+		[0003]  SETVAR, 1, 13                   ;; primitive: string [16 bytes]
+		[0004]  GETVAR, 0                       
+		[0005]  WRAP, 13                        
+		[0006]  XCALL, 0, 1                     ;; Calls: println
+		[0007]  GETVAR, 1                       
+		[0008]  WRAP, 13                        
+		[0009]  XCALL, 0, 1                     ;; Calls: println
+		[0010]  PUSHWS, 2                       
+		[0011]  PUSHWS, 3                       
+		[0012]  CONCAT                          
+		[0013]  WRAP, 13                        
+		[0014]  XCALL, 0, 1                     ;; Calls: println
+		[0015]  GETVAR, 0                       
+		[0016]  PUSHWS, 4                       
+		[0017]  CONCAT                          
+		[0018]  GETVAR, 1                       
+		[0019]  CONCAT                          
+	END PROCEDURE;
+END BYTECODE PROCEDURES

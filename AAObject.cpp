@@ -98,7 +98,7 @@ int AAObject::GetVirtualFunctionPtr(const int& procID) const {
 int AAObject::GetVirtualFunctionPtr(const int& procID, const uint32_t& typeID) const {
 
 	if (this->m_type->HasVTable()) {
-		return this->m_type->m_vtable->GetFunctionPtr(procID, typeID);
+		return this->m_type->m_vtable->GetFunctionPtr(procID, typeID); // TODO: Make this go down furthe if not found!
 	} else {
 		return this->m_base->GetVirtualFunctionPtr(procID, typeID);
 	}

@@ -1,11 +1,13 @@
-START PROCEDURE 0 (<GlobalScope>):
-CONSTANTS:	[UTF-8, "Hello"]
-IDENTIFIERS:
-	0$[s];
-OPERATIONS:
-	[0000]  PUSHWS, 0                       
-	[0001]  SETVAR, 0, 13                   ;; primitive: string [16 bytes]
-	[0002]  GETVAR, 0                       
-	[0003]  XCALL, 1, 1                     ;; Calls: string::length
-END PROCEDURE;
-
+Å Bytecode for: out\op\string2.txt
+BYTECODE PROCEDURES:
+	START PROCEDURE 0 (<GlobalScope>):
+	CONSTANTS:	[UTF-8, "Hello"]
+	IDENTIFIERS:
+		0$[s];
+	OPERATIONS:
+		[0000]  PUSHWS, 0                       
+		[0001]  SETVAR, 0, 13                   ;; primitive: string [16 bytes]
+		[0002]  GETVAR, 0                       
+		[0003]  XCALL, 1, 1                     ;; Calls: string::length
+	END PROCEDURE;
+END BYTECODE PROCEDURES

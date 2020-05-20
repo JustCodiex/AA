@@ -1,73 +1,88 @@
-START PROCEDURE 0 (<GlobalScope>):
-OPERATIONS:
-	[0000]  CALL, 5, 0                      ;; Calls: main
-END PROCEDURE;
+Å Bytecode for: out\op\class6.txt
+BYTECODE PROCEDURES:
+	START PROCEDURE 0 (<GlobalScope>):
+	OPERATIONS:
+		[0000]  CALL, 5, 0                      ;; Calls: main
+	END PROCEDURE;
 
-START PROCEDURE 1 (Super::Super):
-CONSTANTS:	[UTF-8, "Super .ctor called"]
-IDENTIFIERS:
-	this;
-OPERATIONS:
-	[0000]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
-	[0001]  GETVAR, 0                       
-	[0002]  XCALL, 2, 1                     ;; Calls: object::object
-	[0003]  PUSHWS, 0                       
-	[0004]  WRAP, 13                        
-	[0005]  XCALL, 0, 1                     ;; Calls: println
-	[0006]  GETVAR, 0                       
-	[0007]  RET                             
-END PROCEDURE;
+	START PROCEDURE 1 (Super::Super):
+	CONSTANTS:	[UTF-8, "Super .ctor called"]
+	IDENTIFIERS:
+		this;
+	OPERATIONS:
+		[0000]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
+		[0001]  GETVAR, 0                       
+		[0002]  XCALL, 2, 1                     ;; Calls: object::object
+		[0003]  PUSHWS, 0                       
+		[0004]  WRAP, 13                        
+		[0005]  XCALL, 0, 1                     ;; Calls: println
+		[0006]  GETVAR, 0                       
+		[0007]  RET                             
+	END PROCEDURE;
 
-START PROCEDURE 2 (Super::print):
-CONSTANTS:	[UTF-8, "Super -> print"]
-IDENTIFIERS:
-	this;
-OPERATIONS:
-	[0000]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
-	[0001]  PUSHWS, 0                       
-	[0002]  WRAP, 13                        
-	[0003]  XCALL, 0, 1                     ;; Calls: println
-	[0004]  RET                             
-END PROCEDURE;
+	START PROCEDURE 2 (Super::print):
+	CONSTANTS:	[UTF-8, "Super -> print"]
+	IDENTIFIERS:
+		this;
+	OPERATIONS:
+		[0000]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
+		[0001]  PUSHWS, 0                       
+		[0002]  WRAP, 13                        
+		[0003]  XCALL, 0, 1                     ;; Calls: println
+		[0004]  RET                             
+	END PROCEDURE;
 
-START PROCEDURE 3 (Sub::Sub):
-CONSTANTS:	[UTF-8, "Sub .ctor called"]
-IDENTIFIERS:
-	this;
-OPERATIONS:
-	[0000]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
-	[0001]  GETVAR, 0                       
-	[0002]  CALL, 1, 1                      ;; Calls: Super::Super
-	[0003]  POP, 16                         
-	[0004]  PUSHWS, 0                       
-	[0005]  WRAP, 13                        
-	[0006]  XCALL, 0, 1                     ;; Calls: println
-	[0007]  GETVAR, 0                       
-	[0008]  RET                             
-END PROCEDURE;
+	START PROCEDURE 3 (Sub::Sub):
+	CONSTANTS:	[UTF-8, "Sub .ctor called"]
+	IDENTIFIERS:
+		this;
+	OPERATIONS:
+		[0000]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
+		[0001]  GETVAR, 0                       
+		[0002]  CALL, 1, 1                      ;; Calls: Super::Super
+		[0003]  POP, 16                         
+		[0004]  PUSHWS, 0                       
+		[0005]  WRAP, 13                        
+		[0006]  XCALL, 0, 1                     ;; Calls: println
+		[0007]  GETVAR, 0                       
+		[0008]  RET                             
+	END PROCEDURE;
 
-START PROCEDURE 4 (Sub::print):
-CONSTANTS:	[UTF-8, "Sub -> print"]
-IDENTIFIERS:
-	this;
-OPERATIONS:
-	[0000]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
-	[0001]  PUSHWS, 0                       
-	[0002]  WRAP, 13                        
-	[0003]  XCALL, 0, 1                     ;; Calls: println
-	[0004]  RET                             
-END PROCEDURE;
+	START PROCEDURE 4 (Sub::print):
+	CONSTANTS:	[UTF-8, "Sub -> print"]
+	IDENTIFIERS:
+		this;
+	OPERATIONS:
+		[0000]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
+		[0001]  PUSHWS, 0                       
+		[0002]  WRAP, 13                        
+		[0003]  XCALL, 0, 1                     ;; Calls: println
+		[0004]  RET                             
+	END PROCEDURE;
 
-START PROCEDURE 5 (main):
-CONSTANTS:	[I32, 0]
-IDENTIFIERS:
-	0$[instance];
-OPERATIONS:
-	[0000]  CTOR, 2, 3, 0                   
-	[0001]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
-	[0002]  GETVAR, 0                       
-	[0003]  VCALL, 2, 1                     
-	[0004]  PUSHC, 0                        
-	[0005]  RET                             
-END PROCEDURE;
+	START PROCEDURE 5 (main):
+	CONSTANTS:	[I32, 0]
+	IDENTIFIERS:
+		0$[instance];
+	OPERATIONS:
+		[0000]  CTOR, 2, 3, 0                   
+		[0001]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
+		[0002]  GETVAR, 0                       
+		[0003]  VCALL, 2, 1                     
+		[0004]  PUSHC, 0                        
+		[0005]  RET                             
+	END PROCEDURE;
+END BYTECODE PROCEDURES
+
+BEGIN EXPORT TYPES:
+	BEGIN TYPE (UID: 1):
+		[ReferenceType] Super
+		Unmanaged size: 0
+	END TYPE;
+
+	BEGIN TYPE (UID: 2):
+		[ReferenceType] Sub
+		Unmanaged size: 0
+	END TYPE;
+END EXPORT TYPES;
 

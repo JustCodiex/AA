@@ -95,12 +95,13 @@ std::wstring AAUnparser::Unparse(AA_AST_NODE* pNode) {
 		std::wstring rtype = this->Unparse(pNode->expressions[AA_NODE_FUNNODE_RETURNTYPE]);
 		std::wstring body = this->Unparse(pNode->expressions[AA_NODE_FUNNODE_BODY]);
 		std::wstring args = this->Unparse(pNode->expressions[AA_NODE_FUNNODE_ARGLIST]);
+		std::wstring mods = this->UnparseModifiers(pNode->expressions[AA_NODE_FUNNODE_MODIFIER]);
 		std::wstring name = pNode->content;
 		size_t k = name.find_last_of(':');
 		if (k != std::wstring::npos) {
 			name = name.substr(k + 1);
 		}
-		out = this->WriteToString(L"%s %s(%s) %s", rtype, name, args, body);
+		out = this->WriteToString(L"%s%s %s(%s) %s", mods, rtype, name, args, body);
 		break;
 	}
 	case AA_AST_NODE_TYPE::funarglist: 
@@ -116,18 +117,18 @@ std::wstring AAUnparser::Unparse(AA_AST_NODE* pNode) {
 		out = this->WriteToString(L"%s(%s)", pNode->content, this->UnparseList(pNode));
 		break;
 	case AA_AST_NODE_TYPE::classdecl: {
-		std::wstring modifiers = L"";
 		std::wstring header = pNode->content;
+		std::wstring mods = this->UnparseModifiers(pNode->expressions[AA_NODE_CLASSNODE_MODIFIER]);
 		std::wstring inherits = this->UnparseList(pNode->expressions[AA_NODE_CLASSNODE_INHERITANCE]);
 		if (inherits.size() > 0) {
 			header += L" : " + inherits;
 		}
 		if (pNode->expressions.size() >= AA_NODE_CLASSNODE_BODY) {
-			out = this->WriteToString(L"%sclass %s %s", modifiers, header, this->Unparse(pNode->expressions[AA_NODE_CLASSNODE_BODY]));
+			out = this->WriteToString(L"%sclass %s %s", mods, header, this->Unparse(pNode->expressions[AA_NODE_CLASSNODE_BODY]));
 			out[out.length() - 1] = ';';
 			out += L"\n";
 		} else {
-			out = this->WriteToString(L"%sclass %s;", modifiers, header, this->Unparse(pNode->expressions[AA_NODE_CLASSNODE_BODY]));
+			out = this->WriteToString(L"%sclass %s;", mods, header, this->Unparse(pNode->expressions[AA_NODE_CLASSNODE_BODY]));
 		}
 		break;
 	}
@@ -336,6 +337,9 @@ std::wstring AAUnparser::Unparse(AA_AST_NODE* pNode) {
 	case AA_AST_NODE_TYPE::intliteral:
 		out = pNode->content;
 		break;
+	case AA_AST_NODE_TYPE::modifier:
+		out = pNode->content;
+		break;
 	default:
 		wprintf(L"Failed to unparse nodetype: %i\n", (int)pNode->type);
 		break;
@@ -372,6 +376,19 @@ std::wstring AAUnparser::UnparseTuple(AA_AST_NODE* pNode) {
 	}
 
 	wss << L")";
+
+	return wss.str();
+
+}
+
+std::wstring AAUnparser::UnparseModifiers(AA_AST_NODE* pNode) {
+
+	std::wstringstream wss;
+
+	// Loop through all modifiers (in reverse)
+	for (size_t i = 0; i < pNode->expressions.size(); i++) {
+		wss << this->Unparse(pNode->expressions[pNode->expressions.size() - i - 1]) << L" ";
+	}
 
 	return wss.str();
 

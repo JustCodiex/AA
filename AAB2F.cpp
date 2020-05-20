@@ -228,6 +228,49 @@ namespace aa {
 		}
 	}
 
+	std::wstring getTypeVariant(AAByteTypeVariant v) {
+		switch (v) {
+		case AAByteTypeVariant::Val:
+			return L"ValueType";
+		case AAByteTypeVariant::Ref:
+			return L"ReferenceType";
+		case AAByteTypeVariant::Enum:
+			return L"EnumType";
+		case AAByteTypeVariant::Interface:
+			return L"InterfaceType";
+		case AAByteTypeVariant::Object:
+			return L"ObjectType";
+		default:
+			return L"";
+		}
+	}
+
+	void dump_types(std::wofstream& o, std::vector<AAByteType> types) {
+
+		if (types.size() > 1) {
+
+			o << L"\n\nBEGIN EXPORT TYPES:\n";
+
+			for (size_t i = 1; i < types.size(); i++) {
+
+				o << L"\tBEGIN TYPE (UID: " << types[i].constID << L"):\n";
+				o << L"\t\t[" << getTypeVariant(types[i].typeVariant) << L"] " << std::wstring(types[i].typeName) << L"\n";
+				o << L"\t\tUnmanaged size: " << types[i].unmanagedSize << L"\n";
+				o << L"\tEND TYPE;";
+				o << L"\n";
+
+				if (i < types.size() - 1) {
+					o << L"\n";
+				}
+
+			}
+
+			o << L"END EXPORT TYPES;\n\n";
+
+		}
+
+	}
+
 	bool __is_primitive_code(AAByteCode code) {
 		return code == AAByteCode::ADD || code == AAByteCode::SUB || code == AAByteCode::MUL || code == AAByteCode::DIV || code == AAByteCode::LE ||
 			code == AAByteCode::LEQ || code == AAByteCode::GE || code == AAByteCode::GEQ ||	code == AAByteCode::MOD || code == AAByteCode::NNEG || 
@@ -239,18 +282,21 @@ namespace aa {
 			code == AAByteCode::LEQ || code == AAByteCode::GE || code == AAByteCode::GEQ || code == AAByteCode::NNEG ||	code == AAByteCode::CMPE || code == AAByteCode::CMPNE;
 	}
 
-	void dump_instructions(std::wstring file, std::vector<AAC::CompiledProcedure> procedures, AAVM* pAAVM) {
+	void dump_instructions(std::wstring file, std::vector<AAC::CompiledProcedure> procedures, std::vector<AAByteType> types, AAVM* pAAVM) {
 
 		std::wofstream o = std::wofstream(file);
 
 		if (o.is_open()) {
 
+			o << L"Å Bytecode for: " << file << L"\n";
+			o << L"BYTECODE PROCEDURES:\n";
+
 			for (size_t i = 0; i < procedures.size(); i++) {
 
 				AAC::CompiledProcedure proc = procedures[i];
-				o << L"START PROCEDURE " << std::to_wstring(i) << " (" << procedures[i].node->content << L"):\n";
+				o << L"\tSTART PROCEDURE " << std::to_wstring(i) << " (" << procedures[i].node->content << L"):\n";
 				if (proc.procEnvironment.constValues.Size() > 0) {
-					o << "CONSTANTS:\t";
+					o << "\tCONSTANTS:\t";
 					for (size_t j = 0; j < proc.procEnvironment.constValues.Size(); j++) {
 						AA_Literal lit = proc.procEnvironment.constValues.At(j);
 						o << L"[" << getLitType(lit.tp) << L", " << getLitValue(lit) << L"]";
@@ -258,15 +304,15 @@ namespace aa {
 					o << "\n";
 				}
 				if (proc.procEnvironment.identifiers.Size() > 0) {
-					o << L"IDENTIFIERS:\n";
+					o << L"\tIDENTIFIERS:\n";
 					for (size_t j = 0; j < proc.procEnvironment.identifiers.Size(); j++) {
-						o << L"\t" << proc.procEnvironment.identifiers.At(j) << L";";
+						o << L"\t\t" << proc.procEnvironment.identifiers.At(j) << L";";
 					}
 					o << "\n";
 				}
-				o << L"OPERATIONS:\n";
+				o << L"\tOPERATIONS:\n";
 				for (size_t j = 0; j < proc.procOperations.Size(); j++) {
-					o << L"\t" << L"[" << std::right << std::setw(4) << std::setfill(L'0') << std::to_wstring(j) << L"]  ";
+					o << L"\t\t" << L"[" << std::right << std::setw(4) << std::setfill(L'0') << std::to_wstring(j) << L"]  ";
 					o << std::left << std::setw(32) << std::setfill(L' ') << OpToWString(proc.procOperations.At(j));
 					if (proc.procOperations.At(j).bc == AAByteCode::XCALL) {
 						o << L";; Calls: " << pAAVM->GetBuiltinFuncByIndex(proc.procOperations.At(j).argValues[0]).name;
@@ -286,9 +332,16 @@ namespace aa {
 					}
 					o << "\n";
 				}
-				o << L"END PROCEDURE;\n\n";
-
+				o << L"\tEND PROCEDURE;";
+				if (i < procedures.size() - 1) {
+					o << L"\n\n";
+				}
 			}
+
+			o << L"\nEND BYTECODE PROCEDURES";
+
+			// Dump the exported types
+			dump_types(o, types);
 
 		}
 

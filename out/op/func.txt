@@ -1,34 +1,36 @@
-START PROCEDURE 0 (<GlobalScope>):
-CONSTANTS:	[I32, 25][I32, 50][I32, 24]
-OPERATIONS:
-	[0000]  PUSHC, 0                        
-	[0001]  PUSHC, 1                        
-	[0002]  PUSHC, 2                        
-	[0003]  CALL, 2, 2                      ;; Calls: sub
-	[0004]  CALL, 1, 2                      ;; Calls: add
-END PROCEDURE;
+Å Bytecode for: out\op\func.txt
+BYTECODE PROCEDURES:
+	START PROCEDURE 0 (<GlobalScope>):
+	CONSTANTS:	[I32, 25][I32, 50][I32, 24]
+	OPERATIONS:
+		[0000]  PUSHC, 0                        
+		[0001]  PUSHC, 1                        
+		[0002]  PUSHC, 2                        
+		[0003]  CALL, 2, 2                      ;; Calls: sub
+		[0004]  CALL, 1, 2                      ;; Calls: add
+	END PROCEDURE;
 
-START PROCEDURE 1 (add):
-IDENTIFIERS:
-	b;	a;
-OPERATIONS:
-	[0000]  SETVAR, 0, 6                    ;; primitive: int32 [4 bytes]
-	[0001]  SETVAR, 1, 6                    ;; primitive: int32 [4 bytes]
-	[0002]  GETVAR, 1                       
-	[0003]  GETVAR, 0                       
-	[0004]  ADD, 6                          ;; primitive: int32 [4 bytes]
-	[0005]  RET                             
-END PROCEDURE;
+	START PROCEDURE 1 (add):
+	IDENTIFIERS:
+		b;		a;
+	OPERATIONS:
+		[0000]  SETVAR, 0, 6                    ;; primitive: int32 [4 bytes]
+		[0001]  SETVAR, 1, 6                    ;; primitive: int32 [4 bytes]
+		[0002]  GETVAR, 1                       
+		[0003]  GETVAR, 0                       
+		[0004]  ADD, 6                          ;; primitive: int32 [4 bytes]
+		[0005]  RET                             
+	END PROCEDURE;
 
-START PROCEDURE 2 (sub):
-IDENTIFIERS:
-	b;	a;
-OPERATIONS:
-	[0000]  SETVAR, 0, 6                    ;; primitive: int32 [4 bytes]
-	[0001]  SETVAR, 1, 6                    ;; primitive: int32 [4 bytes]
-	[0002]  GETVAR, 1                       
-	[0003]  GETVAR, 0                       
-	[0004]  SUB, 6                          ;; primitive: int32 [4 bytes]
-	[0005]  RET                             
-END PROCEDURE;
-
+	START PROCEDURE 2 (sub):
+	IDENTIFIERS:
+		b;		a;
+	OPERATIONS:
+		[0000]  SETVAR, 0, 6                    ;; primitive: int32 [4 bytes]
+		[0001]  SETVAR, 1, 6                    ;; primitive: int32 [4 bytes]
+		[0002]  GETVAR, 1                       
+		[0003]  GETVAR, 0                       
+		[0004]  SUB, 6                          ;; primitive: int32 [4 bytes]
+		[0005]  RET                             
+	END PROCEDURE;
+END BYTECODE PROCEDURES

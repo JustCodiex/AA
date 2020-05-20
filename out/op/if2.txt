@@ -1,12 +1,14 @@
-START PROCEDURE 0 (<GlobalScope>):
-CONSTANTS:	[I32, 6][I32, 5][I32, 25][I32, 30]
-OPERATIONS:
-	[0000]  PUSHC, 0                        
-	[0001]  PUSHC, 1                        
-	[0002]  LE, 6                           ;; primitive: int32 [4 bytes]
-	[0003]  JMPF, 2                         
-	[0004]  PUSHC, 2                        
-	[0005]  JMP, 1                          
-	[0006]  PUSHC, 3                        
-END PROCEDURE;
-
+Å Bytecode for: out\op\if2.txt
+BYTECODE PROCEDURES:
+	START PROCEDURE 0 (<GlobalScope>):
+	CONSTANTS:	[I32, 6][I32, 5][I32, 25][I32, 30]
+	OPERATIONS:
+		[0000]  PUSHC, 0                        
+		[0001]  PUSHC, 1                        
+		[0002]  LE, 6                           ;; primitive: int32 [4 bytes]
+		[0003]  JMPF, 2                         
+		[0004]  PUSHC, 2                        
+		[0005]  JMP, 1                          
+		[0006]  PUSHC, 3                        
+	END PROCEDURE;
+END BYTECODE PROCEDURES

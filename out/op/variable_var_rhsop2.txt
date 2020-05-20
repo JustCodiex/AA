@@ -1,16 +1,18 @@
-START PROCEDURE 0 (<GlobalScope>):
-CONSTANTS:	[I32, 5][I32, 2]
-IDENTIFIERS:
-	0$[x];
-OPERATIONS:
-	[0000]  PUSHC, 0                        
-	[0001]  PUSHC, 0                        
-	[0002]  ADD, 6                          ;; primitive: int32 [4 bytes]
-	[0003]  PUSHC, 0                        
-	[0004]  MUL, 6                          ;; primitive: int32 [4 bytes]
-	[0005]  PUSHC, 1                        
-	[0006]  SUB, 6                          ;; primitive: int32 [4 bytes]
-	[0007]  SETVAR, 0, 6                    ;; primitive: int32 [4 bytes]
-	[0008]  GETVAR, 0                       
-END PROCEDURE;
-
+Å Bytecode for: out\op\variable_var_rhsop2.txt
+BYTECODE PROCEDURES:
+	START PROCEDURE 0 (<GlobalScope>):
+	CONSTANTS:	[I32, 5][I32, 2]
+	IDENTIFIERS:
+		0$[x];
+	OPERATIONS:
+		[0000]  PUSHC, 0                        
+		[0001]  PUSHC, 0                        
+		[0002]  ADD, 6                          ;; primitive: int32 [4 bytes]
+		[0003]  PUSHC, 0                        
+		[0004]  MUL, 6                          ;; primitive: int32 [4 bytes]
+		[0005]  PUSHC, 1                        
+		[0006]  SUB, 6                          ;; primitive: int32 [4 bytes]
+		[0007]  SETVAR, 0, 6                    ;; primitive: int32 [4 bytes]
+		[0008]  GETVAR, 0                       
+	END PROCEDURE;
+END BYTECODE PROCEDURES

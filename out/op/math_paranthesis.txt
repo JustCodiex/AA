@@ -1,14 +1,16 @@
-START PROCEDURE 0 (<GlobalScope>):
-CONSTANTS:	[I32, 15][I32, 5][I32, 42][I32, 2]
-OPERATIONS:
-	[0000]  PUSHC, 0                        
-	[0001]  PUSHC, 1                        
-	[0002]  ADD, 6                          ;; primitive: int32 [4 bytes]
-	[0003]  PUSHC, 2                        
-	[0004]  MUL, 6                          ;; primitive: int32 [4 bytes]
-	[0005]  PUSHC, 1                        
-	[0006]  PUSHC, 3                        
-	[0007]  DIV, 6                          ;; primitive: int32 [4 bytes]
-	[0008]  SUB, 6                          ;; primitive: int32 [4 bytes]
-END PROCEDURE;
-
+Å Bytecode for: out\op\math_paranthesis.txt
+BYTECODE PROCEDURES:
+	START PROCEDURE 0 (<GlobalScope>):
+	CONSTANTS:	[I32, 15][I32, 5][I32, 42][I32, 2]
+	OPERATIONS:
+		[0000]  PUSHC, 0                        
+		[0001]  PUSHC, 1                        
+		[0002]  ADD, 6                          ;; primitive: int32 [4 bytes]
+		[0003]  PUSHC, 2                        
+		[0004]  MUL, 6                          ;; primitive: int32 [4 bytes]
+		[0005]  PUSHC, 1                        
+		[0006]  PUSHC, 3                        
+		[0007]  DIV, 6                          ;; primitive: int32 [4 bytes]
+		[0008]  SUB, 6                          ;; primitive: int32 [4 bytes]
+	END PROCEDURE;
+END BYTECODE PROCEDURES

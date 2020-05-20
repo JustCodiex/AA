@@ -1,12 +1,14 @@
-START PROCEDURE 0 (<GlobalScope>):
-OPERATIONS:
-	[0000]  CALL, 1, 0                      ;; Calls: test
-END PROCEDURE;
+Å Bytecode for: out\op\func_decl_test3.txt
+BYTECODE PROCEDURES:
+	START PROCEDURE 0 (<GlobalScope>):
+	OPERATIONS:
+		[0000]  CALL, 1, 0                      ;; Calls: test
+	END PROCEDURE;
 
-START PROCEDURE 1 (test):
-CONSTANTS:	[I32, 5]
-OPERATIONS:
-	[0000]  PUSHC, 0                        
-	[0001]  RET                             
-END PROCEDURE;
-
+	START PROCEDURE 1 (test):
+	CONSTANTS:	[I32, 5]
+	OPERATIONS:
+		[0000]  PUSHC, 0                        
+		[0001]  RET                             
+	END PROCEDURE;
+END BYTECODE PROCEDURES

@@ -7,7 +7,7 @@ class Super {
 		println("Super .ctor called");
 		this;
 	}
-	void print(Super this) {
+	virtual void print(Super this) {
 		println("Super -> print");
 	}
 };
@@ -17,7 +17,7 @@ class Sub : Super {
 		println("Sub .ctor called");
 		this;
 	}
-	void print(Sub this) {
+	override void print(Sub this) {
 		println("Sub -> print");
 	}
 };

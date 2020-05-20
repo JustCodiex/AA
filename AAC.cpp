@@ -102,7 +102,7 @@ AAC_CompileResult AAC::CompileFromAbstractSyntaxTrees(std::vector<AA_AST*> trees
 
 	// Write operations out in a readable format
 	if (m_outfile != L"") {
-		aa::dump_instructions(m_outfile, compileResults.Vector(), m_pAAVM);
+		aa::dump_instructions(m_outfile, compileResults.Vector(), m_byteTypes.Vector(), m_pAAVM);
 	}
 
 	// Set success flag to true

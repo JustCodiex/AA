@@ -1,10 +1,12 @@
-START PROCEDURE 0 (<GlobalScope>):
-CONSTANTS:	[B, T]
-IDENTIFIERS:
-	0$[x];
-OPERATIONS:
-	[0000]  PUSHC, 0                        
-	[0001]  SETVAR, 0, 3                    ;; primitive: bool [1 bytes]
-	[0002]  GETVAR, 0                       
-END PROCEDURE;
-
+Å Bytecode for: out\op\block_with_type2.txt
+BYTECODE PROCEDURES:
+	START PROCEDURE 0 (<GlobalScope>):
+	CONSTANTS:	[B, T]
+	IDENTIFIERS:
+		0$[x];
+	OPERATIONS:
+		[0000]  PUSHC, 0                        
+		[0001]  SETVAR, 0, 3                    ;; primitive: bool [1 bytes]
+		[0002]  GETVAR, 0                       
+	END PROCEDURE;
+END BYTECODE PROCEDURES

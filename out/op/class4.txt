@@ -1,58 +1,73 @@
-START PROCEDURE 0 (<GlobalScope>):
-OPERATIONS:
-	[0000]  CALL, 4, 0                      ;; Calls: main
-END PROCEDURE;
+Å Bytecode for: out\op\class4.txt
+BYTECODE PROCEDURES:
+	START PROCEDURE 0 (<GlobalScope>):
+	OPERATIONS:
+		[0000]  CALL, 4, 0                      ;; Calls: main
+	END PROCEDURE;
 
-START PROCEDURE 1 (Teacher::Teacher):
-IDENTIFIERS:
-	this;	a;
-OPERATIONS:
-	[0000]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
-	[0001]  SETVAR, 1, 6                    ;; primitive: int32 [4 bytes]
-	[0002]  GETVAR, 0                       
-	[0003]  XCALL, 2, 1                     ;; Calls: object::object
-	[0004]  GETVAR, 0                       
-	[0005]  GETVAR, 1                       
-	[0006]  SETFIELD, 0, 6                  ;; primitive: int32 [4 bytes]
-	[0007]  GETVAR, 0                       
-	[0008]  RET                             
-END PROCEDURE;
+	START PROCEDURE 1 (Teacher::Teacher):
+	IDENTIFIERS:
+		this;		a;
+	OPERATIONS:
+		[0000]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
+		[0001]  SETVAR, 1, 6                    ;; primitive: int32 [4 bytes]
+		[0002]  GETVAR, 0                       
+		[0003]  XCALL, 2, 1                     ;; Calls: object::object
+		[0004]  GETVAR, 0                       
+		[0005]  GETVAR, 1                       
+		[0006]  SETFIELD, 0, 6                  ;; primitive: int32 [4 bytes]
+		[0007]  GETVAR, 0                       
+		[0008]  RET                             
+	END PROCEDURE;
 
-START PROCEDURE 2 (SingleClass::SingleClass):
-CONSTANTS:	[I32, 40]
-IDENTIFIERS:
-	this;
-OPERATIONS:
-	[0000]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
-	[0001]  GETVAR, 0                       
-	[0002]  XCALL, 2, 1                     ;; Calls: object::object
-	[0003]  GETVAR, 0                       
-	[0004]  PUSHC, 0                        
-	[0005]  CTOR, 1, 1, 0                   
-	[0006]  SETFIELD, 1, 14                 ;; primitive: refptr [16 bytes]
-	[0007]  GETVAR, 0                       
-	[0008]  RET                             
-END PROCEDURE;
+	START PROCEDURE 2 (SingleClass::SingleClass):
+	CONSTANTS:	[I32, 40]
+	IDENTIFIERS:
+		this;
+	OPERATIONS:
+		[0000]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
+		[0001]  GETVAR, 0                       
+		[0002]  XCALL, 2, 1                     ;; Calls: object::object
+		[0003]  GETVAR, 0                       
+		[0004]  PUSHC, 0                        
+		[0005]  CTOR, 1, 1, 0                   
+		[0006]  SETFIELD, 1, 14                 ;; primitive: refptr [16 bytes]
+		[0007]  GETVAR, 0                       
+		[0008]  RET                             
+	END PROCEDURE;
 
-START PROCEDURE 3 (SingleClass::GetTeacher):
-IDENTIFIERS:
-	this;
-OPERATIONS:
-	[0000]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
-	[0001]  GETVAR, 0                       
-	[0002]  GETFIELD, 1, 14                 ;; primitive: refptr [16 bytes]
-	[0003]  RET                             
-END PROCEDURE;
+	START PROCEDURE 3 (SingleClass::GetTeacher):
+	IDENTIFIERS:
+		this;
+	OPERATIONS:
+		[0000]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
+		[0001]  GETVAR, 0                       
+		[0002]  GETFIELD, 1, 14                 ;; primitive: refptr [16 bytes]
+		[0003]  RET                             
+	END PROCEDURE;
 
-START PROCEDURE 4 (main):
-IDENTIFIERS:
-	0$[s];
-OPERATIONS:
-	[0000]  CTOR, 2, 2, 0                   
-	[0001]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
-	[0002]  GETVAR, 0                       
-	[0003]  CALL, 3, 1                      ;; Calls: SingleClass::GetTeacher
-	[0004]  GETFIELD, 0, 6                  ;; primitive: int32 [4 bytes]
-	[0005]  RET                             
-END PROCEDURE;
+	START PROCEDURE 4 (main):
+	IDENTIFIERS:
+		0$[s];
+	OPERATIONS:
+		[0000]  CTOR, 2, 2, 0                   
+		[0001]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
+		[0002]  GETVAR, 0                       
+		[0003]  CALL, 3, 1                      ;; Calls: SingleClass::GetTeacher
+		[0004]  GETFIELD, 0, 6                  ;; primitive: int32 [4 bytes]
+		[0005]  RET                             
+	END PROCEDURE;
+END BYTECODE PROCEDURES
+
+BEGIN EXPORT TYPES:
+	BEGIN TYPE (UID: 1):
+		[ReferenceType] Teacher
+		Unmanaged size: 4
+	END TYPE;
+
+	BEGIN TYPE (UID: 2):
+		[ReferenceType] SingleClass
+		Unmanaged size: 20
+	END TYPE;
+END EXPORT TYPES;
 

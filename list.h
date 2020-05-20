@@ -251,7 +251,7 @@ namespace aa {
 		/// Get the underlying vector object (The actual list)
 		/// </summary>
 		/// <returns><see cref="std::vector"/> containing all elements from list</returns>
-		std::vector<T> Vector() {
+		std::vector<T>& Vector() {
 			return m_vector;
 		}
 

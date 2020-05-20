@@ -1,24 +1,26 @@
-START PROCEDURE 0 (<GlobalScope>):
-CONSTANTS:	[I32, 15][I32, 5][I32, 75][I32, 50]
-OPERATIONS:
-	[0000]  PUSHC, 0                        
-	[0001]  PUSHC, 1                        
-	[0002]  ADD, 6                          ;; primitive: int32 [4 bytes]
-	[0003]  PUSHC, 2                        
-	[0004]  PUSHC, 3                        
-	[0005]  CALL, 1, 2                      ;; Calls: par
-	[0006]  CALL, 1, 2                      ;; Calls: par
-END PROCEDURE;
+Å Bytecode for: out\op\func_decl_test8.txt
+BYTECODE PROCEDURES:
+	START PROCEDURE 0 (<GlobalScope>):
+	CONSTANTS:	[I32, 15][I32, 5][I32, 75][I32, 50]
+	OPERATIONS:
+		[0000]  PUSHC, 0                        
+		[0001]  PUSHC, 1                        
+		[0002]  ADD, 6                          ;; primitive: int32 [4 bytes]
+		[0003]  PUSHC, 2                        
+		[0004]  PUSHC, 3                        
+		[0005]  CALL, 1, 2                      ;; Calls: par
+		[0006]  CALL, 1, 2                      ;; Calls: par
+	END PROCEDURE;
 
-START PROCEDURE 1 (par):
-IDENTIFIERS:
-	y;	x;
-OPERATIONS:
-	[0000]  SETVAR, 0, 6                    ;; primitive: int32 [4 bytes]
-	[0001]  SETVAR, 1, 6                    ;; primitive: int32 [4 bytes]
-	[0002]  GETVAR, 1                       
-	[0003]  GETVAR, 0                       
-	[0004]  SUB, 6                          ;; primitive: int32 [4 bytes]
-	[0005]  RET                             
-END PROCEDURE;
-
+	START PROCEDURE 1 (par):
+	IDENTIFIERS:
+		y;		x;
+	OPERATIONS:
+		[0000]  SETVAR, 0, 6                    ;; primitive: int32 [4 bytes]
+		[0001]  SETVAR, 1, 6                    ;; primitive: int32 [4 bytes]
+		[0002]  GETVAR, 1                       
+		[0003]  GETVAR, 0                       
+		[0004]  SUB, 6                          ;; primitive: int32 [4 bytes]
+		[0005]  RET                             
+	END PROCEDURE;
+END BYTECODE PROCEDURES

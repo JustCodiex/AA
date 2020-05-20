@@ -1,48 +1,63 @@
-START PROCEDURE 0 (<GlobalScope>):
-OPERATIONS:
-	[0000]  CALL, 3, 0                      ;; Calls: main
-END PROCEDURE;
+Å Bytecode for: out\op\namespace2.txt
+BYTECODE PROCEDURES:
+	START PROCEDURE 0 (<GlobalScope>):
+	OPERATIONS:
+		[0000]  CALL, 3, 0                      ;; Calls: main
+	END PROCEDURE;
 
-START PROCEDURE 1 (example::example):
-CONSTANTS:	[UTF-8, "Foo"]
-IDENTIFIERS:
-	this;
-OPERATIONS:
-	[0000]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
-	[0001]  GETVAR, 0                       
-	[0002]  XCALL, 2, 1                     ;; Calls: object::object
-	[0003]  PUSHWS, 0                       
-	[0004]  WRAP, 13                        
-	[0005]  XCALL, 0, 1                     ;; Calls: println
-	[0006]  GETVAR, 0                       
-	[0007]  RET                             
-END PROCEDURE;
+	START PROCEDURE 1 (example::example):
+	CONSTANTS:	[UTF-8, "Foo"]
+	IDENTIFIERS:
+		this;
+	OPERATIONS:
+		[0000]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
+		[0001]  GETVAR, 0                       
+		[0002]  XCALL, 2, 1                     ;; Calls: object::object
+		[0003]  PUSHWS, 0                       
+		[0004]  WRAP, 13                        
+		[0005]  XCALL, 0, 1                     ;; Calls: println
+		[0006]  GETVAR, 0                       
+		[0007]  RET                             
+	END PROCEDURE;
 
-START PROCEDURE 2 (coo::coo):
-CONSTANTS:	[UTF-8, "Fee"]
-IDENTIFIERS:
-	this;
-OPERATIONS:
-	[0000]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
-	[0001]  GETVAR, 0                       
-	[0002]  XCALL, 2, 1                     ;; Calls: object::object
-	[0003]  PUSHWS, 0                       
-	[0004]  WRAP, 13                        
-	[0005]  XCALL, 0, 1                     ;; Calls: println
-	[0006]  GETVAR, 0                       
-	[0007]  RET                             
-END PROCEDURE;
+	START PROCEDURE 2 (coo::coo):
+	CONSTANTS:	[UTF-8, "Fee"]
+	IDENTIFIERS:
+		this;
+	OPERATIONS:
+		[0000]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
+		[0001]  GETVAR, 0                       
+		[0002]  XCALL, 2, 1                     ;; Calls: object::object
+		[0003]  PUSHWS, 0                       
+		[0004]  WRAP, 13                        
+		[0005]  XCALL, 0, 1                     ;; Calls: println
+		[0006]  GETVAR, 0                       
+		[0007]  RET                             
+	END PROCEDURE;
 
-START PROCEDURE 3 (main):
-CONSTANTS:	[I32, 42]
-IDENTIFIERS:
-	0$[t];	1$[c];
-OPERATIONS:
-	[0000]  CTOR, 1, 1, 0                   
-	[0001]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
-	[0002]  CTOR, 2, 2, 0                   
-	[0003]  SETVAR, 1, 14                   ;; primitive: refptr [16 bytes]
-	[0004]  PUSHC, 0                        
-	[0005]  RET                             
-END PROCEDURE;
+	START PROCEDURE 3 (main):
+	CONSTANTS:	[I32, 42]
+	IDENTIFIERS:
+		0$[t];		1$[c];
+	OPERATIONS:
+		[0000]  CTOR, 1, 1, 0                   
+		[0001]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
+		[0002]  CTOR, 2, 2, 0                   
+		[0003]  SETVAR, 1, 14                   ;; primitive: refptr [16 bytes]
+		[0004]  PUSHC, 0                        
+		[0005]  RET                             
+	END PROCEDURE;
+END BYTECODE PROCEDURES
+
+BEGIN EXPORT TYPES:
+	BEGIN TYPE (UID: 1):
+		[ReferenceType] inlined::domain::fullon::example
+		Unmanaged size: 0
+	END TYPE;
+
+	BEGIN TYPE (UID: 2):
+		[ReferenceType] nested::dom::coo
+		Unmanaged size: 0
+	END TYPE;
+END EXPORT TYPES;
 

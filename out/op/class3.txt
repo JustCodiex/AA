@@ -1,46 +1,56 @@
-START PROCEDURE 0 (<GlobalScope>):
-OPERATIONS:
-	[0000]  CALL, 3, 0                      ;; Calls: main
-END PROCEDURE;
+Å Bytecode for: out\op\class3.txt
+BYTECODE PROCEDURES:
+	START PROCEDURE 0 (<GlobalScope>):
+	OPERATIONS:
+		[0000]  CALL, 3, 0                      ;; Calls: main
+	END PROCEDURE;
 
-START PROCEDURE 1 (ExampleClass::ExampleClass):
-CONSTANTS:	[I32, 10]
-IDENTIFIERS:
-	this;
-OPERATIONS:
-	[0000]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
-	[0001]  GETVAR, 0                       
-	[0002]  XCALL, 2, 1                     ;; Calls: object::object
-	[0003]  GETVAR, 0                       
-	[0004]  PUSHC, 0                        
-	[0005]  SETFIELD, 0, 6                  ;; primitive: int32 [4 bytes]
-	[0006]  GETVAR, 0                       
-	[0007]  RET                             
-END PROCEDURE;
+	START PROCEDURE 1 (ExampleClass::ExampleClass):
+	CONSTANTS:	[I32, 10]
+	IDENTIFIERS:
+		this;
+	OPERATIONS:
+		[0000]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
+		[0001]  GETVAR, 0                       
+		[0002]  XCALL, 2, 1                     ;; Calls: object::object
+		[0003]  GETVAR, 0                       
+		[0004]  PUSHC, 0                        
+		[0005]  SETFIELD, 0, 6                  ;; primitive: int32 [4 bytes]
+		[0006]  GETVAR, 0                       
+		[0007]  RET                             
+	END PROCEDURE;
 
-START PROCEDURE 2 (ExampleClass::ByTen):
-IDENTIFIERS:
-	val;	this;
-OPERATIONS:
-	[0000]  SETVAR, 0, 6                    ;; primitive: int32 [4 bytes]
-	[0001]  SETVAR, 1, 14                   ;; primitive: refptr [16 bytes]
-	[0002]  GETVAR, 0                       
-	[0003]  GETVAR, 1                       
-	[0004]  GETFIELD, 0, 6                  ;; primitive: int32 [4 bytes]
-	[0005]  MUL, 6                          ;; primitive: int32 [4 bytes]
-	[0006]  RET                             
-END PROCEDURE;
+	START PROCEDURE 2 (ExampleClass::ByTen):
+	IDENTIFIERS:
+		val;		this;
+	OPERATIONS:
+		[0000]  SETVAR, 0, 6                    ;; primitive: int32 [4 bytes]
+		[0001]  SETVAR, 1, 14                   ;; primitive: refptr [16 bytes]
+		[0002]  GETVAR, 0                       
+		[0003]  GETVAR, 1                       
+		[0004]  GETFIELD, 0, 6                  ;; primitive: int32 [4 bytes]
+		[0005]  MUL, 6                          ;; primitive: int32 [4 bytes]
+		[0006]  RET                             
+	END PROCEDURE;
 
-START PROCEDURE 3 (main):
-CONSTANTS:	[I32, 5]
-IDENTIFIERS:
-	0$[e];
-OPERATIONS:
-	[0000]  CTOR, 1, 1, 0                   
-	[0001]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
-	[0002]  GETVAR, 0                       
-	[0003]  PUSHC, 0                        
-	[0004]  CALL, 2, 2                      ;; Calls: ExampleClass::ByTen
-	[0005]  RET                             
-END PROCEDURE;
+	START PROCEDURE 3 (main):
+	CONSTANTS:	[I32, 5]
+	IDENTIFIERS:
+		0$[e];
+	OPERATIONS:
+		[0000]  CTOR, 1, 1, 0                   
+		[0001]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
+		[0002]  GETVAR, 0                       
+		[0003]  PUSHC, 0                        
+		[0004]  CALL, 2, 2                      ;; Calls: ExampleClass::ByTen
+		[0005]  RET                             
+	END PROCEDURE;
+END BYTECODE PROCEDURES
+
+BEGIN EXPORT TYPES:
+	BEGIN TYPE (UID: 1):
+		[ReferenceType] ExampleClass
+		Unmanaged size: 4
+	END TYPE;
+END EXPORT TYPES;
 

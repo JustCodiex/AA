@@ -3,6 +3,9 @@
 #include <string>
 #include <fstream>
 
+/// <summary>
+/// Unparser tool for unparsing a AST into code written in Å.
+/// </summary>
 class AAUnparser {
 
 public:
@@ -31,6 +34,7 @@ private:
 	std::wstring Unparse(AA_AST_NODE* pNode);
 	std::wstring UnparseList(AA_AST_NODE* pNode);
 	std::wstring UnparseTuple(AA_AST_NODE* pNode);
+	std::wstring UnparseModifiers(AA_AST_NODE* pNode);
 
 	inline std::wstring WriteToString(std::wstring ln, ...);
 
