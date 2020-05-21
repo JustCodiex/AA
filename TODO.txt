@@ -1,6 +1,6 @@
 ﻿TODO:
 	Virtual functions ✔
-	Pattern matching on tuples
+	Pattern matching on tuples ✔
 	Pattern matching on tagged classes
 		&& and || operators
 	Binary Assignment operators

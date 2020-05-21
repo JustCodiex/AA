@@ -924,16 +924,17 @@ AA_PT_NODE* AA_PT::CreateFunctionDecl(std::vector<AA_PT_NODE*>& nodes, size_t fr
 	funDecl->childNodes.push_back(modifierList);
 
 	if (from + 3 < (int)nodes.size() && nodes[from + 3]->nodeType == AA_PT_NODE_TYPE::block) {
+		
 		size_t n = 0;
 		AA_PT_NODE* p = this->CreateTree(nodes[from + 3]->childNodes, n);
 		nodes[from + 3]->nodeType = AA_PT_NODE_TYPE::funcbody;
-		if (nodes[from + 3]->childNodes.size() > 0 && nodes[from + 3]->childNodes[0]->nodeType == AA_PT_NODE_TYPE::expression) {
+
+		if (nodes[from + 3]->childNodes.size() > 0 && nodes[from + 3]->childNodes[0]->nodeType == AA_PT_NODE_TYPE::expression) { // Come up with a better solution...
 			funDecl->childNodes.push_back(p); // function body
 		} else {
 			funDecl->childNodes.push_back(nodes[from + 3]); // function body
 		}
 		
-
 		nodes.erase(nodes.begin() + from + 3);
 	}
 
