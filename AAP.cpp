@@ -119,3 +119,10 @@ void AAP::ClearTrees(std::vector<AA_AST*> trees) {
 	}
 
 }
+
+void AAP::ClearError() {
+
+	// Reset last error
+	AA_PT::ResetLastError();
+
+}

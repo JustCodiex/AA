@@ -186,6 +186,9 @@ AAStackValue AAVM::CompileAndRun(AAP_ParseResult result, std::wstring binaryoutp
 		// Write syntax error
 		this->WriteSyntaxError(result.firstMsg);
 
+		// Clear the errors
+		m_parser->ClearError();
+
 		// Return nothing
 		return AAStackValue::None;
 
@@ -818,12 +821,16 @@ void AAVM::WriteSyntaxError(AAP_SyntaxErrorMessage errMsg) {
 	// Do we have a valid message?
 	if (errMsg.errorMsg) {
 
-		// Format the syntax error message
-		std::string syntaxErrMsg = "Syntax error, [S" + std::to_string(errMsg.errorType) + "] -> '" + std::string(errMsg.errorMsg)
-			+ "' on line " + std::to_string(errMsg.errorSource.line) + ", column " + std::to_string(errMsg.errorSource.column) + "\n";
+		// String stream
+		std::stringstream ss;
+
+		// Format messages
+		ss << "Syntax error [S" << errMsg.errorType << "] on line " << errMsg.errorSource.line << ", column " << errMsg.errorSource.column << ": ";
+		ss << errMsg.errorMsg;
+		ss << "\n";
 
 		// Write syntax message
-		this->WriteMsg(syntaxErrMsg.c_str());
+		this->WriteMsg(ss.str().c_str());
 
 	}
 

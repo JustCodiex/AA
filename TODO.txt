@@ -165,3 +165,6 @@
 	Insource-bytecode
 		Simple syntax ==> "int add(int x, int y) { [Compile(AAByteCode, stackcheck = false)] { [GETVAR, 0]; [GETVAR, 1]; [ADD, 6] } }"	// Instructs the compiler to "accept" whatever is in the next scope
 																																		// And simply add those instructions.
+	JIT-ish
+		Runtime analysis
+		Compile bytecode to machine code
