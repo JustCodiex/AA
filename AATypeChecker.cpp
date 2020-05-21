@@ -59,7 +59,7 @@ AACType* AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 		for (size_t i = 0; i < node->expressions.size(); i++) {
 			r = this->TypeCheckNode(node->expressions[i]);
 			if (r == AACType::ErrorType) {
-				printf("Detected error type (Ln %i Column %i)\n", node->position.line, node->position.column);
+				printf("Detected error type (Ln %i Column %i)\n", node->expressions[i]->position.line, node->expressions[i]->position.column);
 			}
 		}
 		return r;

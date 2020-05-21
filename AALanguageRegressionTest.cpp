@@ -603,6 +603,13 @@ void RunTupleTests(AAVM* pAAVM, int& s, int& f) {
 		s++;
 	}
 
+	// Test tuple pattern matching
+	if (!RunFileTest(pAAVM, L"testing\\tuple3.aa", L"tuple3", 0)) {
+		f++;
+	} else {
+		s++;
+	}
+
 }
 
 bool RunRegressionTests(AAVM* pAAVM) {
