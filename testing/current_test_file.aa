@@ -1,37 +1,41 @@
-// The main function to test...
-int main() {
+// UniversityDepartment enum (Simulating a university department)
+enum UniversityDepartment {
 
-    // Integer to add and subtract from
-    int accum = 0;
+    ComputerScience,
+    Maths,
+    Physics,
+    Chemistry,
+    PoliticalScience,
+    Psychology,
+    History,
+    Engineering,
+    Medicine,
+    FineArts // Be careful to not add a comma here (Currently a bug where it would then include 'string')
 
-    // Define a tuple
-    (int, int, int) t1 = (0, 0, 0);
-
-    // Handle matching
-    accum = accum + t1 match {
-        case (0,0) => 2,
-        case (0,0,0) => 3, // <== This is the one we expect
-        case (0,0,1) => 4,
-        case _ => 25
-    };
-
-    // Define other tuple
-    (bool, bool, int) t2 = (true, false, 25);
-
-    // Another matching
-    accum = accum - t2 match {
-        case (false, false, _) => 4,
-        case (false, true, _) => 6,
-        case (true, true, _) => 8,
-        case (true, false, _) => 60, // <== This is the one we expect
-        case (true, false, 25) => 61,
-        case _ => 0
-    };
-
-    // Return the result of above
-    accum;
+    // A custom string method
+    string GetString() {
+        this match { // pattern match on this (this being of the type 'UniversityDepartment')
+            case ComputerScience => "Computer Science", // Case where 'this' = ComputerScience
+            case PoliticalScience => "Political Science", // Case where 'this' = PoliticalScience
+            case FineArts => "Fine Arts", // Case where 'this' = FineArts
+            case _ => this.ToString()
+        }
+    }
 
 };
 
-// Call the function
+// Main function
+int main() {
+
+    // Get the computer science department
+    UniversityDepartment testDep = UniversityDepartment::ComputerScience;
+
+    // Print the nice name
+    println(testDep.GetString());
+
+    // Return 0
+    0;
+
+};
+
 main();

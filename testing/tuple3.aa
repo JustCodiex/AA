@@ -9,10 +9,10 @@ int main() {
 
     // Handle matching
     accum = accum + t1 match {
-        (0,0) => 2,
-        (0,0,0) => 3, // <== This is the one we expect
-        (0,0,1) => 4,
-        _ => 25
+        case (0,0) => 2,
+        case (0,0,0) => 3, // <== This is the one we expect
+        case (0,0,1) => 4,
+        case _ => 25
     };
 
     // Define other tuple
@@ -20,12 +20,12 @@ int main() {
 
     // Another matching
     accum = accum - t2 match {
-        (false, false, _) => 4,
-        (false, true, _) => 6,
-        (true, true, _) => 8,
-        (true, false, _) => 60, // <== This is the one we expect
-        (true, false, 25) => 61,
-        _ => 0
+        case (false, false, _) => 4,
+        case (false, true, _) => 6,
+        case (true, true, _) => 8,
+        case (true, false, _) => 60, // <== This is the one we expect
+        case (true, false, 25) => 61,
+        case _ => 0
     };
 
     // Return the result of above

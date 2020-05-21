@@ -12,22 +12,20 @@ enum UniversityDepartment {
 	Engineering,
 	Medicine,
 	FineArts
-	string GetString(UniversityDepartment this) {
-		this match {
-			case ComputerScience => {
-				"Computer Science";
-			},
-			case PoliticalScience => {
-				"Political Science";
-			},
-			case FineArts => {
-				"Fine Arts";
-			},
-			case _ => {
-				this.ToString();
-			}
-		};
-	}
+	string GetString(UniversityDepartment this) this match {
+		case ComputerScience => {
+			"Computer Science";
+		},
+		case PoliticalScience => {
+			"Political Science";
+		},
+		case FineArts => {
+			"Fine Arts";
+		},
+		case _ => {
+			this.ToString();
+		}
+	};
 }
 int main() {
 	UniversityDepartment testDep = UniversityDepartment::ComputerScience;

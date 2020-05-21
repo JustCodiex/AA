@@ -1,0 +1,34 @@
+{
+	main();
+}
+enum UniversityDepartment {
+	ComputerScience,
+	Maths,
+	Physics,
+	Chemistry,
+	PoliticalScience,
+	Psychology,
+	History,
+	Engineering,
+	Medicine,
+	FineArts
+	string GetString(UniversityDepartment this) this match {
+		case ComputerScience => {
+			"Computer Science";
+		},
+		case PoliticalScience => {
+			"Political Science";
+		},
+		case FineArts => {
+			"Fine Arts";
+		},
+		case _ => {
+			this.ToString();
+		}
+	};
+}
+int main() {
+	UniversityDepartment testDep = UniversityDepartment::ComputerScience;
+	println(testDep.GetString());
+	0;
+}

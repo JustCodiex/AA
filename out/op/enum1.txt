@@ -1,4 +1,3 @@
-Å Bytecode for: out\op\enum1.txt
 BYTECODE PROCEDURES:
 	START PROCEDURE 0 (<GlobalScope>):
 	OPERATIONS:
@@ -14,28 +13,27 @@ BYTECODE PROCEDURES:
 		[0001]  GETVAR, 0                       
 		[0002]  PUSHC, 0                        
 		[0003]  CMPE, 6                         ;; primitive: int32 [4 bytes]
-		[0004]  JMPT, 11                        
+		[0004]  JMPT, 10                        
 		[0005]  GETVAR, 0                       
 		[0006]  PUSHC, 2                        
 		[0007]  CMPE, 6                         ;; primitive: int32 [4 bytes]
-		[0008]  JMPT, 9                         
+		[0008]  JMPT, 8                         
 		[0009]  GETVAR, 0                       
 		[0010]  PUSHC, 4                        
 		[0011]  CMPE, 6                         ;; primitive: int32 [4 bytes]
-		[0012]  JMPT, 7                         
+		[0012]  JMPT, 6                         
 		[0013]  PUSHC, 6                        
-		[0014]  CMPE, 6                         ;; primitive: int32 [4 bytes]
-		[0015]  JMPT, 6                         
-		[0016]  PUSHWS, 1                       
-		[0017]  JMP, 7                          
-		[0018]  PUSHWS, 3                       
-		[0019]  JMP, 5                          
-		[0020]  PUSHWS, 5                       
-		[0021]  JMP, 3                          
-		[0022]  GETVAR, 0                       
-		[0023]  XCALL, 3, 1                     ;; Calls: object::ToString
-		[0024]  JMP, 0                          
-		[0025]  RET                             
+		[0014]  JMPT, 6                         
+		[0015]  PUSHWS, 1                       
+		[0016]  JMP, 7                          
+		[0017]  PUSHWS, 3                       
+		[0018]  JMP, 5                          
+		[0019]  PUSHWS, 5                       
+		[0020]  JMP, 3                          
+		[0021]  GETVAR, 0                       
+		[0022]  XCALL, 3, 1                     ;; Calls: object::ToString
+		[0023]  JMP, 0                          
+		[0024]  RET                             
 	END PROCEDURE;
 
 	START PROCEDURE 2 (main):
