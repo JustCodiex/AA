@@ -16,6 +16,9 @@ void AA_PT_Unflatten::ApplyOrderOfOperationBindings(std::vector<AA_PT_NODE*>& no
 	// Apply assignment order rule, so var x = 5+5 is treated as 5+5=x and not x=5, + 5
 	ApplyAssignmentOrder(nodes);
 
+	// Apply keyword bindings (so "var k = 5 - j match { ... }" will be parsed correctly)
+	ApplyKeywordBindings(nodes);
+
 }
 
 void AA_PT_Unflatten::ApplyGroupings(std::vector<AA_PT_NODE*>& nodes) {
@@ -41,6 +44,18 @@ bool AA_PT_Unflatten::CanTreatKeywordAsIdentifier(AA_PT_NODE* node) {
 		return node->content.compare(L"this") == 0 || node->content.compare(L"base") == 0;
 	} else {
 		return false;
+	}
+}
+
+bool AA_PT_Unflatten::IsIdentifier(AA_PT_NODE* node, bool checkKeyword) {
+	if (node->nodeType == AA_PT_NODE_TYPE::identifier) {
+		return true;
+	} else {
+		if (checkKeyword) {
+			return CanTreatKeywordAsIdentifier(node);
+		} else {
+			return false;
+		}
 	}
 }
 
@@ -292,6 +307,45 @@ void AA_PT_Unflatten::ApplyStatementBindings(std::vector<AA_PT_NODE*>& nodes) {
 
 			nodes.erase(nodes.begin() + index, nodes.begin() + index2);
 			nodes.insert(nodes.begin() + index, rhs);
+
+		}
+
+		index++;
+
+	}
+
+}
+
+void AA_PT_Unflatten::ApplyKeywordBindings(std::vector<AA_PT_NODE*>& nodes) {
+
+	size_t index = 0;
+
+	while (index < nodes.size()) {
+
+		if (nodes[index]->nodeType == AA_PT_NODE_TYPE::block || nodes[index]->nodeType == AA_PT_NODE_TYPE::expression) { // TODO: Allow for more cases here...
+
+			// Apply recursively
+			ApplyKeywordBindings(nodes[index]->childNodes);
+
+		} else if (IsIdentifier(nodes[index], true)) { // Is valid identifier (or reserved keyword to be treated as identifier)
+
+			if (index + 2 < nodes.size() && nodes[index + 1]->nodeType == AA_PT_NODE_TYPE::keyword && nodes[index + 1]->content.compare(L"match") == 0 &&
+				nodes[index+2]->nodeType == AA_PT_NODE_TYPE::block) {
+
+				// Create expression node to bind these together
+				AA_PT_NODE* expNode = new AA_PT_NODE(nodes[index + 1]->position);
+				expNode->nodeType = AA_PT_NODE_TYPE::expression;
+				expNode->childNodes.push_back(nodes[index]);
+				expNode->childNodes.push_back(nodes[index+1]);
+				expNode->childNodes.push_back(nodes[index+2]);
+
+				// Assign node
+				nodes[index] = expNode;
+
+				// Remove subnodes from current node list
+				nodes.erase(nodes.begin() + index + 1, nodes.begin() + index + 3);
+
+			}
 
 		}
 
