@@ -53,6 +53,14 @@ public:
 
 	unsigned char* get_bytes() { return m_data; }
 
+	static AAVal AcceptValue() {
+		unsigned char c[3];
+		c[0] = 'A';
+		c[1] = 1;
+		c[2] = 1;
+		return AAVal(c);
+	}
+
 private:
 	unsigned char* m_data;
 

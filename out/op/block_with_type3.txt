@@ -1,4 +1,3 @@
-Å Bytecode for: out\op\block_with_type3.txt
 BYTECODE PROCEDURES:
 	START PROCEDURE 0 (<GlobalScope>):
 	CONSTANTS:	[F32, 1.500000]

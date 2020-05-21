@@ -1,4 +1,3 @@
-Å Bytecode for: out\op\char1.txt
 BYTECODE PROCEDURES:
 	START PROCEDURE 0 (<GlobalScope>):
 	CONSTANTS:	[C, A]

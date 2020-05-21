@@ -604,7 +604,7 @@ void RunTupleTests(AAVM* pAAVM, int& s, int& f) {
 	}
 
 	// Test tuple pattern matching
-	if (!RunFileTest(pAAVM, L"testing\\tuple3.aa", L"tuple3", 0)) {
+	if (!RunFileTest(pAAVM, L"testing\\tuple3.aa", L"tuple3", -57)) {
 		f++;
 	} else {
 		s++;

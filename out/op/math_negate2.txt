@@ -1,4 +1,3 @@
-Å Bytecode for: out\op\math_negate2.txt
 BYTECODE PROCEDURES:
 	START PROCEDURE 0 (<GlobalScope>):
 	CONSTANTS:	[I32, 5]

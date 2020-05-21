@@ -1,4 +1,3 @@
-Å Bytecode for: out\op\variable_var_rhsop1.txt
 BYTECODE PROCEDURES:
 	START PROCEDURE 0 (<GlobalScope>):
 	CONSTANTS:	[I32, 5]

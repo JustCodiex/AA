@@ -1,4 +1,3 @@
-Å Bytecode for: out\op\string1.txt
 BYTECODE PROCEDURES:
 	START PROCEDURE 0 (<GlobalScope>):
 	CONSTANTS:	[UTF-8, "This is a string - Hello from AA"]

@@ -38,6 +38,8 @@ namespace aa {
                 return AAStackValue(stack.Pop<AAIntPtr>());
             case AAPrimitiveType::tuple:
                 return AAStackValue(stack.Pop<AATuple>());
+            case AAPrimitiveType::__TRUEANY:
+                return AAStackValue(AAPrimitiveType::__TRUEANY, stack.Pop<AAVal>());
             default:
                 break;
             }

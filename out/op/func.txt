@@ -1,4 +1,3 @@
-Å Bytecode for: out\op\func.txt
 BYTECODE PROCEDURES:
 	START PROCEDURE 0 (<GlobalScope>):
 	CONSTANTS:	[I32, 25][I32, 50][I32, 24]

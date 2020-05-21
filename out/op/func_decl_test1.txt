@@ -1,4 +1,3 @@
-Å Bytecode for: out\op\func_decl_test1.txt
 BYTECODE PROCEDURES:
 	START PROCEDURE 0 (test):
 	OPERATIONS:

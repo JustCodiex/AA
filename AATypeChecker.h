@@ -122,6 +122,8 @@ private:
 
 	bool IsTypeMatchingFunction(AAFuncSignature* sig, AA_AST_NODE* pCallNode);
 	bool IsMatchingTypes(AACType* tCompare, AACType* tExpected);
+	inline bool IsTupleTypes(AACType* tCompare, AACType* tExpected);
+	inline bool IsMatchingTuples(AACType* tCompare, AACType* tExpected);
 
 	AAClassSignature* FindCompiledClassOfType(AACType* type);
 	bool FindCompiledClassOperation(AAClassSignature* cc, std::wstring operatorType, AACType* right, AAClassOperatorSignature& op);

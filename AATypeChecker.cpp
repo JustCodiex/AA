@@ -185,7 +185,7 @@ AACType* AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 				// TODO: Error
 			}
 		}
-		return this->m_dynamicTypeEnvironment->FindType(aa::type::FormalizeTuple(alltypes), m_typeMappingLambda); // TODO: Add if not found
+		return this->m_dynamicTypeEnvironment->FindOrAddTypeIfNotFound(aa::type::FormalizeTuple(alltypes), m_typeMappingLambda);
 	}
 	case AA_AST_NODE_TYPE::funarg: {
 		if (node->expressions[0]->type == AA_AST_NODE_TYPE::typeidentifier) {
@@ -1084,7 +1084,8 @@ AACType* AATypeChecker::TypeCheckPatternMatchCase(AA_AST_NODE* pCaseNode, AACTyp
 	AAVarTypeEnv vtenv = AAVarTypeEnv(m_vtenv);
 	
 	AACType* conditionType = this->TypeCheckPatternMatchCaseCondition(pCaseNode->expressions[0], pConditionType);
-	if (!IsMatchingTypes(conditionType, pConditionType)) {
+	bool bothTuples = IsTupleTypes(conditionType, pConditionType);
+	if (!IsMatchingTypes(conditionType, pConditionType) && !bothTuples) {
 		AATC_ERROR(
 			"Detected 'case' condition type mismsatch '" + string_cast(conditionType->GetFullname()) + "' cannot be matched with condition of type '" + 
 			string_cast(pConditionType->GetFullname()) + "'",
@@ -1092,6 +1093,22 @@ AACType* AATypeChecker::TypeCheckPatternMatchCase(AA_AST_NODE* pCaseNode, AACTyp
 		);
 	} else {
 		pCaseNode->expressions[0]->tags["primitive"] = (int)aa::runtime::runtimetype_from_statictype(conditionType);
+	}
+
+	// Case of anything (The '_' wildcard)
+	bool isAnyCase = pCaseNode->expressions[0]->expressions[0]->HasTag("any_case");
+
+	// Dealing with tuples?
+	if (bothTuples && !isAnyCase) {
+
+		// Instruct the compiler to use tuple comparrison operator instead
+		pCaseNode->tags["compareTuples"] = 1;
+
+	} else if (isAnyCase) {
+
+		// We've reached a case we'll always match with
+		pCaseNode->expressions[0]->tags["match_always"] = 1;
+
 	}
 
 	// Typecheck body
@@ -1160,6 +1177,7 @@ AACType* AATypeChecker::TypeCheckPatternMatchCaseCondition(AA_AST_NODE* pConditi
 		} else if (pConditionNode->expressions[i]->type == AA_AST_NODE_TYPE::variable) {
 
 			if (pConditionNode->expressions[i]->content.compare(L"_") == 0) { // The dummy
+				pConditionNode->expressions[i]->tags["any_case"] = 1;
 				return _conditionType; // No new variables or anything special to consider (But also not an error)
 			} else {
 
@@ -1176,6 +1194,19 @@ AACType* AATypeChecker::TypeCheckPatternMatchCaseCondition(AA_AST_NODE* pConditi
 				}
 
 			}
+
+		} else if (pConditionNode->expressions[i]->type == AA_AST_NODE_TYPE::tupleval) {
+
+			// Set to any ... in case we see it
+			m_vtenv[L"_"] = AACType::Any;
+
+			AACType* foundType = this->TypeCheckNode(pConditionNode->expressions[i]);
+			if (foundType == AACType::ErrorType) {
+				// throw error
+			}
+
+			// Set the return type
+			conditionType = foundType;
 
 		}
 
@@ -1284,6 +1315,16 @@ bool AATypeChecker::IsMatchingTypes(AACType* tCompare, AACType* tExpected) {
 			}
 		}
 	}
+
+}
+
+bool AATypeChecker::IsTupleTypes(AACType* tCompare, AACType* tExpected) {
+	return tCompare->isTupleType && tExpected->isTupleType;
+}
+
+bool AATypeChecker::IsMatchingTuples(AACType* tCompare, AACType* tExpected) {
+
+	return false; // TODO: Implement
 
 }
 

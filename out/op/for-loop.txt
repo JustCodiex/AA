@@ -1,4 +1,3 @@
-Å Bytecode for: out\op\for-loop.txt
 BYTECODE PROCEDURES:
 	START PROCEDURE 0 (<GlobalScope>):
 	OPERATIONS:

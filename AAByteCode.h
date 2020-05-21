@@ -96,4 +96,6 @@ enum class AAByteCode : unsigned char {
 
 	EXTTAG, // (Extract tags from object and put into tuple, 0 arguments)
 
+	ACCEPT, // (Push a runtime-only-type onto the stack that will always yield true in accepting comparrisons [match statements], 0 arguments)
+
 };

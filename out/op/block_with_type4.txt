@@ -1,4 +1,3 @@
-Å Bytecode for: out\op\block_with_type4.txt
 BYTECODE PROCEDURES:
 	START PROCEDURE 0 (<GlobalScope>):
 	CONSTANTS:	[B, T]

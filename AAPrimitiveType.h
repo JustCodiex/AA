@@ -31,6 +31,8 @@ enum class AAPrimitiveType : unsigned char { // 1 byte
 
 	tuple, // Some tuple (it will keep track of tupes by itself!)
 
+	__TRUEANY, // never expose (true in any context)
+
 };
 
 struct AACType;

@@ -130,6 +130,7 @@ private:
 	Instruction HandleFieldPush(AA_AST_NODE* pNode, AAStaticEnvironment staticData);
 	Instruction HandleConstPush(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode);
 	Instruction HandleConstPush(CompiledEnviornmentTable& ctable, AA_Literal lit);
+	Instruction HandleConstPush(CompiledEnviornmentTable& cTable, bool bLit);
 
 	int HandleDecl(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode);
 

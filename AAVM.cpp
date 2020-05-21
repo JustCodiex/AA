@@ -682,8 +682,10 @@ void AAVM::exec(AAProgram::Procedure* procedure, aa::stack<AARuntimeEnvironment>
 			aa::array<AAPrimitiveType> types = aa::array<AAPrimitiveType>(count);
 			aa::array<AAVal> values = aa::array<AAVal>(count);
 			for (int i = 0; i < count; i++) {
-				types[count - i - 1] = (AAPrimitiveType)AAVM_GetArgument(i + 1);
-				values[count - i - 1] = aa::vm::PopSomething(types[count - i - 1], stack).as_val();
+				types[count - i - 1] = (AAPrimitiveType)AAVM_GetArgument(count - i);
+				if (types[count - i - 1] != AAPrimitiveType::__TRUEANY) {
+					values[count - i - 1] = aa::vm::PopSomething(types[count - i - 1], stack).as_val();
+				}
 			}
 			aa::vm::PushSomething(AAStackValue(AATuple(types, values)), stack);
 			AAVM_OPI++;
@@ -698,7 +700,39 @@ void AAVM::exec(AAProgram::Procedure* procedure, aa::stack<AARuntimeEnvironment>
 			AAVM_OPI++;
 			break;
 		}
+		case AAByteCode::TUPLECMP: {
+			AATuple matchon = aa::vm::PopSomething(AAPrimitiveType::tuple, stack).to_cpp<AATuple>();
+			AATuple mathwith = aa::vm::PopSomething(AAPrimitiveType::tuple, stack).to_cpp<AATuple>();
+			if (mathwith.Size() == matchon.Size()) {
+				bool f = true;
+				for (int i = 0; i < mathwith.Size(); i++) {
+					if (mathwith.TypeAt(i) == matchon.TypeAt(i)) {
+						if (!mathwith.ValueAt(i).Equals(matchon.ValueAt(i), mathwith.Size())) {
+							f = false;
+							break;
+						}
+					} else {
+						if (matchon.TypeAt(i) != AAPrimitiveType::__TRUEANY) {
+							f = false;
+							break;
+						}
+					}
+				}
+				if (f) {
+					stack.Push(true);
+				} else {
+					stack.Push(false);
+				}
+			} else {
+				stack.Push(false);
+			}
+			AAVM_OPI++;
+			break;
+		}
 		case AAByteCode::NOP:
+			AAVM_OPI++;
+			break;
+		case AAByteCode::ACCEPT:
 			AAVM_OPI++;
 			break;
 		default:

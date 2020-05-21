@@ -1,4 +1,3 @@
-Å Bytecode for: out\op\cmp_leq1.txt
 BYTECODE PROCEDURES:
 	START PROCEDURE 0 (<GlobalScope>):
 	CONSTANTS:	[I32, 5][I32, 10]

@@ -27,14 +27,14 @@ public:
 	/// Returns the size of the tuple
 	/// </summary>
 	/// <returns></returns>
-	const int& Size() const;
+	const int Size() const;
 
 	/// <summary>
 	/// Retrieve the type at the AAVal location
 	/// </summary>
 	/// <param name="index"></param>
 	/// <returns></returns>
-	const AAPrimitiveType& TypeAt(const size_t& index) const;
+	const AAPrimitiveType TypeAt(const size_t& index) const;
 
 	/// <summary>
 	/// Retrieve the AAVal at location

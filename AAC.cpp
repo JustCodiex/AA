@@ -787,16 +787,39 @@ Instructions AAC::CompilePatternBlock(AA_AST_NODE* pNode, CompiledEnviornmentTab
 	// For each case in match list
 	for (size_t i = 0; i < cases.size(); i++) {
 
-		// Compile the condition (We cannot compile it as usual)
-		Instructions condition = this->CompilePatternCondition(matchon, cases[i]->expressions[0]->expressions[0], cTable, staticData);
+		// Condition instruction list
+		Instructions condition; 
 
-		CompiledAbstractExpression eq;
-		eq.bc = AAByteCode::CMPE;
-		eq.argCount = 1;
-		eq.argValues[0] = cases[i]->expressions[0]->tags["primitive"];
-		condition.Add(eq);
+		// Should we always match this branch?
+		if (cases[i]->expressions[0]->HasTag("match_always")) {
+			
+			// Push true constant on top of stack ==> Because this branch will always be true
+			condition.Add(this->HandleConstPush(cTable, true));
 
-		CompiledAbstractExpression jmpiftrue;
+		} else { // We have to do a value check...
+
+			// Compile the condition (We cannot compile it as usual)
+			condition = this->CompilePatternCondition(matchon, cases[i]->expressions[0]->expressions[0], cTable, staticData);
+
+			// Is it a tuple comparrison?
+			if (cases[i]->HasTag("compareTuples")) {
+
+				// Add tuple comparrison opcode
+				condition.Add(Instruction(AAByteCode::TUPLECMP, 0, NULL));
+
+			} else { // No, just a simple compare equal then
+
+				Instruction eq;
+				eq.bc = AAByteCode::CMPE;
+				eq.argCount = 1;
+				eq.argValues[0] = cases[i]->expressions[0]->tags["primitive"];
+				condition.Add(eq);
+
+			}
+
+		}
+
+		Instruction jmpiftrue;
 		jmpiftrue.bc = AAByteCode::JMPT;
 		jmpiftrue.argCount = 1;
 		jmpiftrue.argValues[0] = -2;
@@ -804,7 +827,7 @@ Instructions AAC::CompilePatternBlock(AA_AST_NODE* pNode, CompiledEnviornmentTab
 		conditions.Add(condition);
 
 		Instructions body = this->CompileAST(cases[i]->expressions[1], cTable, staticData);
-		CompiledAbstractExpression jmptoend;
+		Instruction jmptoend;
 		jmptoend.bc = AAByteCode::JMP;
 		jmptoend.argCount = 1;
 		jmptoend.argValues[0] = -3;
@@ -861,7 +884,7 @@ Instructions AAC::CompilePatternCondition(aa::list<CompiledAbstractExpression> m
 	if (pNode->type == AA_AST_NODE_TYPE::funcall) {
 
 		opList.Add(match);
-		opList.Add(CompiledAbstractExpression(AAByteCode::BDOP, 0, NULL));
+		opList.Add(Instruction(AAByteCode::BDOP, 0, NULL));
 
 		size_t stackpopulation = 0;
 
@@ -870,7 +893,7 @@ Instructions AAC::CompilePatternCondition(aa::list<CompiledAbstractExpression> m
 
 			if (pNode->expressions[j]->type == AA_AST_NODE_TYPE::variable) {
 				if (pNode->expressions[j]->content.compare(L"_") == 0) {
-					opList.Add(CompiledAbstractExpression(AAByteCode::PUSHN, 0, NULL));
+					opList.Add(Instruction(AAByteCode::PUSHN, 0, NULL));
 				} else {
 					cTable.identifiers.Add(pNode->expressions[j]->content); // TODO: Fix scoping.... this is bound to cause an error
 					opList.Add(this->HandleVarPush(cTable, pNode->expressions[j]));
@@ -879,7 +902,7 @@ Instructions AAC::CompilePatternCondition(aa::list<CompiledAbstractExpression> m
 
 		}
 
-		CompiledAbstractExpression bcheck;
+		Instruction bcheck;
 		bcheck.bc = AAByteCode::BCKM;
 		bcheck.argCount = 4;
 		bcheck.argValues[0] = pNode->tags["procID"];
@@ -891,19 +914,29 @@ Instructions AAC::CompilePatternCondition(aa::list<CompiledAbstractExpression> m
 
 	} else if (pNode->type == AA_AST_NODE_TYPE::variable || pNode->type == AA_AST_NODE_TYPE::enumidentifier) {
 
+		// Push the object to match with
+		opList.Add(match);
+
+		// Is it the dummy/accept value?
 		if (pNode->content.compare(L"_") == 0) {
 
-			AA_AnyLiteral lit; // TODO: Make AnyLiteral union have constructors for this...
-			lit.b = true;
-
-			opList.Add(this->HandleConstPush(cTable, AA_Literal(lit, AALiteralType::Boolean)));
+			// Push accepting state
+			opList.Add(Instruction(AAByteCode::ACCEPT, 0, NULL));
 
 		} else {
 
-			opList.Add(match);
+			// Push whatever this compiles to
 			opList.Add(this->CompileAST(pNode, cTable, staticData));
 
 		}
+
+	} else if (pNode->type == AA_AST_NODE_TYPE::tupleval) {
+
+		// Push object to match with
+		opList.Add(match);
+
+		// Push tuple
+		opList.Add(this->HandleTuplePush(cTable, pNode, staticData));
 
 	}
 
@@ -986,6 +1019,18 @@ AAByteCode AAC::GetBytecodeFromUnaryOperator(std::wstring ws) {
 	} else {
 		return AAByteCode::NOP;
 	}
+
+}
+
+Instruction AAC::HandleConstPush(CompiledEnviornmentTable& cTable, bool bLit) {
+
+	// Create the boolean value (This really needs a better way of dealing with literals to const...)
+	AA_AnyLiteral aLit = AA_AnyLiteral();
+	AALiteralType lType = AALiteralType::Boolean;
+	aLit.b.val = bLit;
+
+	// Push boolean
+	return this->HandleConstPush(cTable, AA_Literal(aLit, AALiteralType::Boolean));
 
 }
 
@@ -1123,7 +1168,11 @@ Instructions AAC::HandleTuplePush(CompiledEnviornmentTable& cTable, AA_AST_NODE*
 
 	// For all tuple elements - push them unto the stack
 	for (auto& tupleElement : pNode->expressions) {
-		opList.Add(this->CompileAST(tupleElement, cTable, staticData));
+		if (tupleElement->type == AA_AST_NODE_TYPE::variable && tupleElement->content.compare(L"_") == 0) {
+			opList.Add(Instruction(AAByteCode::ACCEPT, 0, NULL));
+		} else {
+			opList.Add(this->CompileAST(tupleElement, cTable, staticData));
+		}
 	}
 
 	// Tuple constructor instruction
@@ -1134,7 +1183,11 @@ Instructions AAC::HandleTuplePush(CompiledEnviornmentTable& cTable, AA_AST_NODE*
 
 	// Define type for all tuple elements
 	for (int i = 0; i < tupleCtor.argValues[0]; i++) { // TODO: Encode into a single 8 byte (2 ints) numeric, this way we can store *unlimited* tuple sizes
-		tupleCtor.argValues[i + 1] = pNode->expressions[i]->tags["primitive"];
+		if (pNode->expressions[i]->type == AA_AST_NODE_TYPE::variable && pNode->expressions[i]->content.compare(L"_") == 0) {
+			tupleCtor.argValues[i + 1] = (int)AAPrimitiveType::__TRUEANY;
+		} else {
+			tupleCtor.argValues[i + 1] = pNode->expressions[i]->tags["primitive"];
+		}
 	}
 
 	// Add tuple ctor to operation list

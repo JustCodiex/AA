@@ -174,6 +174,9 @@ namespace aa {
 		case AAByteCode::TUPLEGET:
 			output = L"TUPLEGET";
 			break;
+		case AAByteCode::ACCEPT:
+			output = L"ACCEPT";
+			break;
 		default:
 			output = L"_undefined_(" + std::to_wstring((int)CAE.bc) + L")";
 			break;
@@ -288,7 +291,6 @@ namespace aa {
 
 		if (o.is_open()) {
 
-			o << L"Å Bytecode for: " << file << L"\n";
 			o << L"BYTECODE PROCEDURES:\n";
 
 			for (size_t i = 0; i < procedures.size(); i++) {

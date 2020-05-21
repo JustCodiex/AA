@@ -1,4 +1,3 @@
-Å Bytecode for: out\op\if3.txt
 BYTECODE PROCEDURES:
 	START PROCEDURE 0 (<GlobalScope>):
 	CONSTANTS:	[I32, 6][I32, 5][I32, 25][I32, 4][I32, 27][I32, 30]
