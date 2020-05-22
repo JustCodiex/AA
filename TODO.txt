@@ -134,6 +134,10 @@
 																										// Will only compile if it can run the function at compile time
 		Implicit syntax ==> "const int add(const int x, const int y) { return x + y; }; add(1,1)"		// All operands are constant and known -> will do the same as above
 		VM argument		==> "-optimize"
+						if "-optimize":
+							Try and evaluate binary and unary expressions with constants
+						always:
+							Compile tuples consisting of constants only
 	Preprocessing
 		__LINE__			==> Current line
 		__FILE__			==> Current file

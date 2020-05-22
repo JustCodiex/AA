@@ -782,7 +782,7 @@ AA_PT_NODE* AA_PT::CreateClassDecl(std::vector<AA_PT_NODE*>& nodes, size_t from)
 		// Erase all the unnessecary stuff
 		nodes.erase(nodes.begin() + from + 1, nodes.begin() + from + 3);
 
-	} else if (from + 2 < nodes.size() && nodes[from + 2]->nodeType == AA_PT_NODE_TYPE::expression) { // Could it be a direct class construcotr?
+	} else if (from + 2 < nodes.size() && nodes[from + 2]->nodeType == AA_PT_NODE_TYPE::parameterlist) { // Could it be a direct class construcotr?
 
 		// Create class body with fields inserted beforehand
 		AA_PT_NODE* classBody = this->CreateArgList(nodes[from + 2], AA_PT_NODE_TYPE::classbody, AA_PT_NODE_TYPE::vardecleration);

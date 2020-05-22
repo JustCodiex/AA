@@ -1434,31 +1434,60 @@ AAByteType AAC::ConvertTypeToBytes(AACType* pType, aa::list<AACType*>& typeList)
 		if (pType->isRefType) {
 			
 			// Handle other derivations
-			AAClassSignature* pClass = pType->classSignature;
-			if (pClass) {
-				outType.unmanagedSize = (uint16_t)this->m_classCompiler->CalculateMemoryUse(pClass);
-				unsigned int basePtr = pClass->basePtr;
-				if (basePtr != UINT32_MAX) {
-					AACType* baseType = pClass->extends.Apply(basePtr)->type;
-					if (baseType->name.compare(L"object") == 0) {
-						outType.baseTypePtr = AAByteType::_BasePtrObj;
-					} else {
-						outType.baseTypePtr = (uint16_t)typeList.IndexOf(baseType);
-					}
-				} else {
-					outType.baseTypePtr = AAByteType::_BasePtrObjNone;
-				}
-				if (pClass->classVTable != 0) {
-					outType.vtable = this->ConvertClassVTableToBinary(pClass);
-				}
-			} else {
-				printf("-->> Unknown compile error, expected class type, received unknown <<--");
-			}
+			this->CompileClassToBytes(outType, pType, typeList);
 
 		}
 		return outType;
 	} else {
 		return AAByteType();
+	}
+
+}
+
+void AAC::CompileClassToBytes(AAByteType& outType, AACType* pType, aa::list<AACType*>& typeList) {
+
+	// Get class signature
+	AAClassSignature* pClass = pType->classSignature;
+
+	// Make sure pointer is valid
+	if (pClass) {
+
+		// Calculate class size
+		outType.unmanagedSize = (uint16_t)this->m_classCompiler->CalculateMemoryUse(pClass);
+
+		// Get base pointer
+		unsigned int basePtr = pClass->basePtr;
+		
+		// Handle base inheritance, if any
+		if (basePtr != UINT32_MAX) {
+			AACType* baseType = pClass->extends.Apply(basePtr)->type;
+			if (baseType->name.compare(L"object") == 0) {
+				outType.baseTypePtr = AAByteType::_BasePtrObj;
+			} else {
+				outType.baseTypePtr = (uint16_t)typeList.IndexOf(baseType);
+			}
+		} else {
+
+			outType.baseTypePtr = AAByteType::_BasePtrObjNone;
+		}
+
+		// Compile VTable is class has such a thing
+		if (pClass->classVTable != 0) {
+			outType.vtable = this->ConvertClassVTableToBinary(pClass);
+		}
+
+		// If class is taged
+		if (aa::modifiers::ContainsFlag(pClass->storageModifier, AAStorageModifier::TAGGED)) {
+
+			printf("");
+
+		}
+
+	} else {
+	
+		// Something has happened
+		printf("-->> Unknown compile error, expected class type, received unknown <<--");
+	
 	}
 
 }

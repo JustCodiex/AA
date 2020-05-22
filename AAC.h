@@ -147,6 +147,7 @@ private:
 	AAByteCode GetBytecodeFromUnaryOperator(std::wstring ws);
 
 	AAByteType ConvertTypeToBytes(AACType* pCType, aa::list<AACType*>& typeList);
+	void CompileClassToBytes(AAByteType& type, AACType* pCType, aa::list<AACType*>& typeList);
 
 	AAByteVTable* ConvertClassVTableToBinary(AAClassSignature* pClass);
 

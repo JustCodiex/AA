@@ -1,41 +1,28 @@
-// UniversityDepartment enum (Simulating a university department)
-enum UniversityDepartment {
+// Define an abstract class represeting a binary tree
+sealed abstract class BinaryTree;
 
-    ComputerScience,
-    Maths,
-    Physics,
-    Chemistry,
-    PoliticalScience,
-    Psychology,
-    History,
-    Engineering,
-    Medicine,
-    FineArts // Be careful to not add a comma here (Currently a bug where it would then include 'string')
+// Define the two cases
+tagged class Leaf() : BinaryTree; // case 1: Leaf
+tagged class Node(int value, BinaryTree left, BinaryTree right) : BinaryTree; // case 2: Node with a value and a left Node and a right Node
 
-    // A custom string method
-    string GetString() {
-        this match { // pattern match on this (this being of the type 'UniversityDepartment')
-            case ComputerScience => "Computer Science", // Case where 'this' = ComputerScience
-            case PoliticalScience => "Political Science", // Case where 'this' = PoliticalScience
-            case FineArts => "Fine Arts", // Case where 'this' = FineArts
-            case _ => this.ToString()
-        }
-    }
-
-};
-
-// Main function
+// The main function
 int main() {
 
-    // Get the computer science department
-    UniversityDepartment testDep = UniversityDepartment::ComputerScience;
+    // Define the tree
+    BinaryTree tree = Node( 10, Node(5, Node(2, Leaf(), Leaf()), Leaf()), Leaf() );
 
-    // Print the nice name
-    println(testDep.GetString());
+    // Get the top value of the tree
+    int topValue = tree match {
+        case Leaf() => 0,
+        case Node(v, _, _) => v
+    }
 
-    // Return 0
-    0;
+    // Return the top value
+    topValue;
 
 };
 
+// Call the main function
 main();
+
+// Name (tagged class) is from: https://en.wikipedia.org/wiki/Tagged_union
