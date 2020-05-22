@@ -28,6 +28,24 @@ struct AAByteVTable {
 	_vtable vtable;
 };
 
+struct AAByteTagField {
+	unsigned char ptype;
+	uint16_t fieldId;
+	uint32_t typePtr;
+	AAByteTagField() {
+		ptype = 0;
+		fieldId = 0;
+		typePtr = 0;
+	}
+};
+
+struct AAByteTagFieldList {
+	aa::array<AAByteTagField> fields;
+	AAByteTagFieldList(aa::array<AAByteTagField> f) {
+		this->fields = f;
+	}
+};
+
 /// <summary>
 /// Type represented in byte format
 /// </summary>
@@ -50,6 +68,8 @@ struct AAByteType {
 
 	AAByteVTable* vtable; // The VTable associated with the type
 
+	AAByteTagFieldList* taggedFields; // The tagged fields
+
 	// Because of how the compiler fetches data, we can collect method pointers and such!
 
 	AAByteType() {
@@ -61,6 +81,7 @@ struct AAByteType {
 		this->constID = 0;
 		this->vtable = 0;
 		this->unmanagedSize = 0;
+		this->taggedFields = 0;
 	}
 
 	AAByteType(std::wstring name) {
@@ -73,6 +94,7 @@ struct AAByteType {
 		this->constID = 0;
 		this->vtable = 0;
 		this->unmanagedSize = 0;
+		this->taggedFields = 0;
 	}
 
 	bool IsEqual(const AAByteType& other) const {

@@ -854,6 +854,11 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterClass(AA_AST_NODE* pNode, AACl
 				field.name = pNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions[i]->content;
 				field.type = this->GetTypeFromName(pNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions[i]->expressions[0]->content, domain, senv);
 
+				// Has field been tagged as a "tagged" field
+				if (pNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions[i]->HasTag("ctor_field")) {
+					field.tagged = true;
+				}
+
 				// Did we get an invalid field?
 				if (field.type == AACType::ErrorType) {
 					err.errorMsg = ("Undefined field type '" + string_cast(pNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions[i]->content) + "'").c_str();

@@ -15,7 +15,7 @@ int main() {
     int topValue = tree match {
         case Leaf() => 0,
         case Node(v, _, _) => v
-    }
+    };
 
     // Return the top value
     topValue;

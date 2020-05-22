@@ -114,6 +114,7 @@ std::wstring AAUnparser::Unparse(AA_AST_NODE* pNode) {
 		out = pNode->content;
 		break;
 	case AA_AST_NODE_TYPE::funcall:
+	case AA_AST_NODE_TYPE::objdeconstruct:
 		out = this->WriteToString(L"%s(%s)", pNode->content, this->UnparseList(pNode));
 		break;
 	case AA_AST_NODE_TYPE::classdecl: {
@@ -123,12 +124,12 @@ std::wstring AAUnparser::Unparse(AA_AST_NODE* pNode) {
 		if (inherits.size() > 0) {
 			header += L" : " + inherits;
 		}
-		if (pNode->expressions.size() >= AA_NODE_CLASSNODE_BODY) {
+		if (aa::parsing::Class_HasBody(pNode)) {
 			out = this->WriteToString(L"%sclass %s %s", mods, header, this->Unparse(pNode->expressions[AA_NODE_CLASSNODE_BODY]));
 			out[out.length() - 1] = ';';
 			out += L"\n";
 		} else {
-			out = this->WriteToString(L"%sclass %s;", mods, header, this->Unparse(pNode->expressions[AA_NODE_CLASSNODE_BODY]));
+			out = this->WriteToString(L"%sclass %s;\n", mods, header);
 		}
 		break;
 	}

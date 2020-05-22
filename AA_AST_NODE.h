@@ -70,6 +70,8 @@ enum class AA_AST_NODE_TYPE {
 	funarg,
 	funarglist,
 
+	objdeconstruct,
+
 	modifierlist,
 	modifier,
 

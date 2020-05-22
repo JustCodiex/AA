@@ -144,12 +144,6 @@ namespace aa {
 		case AAByteCode::POP:
 			output = L"POP";
 			break;
-		case AAByteCode::BCKM:
-			output = L"BCKM";
-			break;
-		case AAByteCode::BDOP:
-			output = L"BDOP";
-			break;
 		case AAByteCode::CONCAT:
 			output = L"CONCAT";
 			break;
@@ -165,6 +159,9 @@ namespace aa {
 		case AAByteCode::UNWRAP:
 			output = L"UNWRAP";
 			break;
+		case AAByteCode::EXTTAG:
+			output = L"EXTTAG";
+			break;
 		case AAByteCode::TUPLECMP:
 			output = L"TUPLECMP";
 			break;
@@ -176,6 +173,15 @@ namespace aa {
 			break;
 		case AAByteCode::ACCEPT:
 			output = L"ACCEPT";
+			break;
+		case AAByteCode::TUPLECMPORSET:
+			output = L"TUPLECMPORGET";
+			break;
+		case AAByteCode::TAGTUPLECMP:
+			output = L"TAGTUPLECMP";
+			break;
+		case AAByteCode::TAGTUPLECMPORSET:
+			output = L"TAGTUPLECMPORGET";
 			break;
 		default:
 			output = L"_undefined_(" + std::to_wstring((int)CAE.bc) + L")";

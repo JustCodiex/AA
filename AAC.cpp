@@ -799,7 +799,7 @@ Instructions AAC::CompilePatternBlock(AA_AST_NODE* pNode, CompiledEnviornmentTab
 		} else { // We have to do a value check...
 
 			// Compile the condition (We cannot compile it as usual)
-			condition = this->CompilePatternCondition(matchon, cases[i]->expressions[0]->expressions[0], cTable, staticData);
+			condition = this->CompilePatternCondition(matchon, cases[i]->tags["scope_to_now"], cases[i]->expressions[0]->expressions[0], cTable, staticData);
 
 			// Is it a tuple comparrison?
 			if (cases[i]->HasTag("compareTuples")) {
@@ -876,41 +876,60 @@ Instructions AAC::CompilePatternBlock(AA_AST_NODE* pNode, CompiledEnviornmentTab
 
 }
 
-Instructions AAC::CompilePatternCondition(aa::list<CompiledAbstractExpression> match, AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
+Instructions AAC::CompilePatternCondition(aa::list<CompiledAbstractExpression> match, int scopeStart, AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
 
 	// Operations list
 	Instructions opList;
 
-	if (pNode->type == AA_AST_NODE_TYPE::funcall) {
+	if (pNode->type == AA_AST_NODE_TYPE::objdeconstruct) {
 
 		opList.Add(match);
-		opList.Add(Instruction(AAByteCode::BDOP, 0, NULL));
+		opList.Add(Instruction(AAByteCode::EXTTAG, 0, NULL));
 
-		size_t stackpopulation = 0;
+		Instructions tupleBuild;
+
+		bool hasAssignments = false;
+		int assignments[8];
+		memset(assignments, -1, sizeof(assignments));
 
 		for (size_t i = 0; i < pNode->expressions.size(); i++) {
-			size_t j = pNode->expressions.size() - 1 - i;
-
-			if (pNode->expressions[j]->type == AA_AST_NODE_TYPE::variable) {
-				if (pNode->expressions[j]->content.compare(L"_") == 0) {
-					opList.Add(Instruction(AAByteCode::PUSHN, 0, NULL));
+			if (pNode->expressions[i]->type == AA_AST_NODE_TYPE::variable) {
+				if (pNode->expressions[i]->content.compare(L"_") == 0) {
+					tupleBuild.Add(Instruction(AAByteCode::ACCEPT, 0, NULL));
 				} else {
-					cTable.identifiers.Add(pNode->expressions[j]->content); // TODO: Fix scoping.... this is bound to cause an error
-					opList.Add(this->HandleVarPush(cTable, pNode->expressions[j]));
+					if (pNode->expressions[i]->tags["varsi"] >= scopeStart) { // Set var
+						hasAssignments = true;
+						assignments[i] = pNode->expressions[i]->tags["varsi"];
+						cTable.identifiers.Add(pNode->expressions[i]->content);
+					} else {
+						// TODO: Fix scoping.... this is bound to cause an error
+						tupleBuild.Add(this->HandleVarPush(cTable, pNode->expressions[i]));
+					}
 				}
-			} // else ...?
+			} // else if constant literal 
+			// else ...?
 
 		}
 
-		Instruction bcheck;
-		bcheck.bc = AAByteCode::BCKM;
-		bcheck.argCount = 4;
-		bcheck.argValues[0] = pNode->tags["procID"];
-		bcheck.argValues[1] = pNode->tags["isVM"];
-		bcheck.argValues[2] = pNode->tags["params"];
-		bcheck.argValues[3] = (int)stackpopulation;
+		Instruction dconOp;
+		
+		if (!hasAssignments) {
 
-		opList.Add(bcheck);
+			dconOp.bc = AAByteCode::TAGTUPLECMP;
+			dconOp.argCount = 0;
+
+			opList.Add(tupleBuild);
+
+		} else {
+
+			dconOp.bc = AAByteCode::TAGTUPLECMPORSET;
+			dconOp.argValues[0] = (int)pNode->expressions.size();
+			dconOp.argCount = dconOp.argValues[0]+1;
+			memcpy(dconOp.argValues + 1, assignments, sizeof(assignments) - sizeof(int));
+
+		}
+		
+		opList.Add(dconOp);
 
 	} else if (pNode->type == AA_AST_NODE_TYPE::variable || pNode->type == AA_AST_NODE_TYPE::enumidentifier) {
 
@@ -1467,7 +1486,6 @@ void AAC::CompileClassToBytes(AAByteType& outType, AACType* pType, aa::list<AACT
 				outType.baseTypePtr = (uint16_t)typeList.IndexOf(baseType);
 			}
 		} else {
-
 			outType.baseTypePtr = AAByteType::_BasePtrObjNone;
 		}
 
@@ -1479,7 +1497,25 @@ void AAC::CompileClassToBytes(AAByteType& outType, AACType* pType, aa::list<AACT
 		// If class is taged
 		if (aa::modifiers::ContainsFlag(pClass->storageModifier, AAStorageModifier::TAGGED)) {
 
-			printf("");
+			// Tagged fields
+			std::vector<AAByteTagField> taggedFields;
+
+			// Loop though all fields
+			for (size_t i = 0; i < pClass->fields.Size(); i++) {
+				AAClassFieldSignature& field = pClass->fields.Apply(i);
+				if (field.tagged) {
+					AAByteTagField f;
+					f.fieldId = field.fieldID;
+					f.ptype = (unsigned char)aa::runtime::runtimetype_from_statictype(field.type);
+					if (field.type->isRefType || field.type->isEnum) {
+						f.typePtr = (uint32_t)typeList.IndexOf(field.type);
+					} // TODO: Handle more cases here...
+					taggedFields.push_back(f);
+				}
+			}
+
+			// Tagged fields
+			outType.taggedFields = new AAByteTagFieldList(aa::array<AAByteTagField>(taggedFields));
 
 		}
 

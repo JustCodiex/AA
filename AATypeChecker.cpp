@@ -293,25 +293,27 @@ AACType* AATypeChecker::TypeCheckBinaryOperation(AA_AST_NODE* pOpNode, AA_AST_NO
 
 			return this->TypeCheckBinaryAssignment(pOpNode, left, right, typeLeft, typeRight);
 
-		} else if (aa::runtime::is_primitive_type(typeLeft) && aa::runtime::is_primitive_type(typeRight)) {
+		} else {
 			
 			// Set the primitive types here
 			left->tags["primitive"] = (int)aa::runtime::runtimetype_from_statictype(typeLeft);
 			right->tags["primitive"] = (int)aa::runtime::runtimetype_from_statictype(typeRight);
 
+			// if left is a primitive
 			if (left->tags["primitive"] == (int)AAPrimitiveType::refptr) {
 
-				return this->TypeCheckBinaryOperatorCall(pOpNode, left, right, typeLeft, typeRight);
+				AACType* opCall = this->TypeCheckBinaryOperatorCall(pOpNode, left, right, typeLeft, typeRight);
+				if (opCall != AACType::ErrorType) {
+					return opCall;
+				} else {
+					return this->TypeCheckBinaryOperatorOp(pOpNode, left, right, typeLeft, typeRight);
+				}
 
 			} else {
 			
 				return this->TypeCheckBinaryOperatorOp(pOpNode, left, right, typeLeft, typeRight);
 
 			}
-
-		} else {
-
-			return AACType::ErrorType; // something went wrong...
 
 		}
 
@@ -328,6 +330,7 @@ AACType* AATypeChecker::TypeCheckBinaryAssignment(AA_AST_NODE* pOpNode, AA_AST_N
 		pOpNode->tags["primitive"] = (int)aa::runtime::runtimetype_from_statictype(typeLeft);
 
 		return typeLeft;
+
 	} else {
 		AATC_W_ERROR(
 			"Type mismsatch on assignment operation, left operand '"
@@ -336,7 +339,6 @@ AACType* AATypeChecker::TypeCheckBinaryAssignment(AA_AST_NODE* pOpNode, AA_AST_N
 			aa::compiler_err::C_Mismatching_Types
 		);
 	}
-
 
 }
 
@@ -413,7 +415,8 @@ AACType* AATypeChecker::TypeCheckBinaryOperationOnPrimitive(AA_AST_NODE* pOpNode
 	}
 
 	if (pOpNode->content.compare(L"<") == 0 || pOpNode->content.compare(L"<=") == 0 || pOpNode->content.compare(L">") == 0 || 
-		pOpNode->content.compare(L">=") == 0 || pOpNode->content.compare(L"==") == 0) {
+		pOpNode->content.compare(L">=") == 0 || pOpNode->content.compare(L"==") == 0 || pOpNode->content.compare(L"&&") == 0 ||
+		pOpNode->content.compare(L"||") == 0 ){
 		return AACTypeDef::Bool; // Result of such binary operations will always be a boolean
 	}
 
@@ -1130,6 +1133,9 @@ AACType* AATypeChecker::TypeCheckPatternMatchCaseCondition(AA_AST_NODE* pConditi
 		// Is it a function call?
 		if (pConditionNode->expressions[i]->type == AA_AST_NODE_TYPE::funcall) {
 
+			// Update type of node
+			pConditionNode->expressions[i]->type = AA_AST_NODE_TYPE::objdeconstruct;
+
 			// Get potential candidates
 			aa::set<AAFuncSignature*> candidates = m_currentnamespace->functions.FindAll(
 				[pConditionNode, i](AAFuncSignature*& sig) {
@@ -1160,9 +1166,9 @@ AACType* AATypeChecker::TypeCheckPatternMatchCaseCondition(AA_AST_NODE* pConditi
 
 				}
 
-				pConditionNode->expressions[i]->tags["params"] = first->parameters.size();
-				pConditionNode->expressions[i]->tags["isVM"] = first->isVMFunc;
-				pConditionNode->expressions[i]->tags["procID"] = first->procID;
+				//pConditionNode->expressions[i]->tags["params"] = first->parameters.size();
+				//pConditionNode->expressions[i]->tags["isVM"] = first->isVMFunc;
+				//pConditionNode->expressions[i]->tags["procID"] = first->procID;
 
 				// The condition type is then of that type
 				return first->returnType;

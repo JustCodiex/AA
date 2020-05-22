@@ -1,5 +1,6 @@
 #pragma once
 #include <functional>
+#include <vector>
 
 namespace aa {
 
@@ -20,6 +21,14 @@ namespace aa {
 		array(const size_t& size) {
 			m_length = size;
 			m_content = new T[m_length];
+		}
+
+		array(const std::vector<T>& vec) {
+			m_length = vec.size();
+			m_content = new T[m_length];
+			for (size_t i = 0; i < m_length; i++) {
+				m_content[i] = vec[i];
+			}
 		}
 
 		/// <summary>

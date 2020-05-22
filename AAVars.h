@@ -36,6 +36,8 @@ private:
 
 	bool VarsMatchCase(aa::VarsEnviornment& venv, AA_AST_NODE* pScope);
 
+	bool VarsMatchCondition(aa::VarsEnviornment& venv, AA_AST_NODE* pScope);
+
 	bool VarsNode(aa::VarsEnviornment& venv, AA_AST_NODE* pScope);
 
 };

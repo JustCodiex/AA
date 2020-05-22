@@ -650,7 +650,7 @@ void AAVM::exec(AAProgram::Procedure* procedure, aa::stack<AARuntimeEnvironment>
 			AAVM_OPI++;
 			break;
 		}
-		case AAByteCode::BDOP: {
+		/*case AAByteCode::BDOP: {
 			aa::list<AAStackValue> v = this->BreakdownObject(stack.Pop<AAMemoryPtr>());
 			v.ForEach([&stack](AAStackValue& val) { stack.Push(val); });
 			AAVM_OPI++;
@@ -659,7 +659,7 @@ void AAVM::exec(AAProgram::Procedure* procedure, aa::stack<AARuntimeEnvironment>
 		case AAByteCode::BCKM:
 			stack.Push(this->BackwardsPatternmatch(AAVM_GetArgument(0), AAVM_GetArgument(1), AAVM_GetArgument(2), AAVM_GetArgument(3), stack));
 			AAVM_OPI++;
-			break;
+			break;*/
 		case AAByteCode::WRAP: {
 			//Trace("Before %i\n", (int)stack.get_pointer());
 			AAStackValue top = aa::vm::PopSomething((AAPrimitiveType)AAVM_GetArgument(0), stack);

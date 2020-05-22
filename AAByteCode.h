@@ -57,6 +57,9 @@ enum class AAByteCode : unsigned char {
 	BOR, // (Bitwise Or |, 1 argument [primitive type])
 
 	TUPLECMP, // (Compares two tuples, 0 arguments)
+	TUPLECMPORSET,	// (Compares two tuples, where top-of-stack tuple may assign to variables, 1+n arguments[tuple count, { -1 | varid }^n : n = tuple count])
+					// -1 = compare normally
+					// >= 0 = assign to var
 	TUPLENEW, // (Construct a tuple, 1+n arguments[tuple count, { primitive type }^n : n = tuple count])
 	TUPLEGET, // (Get the value at specified int in a tuple, 1 argument[tuple index])
 
@@ -91,10 +94,11 @@ enum class AAByteCode : unsigned char {
 	WRAP, // (Wrap top of stack into a stackvalue - save the type, 1 argument[primitive type])
 	UNWRAP, // (Unwraps the top stack element from its associated stackvalue, 0 arguments)
 
-	BCKM, // (Backwards pattern match - pushes boolean value on stack, 4 arguments[func, vm{0,1}, args, stacksz])
-	BDOP, // (Break Down Object & Push, 0 arguments)
-
 	EXTTAG, // (Extract tags from object and put into tuple, 0 arguments)
+	TAGTUPLECMP,	// (Compares two tuples, where top-of-stack tuple may assign to variables, first tuple value is ignored (typeId), 0 arguments)
+	TAGTUPLECMPORSET,	// (Compares two tuples, where top-of-stack tuple may assign to variables, first tuple value is ignored (typeId), 1+n arguments[tuple count, { -1 | varid }^n : n = tuple count])
+						// -1 = compare normally
+						// >= 0 = assign to var
 
 	ACCEPT, // (Push a runtime-only-type onto the stack that will always yield true in accepting comparrisons [match statements], 0 arguments)
 

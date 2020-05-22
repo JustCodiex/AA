@@ -199,13 +199,13 @@ bool AAVars::VarsMatchCase(VarsEnviornment& venv, AA_AST_NODE* pScope) {
 	// Cpoy current envionment
 	VarsEnviornment _venv = VarsEnviornment(venv);
 
+	// Save the scope size - so the compiler can determine if a variable is introduced or not
+	pScope->tags["scope_to_now"] = venv.size();
+
 	// For all condition elements
 	for (size_t i = 0; i < pScope->expressions[0]->expressions.size(); i++) {
-		if (pScope->expressions[0]->expressions[i]->type == AA_AST_NODE_TYPE::variable) {
-			if (pScope->expressions[0]->expressions[i]->content.compare(L"_") != 0) { // Make sure it's not the wildcard				
-				// In the condition, it's actually a variable declaration
-				pScope->expressions[0]->expressions[i]->tags["varsi"] = venv[pScope->expressions[0]->expressions[i]->content] = venv.size();
-			}
+		if (!this->VarsMatchCondition(venv, pScope->expressions[0]->expressions[i])) {
+			return false;
 		}
 	}
 
@@ -218,6 +218,25 @@ bool AAVars::VarsMatchCase(VarsEnviornment& venv, AA_AST_NODE* pScope) {
 	venv = _venv;
 
 	// Return true
+	return true;
+
+}
+
+bool AAVars::VarsMatchCondition(aa::VarsEnviornment& venv, AA_AST_NODE* pScope) {
+
+	if (pScope->type == AA_AST_NODE_TYPE::variable) {
+		if (pScope->content.compare(L"_") != 0) { // Make sure it's not the wildcard				
+			// In the condition, it's actually a variable declaration
+			pScope->tags["varsi"] = venv[pScope->content] = venv.size();
+		} else {
+			pScope->tags["varsi"] = venv[pScope->content] = venv.size();
+		}
+	} else if (pScope->type == AA_AST_NODE_TYPE::objdeconstruct) {
+		for (size_t i = 0; i < pScope->expressions.size(); i++) {
+			this->VarsMatchCondition(venv, pScope->expressions[i]);
+		}
+	}
+
 	return true;
 
 }

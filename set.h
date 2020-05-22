@@ -197,7 +197,7 @@ namespace aa {
 		/// Get the size of the set
 		/// </summary>
 		/// <returns>The amount of items in the set</returns>
-		size_t Size() {
+		size_t Size() const {
 			return m_list.Size();
 		}
 
