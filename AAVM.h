@@ -122,9 +122,6 @@ private:
 	//AAStackValue ReportStack(aa::stack<AAStackValue> stack);
 	AAStackValue ReportStack(any_stack& stack);
 
-	inline aa::list<AAStackValue> BreakdownObject(AAStackValue top);
-	inline AAStackValue BackwardsPatternmatch(int op, int vm, int args, int get, const any_stack& stack);
-
 	void WriteCompilerError(AAC_CompileErrorMessage errMsg);
 	void WriteSyntaxError(AAP_SyntaxErrorMessage errMsg);
 	void WriteRuntimeError(AAVM_RuntimeError err);

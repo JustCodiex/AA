@@ -1,28 +1,28 @@
 BYTECODE PROCEDURES:
 	START PROCEDURE 0 (<GlobalScope>):
 	OPERATIONS:
-		[0000]  CALL, 3, 0                      ;; Calls: main
+		[0000]  CALL, 3, 0                                                      ;; Calls: main
 	END PROCEDURE;
 
 	START PROCEDURE 1 (ExampleClass::ExampleClass):
 	IDENTIFIERS:
 		this;
 	OPERATIONS:
-		[0000]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
-		[0001]  GETVAR, 0                       
-		[0002]  XCALL, 2, 1                     ;; Calls: object::object
-		[0003]  GETVAR, 0                       
-		[0004]  RET                             
+		[0000]  SETVAR, 0, 14                                                   ;; primitive: refptr [16 bytes]
+		[0001]  GETVAR, 0                                                       
+		[0002]  XCALL, 2, 1                                                     ;; Calls: object::object
+		[0003]  GETVAR, 0                                                       
+		[0004]  RET                                                             
 	END PROCEDURE;
 
 	START PROCEDURE 2 (ExampleClass::arg):
 	IDENTIFIERS:
 		v;		this;
 	OPERATIONS:
-		[0000]  SETVAR, 0, 6                    ;; primitive: int32 [4 bytes]
-		[0001]  SETVAR, 1, 14                   ;; primitive: refptr [16 bytes]
-		[0002]  GETVAR, 0                       
-		[0003]  RET                             
+		[0000]  SETVAR, 0, 6                                                    ;; primitive: int32 [4 bytes]
+		[0001]  SETVAR, 1, 14                                                   ;; primitive: refptr [16 bytes]
+		[0002]  GETVAR, 0                                                       
+		[0003]  RET                                                             
 	END PROCEDURE;
 
 	START PROCEDURE 3 (main):
@@ -30,16 +30,16 @@ BYTECODE PROCEDURES:
 	IDENTIFIERS:
 		0$[ex];
 	OPERATIONS:
-		[0000]  CTOR, 1, 1, 0                   
-		[0001]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
-		[0002]  GETVAR, 0                       
-		[0003]  PUSHC, 0                        
-		[0004]  CALL, 2, 2                      ;; Calls: ExampleClass::arg
-		[0005]  GETVAR, 0                       
-		[0006]  PUSHC, 1                        
-		[0007]  CALL, 2, 2                      ;; Calls: ExampleClass::arg
-		[0008]  ADD, 6                          ;; primitive: int32 [4 bytes]
-		[0009]  RET                             
+		[0000]  CTOR, 1, 1, 0                                                   
+		[0001]  SETVAR, 0, 14                                                   ;; primitive: refptr [16 bytes]
+		[0002]  GETVAR, 0                                                       
+		[0003]  PUSHC, 0                                                        
+		[0004]  CALL, 2, 2                                                      ;; Calls: ExampleClass::arg
+		[0005]  GETVAR, 0                                                       
+		[0006]  PUSHC, 1                                                        
+		[0007]  CALL, 2, 2                                                      ;; Calls: ExampleClass::arg
+		[0008]  ADD, 6                                                          ;; primitive: int32 [4 bytes]
+		[0009]  RET                                                             
 	END PROCEDURE;
 END BYTECODE PROCEDURES
 

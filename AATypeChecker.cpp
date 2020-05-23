@@ -631,7 +631,7 @@ AACType* AATypeChecker::TypeCheckClassDotFieldAccessorOperation(AA_AST_NODE* pAc
 		AACType* pFieldType = cc->fields.Apply(field).type;
 
 		// Save the ID of the field we're referencing
-		right->tags["fieldid"] = field;
+		right->tags["fieldid"] = cc->fields.Apply(field).fieldOffset;
 		right->tags["primitive"] = (int)aa::runtime::runtimetype_from_statictype(pFieldType);
 
 		// Return field type
@@ -1176,8 +1176,21 @@ AACType* AATypeChecker::TypeCheckPatternMatchCaseCondition(AA_AST_NODE* pConditi
 				//pConditionNode->expressions[i]->tags["isVM"] = first->isVMFunc;
 				//pConditionNode->expressions[i]->tags["procID"] = first->procID;
 
-				// The condition type is then of that type
-				return first->returnType;
+				// Make sure returntype is valid
+				if (first->returnType != AACType::ErrorType) {
+
+					// Store return type ==> Need it for type matching
+					pConditionNode->expressions[i]->tags["matchType"] = first->returnType->constantID;
+
+					// The condition type is then of that type
+					return first->returnType;
+
+				} else {
+
+					// Return error type - something went wrong
+					return AACType::ErrorType;
+
+				}
 
 			} else {
 				AATC_ERROR(

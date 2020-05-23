@@ -1,13 +1,13 @@
 BYTECODE PROCEDURES:
 	START PROCEDURE 0 (<GlobalScope>):
 	OPERATIONS:
-		[0000]  CALL, 1, 0                      ;; Calls: test
+		[0000]  CALL, 1, 0                                                      ;; Calls: test
 	END PROCEDURE;
 
 	START PROCEDURE 1 (test):
 	CONSTANTS:	[I32, 5]
 	OPERATIONS:
-		[0000]  PUSHC, 0                        
-		[0001]  RET                             
+		[0000]  PUSHC, 0                                                        
+		[0001]  RET                                                             
 	END PROCEDURE;
 END BYTECODE PROCEDURES

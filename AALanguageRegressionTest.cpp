@@ -474,6 +474,13 @@ void RunClassTests(AAVM* pAAVM, int& s, int& f) {
 		s++;
 	}
 
+	// Test pattern matching
+	if (!RunFileTest(pAAVM, L"testing\\class7.aa", L"class7", 10)) {
+		f++;
+	} else {
+		s++;
+	}
+
 }
 
 void RunArrayTests(AAVM* pAAVM, int& s, int& f) {

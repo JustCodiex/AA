@@ -157,8 +157,7 @@ BYTECODE PROCEDURES:
 		[0021]  GETVAR, 1                                                       
 		[0022]  JMP, 0                                                          
 		[0023]  SETVAR, 1, 6                                                    ;; primitive: int32 [4 bytes]
-		[0024]  GETVAR, 1                                                       
-		[0025]  RET                                                             
+		[0024]  RET                                                             
 	END PROCEDURE;
 END BYTECODE PROCEDURES
 

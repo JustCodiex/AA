@@ -59,6 +59,9 @@ unsigned char* AAByteType::ToBytes(uint32_t& size) const {
 		// Check if there's tag data
 		bool hasTagData = this->taggedFields != 0;
 
+		// Write if the object has tag data
+		binaryInput << (unsigned char)hasTagData;
+
 		// Only write if true
 		if (hasTagData) {
 

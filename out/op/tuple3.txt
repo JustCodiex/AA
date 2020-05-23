@@ -1,7 +1,7 @@
 BYTECODE PROCEDURES:
 	START PROCEDURE 0 (<GlobalScope>):
 	OPERATIONS:
-		[0000]  CALL, 1, 0                      ;; Calls: main
+		[0000]  CALL, 1, 0                                                      ;; Calls: main
 	END PROCEDURE;
 
 	START PROCEDURE 1 (main):
@@ -9,104 +9,104 @@ BYTECODE PROCEDURES:
 	IDENTIFIERS:
 		0$[accum];		1$[t1];		2$[t2];
 	OPERATIONS:
-		[0000]  PUSHC, 0                        
-		[0001]  SETVAR, 0, 6                    ;; primitive: int32 [4 bytes]
-		[0002]  PUSHC, 0                        
-		[0003]  PUSHC, 0                        
-		[0004]  PUSHC, 0                        
-		[0005]  TUPLENEW, 3, 6, 6, 6            
-		[0006]  SETVAR, 1, 16                   ;; primitive: tuple [8 bytes]
-		[0007]  GETVAR, 0                       
-		[0008]  GETVAR, 1                       
-		[0009]  PUSHC, 0                        
-		[0010]  PUSHC, 0                        
-		[0011]  TUPLENEW, 2, 6, 6               
-		[0012]  TUPLECMP                        
-		[0013]  JMPT, 16                        
-		[0014]  GETVAR, 1                       
-		[0015]  PUSHC, 0                        
-		[0016]  PUSHC, 0                        
-		[0017]  PUSHC, 0                        
-		[0018]  TUPLENEW, 3, 6, 6, 6            
-		[0019]  TUPLECMP                        
-		[0020]  JMPT, 11                        
-		[0021]  GETVAR, 1                       
-		[0022]  PUSHC, 0                        
-		[0023]  PUSHC, 0                        
-		[0024]  PUSHC, 3                        
-		[0025]  TUPLENEW, 3, 6, 6, 6            
-		[0026]  TUPLECMP                        
-		[0027]  JMPT, 6                         
-		[0028]  PUSHC, 5                        
-		[0029]  JMPT, 6                         
-		[0030]  PUSHC, 1                        
-		[0031]  JMP, 6                          
-		[0032]  PUSHC, 2                        
-		[0033]  JMP, 4                          
-		[0034]  PUSHC, 4                        
-		[0035]  JMP, 2                          
-		[0036]  PUSHC, 6                        
-		[0037]  JMP, 0                          
-		[0038]  ADD, 6                          ;; primitive: int32 [4 bytes]
-		[0039]  SETVAR, 0, 6                    ;; primitive: int32 [4 bytes]
-		[0040]  PUSHC, 5                        
-		[0041]  PUSHC, 7                        
-		[0042]  PUSHC, 6                        
-		[0043]  TUPLENEW, 3, 3, 3, 6            
-		[0044]  SETVAR, 2, 16                   ;; primitive: tuple [8 bytes]
-		[0045]  GETVAR, 0                       
-		[0046]  GETVAR, 2                       
-		[0047]  PUSHC, 7                        
-		[0048]  PUSHC, 7                        
-		[0049]  ACCEPT                          
-		[0050]  TUPLENEW, 3, 3, 3, 17           
-		[0051]  TUPLECMP                        
-		[0052]  JMPT, 30                        
-		[0053]  GETVAR, 2                       
-		[0054]  PUSHC, 7                        
-		[0055]  PUSHC, 5                        
-		[0056]  ACCEPT                          
-		[0057]  TUPLENEW, 3, 3, 3, 17           
-		[0058]  TUPLECMP                        
-		[0059]  JMPT, 25                        
-		[0060]  GETVAR, 2                       
-		[0061]  PUSHC, 5                        
-		[0062]  PUSHC, 5                        
-		[0063]  ACCEPT                          
-		[0064]  TUPLENEW, 3, 3, 3, 17           
-		[0065]  TUPLECMP                        
-		[0066]  JMPT, 20                        
-		[0067]  GETVAR, 2                       
-		[0068]  PUSHC, 5                        
-		[0069]  PUSHC, 7                        
-		[0070]  ACCEPT                          
-		[0071]  TUPLENEW, 3, 3, 3, 17           
-		[0072]  TUPLECMP                        
-		[0073]  JMPT, 15                        
-		[0074]  GETVAR, 2                       
-		[0075]  PUSHC, 5                        
-		[0076]  PUSHC, 7                        
-		[0077]  PUSHC, 6                        
-		[0078]  TUPLENEW, 3, 3, 3, 6            
-		[0079]  TUPLECMP                        
-		[0080]  JMPT, 10                        
-		[0081]  PUSHC, 5                        
-		[0082]  JMPT, 10                        
-		[0083]  PUSHC, 4                        
-		[0084]  JMP, 10                         
-		[0085]  PUSHC, 8                        
-		[0086]  JMP, 8                          
-		[0087]  PUSHC, 9                        
-		[0088]  JMP, 6                          
-		[0089]  PUSHC, 10                       
-		[0090]  JMP, 4                          
-		[0091]  PUSHC, 11                       
-		[0092]  JMP, 2                          
-		[0093]  PUSHC, 0                        
-		[0094]  JMP, 0                          
-		[0095]  SUB, 6                          ;; primitive: int32 [4 bytes]
-		[0096]  SETVAR, 0, 6                    ;; primitive: int32 [4 bytes]
-		[0097]  GETVAR, 0                       
-		[0098]  RET                             
+		[0000]  PUSHC, 0                                                        
+		[0001]  SETVAR, 0, 6                                                    ;; primitive: int32 [4 bytes]
+		[0002]  PUSHC, 0                                                        
+		[0003]  PUSHC, 0                                                        
+		[0004]  PUSHC, 0                                                        
+		[0005]  TUPLENEW, 3, 6, 6, 6                                            
+		[0006]  SETVAR, 1, 16                                                   ;; primitive: tuple [8 bytes]
+		[0007]  GETVAR, 0                                                       
+		[0008]  GETVAR, 1                                                       
+		[0009]  PUSHC, 0                                                        
+		[0010]  PUSHC, 0                                                        
+		[0011]  TUPLENEW, 2, 6, 6                                               
+		[0012]  TUPLECMP                                                        
+		[0013]  JMPT, 16                                                        
+		[0014]  GETVAR, 1                                                       
+		[0015]  PUSHC, 0                                                        
+		[0016]  PUSHC, 0                                                        
+		[0017]  PUSHC, 0                                                        
+		[0018]  TUPLENEW, 3, 6, 6, 6                                            
+		[0019]  TUPLECMP                                                        
+		[0020]  JMPT, 11                                                        
+		[0021]  GETVAR, 1                                                       
+		[0022]  PUSHC, 0                                                        
+		[0023]  PUSHC, 0                                                        
+		[0024]  PUSHC, 3                                                        
+		[0025]  TUPLENEW, 3, 6, 6, 6                                            
+		[0026]  TUPLECMP                                                        
+		[0027]  JMPT, 6                                                         
+		[0028]  PUSHC, 5                                                        
+		[0029]  JMPT, 6                                                         
+		[0030]  PUSHC, 1                                                        
+		[0031]  JMP, 6                                                          
+		[0032]  PUSHC, 2                                                        
+		[0033]  JMP, 4                                                          
+		[0034]  PUSHC, 4                                                        
+		[0035]  JMP, 2                                                          
+		[0036]  PUSHC, 6                                                        
+		[0037]  JMP, 0                                                          
+		[0038]  ADD, 6                                                          ;; primitive: int32 [4 bytes]
+		[0039]  SETVAR, 0, 6                                                    ;; primitive: int32 [4 bytes]
+		[0040]  PUSHC, 5                                                        
+		[0041]  PUSHC, 7                                                        
+		[0042]  PUSHC, 6                                                        
+		[0043]  TUPLENEW, 3, 3, 3, 6                                            
+		[0044]  SETVAR, 2, 16                                                   ;; primitive: tuple [8 bytes]
+		[0045]  GETVAR, 0                                                       
+		[0046]  GETVAR, 2                                                       
+		[0047]  PUSHC, 7                                                        
+		[0048]  PUSHC, 7                                                        
+		[0049]  ACCEPT                                                          
+		[0050]  TUPLENEW, 3, 3, 3, 17                                           
+		[0051]  TUPLECMP                                                        
+		[0052]  JMPT, 30                                                        
+		[0053]  GETVAR, 2                                                       
+		[0054]  PUSHC, 7                                                        
+		[0055]  PUSHC, 5                                                        
+		[0056]  ACCEPT                                                          
+		[0057]  TUPLENEW, 3, 3, 3, 17                                           
+		[0058]  TUPLECMP                                                        
+		[0059]  JMPT, 25                                                        
+		[0060]  GETVAR, 2                                                       
+		[0061]  PUSHC, 5                                                        
+		[0062]  PUSHC, 5                                                        
+		[0063]  ACCEPT                                                          
+		[0064]  TUPLENEW, 3, 3, 3, 17                                           
+		[0065]  TUPLECMP                                                        
+		[0066]  JMPT, 20                                                        
+		[0067]  GETVAR, 2                                                       
+		[0068]  PUSHC, 5                                                        
+		[0069]  PUSHC, 7                                                        
+		[0070]  ACCEPT                                                          
+		[0071]  TUPLENEW, 3, 3, 3, 17                                           
+		[0072]  TUPLECMP                                                        
+		[0073]  JMPT, 15                                                        
+		[0074]  GETVAR, 2                                                       
+		[0075]  PUSHC, 5                                                        
+		[0076]  PUSHC, 7                                                        
+		[0077]  PUSHC, 6                                                        
+		[0078]  TUPLENEW, 3, 3, 3, 6                                            
+		[0079]  TUPLECMP                                                        
+		[0080]  JMPT, 10                                                        
+		[0081]  PUSHC, 5                                                        
+		[0082]  JMPT, 10                                                        
+		[0083]  PUSHC, 4                                                        
+		[0084]  JMP, 10                                                         
+		[0085]  PUSHC, 8                                                        
+		[0086]  JMP, 8                                                          
+		[0087]  PUSHC, 9                                                        
+		[0088]  JMP, 6                                                          
+		[0089]  PUSHC, 10                                                       
+		[0090]  JMP, 4                                                          
+		[0091]  PUSHC, 11                                                       
+		[0092]  JMP, 2                                                          
+		[0093]  PUSHC, 0                                                        
+		[0094]  JMP, 0                                                          
+		[0095]  SUB, 6                                                          ;; primitive: int32 [4 bytes]
+		[0096]  SETVAR, 0, 6                                                    ;; primitive: int32 [4 bytes]
+		[0097]  GETVAR, 0                                                       
+		[0098]  RET                                                             
 	END PROCEDURE;
 END BYTECODE PROCEDURES

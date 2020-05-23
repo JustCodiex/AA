@@ -3,6 +3,7 @@
 #include "AAC.h"
 #include "AAVal.h"
 #include "AAControlpath.h"
+#include "AAPrimitiveType.h"
 
 using namespace aa::modifiers;
 
@@ -814,7 +815,10 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterClass(AA_AST_NODE* pNode, AACl
 	std::vector<AA_AST_NODE*> funcBodyNodes;
 
 	// Make sure we have a class body to work with
-	if (AA_NODE_CLASSNODE_BODY < pNode->expressions.size() && pNode->expressions[AA_NODE_CLASSNODE_BODY]->type == AA_AST_NODE_TYPE::classbody) {
+	if (aa::parsing::Class_HasBody(pNode)) {
+
+		// Track offset
+		size_t fieldOffset = 0;
 
 		// For all elements in class body
 		for (size_t i = 0; i < pNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions.size(); i++) {
@@ -851,6 +855,7 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterClass(AA_AST_NODE* pNode, AACl
 				// Create field signature
 				AAClassFieldSignature field;
 				field.fieldID = (int)cc->fields.Size();
+				field.fieldOffset = fieldOffset;
 				field.name = pNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions[i]->content;
 				field.type = this->GetTypeFromName(pNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions[i]->expressions[0]->content, domain, senv);
 
@@ -869,6 +874,9 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterClass(AA_AST_NODE* pNode, AACl
 
 				// Add field to class fields
 				cc->fields.Add(field);
+
+				// Increment field offset
+				fieldOffset += aa::runtime::size_of_type(aa::runtime::runtimetype_from_statictype(field.type));
 
 			} else {
 

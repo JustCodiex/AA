@@ -59,6 +59,8 @@ public:
 
 	AAObjectType* GetType() const;
 
+	const AAStackValue Offset(size_t offset, AAPrimitiveType type) const;
+
 private:
 
 	size_t m_size;

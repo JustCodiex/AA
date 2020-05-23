@@ -917,7 +917,8 @@ Instructions AAC::CompilePatternCondition(aa::list<CompiledAbstractExpression> m
 		if (!hasAssignments) {
 
 			dconOp.bc = AAByteCode::TAGTUPLECMP;
-			dconOp.argCount = 0;
+			dconOp.argCount = 1;
+			dconOp.argValues[0] = pNode->tags["matchType"];
 
 			opList.Add(tupleBuild);
 
@@ -925,8 +926,9 @@ Instructions AAC::CompilePatternCondition(aa::list<CompiledAbstractExpression> m
 
 			dconOp.bc = AAByteCode::TAGTUPLECMPORSET;
 			dconOp.argValues[0] = (int)pNode->expressions.size();
-			dconOp.argCount = dconOp.argValues[0]+1;
-			memcpy(dconOp.argValues + 1, assignments, sizeof(assignments) - sizeof(int));
+			dconOp.argValues[1] = pNode->tags["matchType"];
+			dconOp.argCount = dconOp.argValues[0]+2;
+			memcpy(dconOp.argValues + 2, assignments, sizeof(assignments) - sizeof(int));
 
 		}
 		
@@ -1507,7 +1509,7 @@ void AAC::CompileClassToBytes(AAByteType& outType, AACType* pType, aa::list<AACT
 				AAClassFieldSignature& field = pClass->fields.Apply(i);
 				if (field.tagged) {
 					AAByteTagField f;
-					f.fieldId = field.fieldID;
+					f.fieldId = (uint16_t)field.fieldOffset; // We actualy have to use the offset...
 					f.ptype = (unsigned char)aa::runtime::runtimetype_from_statictype(field.type);
 					if (field.type->isRefType || field.type->isEnum) {
 						f.typePtr = (uint32_t)typeList.IndexOf(field.type);

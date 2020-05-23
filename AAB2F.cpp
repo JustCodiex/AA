@@ -321,7 +321,7 @@ namespace aa {
 				o << L"\tOPERATIONS:\n";
 				for (size_t j = 0; j < proc.procOperations.Size(); j++) {
 					o << L"\t\t" << L"[" << std::right << std::setw(4) << std::setfill(L'0') << std::to_wstring(j) << L"]  ";
-					o << std::left << std::setw(32) << std::setfill(L' ') << OpToWString(proc.procOperations.At(j));
+					o << std::left << std::setw(64) << std::setfill(L' ') << OpToWString(proc.procOperations.At(j));
 					if (proc.procOperations.At(j).bc == AAByteCode::XCALL) {
 						o << L";; Calls: " << pAAVM->GetBuiltinFuncByIndex(proc.procOperations.At(j).argValues[0]).name;
 					} else if (proc.procOperations.At(j).bc == AAByteCode::CALL) {

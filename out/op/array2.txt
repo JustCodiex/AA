@@ -4,11 +4,11 @@ BYTECODE PROCEDURES:
 	IDENTIFIERS:
 		0$[arr];
 	OPERATIONS:
-		[0000]  PUSHC, 0                        
-		[0001]  ALLOCARRAY, 6, 1                
-		[0002]  SETVAR, 0, 14                   ;; primitive: refptr [16 bytes]
-		[0003]  GETVAR, 0                       
-		[0004]  PUSHC, 1                        
-		[0005]  GETELEM, 0                      
+		[0000]  PUSHC, 0                                                        
+		[0001]  ALLOCARRAY, 6, 1                                                
+		[0002]  SETVAR, 0, 14                                                   ;; primitive: refptr [16 bytes]
+		[0003]  GETVAR, 0                                                       
+		[0004]  PUSHC, 1                                                        
+		[0005]  GETELEM, 0                                                      
 	END PROCEDURE;
 END BYTECODE PROCEDURES

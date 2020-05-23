@@ -4,18 +4,18 @@ BYTECODE PROCEDURES:
 	IDENTIFIERS:
 		0$[x];		1$[y];
 	OPERATIONS:
-		[0000]  PUSHC, 0                        
-		[0001]  PUSHC, 0                        
-		[0002]  ADD, 6                          ;; primitive: int32 [4 bytes]
-		[0003]  PUSHC, 0                        
-		[0004]  MUL, 6                          ;; primitive: int32 [4 bytes]
-		[0005]  PUSHC, 1                        
-		[0006]  SUB, 6                          ;; primitive: int32 [4 bytes]
-		[0007]  SETVAR, 0, 6                    ;; primitive: int32 [4 bytes]
-		[0008]  PUSHC, 2                        
-		[0009]  SETVAR, 1, 6                    ;; primitive: int32 [4 bytes]
-		[0010]  GETVAR, 0                       
-		[0011]  GETVAR, 1                       
-		[0012]  SUB, 6                          ;; primitive: int32 [4 bytes]
+		[0000]  PUSHC, 0                                                        
+		[0001]  PUSHC, 0                                                        
+		[0002]  ADD, 6                                                          ;; primitive: int32 [4 bytes]
+		[0003]  PUSHC, 0                                                        
+		[0004]  MUL, 6                                                          ;; primitive: int32 [4 bytes]
+		[0005]  PUSHC, 1                                                        
+		[0006]  SUB, 6                                                          ;; primitive: int32 [4 bytes]
+		[0007]  SETVAR, 0, 6                                                    ;; primitive: int32 [4 bytes]
+		[0008]  PUSHC, 2                                                        
+		[0009]  SETVAR, 1, 6                                                    ;; primitive: int32 [4 bytes]
+		[0010]  GETVAR, 0                                                       
+		[0011]  GETVAR, 1                                                       
+		[0012]  SUB, 6                                                          ;; primitive: int32 [4 bytes]
 	END PROCEDURE;
 END BYTECODE PROCEDURES

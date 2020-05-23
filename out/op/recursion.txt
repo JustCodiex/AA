@@ -2,8 +2,8 @@ BYTECODE PROCEDURES:
 	START PROCEDURE 0 (<GlobalScope>):
 	CONSTANTS:	[I32, 4]
 	OPERATIONS:
-		[0000]  PUSHC, 0                        
-		[0001]  CALL, 1, 1                      ;; Calls: factorial
+		[0000]  PUSHC, 0                                                        
+		[0001]  CALL, 1, 1                                                      ;; Calls: factorial
 	END PROCEDURE;
 
 	START PROCEDURE 1 (factorial):
@@ -11,19 +11,19 @@ BYTECODE PROCEDURES:
 	IDENTIFIERS:
 		n;
 	OPERATIONS:
-		[0000]  SETVAR, 0, 6                    ;; primitive: int32 [4 bytes]
-		[0001]  GETVAR, 0                       
-		[0002]  PUSHC, 0                        
-		[0003]  LEQ, 6                          ;; primitive: int32 [4 bytes]
-		[0004]  JMPF, 2                         
-		[0005]  PUSHC, 0                        
-		[0006]  JMP, 6                          
-		[0007]  GETVAR, 0                       
-		[0008]  GETVAR, 0                       
-		[0009]  PUSHC, 0                        
-		[0010]  SUB, 6                          ;; primitive: int32 [4 bytes]
-		[0011]  CALL, 1, 1                      ;; Calls: factorial
-		[0012]  MUL, 6                          ;; primitive: int32 [4 bytes]
-		[0013]  RET                             
+		[0000]  SETVAR, 0, 6                                                    ;; primitive: int32 [4 bytes]
+		[0001]  GETVAR, 0                                                       
+		[0002]  PUSHC, 0                                                        
+		[0003]  LEQ, 6                                                          ;; primitive: int32 [4 bytes]
+		[0004]  JMPF, 2                                                         
+		[0005]  PUSHC, 0                                                        
+		[0006]  JMP, 6                                                          
+		[0007]  GETVAR, 0                                                       
+		[0008]  GETVAR, 0                                                       
+		[0009]  PUSHC, 0                                                        
+		[0010]  SUB, 6                                                          ;; primitive: int32 [4 bytes]
+		[0011]  CALL, 1, 1                                                      ;; Calls: factorial
+		[0012]  MUL, 6                                                          ;; primitive: int32 [4 bytes]
+		[0013]  RET                                                             
 	END PROCEDURE;
 END BYTECODE PROCEDURES

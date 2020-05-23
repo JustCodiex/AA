@@ -153,6 +153,8 @@ void AAProgram::LoadOperations(Procedure& proc, aa::bwalker& bw) {
 		case AAByteCode::CMPE:
 		case AAByteCode::CMPNE:
 		case AAByteCode::TUPLEGET:
+		case AAByteCode::TAGTUPLECMP:
+		case AAByteCode::LAND:
 			proc.opSequence[i].args = new int[1];
 			bw >> proc.opSequence[i].args[0];
 			break;
@@ -180,7 +182,7 @@ void AAProgram::LoadOperations(Procedure& proc, aa::bwalker& bw) {
 			bw >> proc.opSequence[i].args[2];
 			bw >> proc.opSequence[i].args[3];
 			break;*/
-		case AAByteCode::TAGTUPLECMPORSET: 
+		
 		case AAByteCode::TUPLECMPORSET:
 		case AAByteCode::TUPLENEW: { // Read arguments of the form (n, arg_0, ..., arg_n)
 			int sz = 0;
@@ -189,6 +191,17 @@ void AAProgram::LoadOperations(Procedure& proc, aa::bwalker& bw) {
 			proc.opSequence[i].args[0] = sz;
 			for (int j = 0; j < sz; j++) {
 				bw >> proc.opSequence[i].args[j + 1];
+			}
+			break;
+		}
+		case AAByteCode::TAGTUPLECMPORSET: { // Read arguments of the form (n, q, arg_0, ..., arg_n)
+			int sz = 0;
+			bw >> sz;
+			proc.opSequence[i].args = new int[sz + 2];
+			proc.opSequence[i].args[0] = sz;
+			bw >> proc.opSequence[i].args[1];
+			for (int j = 0; j < sz; j++) {
+				bw >> proc.opSequence[i].args[j + 2];
 			}
 			break;
 		}
@@ -280,7 +293,33 @@ void AAProgram::LoadType(aa::bwalker& bw) {
 		// Do we have any tagged fields?
 		if (hasTagFields) {
 
+			// Field id
+			uint16_t taggedCount = 0, fieldId = 0;
+			unsigned char fieldType = 0;
+			uint32_t fieldrefType = 0;
 
+			// Read tag count
+			bw >> taggedCount;
+
+			// Update type to tagged count
+			pType->SetTaggedCount(taggedCount);
+
+			// Read tagged field count
+			for (uint16_t i = 0; i < taggedCount; i++) {
+
+				// Read essentials
+				bw >> fieldId;
+				bw >> fieldType;
+
+				// If ref type, read pointer as well
+				if (fieldType == 14) {
+					bw >> fieldrefType;
+				}
+
+				// Set tag data
+				pType->SetTaggedField(i, fieldId, fieldType, fieldrefType);
+
+			}
 
 		}
 

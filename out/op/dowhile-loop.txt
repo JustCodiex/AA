@@ -1,7 +1,7 @@
 BYTECODE PROCEDURES:
 	START PROCEDURE 0 (<GlobalScope>):
 	OPERATIONS:
-		[0000]  CALL, 1, 0                      ;; Calls: foo
+		[0000]  CALL, 1, 0                                                      ;; Calls: foo
 	END PROCEDURE;
 
 	START PROCEDURE 1 (foo):
@@ -9,17 +9,17 @@ BYTECODE PROCEDURES:
 	IDENTIFIERS:
 		0$[i];
 	OPERATIONS:
-		[0000]  PUSHC, 0                        
-		[0001]  SETVAR, 0, 6                    ;; primitive: int32 [4 bytes]
-		[0002]  GETVAR, 0                       
-		[0003]  PUSHC, 2                        
-		[0004]  ADD, 6                          ;; primitive: int32 [4 bytes]
-		[0005]  SETVAR, 0, 6                    ;; primitive: int32 [4 bytes]
-		[0006]  GETVAR, 0                       
-		[0007]  PUSHC, 1                        
-		[0008]  LE, 6                           ;; primitive: int32 [4 bytes]
-		[0009]  JMPT, -8                        
-		[0010]  GETVAR, 0                       
-		[0011]  RET                             
+		[0000]  PUSHC, 0                                                        
+		[0001]  SETVAR, 0, 6                                                    ;; primitive: int32 [4 bytes]
+		[0002]  GETVAR, 0                                                       
+		[0003]  PUSHC, 2                                                        
+		[0004]  ADD, 6                                                          ;; primitive: int32 [4 bytes]
+		[0005]  SETVAR, 0, 6                                                    ;; primitive: int32 [4 bytes]
+		[0006]  GETVAR, 0                                                       
+		[0007]  PUSHC, 1                                                        
+		[0008]  LE, 6                                                           ;; primitive: int32 [4 bytes]
+		[0009]  JMPT, -8                                                        
+		[0010]  GETVAR, 0                                                       
+		[0011]  RET                                                             
 	END PROCEDURE;
 END BYTECODE PROCEDURES

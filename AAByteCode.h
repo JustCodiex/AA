@@ -95,8 +95,9 @@ enum class AAByteCode : unsigned char {
 	UNWRAP, // (Unwraps the top stack element from its associated stackvalue, 0 arguments)
 
 	EXTTAG, // (Extract tags from object and put into tuple, 0 arguments)
-	TAGTUPLECMP,	// (Compares two tuples, where top-of-stack tuple may assign to variables, first tuple value is ignored (typeId), 0 arguments)
-	TAGTUPLECMPORSET,	// (Compares two tuples, where top-of-stack tuple may assign to variables, first tuple value is ignored (typeId), 1+n arguments[tuple count, { -1 | varid }^n : n = tuple count])
+	TAGTUPLECMP,	// (Compares two tuples, first tuple value is preset to typeID, 1 argument[Match type ID])
+	TAGTUPLECMPORSET,	// (Compares two tuples, where top-of-stack tuple may assign to variables, first tuple value is ignored (typeId), 
+						// 2+n arguments[tuple count, Match type ID, { -1 | varid }^n : n = tuple count])
 						// -1 = compare normally
 						// >= 0 = assign to var
 

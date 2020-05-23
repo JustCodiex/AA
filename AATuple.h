@@ -49,6 +49,14 @@ public:
 	/// <returns></returns>
 	const std::wstring ToString() const;
 
+	/// <summary>
+	/// Checks if the first parameter is matching (not neccessarily equal) to the second parameter
+	/// </summary>
+	/// <param name="matchon">Tuple to see if matching</param>
+	/// <param name="matchwith">Tuple to try and match with</param>
+	/// <returns>True if the first parameter can match with the other</returns>
+	static bool MatchTuple(AATuple matchon, AATuple matchwith);
+
 private:
 
 	aa::array<TupleValue> tupleValues;

@@ -29,6 +29,7 @@ struct AAClassFieldSignature {
 	std::wstring name;
 	AACType* type;
 	int fieldID;
+	size_t fieldOffset;
 	bool tagged;
 	AAAccessModifier accessModifier;
 	AAClassFieldSignature() {
@@ -37,6 +38,7 @@ struct AAClassFieldSignature {
 		this->fieldID = -1;
 		this->accessModifier = AAAccessModifier::PUBLIC;
 		this->tagged = false;
+		this->fieldOffset = 0;
 	}
 	bool operator==(AAClassFieldSignature other) const {
 		return other.name.compare(this->name) == 0;

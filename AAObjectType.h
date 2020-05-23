@@ -8,6 +8,20 @@
 /// </summary>
 class AAObjectType {
 
+private:
+
+	struct TaggedField {
+		uint16_t fieldId;
+		unsigned char fieldType;
+		uint32_t fieldRefTypePtr;
+		TaggedField() { fieldId = fieldType = fieldRefTypePtr = 0; }
+		TaggedField(uint16_t i, unsigned char t, uint32_t r) {
+			fieldId = i;
+			fieldType = t;
+			fieldRefTypePtr = r;
+		}
+	};
+
 public:
 
 	AAObjectType();
@@ -32,6 +46,44 @@ public:
 	/// </summary>
 	/// <returns></returns>
 	const size_t GetSize() const;
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="count"></param>
+	void SetTaggedCount(const uint16_t& count);
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="index"></param>
+	/// <param name="fId"></param>
+	/// <param name="fType"></param>
+	/// <param name="fRefType"></param>
+	void SetTaggedField(const size_t& index, uint16_t fId, unsigned char fType, uint32_t fRefType);
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <returns></returns>
+	const int32_t GetTaggedCount() const;
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="index"></param>
+	/// <param name="fId"></param>
+	/// <param name="fType"></param>
+	void GetTaggedField(const int32_t& index, uint16_t& fId, unsigned char& fType);
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="index"></param>
+	/// <param name="fId"></param>
+	/// <param name="fType"></param>
+	/// <param name="fRefType"></param>
+	void GetTaggedField(const int32_t& index, uint16_t& fId, unsigned char& fType, uint32_t fRefType);
 
 	/// <summary>
 	/// Is a tagged class type (Can it be deconstructed)
@@ -71,8 +123,8 @@ private:
 
 	uint16_t m_size;
 
-	int16_t m_taggedFieldCount;
-	size_t* m_taggedFieldTypes;
+	int32_t m_taggedFieldCount;
+	TaggedField* m_taggedFields;
 
 	uint16_t m_baseTypeIndex;
 	AAObjectType* m_baseType;

@@ -650,16 +650,6 @@ void AAVM::exec(AAProgram::Procedure* procedure, aa::stack<AARuntimeEnvironment>
 			AAVM_OPI++;
 			break;
 		}
-		/*case AAByteCode::BDOP: {
-			aa::list<AAStackValue> v = this->BreakdownObject(stack.Pop<AAMemoryPtr>());
-			v.ForEach([&stack](AAStackValue& val) { stack.Push(val); });
-			AAVM_OPI++;
-			break;
-		}
-		case AAByteCode::BCKM:
-			stack.Push(this->BackwardsPatternmatch(AAVM_GetArgument(0), AAVM_GetArgument(1), AAVM_GetArgument(2), AAVM_GetArgument(3), stack));
-			AAVM_OPI++;
-			break;*/
 		case AAByteCode::WRAP: {
 			//Trace("Before %i\n", (int)stack.get_pointer());
 			AAStackValue top = aa::vm::PopSomething((AAPrimitiveType)AAVM_GetArgument(0), stack);
@@ -702,23 +692,88 @@ void AAVM::exec(AAProgram::Procedure* procedure, aa::stack<AARuntimeEnvironment>
 		}
 		case AAByteCode::TUPLECMP: {
 			AATuple matchon = aa::vm::PopSomething(AAPrimitiveType::tuple, stack).to_cpp<AATuple>();
-			AATuple mathwith = aa::vm::PopSomething(AAPrimitiveType::tuple, stack).to_cpp<AATuple>();
-			if (mathwith.Size() == matchon.Size()) {
-				bool f = true;
-				for (int i = 0; i < mathwith.Size(); i++) {
-					if (mathwith.TypeAt(i) == matchon.TypeAt(i)) {
-						if (!mathwith.ValueAt(i).Equals(matchon.ValueAt(i), mathwith.Size())) {
-							f = false;
-							break;
-						}
-					} else {
-						if (matchon.TypeAt(i) != AAPrimitiveType::__TRUEANY) {
-							f = false;
-							break;
-						}
+			AATuple matchwith = aa::vm::PopSomething(AAPrimitiveType::tuple, stack).to_cpp<AATuple>();
+			stack.Push(AATuple::MatchTuple(matchon, matchwith));
+			AAVM_OPI++;
+			break;
+		}
+		case AAByteCode::TUPLECMPORSET: {
+			AAVM_OPI++;
+			break;
+		}
+		case AAByteCode::EXTTAG: {
+			AAObject* top = stack.Pop<AAMemoryPtr>().get_object();
+			AAObjectType* topObjType = top->GetType();
+			if (topObjType->IsTaggedType()) {
+				int32_t sz = topObjType->GetTaggedCount();
+				aa::array<AAPrimitiveType> types = aa::array<AAPrimitiveType>(sz + 1);
+				aa::array<AAVal> values = aa::array<AAVal>(sz + 1);
+				types[0] = AAPrimitiveType::uint32;
+				values[0] = AAVal(topObjType->GetTypeID());
+				for (int32_t i = 0; i < sz; i++) {
+					uint16_t fId;
+					unsigned char fType;
+					topObjType->GetTaggedField(i, fId, fType);
+					types[i + 1] = (AAPrimitiveType)fType;
+					values[i + 1] = aa::GetValue(top, types[i + 1], fId).as_val();
+				}
+				stack.Push(AATuple(types, values));
+			} else {
+				printf("Non-tagged type found!");
+			}
+			AAVM_OPI++;
+			break;
+		}
+		case AAByteCode::TAGTUPLECMP: {
+			uint32_t tId = AAVM_GetArgument(0);
+			AAObjectType* t = this->m_staticTypeEnvironment->LookupType(tId);
+			if (t && t->IsTaggedType()) {
+				int32_t sz = t->GetTaggedCount();
+				aa::array<AAPrimitiveType> types = aa::array<AAPrimitiveType>(sz + 1);
+				aa::array<AAVal> values = aa::array<AAVal>(sz + 1);
+				for (int32_t i = 0; i < sz; i++) {
+					uint16_t fId;
+					unsigned char fType;
+					t->GetTaggedField(i, fId, fType);
+					types[i + 1] = (AAPrimitiveType)fType;
+					if (types[i + 1] != AAPrimitiveType::__TRUEANY) {
+						values[i + 1] = aa::vm::PopSomething(types[i + 1], stack).as_val();
 					}
 				}
-				if (f) {
+				stack.Push(AATuple::MatchTuple(AATuple(types, values), stack.Pop<AATuple>()));
+			} else {
+				printf("Non-tagged type found!");
+			}
+			AAVM_OPI++;
+			break;
+		}
+		case AAByteCode::TAGTUPLECMPORSET: {
+			int count = AAVM_GetArgument(0);
+			int typeID = AAVM_GetArgument(1);
+			AATuple topTuple = stack.Pop<AATuple>();
+			if (topTuple.ValueAt(0).Equals(AAVal(typeID), sizeof(int32_t))) { // See if they're the type we're expecting
+				AAObjectType* t = this->m_staticTypeEnvironment->LookupType(typeID);
+				int32_t sz = t->GetTaggedCount();
+				aa::array<AAPrimitiveType> types = aa::array<AAPrimitiveType>(sz + 1);
+				aa::array<AAVal> values = aa::array<AAVal>(sz + 1);
+				types[0] = AAPrimitiveType::uint32;
+				values[0] = AAVal(typeID);
+				for (int32_t i = 0; i < count; i++) {
+					int k = AAVM_GetArgument(2 + i);
+					if (k >= 0) {
+						values[i + 1] = topTuple.ValueAt(i + 1);
+						types[i + 1] = topTuple.TypeAt(i + 1);
+					} else {
+						types[i + 1] = AAPrimitiveType::__TRUEANY;
+					}
+				}
+				if (AATuple::MatchTuple(AATuple(types, values), topTuple)) {
+					for (size_t i = 1; i < sz + 1; i++) {
+						if (types[i] != AAPrimitiveType::__TRUEANY) {
+							AAStackValue val = AAStackValue(types[i], values[i]);
+							AAVM_VENV->SetVariable(AAVM_GetArgument(1 + i), val);
+						}
+					}
 					stack.Push(true);
 				} else {
 					stack.Push(false);
@@ -745,35 +800,6 @@ void AAVM::exec(AAProgram::Procedure* procedure, aa::stack<AARuntimeEnvironment>
 
 }
 
-aa::list<AAStackValue> AAVM::BreakdownObject(AAStackValue top) {
-
-	aa::list<AAStackValue> ls;
-	AAMemoryPtr ptr = top.to_cpp<AAMemoryPtr>();
-
-	if (ptr > 0) {
-
-		AAObject* pObject = m_heapMemory->Object(ptr);
-
-		printf("");
-
-	} else {
-
-		printf("Something very fatal!");
-
-	}
-
-	return ls;
-
-}
-
-AAStackValue AAVM::BackwardsPatternmatch(int op, int vm, int args, int get, const any_stack& stack) {
-
-	AAStackValue v = false;
-
-	return v;
-
-}
-
 template<typename T>
 inline T __writesck(any_stack stack, std::ostream* pOutstream, bool logTopOfStack) {
 	T t = stack.Pop<T>();
@@ -790,6 +816,8 @@ AAStackValue AAVM::ReportStack(any_stack& stack) {
 
 	if (stack.is_empty()) {
 		stack.Release(false);
+		std::string msg = "Empty stack (Void)";
+		m_outStream->write(msg.c_str(), msg.length());
 		return AAStackValue::None;
 	} else {
 		AAStackValue val = AAStackValue::None;
@@ -822,6 +850,9 @@ AAStackValue AAVM::ReportStack(any_stack& stack) {
 			}
 		} else if (stack.get_pointer() != 0) {
 			std::string msg = "<Warning!> " + std::to_string(stack.get_pointer()) + " bytes remained on the stack!\n";
+			m_outStream->write(msg.c_str(), msg.length());
+		} else {
+			std::string msg = "Empty stack (Void)";
 			m_outStream->write(msg.c_str(), msg.length());
 		}
 		stack.Release(false);

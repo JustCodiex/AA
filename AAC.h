@@ -9,6 +9,10 @@
 
 class AAVM;
 
+namespace aa {
+	const int MAX_ARGUMENT_SIZE = 16;
+}
+
 // Compiler Class
 class AAC {
 
@@ -17,7 +21,7 @@ public:
 	struct CompiledAbstractExpression {
 		AAByteCode bc;
 		int argCount;
-		int argValues[8];
+		int argValues[aa::MAX_ARGUMENT_SIZE];
 		CompiledAbstractExpression() {
 			bc = AAByteCode::NOP;
 			argCount = 0;

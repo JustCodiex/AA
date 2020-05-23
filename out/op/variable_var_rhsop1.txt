@@ -4,10 +4,10 @@ BYTECODE PROCEDURES:
 	IDENTIFIERS:
 		0$[x];
 	OPERATIONS:
-		[0000]  PUSHC, 0                        
-		[0001]  PUSHC, 0                        
-		[0002]  ADD, 6                          ;; primitive: int32 [4 bytes]
-		[0003]  SETVAR, 0, 6                    ;; primitive: int32 [4 bytes]
-		[0004]  GETVAR, 0                       
+		[0000]  PUSHC, 0                                                        
+		[0001]  PUSHC, 0                                                        
+		[0002]  ADD, 6                                                          ;; primitive: int32 [4 bytes]
+		[0003]  SETVAR, 0, 6                                                    ;; primitive: int32 [4 bytes]
+		[0004]  GETVAR, 0                                                       
 	END PROCEDURE;
 END BYTECODE PROCEDURES

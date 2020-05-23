@@ -90,3 +90,24 @@ const std::wstring AATuple::ToString() const {
 	return wss.str();
 
 }
+
+bool AATuple::MatchTuple(AATuple matchon, AATuple matchwith) {
+
+	if (matchwith.Size() == matchon.Size()) {
+		for (int i = 0; i < matchwith.Size(); i++) {
+			if (matchwith.TypeAt(i) == matchon.TypeAt(i)) {
+				if (!matchwith.ValueAt(i).Equals(matchon.ValueAt(i), matchwith.Size())) {
+					return false;
+				}
+			} else {
+				if (matchon.TypeAt(i) != AAPrimitiveType::__TRUEANY) {
+					return false;
+				}
+			}
+		}
+		return true;
+	} else {
+		return false;
+	}
+
+}

@@ -98,11 +98,19 @@ int AAObject::GetVirtualFunctionPtr(const int& procID) const {
 int AAObject::GetVirtualFunctionPtr(const int& procID, const uint32_t& typeID) const {
 
 	if (this->m_type->HasVTable()) {
-		return this->m_type->m_vtable->GetFunctionPtr(procID, typeID); // TODO: Make this go down furthe if not found!
+		return this->m_type->m_vtable->GetFunctionPtr(procID, typeID); // TODO: Make this go down further if not found!
 	} else {
 		return this->m_base->GetVirtualFunctionPtr(procID, typeID);
 	}
 
+}
+
+const AAStackValue AAObject::Offset(size_t offset, AAPrimitiveType type) const {
+	const size_t sz = aa::runtime::size_of_type(type);
+	unsigned char* bytes = new unsigned char[sz];
+	memset(bytes, 0, sz);
+	memcpy(bytes, (this->m_data + offset), sz);
+	return AAStackValue(type, AAVal(bytes, sz));
 }
 
 namespace aa {

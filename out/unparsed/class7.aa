@@ -1,0 +1,49 @@
+{
+	main();
+}
+sealed abstract class BinaryTree;
+tagged class Leaf : BinaryTree {
+	Leaf Leaf(Leaf this) {
+		this;
+	}
+	bool Equals(Leaf this, Leaf _other) {
+		true;
+	}
+	string ToString(Leaf this) {
+		("Leaf(" + ")");
+	}
+};
+Leaf Leaf() {
+	new Leaf();
+}
+tagged class Node : BinaryTree {
+	int value;
+	BinaryTree left;
+	BinaryTree right;
+	Node Node(int value, BinaryTree left, BinaryTree right, Node this) {
+		this.value = value;
+		this.left = left;
+		this.right = right;
+		this;
+	}
+	bool Equals(Node this, Node _other) {
+		(((this.value == _other.value) && (this.left == _other.left)) && (this.right == _other.right));
+	}
+	string ToString(Node this) {
+		("Node(" + ((", " + this.right) + ((", " + this.left) + (this.value + ")"))));
+	}
+};
+Node Node(int value, BinaryTree left, BinaryTree right) {
+	new Node(value, left, right);
+}
+int main() {
+	BinaryTree tree = Node(10, Node(5, Node(2, Leaf(), Leaf()), Leaf()), Leaf());
+	int topValue = tree match {
+		case Leaf() => {
+			0;
+		},
+		case Node(v, _, _) => {
+			v;
+		}
+	};
+}
