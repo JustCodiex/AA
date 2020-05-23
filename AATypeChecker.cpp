@@ -1100,12 +1100,18 @@ AACType* AATypeChecker::TypeCheckPatternMatchCase(AA_AST_NODE* pCaseNode, AACTyp
 
 	// Case of anything (The '_' wildcard)
 	bool isAnyCase = pCaseNode->expressions[0]->expressions[0]->HasTag("any_case");
+	bool isDeconstructCase = pCaseNode->expressions[0]->expressions[0]->type == AA_AST_NODE_TYPE::objdeconstruct;
 
 	// Dealing with tuples?
 	if (bothTuples && !isAnyCase) {
 
 		// Instruct the compiler to use tuple comparrison operator instead
 		pCaseNode->tags["compareTuples"] = 1;
+
+	} else if (isDeconstructCase) { // Is deconstruct case?
+		
+		// Tell the compiler the condition compilation itself will handle the comparrison method
+		pCaseNode->tags["compare_handled"] = 1;
 
 	} else if (isAnyCase) {
 

@@ -1,4 +1,5 @@
 #include "AAByteType.h"
+#include "AAPrimitiveType.h"
 #include "bstream.h"
 
 unsigned char* AAByteType::ToBytes(uint32_t& size) const {
@@ -19,36 +20,68 @@ unsigned char* AAByteType::ToBytes(uint32_t& size) const {
 		binaryInput << otherInheritancePtr[i];
 	}
 
-	// Check if there's a vtable
-	bool hasVTable = this->vtable != 0;
+	// Only write this if ref type
+	if (this->typeVariant == AAByteTypeVariant::Ref) {
 
-	// Write if there's a vtable
-	binaryInput << (unsigned char)(hasVTable);
+		// Check if there's a vtable
+		bool hasVTable = this->vtable != 0;
 
-	// if has vtable, then write it
-	if (hasVTable) {
+		// Write if there's a vtable
+		binaryInput << (unsigned char)(hasVTable);
 
-		// write length
-		binaryInput << (uint16_t)this->vtable->vtable.length();
+		// if has vtable, then write it
+		if (hasVTable) {
 
-		// Write all vtable elements
-		this->vtable->vtable.for_each(
-			[&binaryInput](_vtableelem k) {
+			// write length
+			binaryInput << (uint16_t)this->vtable->vtable.length();
 
-				binaryInput << k.first;
-				binaryInput << (uint16_t)k.second.length();
+			// Write all vtable elements
+			this->vtable->vtable.for_each(
+				[&binaryInput](_vtableelem k) {
 
-				k.second.for_each(
-					[&binaryInput](_vtablefunc v) {
+					binaryInput << k.first;
+					binaryInput << (uint16_t)k.second.length();
 
-						binaryInput << v.first;
-						binaryInput << v.second;
+					k.second.for_each(
+						[&binaryInput](_vtablefunc v) {
 
+							binaryInput << v.first;
+							binaryInput << v.second;
+
+						}
+					);
+
+				}
+			);
+
+		}
+
+		// Check if there's tag data
+		bool hasTagData = this->taggedFields != 0;
+
+		// Only write if true
+		if (hasTagData) {
+
+			// Write length
+			binaryInput << (uint16_t)this->taggedFields->fields.length();
+
+			// Write the fields
+			this->taggedFields->fields.for_each(
+				[&binaryInput](AAByteTagField& f) {
+
+					// Write basic data
+					binaryInput << f.fieldId;
+					binaryInput << f.ptype;
+
+					// If refptr type, write the pointer to the type referenced
+					if (f.ptype == (unsigned char)AAPrimitiveType::refptr) {
+						binaryInput << f.typePtr;
 					}
-				);
 
-			}
-		);
+				}
+			);
+
+		}
 
 	}
 

@@ -131,7 +131,7 @@ BYTECODE PROCEDURES:
 	START PROCEDURE 9 (main):
 	CONSTANTS:	[I32, 10][I32, 5][I32, 2][I32, 0]
 	IDENTIFIERS:
-		0$[tree];		1$[topValue];		v;
+		0$[tree];		1$[topValue];		1$[v];
 	OPERATIONS:
 		[0000]  PUSHC, 0                        
 		[0001]  PUSHC, 1                        
@@ -147,20 +147,18 @@ BYTECODE PROCEDURES:
 		[0011]  GETVAR, 0                       
 		[0012]  EXTTAG                          
 		[0013]  TAGTUPLECMP                     
-		[0014]  CMPE, 14                        ;; primitive: refptr [16 bytes]
-		[0015]  JMPT, 5                         
-		[0016]  GETVAR, 0                       
-		[0017]  EXTTAG                          
-		[0018]  TAGTUPLECMPORGET, 3, 1, -1, -1  
-		[0019]  CMPE, 14                        ;; primitive: refptr [16 bytes]
-		[0020]  JMPT, 2                         
-		[0021]  PUSHC, 3                        
-		[0022]  JMP, 2                          
-		[0023]  GETVAR, 1                       
-		[0024]  JMP, 0                          
-		[0025]  SETVAR, 1, 6                    ;; primitive: int32 [4 bytes]
-		[0026]  GETVAR, 1                       
-		[0027]  RET                             
+		[0014]  JMPT, 4                         
+		[0015]  GETVAR, 0                       
+		[0016]  EXTTAG                          
+		[0017]  TAGTUPLECMPORSET, 3, 1, -1, -1  
+		[0018]  JMPT, 2                         
+		[0019]  PUSHC, 3                        
+		[0020]  JMP, 2                          
+		[0021]  GETVAR, 1                       
+		[0022]  JMP, 0                          
+		[0023]  SETVAR, 1, 6                    ;; primitive: int32 [4 bytes]
+		[0024]  GETVAR, 1                       
+		[0025]  RET                             
 	END PROCEDURE;
 END BYTECODE PROCEDURES
 

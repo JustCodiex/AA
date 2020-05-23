@@ -175,13 +175,13 @@ namespace aa {
 			output = L"ACCEPT";
 			break;
 		case AAByteCode::TUPLECMPORSET:
-			output = L"TUPLECMPORGET";
+			output = L"TUPLECMPORSET";
 			break;
 		case AAByteCode::TAGTUPLECMP:
 			output = L"TAGTUPLECMP";
 			break;
 		case AAByteCode::TAGTUPLECMPORSET:
-			output = L"TAGTUPLECMPORGET";
+			output = L"TAGTUPLECMPORSET";
 			break;
 		default:
 			output = L"_undefined_(" + std::to_wstring((int)CAE.bc) + L")";

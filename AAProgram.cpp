@@ -180,12 +180,14 @@ void AAProgram::LoadOperations(Procedure& proc, aa::bwalker& bw) {
 			bw >> proc.opSequence[i].args[2];
 			bw >> proc.opSequence[i].args[3];
 			break;*/
-		case AAByteCode::TUPLENEW: {
-			int tupleSize = 0;
-			bw >> tupleSize;
-			proc.opSequence[i].args = new int[tupleSize + 1];
-			proc.opSequence[i].args[0] = tupleSize;
-			for (int j = 0; j < tupleSize; j++) {
+		case AAByteCode::TAGTUPLECMPORSET: 
+		case AAByteCode::TUPLECMPORSET:
+		case AAByteCode::TUPLENEW: { // Read arguments of the form (n, arg_0, ..., arg_n)
+			int sz = 0;
+			bw >> sz;
+			proc.opSequence[i].args = new int[sz + 1];
+			proc.opSequence[i].args[0] = sz;
+			for (int j = 0; j < sz; j++) {
 				bw >> proc.opSequence[i].args[j + 1];
 			}
 			break;
@@ -203,7 +205,7 @@ void AAProgram::LoadType(aa::bwalker& bw) {
 
 	std::wstring typeName = bw.read_cstring();
 	uint16_t basePtr = UINT16_MAX, typesize = 0;
-	unsigned char typeVariant = 0, extendCount = 0, hasVtable = 0;
+	unsigned char typeVariant = 0, extendCount = 0, hasVtable = 0, hasTagFields = 0;
 	uint16_t* extendPtrs = 0;
 	uint32_t constUID;
 
@@ -269,6 +271,16 @@ void AAProgram::LoadType(aa::bwalker& bw) {
 
 			// Set the VTable
 			pType->SetVTable(pTypeVTable);
+
+		}
+
+		// Read if there's a field for tagged variables
+		bw >> hasTagFields;
+
+		// Do we have any tagged fields?
+		if (hasTagFields) {
+
+
 
 		}
 

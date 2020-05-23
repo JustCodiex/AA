@@ -155,6 +155,9 @@ private:
 	bool VerifyFunctionCallstack(aa::list<Instruction> body, int expected, int args, AAStaticEnvironment staticData);
 	int CalcStackSzAfterOperation(CompiledAbstractExpression op, AAStaticEnvironment staticData);
 
+	void EnterScope(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode);
+	void ExitScope(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode);
+
 	/*
 	** Bytecode functions
 	*/

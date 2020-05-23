@@ -807,8 +807,9 @@ Instructions AAC::CompilePatternBlock(AA_AST_NODE* pNode, CompiledEnviornmentTab
 				// Add tuple comparrison opcode
 				condition.Add(Instruction(AAByteCode::TUPLECMP, 0, NULL));
 
-			} else { // No, just a simple compare equal then
-
+			} else if (!cases[i]->HasTag("compare_handled")) { // Is we dont have this tag
+			
+				// Simple comparrison instruction
 				Instruction eq;
 				eq.bc = AAByteCode::CMPE;
 				eq.argCount = 1;
@@ -897,10 +898,10 @@ Instructions AAC::CompilePatternCondition(aa::list<CompiledAbstractExpression> m
 				if (pNode->expressions[i]->content.compare(L"_") == 0) {
 					tupleBuild.Add(Instruction(AAByteCode::ACCEPT, 0, NULL));
 				} else {
+					this->EnterScope(cTable, pNode->expressions[i]);
 					if (pNode->expressions[i]->tags["varsi"] >= scopeStart) { // Set var
 						hasAssignments = true;
 						assignments[i] = pNode->expressions[i]->tags["varsi"];
-						cTable.identifiers.Add(pNode->expressions[i]->content);
 					} else {
 						// TODO: Fix scoping.... this is bound to cause an error
 						tupleBuild.Add(this->HandleVarPush(cTable, pNode->expressions[i]));
@@ -965,6 +966,20 @@ Instructions AAC::CompilePatternCondition(aa::list<CompiledAbstractExpression> m
 }
 
 #pragma region Helper Functions
+
+void AAC::EnterScope(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode) {
+
+	std::wstring scopedName = std::to_wstring(pNode->tags["varsi"]) + L"$[" + pNode->content + L"]";
+
+	if (!cTable.identifiers.Contains(scopedName)) {
+		cTable.identifiers.Add(scopedName);
+	}
+
+}
+
+void AAC::ExitScope(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode) {
+
+}
 
 bool AAC::IsConstant(AA_AST_NODE_TYPE type) {
 	return type == AA_AST_NODE_TYPE::intliteral || type == AA_AST_NODE_TYPE::boolliteral || type == AA_AST_NODE_TYPE::charliteral ||
@@ -1162,20 +1177,7 @@ AAC::CompiledAbstractExpression AAC::HandleFieldPush(AA_AST_NODE* pNode, AAStati
 
 int AAC::HandleDecl(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode) {
 
-	/*int i = -1;
-	if (cTable.identifiers.Contains(pNode->content)) {
-		i = cTable.identifiers.IndexOf(pNode->content);
-	} else {
-		i = cTable.identifiers.Size();
-		cTable.identifiers.Add(pNode->content);
-	}*/
-
-	std::wstring scopedName = std::to_wstring(pNode->tags["varsi"]) + L"$[" + pNode->content + L"]";
-
-	if (!cTable.identifiers.Contains(scopedName)) {
-		cTable.identifiers.Add(scopedName);
-	}
-
+	this->EnterScope(cTable, pNode);
 	return pNode->tags["varsi"];
 
 }
