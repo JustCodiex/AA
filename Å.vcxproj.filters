@@ -464,6 +464,9 @@
     <ClInclude Include="AAVTable.h">
       <Filter>Header Files\VM\meta</Filter>
     </ClInclude>
+    <ClInclude Include="pairedarray.h">
+      <Filter>Header Files\util</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="TODO.txt">

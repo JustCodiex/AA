@@ -1,7 +1,7 @@
 #pragma once
 #include "AAVal.h"
 #include "AAPrimitiveType.h"
-#include "array.h"
+#include "pairedarray.h"
 
 /// <summary>
 /// Represents a tuple of variable length and of variable types
@@ -22,6 +22,8 @@ private:
 public:
 
 	AATuple(const aa::array<AAPrimitiveType>& types, const aa::array<AAVal>& values);
+
+	AATuple(const aa::paired_array<AAPrimitiveType, AAVal>& tuple);
 
 	/// <summary>
 	/// Returns the size of the tuple

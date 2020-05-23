@@ -11,6 +11,12 @@ AATuple::AATuple(const aa::array<AAPrimitiveType>& types, const aa::array<AAVal>
 	}
 }
 
+AATuple::AATuple(const aa::paired_array<AAPrimitiveType, AAVal>& tuple) {
+	tupleValues = aa::array<TupleValue>(tuple.length());
+	size_t i = 0;
+	tuple.for_each([this, &i](aa::paired_array<AAPrimitiveType, AAVal>::pair p) { tupleValues[i] = TupleValue(p.first, p.second); i++; });
+}
+
 const int AATuple::Size() const {
 	return (int)tupleValues.length();
 }

@@ -6,6 +6,7 @@
 #include "AAstdiolib.h"
 #include "AAMemoryStore.h"
 #include "AAExecute.h"
+#include "pairedarray.h"
 
 AAVM* AAVM::CreateNewVM(bool logExecuteTime, bool logCompiler, bool logTopStack) {
 	AAVM* vm = new AAVM();
@@ -251,7 +252,7 @@ AAStackValue AAVM::Run(AAProgram* pProg) {
 #define AAVM_CURRENTOP procedure[AAVM_PROC].opSequence[AAVM_OPI].op
 #define AAVM_GetArgument(i) procedure[AAVM_PROC].opSequence[AAVM_OPI].args[i]
 
-#define AAVM_ThrowRuntimeErr(exc, msg) this->WriteRuntimeError(AAVM_RuntimeError(exc, (msg).c_str(), execp, callstack)); return /*AAStackValue::None*/;
+#define AAVM_ThrowRuntimeErr(exc, msg) this->WriteRuntimeError(AAVM_RuntimeError(exc, (msg).c_str(), execp, callstack)); return;
 
 AAStackValue AAVM::Run(AAProgram::Procedure* procedure, AAStaticTypeEnvironment* staticProgramTypeEnvironment, int entry) {
 
@@ -706,18 +707,14 @@ void AAVM::exec(AAProgram::Procedure* procedure, aa::stack<AARuntimeEnvironment>
 			AAObjectType* topObjType = top->GetType();
 			if (topObjType->IsTaggedType()) {
 				int32_t sz = topObjType->GetTaggedCount();
-				aa::array<AAPrimitiveType> types = aa::array<AAPrimitiveType>(sz + 1);
-				aa::array<AAVal> values = aa::array<AAVal>(sz + 1);
-				types[0] = AAPrimitiveType::uint32;
-				values[0] = AAVal(topObjType->GetTypeID());
-				for (int32_t i = 0; i < sz; i++) {
+				auto tupleArray = aa::paired_array<AAPrimitiveType, AAVal>(sz + 1, AAPrimitiveType::uint32, AAVal(topObjType->GetTypeID()));
+				for (int32_t i = 1; i < sz + 1; i++) {
 					uint16_t fId;
 					unsigned char fType;
-					topObjType->GetTaggedField(i, fId, fType);
-					types[i + 1] = (AAPrimitiveType)fType;
-					values[i + 1] = aa::GetValue(top, types[i + 1], fId).as_val();
+					topObjType->GetTaggedField(i - 1, fId, fType);
+					tupleArray.set_paired(i, (AAPrimitiveType)fType, aa::GetValue(top, (AAPrimitiveType)fType, fId).as_val());
 				}
-				stack.Push(AATuple(types, values));
+				stack.Push(AATuple(tupleArray));
 			} else {
 				printf("Non-tagged type found!");
 			}
@@ -728,16 +725,16 @@ void AAVM::exec(AAProgram::Procedure* procedure, aa::stack<AARuntimeEnvironment>
 			uint32_t tId = AAVM_GetArgument(0);
 			AAObjectType* t = this->m_staticTypeEnvironment->LookupType(tId);
 			if (t && t->IsTaggedType()) {
-				int32_t sz = t->GetTaggedCount();
-				aa::array<AAPrimitiveType> types = aa::array<AAPrimitiveType>(sz + 1);
-				aa::array<AAVal> values = aa::array<AAVal>(sz + 1);
-				for (int32_t i = 0; i < sz; i++) {
+				int32_t sz = t->GetTaggedCount() + 1;
+				aa::array<AAPrimitiveType> types = aa::array<AAPrimitiveType>(sz);
+				aa::array<AAVal> values = aa::array<AAVal>(sz);
+				for (int32_t i = 1; i < sz; i++) {
 					uint16_t fId;
 					unsigned char fType;
 					t->GetTaggedField(i, fId, fType);
-					types[i + 1] = (AAPrimitiveType)fType;
-					if (types[i + 1] != AAPrimitiveType::__TRUEANY) {
-						values[i + 1] = aa::vm::PopSomething(types[i + 1], stack).as_val();
+					types[i] = (AAPrimitiveType)fType;
+					if (types[i] != AAPrimitiveType::__TRUEANY) {
+						values[i] = aa::vm::PopSomething(types[i], stack).as_val();
 					}
 				}
 				stack.Push(AATuple::MatchTuple(AATuple(types, values), stack.Pop<AATuple>()));
@@ -748,27 +745,25 @@ void AAVM::exec(AAProgram::Procedure* procedure, aa::stack<AARuntimeEnvironment>
 			break;
 		}
 		case AAByteCode::TAGTUPLECMPORSET: {
-			int count = AAVM_GetArgument(0);
 			int typeID = AAVM_GetArgument(1);
 			AATuple topTuple = stack.Pop<AATuple>();
 			if (topTuple.ValueAt(0).Equals(AAVal(typeID), sizeof(int32_t))) { // See if they're the type we're expecting
 				AAObjectType* t = this->m_staticTypeEnvironment->LookupType(typeID);
-				int32_t sz = t->GetTaggedCount();
-				aa::array<AAPrimitiveType> types = aa::array<AAPrimitiveType>(sz + 1);
-				aa::array<AAVal> values = aa::array<AAVal>(sz + 1);
+				int32_t sz = t->GetTaggedCount() + 1;
+				aa::array<AAPrimitiveType> types = aa::array<AAPrimitiveType>(sz);
+				aa::array<AAVal> values = aa::array<AAVal>(sz);
 				types[0] = AAPrimitiveType::uint32;
 				values[0] = AAVal(typeID);
-				for (int32_t i = 0; i < count; i++) {
-					int k = AAVM_GetArgument(2 + i);
-					if (k >= 0) {
-						values[i + 1] = topTuple.ValueAt(i + 1);
-						types[i + 1] = topTuple.TypeAt(i + 1);
+				for (int32_t i = 1; i < sz; i++) {
+					if (AAVM_GetArgument(1 + i) >= 0) {
+						values[i] = topTuple.ValueAt(i);
+						types[i] = topTuple.TypeAt(i);
 					} else {
-						types[i + 1] = AAPrimitiveType::__TRUEANY;
+						types[i] = AAPrimitiveType::__TRUEANY;
 					}
 				}
 				if (AATuple::MatchTuple(AATuple(types, values), topTuple)) {
-					for (size_t i = 1; i < sz + 1; i++) {
+					for (int32_t i = 1; i < sz; i++) {
 						if (types[i] != AAPrimitiveType::__TRUEANY) {
 							AAStackValue val = AAStackValue(types[i], values[i]);
 							AAVM_VENV->SetVariable(AAVM_GetArgument(1 + i), val);
