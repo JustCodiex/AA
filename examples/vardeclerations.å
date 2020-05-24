@@ -1,9 +1,0 @@
-int x = 5; // Integer, x with value 5, mutable
-int y = 5+5; // Integer, y with value 10, mutable
-int z = y/x; // Integer, z with value 2, mutable
-
-var k = x; // Integer, k with value 5, mutable
-val v = 25; // Integer, v with value 25, not mutable.
-
-bool b1 = false; // Boolean, b1 with value false, mutable
-bool b2 = !b1; // Boolean, b1 with value true, mutable

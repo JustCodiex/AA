@@ -59,7 +59,8 @@ enum class AAByteCode : unsigned char {
 	TUPLECMP, // (Compares two tuples, 0 arguments)
 	TUPLECMPORSET,	// (Compares two tuples, where top-of-stack tuple may assign to variables, 1+n arguments[tuple count, { -1 | varid }^n : n = tuple count])
 					// -1 = compare normally
-					// >= 0 = assign to var
+					// 0 <= n < INT32_MAX = assign to var
+					// ONT32_MAX = pop
 	TUPLENEW, // (Construct a tuple, 1+n arguments[tuple count, { primitive type }^n : n = tuple count])
 	TUPLEGET, // (Get the value at specified int in a tuple, 1 argument[tuple index])
 
@@ -97,9 +98,10 @@ enum class AAByteCode : unsigned char {
 	EXTTAG, // (Extract tags from object and put into tuple, 0 arguments)
 	TAGTUPLECMP, // (Compares two tuples, first tuple value is preset to typeID and only one tuple is on the stack, 1 argument[Match type ID])
 	TAGTUPLECMPORSET,	// (Compares two tuples, where top-of-stack tuple may assign to variables, first tuple value is ignored (typeId) and only one tuple can be on the top stack, 
-						// 1+n arguments[Match type ID, { -1 | varid }^n : n = tuple count])
+						// 2+n arguments[tuple count Match type ID, { -1 | varid }^n : n = tuple count])
 						// -1 = compare normally
-						// >= 0 = assign to var
+						// 0 <= n < INT32_MAX = assign to var
+						// ONT32_MAX = pop
 
 	ACCEPT, // (Push a runtime-only-type onto the stack that will always yield true in accepting comparrisons [match statements], 0 arguments)
 

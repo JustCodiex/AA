@@ -283,7 +283,7 @@ void RunBlockTests(AAVM* pAAVM, int& s, int& f) {
 void RunScopeTests(AAVM* pAAVM, int& s, int& f) {
 
 	// Test scope with single variable
-	if (!RunFileTest(pAAVM, L"testing\\scope1.aa", L"scope1", 0)) {
+	if (!RunFileTest(pAAVM, L"examples\\scoping\\scope1.aa", L"scope1", 0)) {
 		f++;
 	} else {
 		s++;
@@ -293,8 +293,8 @@ void RunScopeTests(AAVM* pAAVM, int& s, int& f) {
 
 void RunFunctionTests(AAVM* pAAVM, int& s, int& f) {
 
-	// Test modulo operator
-	if (!RunFileTest(pAAVM, L"testing\\func.aa", L"func", 51)) {
+	// Test function call with arguments consisting of function calls
+	if (!RunFileTest(pAAVM, L"examples\\misc\\func.aa", L"func", 51)) {
 		f++;
 	} else {
 		s++;
@@ -357,7 +357,7 @@ void RunFunctionTests(AAVM* pAAVM, int& s, int& f) {
 	}
 
 	// Test recursion
-	if (!RunFileTest(pAAVM, L"testing\\recursion.aa", L"recursion", 24)) {
+	if (!RunFileTest(pAAVM, L"examples\\misc\\recursion.aa", L"recursion", 24)) {
 		f++;
 	} else {
 		s++;
@@ -408,21 +408,21 @@ void RunIfStatementTests(AAVM* pAAVM, int& s, int& f) {
 void RunLoopTests(AAVM* pAAVM, int& s, int& f) {
 
 	// Test dowhile loop
-	if (!RunFileTest(pAAVM, L"testing\\dowhile-loop.aa", L"dowhile-loop", 10)) {
+	if (!RunFileTest(pAAVM, L"examples\\misc\\dowhile-loop.aa", L"dowhile-loop", 10)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test while loop
-	if (!RunFileTest(pAAVM, L"testing\\while-loop.aa", L"while-loop", 10)) {
+	if (!RunFileTest(pAAVM, L"examples\\misc\\while-loop.aa", L"while-loop", 10)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test for loop
-	if (!RunFileTest(pAAVM, L"testing\\for-loop.aa", L"for-loop", 90)) {
+	if (!RunFileTest(pAAVM, L"examples\\misc\\for-loop.aa", L"for-loop", 90)) {
 		f++;
 	} else {
 		s++;
@@ -433,49 +433,49 @@ void RunLoopTests(AAVM* pAAVM, int& s, int& f) {
 void RunClassTests(AAVM* pAAVM, int& s, int& f) {
 
 	// Test class ctor + class method access + 'new' keyword
-	if (!RunFileTest(pAAVM, L"testing\\class1.aa", L"class1", 55)) {
+	if (!RunFileTest(pAAVM, L"examples\\classes\\class1.aa", L"class1", 55)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test class for field access
-	if (!RunFileTest(pAAVM, L"testing\\class2.aa", L"class2", 10)) {
+	if (!RunFileTest(pAAVM, L"examples\\classes\\class2.aa", L"class2", 10)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test class for field access (2.0)
-	if (!RunFileTest(pAAVM, L"testing\\class3.aa", L"class3", 50)) {
+	if (!RunFileTest(pAAVM, L"examples\\classes\\class3.aa", L"class3", 50)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test class for field access (3.0)
-	if (!RunFileTest(pAAVM, L"testing\\class4.aa", L"class4", 40)) {
+	if (!RunFileTest(pAAVM, L"examples\\classes\\class4.aa", L"class4", 40)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test simple class inheritance
-	if (!RunFileTest(pAAVM, L"testing\\class5.aa", L"class5", 0)) {
+	if (!RunFileTest(pAAVM, L"examples\\classes\\class5.aa", L"class5", 0)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test simple class inheritance
-	if (!RunFileTest(pAAVM, L"testing\\class6.aa", L"class6", 0)) {
+	if (!RunFileTest(pAAVM, L"examples\\classes\\class6.aa", L"class6", 0)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test pattern matching
-	if (!RunFileTest(pAAVM, L"testing\\class7.aa", L"class7", 10)) {
+	if (!RunFileTest(pAAVM, L"examples\\classes\\class7.aa", L"class7", 10)) {
 		f++;
 	} else {
 		s++;
@@ -486,21 +486,21 @@ void RunClassTests(AAVM* pAAVM, int& s, int& f) {
 void RunArrayTests(AAVM* pAAVM, int& s, int& f) {
 
 	// Test array decleration
-	if (!RunFileTest(pAAVM, L"testing\\array1.aa", L"array1", AAStackValue::None)) {
+	if (!RunFileTest(pAAVM, L"examples\\array\\array1.aa", L"array1", AAStackValue::None)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test array get from index
-	if (!RunFileTest(pAAVM, L"testing\\array2.aa", L"array2", 0)) {
+	if (!RunFileTest(pAAVM, L"examples\\array\\array2.aa", L"array2", 0)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test update array value at index
-	if (!RunFileTest(pAAVM, L"testing\\array3.aa", L"array3", 11)) {
+	if (!RunFileTest(pAAVM, L"examples\\array\\array3.aa", L"array3", 11)) {
 		f++;
 	} else {
 		s++;
@@ -513,7 +513,7 @@ void RunTextTests(AAVM* pAAVM, int& s, int& f) {
 	/** Char tests **/
 
 	// Test char
-	if (!RunFileTest(pAAVM, L"testing\\char1.aa", L"char1", (wchar_t)'A')) {
+	if (!RunFileTest(pAAVM, L"examples\\string\\char1.aa", L"char1", (wchar_t)'A')) {
 		f++;
 	} else {
 		s++;
@@ -522,31 +522,31 @@ void RunTextTests(AAVM* pAAVM, int& s, int& f) {
 	/** String tests **/
 
 	// Test string
-	if (!RunFileTest(pAAVM, L"testing\\string1.aa", L"string1", std::wstring(L"This is a string - Hello from AA"))) {
+	if (!RunFileTest(pAAVM, L"examples\\string\\string1.aa", L"string1", std::wstring(L"This is a string - Hello from AA"))) {
 		f++;
 	} else {
 		s++;
 	}
 
-	if (!RunFileTest(pAAVM, L"testing\\string2.aa", L"string2", 5)) {
+	if (!RunFileTest(pAAVM, L"examples\\string\\string2.aa", L"string2", 5)) {
 		f++;
 	} else {
 		s++;
 	}
 
-	if (!RunFileTest(pAAVM, L"testing\\string3.aa", L"string3", std::wstring(L"Hello World"))) {
+	if (!RunFileTest(pAAVM, L"examples\\string\\string3.aa", L"string3", std::wstring(L"Hello World"))) {
 		f++;
 	} else {
 		s++;
 	}
 
-	if (!RunFileTest(pAAVM, L"testing\\string4.aa", L"string4", std::wstring(L"Hello World"))) {
+	if (!RunFileTest(pAAVM, L"examples\\string\\string4.aa", L"string4", std::wstring(L"Hello World"))) {
 		f++;
 	} else {
 		s++;
 	}
 
-	if (!RunFileTest(pAAVM, L"testing\\string5.aa", L"string5", std::wstring(L"Hello World"))) {
+	if (!RunFileTest(pAAVM, L"examples\\string\\string5.aa", L"string5", std::wstring(L"Hello World"))) {
 		f++;
 	} else {
 		s++;
@@ -557,14 +557,14 @@ void RunTextTests(AAVM* pAAVM, int& s, int& f) {
 void RunNamespaceTests(AAVM* pAAVM, int& s, int& f) {
 
 	// Test namespaces are fetched correctly (Including the 'using X from Y' directive)
-	if (!RunFileTest(pAAVM, L"testing\\namespace1.aa", L"namespace1", 42)) {
+	if (!RunFileTest(pAAVM, L"examples\\namespaces\\namespace1.aa", L"namespace1", 42)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Nested namespace testing + simple 'using' directive
-	if (!RunFileTest(pAAVM, L"testing\\namespace2.aa", L"namespace2", 42)) {
+	if (!RunFileTest(pAAVM, L"examples\\namespaces\\namespace2.aa", L"namespace2", 42)) {
 		f++;
 	} else {
 		s++;
@@ -575,7 +575,7 @@ void RunNamespaceTests(AAVM* pAAVM, int& s, int& f) {
 void RunIOTests(AAVM* pAAVM, int& s, int& f) {
 
 	// IO functionality (and the using std::io) system
-	if (!RunFileTest(pAAVM, L"testing\\io1.aa", L"io1", 0)) {
+	if (!RunFileTest(pAAVM, L"examples\\std\\io1.aa", L"io1", 0)) {
 		f++;
 	} else {
 		s++;
@@ -586,7 +586,7 @@ void RunIOTests(AAVM* pAAVM, int& s, int& f) {
 void RunEnumTests(AAVM* pAAVM, int& s, int& f) {
 
 	// Test if enums with functions can work
-	if (!RunFileTest(pAAVM, L"testing\\enum1.aa", L"enum1", 0)) {
+	if (!RunFileTest(pAAVM, L"examples\\enum\\enum1.aa", L"enum1", 0)) {
 		f++;
 	} else {
 		s++;
@@ -597,21 +597,21 @@ void RunEnumTests(AAVM* pAAVM, int& s, int& f) {
 void RunTupleTests(AAVM* pAAVM, int& s, int& f) {
 
 	// Test a simple tuple creation
-	if (!RunFileTest(pAAVM, L"testing\\tuple1.aa", L"tuple1", 6)) {
+	if (!RunFileTest(pAAVM, L"examples\\tuple\\tuple1.aa", L"tuple1", 6)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test a tuple variant of generating fibonacci numbers
-	if (!RunFileTest(pAAVM, L"testing\\tuple2.aa", L"tuple2", 385)) {
+	if (!RunFileTest(pAAVM, L"examples\\tuple\\tuple2.aa", L"tuple2", 385)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test tuple pattern matching
-	if (!RunFileTest(pAAVM, L"testing\\tuple3.aa", L"tuple3", -57)) {
+	if (!RunFileTest(pAAVM, L"examples\\tuple\\tuple3.aa", L"tuple3", -57)) {
 		f++;
 	} else {
 		s++;

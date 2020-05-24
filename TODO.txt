@@ -1,8 +1,11 @@
 ﻿TODO:
 	Virtual functions ✔
 	Pattern matching on tuples ✔
-	Pattern matching on tagged classes
+		set variables
+		set & get variables
+	Pattern matching on tagged classes ✔
 		&& and || operators
+		set & get variables
 	Binary Assignment operators
 		+=, -=, *=, /=, %=;
 	Unary operators
@@ -107,6 +110,9 @@
 					  ==> "const lazy var x = 5*5*5*5*5*5*5*5*5*5*5;"	// The expression is only evaluated when first referenced. The result is then saved in the variable
 	Local Static Variable
 		Simple syntax ==> "int save(int x) { static int y = x*x; y; }"	// The value of y is saved and bound locally to the function (Same as in C++)
+	Garbage Collector
+		Basic garbage collection
+		Scope/stack tracking
 	Try/catch/finally
 		Catch syntax ==> "try { code } catch (Some<Exception> ex) { ex match { case VMException() => ""; ... }; }"
 		Throw syntax ==> "throw VMException("This is a VM exception - somehow thrown from AA and not by the VM");"
