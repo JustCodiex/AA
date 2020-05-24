@@ -371,6 +371,53 @@ void AAVM::exec(AAProgram::Procedure* procedure, aa::stack<AARuntimeEnvironment>
 			AAVM_OPI++;
 			break;
 		}
+		case AAByteCode::ANDTRUE: {
+
+			AAVM_OPI++;
+			break;
+		}
+		case AAByteCode::LAND: {
+			if (!stack.Pop<bool>()) {
+				stack.Push<bool>(false);
+				AAVM_OPI += AAVM_GetArgument(0) + 2;
+			} else {
+				stack.Push<bool>(true);
+				AAVM_OPI++;
+			}
+			break;
+		}
+		case AAByteCode::LOR: {
+			if (stack.Pop<bool>()) {
+				stack.Push<bool>(false);
+				AAVM_OPI += AAVM_GetArgument(0) + 2;
+			} else {
+				stack.Push<bool>(true);
+				AAVM_OPI++;
+			}
+			break;
+		}
+		case AAByteCode::BINAND: {
+			if (AAVM_GetArgument(0) == (int)AAPrimitiveType::boolean) {
+				bool rhs = stack.Pop<bool>();
+				bool lhs = stack.Pop<bool>();
+				stack.Push(lhs & rhs);
+			} else {
+				printf("");
+			}
+			AAVM_OPI++;
+			break;
+		}
+		case AAByteCode::BINOR: {
+			if (AAVM_GetArgument(0) == (int)AAPrimitiveType::boolean) {
+				bool rhs = stack.Pop<bool>();
+				bool lhs = stack.Pop<bool>();
+				stack.Push(lhs | rhs);
+			} else {
+				printf("");
+			}
+			AAVM_OPI++;
+			break;
+		}
 		case AAByteCode::PUSHC: {
 			aa::vm::PushConstant(procedure[AAVM_PROC].constTable[AAVM_GetArgument(0)], stack);
 			AAVM_OPI++;

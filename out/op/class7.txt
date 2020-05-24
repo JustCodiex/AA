@@ -74,19 +74,21 @@ BYTECODE PROCEDURES:
 		[0004]  GETVAR, 0                                                       
 		[0005]  GETFIELD, 0, 6                                                  ;; primitive: int32 [4 bytes]
 		[0006]  CMPE, 3                                                         ;; primitive: bool [1 bytes]
-		[0007]  GETVAR, 1                                                       
-		[0008]  GETFIELD, 4, 14                                                 ;; primitive: refptr [16 bytes]
-		[0009]  GETVAR, 0                                                       
-		[0010]  GETFIELD, 4, 14                                                 ;; primitive: refptr [16 bytes]
-		[0011]  CMPE, 3                                                         ;; primitive: bool [1 bytes]
-		[0012]  LAND, 3                                                         
-		[0013]  GETVAR, 1                                                       
-		[0014]  GETFIELD, 20, 14                                                ;; primitive: refptr [16 bytes]
-		[0015]  GETVAR, 0                                                       
+		[0007]  LAND, 6                                                         
+		[0008]  GETVAR, 1                                                       
+		[0009]  GETFIELD, 4, 14                                                 ;; primitive: refptr [16 bytes]
+		[0010]  GETVAR, 0                                                       
+		[0011]  GETFIELD, 4, 14                                                 ;; primitive: refptr [16 bytes]
+		[0012]  CMPE, 3                                                         ;; primitive: bool [1 bytes]
+		[0013]  BINAND, 3                                                       
+		[0014]  LAND, 6                                                         
+		[0015]  GETVAR, 1                                                       
 		[0016]  GETFIELD, 20, 14                                                ;; primitive: refptr [16 bytes]
-		[0017]  CMPE, 3                                                         ;; primitive: bool [1 bytes]
-		[0018]  LAND, 3                                                         
-		[0019]  RET                                                             
+		[0017]  GETVAR, 0                                                       
+		[0018]  GETFIELD, 20, 14                                                ;; primitive: refptr [16 bytes]
+		[0019]  CMPE, 3                                                         ;; primitive: bool [1 bytes]
+		[0020]  BINAND, 3                                                       
+		[0021]  RET                                                             
 	END PROCEDURE;
 
 	START PROCEDURE 7 (Node::ToString):

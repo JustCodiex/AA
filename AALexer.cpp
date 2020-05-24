@@ -26,6 +26,7 @@ std::map<wchar_t, AAToken> singleTokens = {
 	{ '<', AAToken::OP },
 	{ '>', AAToken::OP },
 	{ '&', AAToken::OP },
+	{ '|', AAToken::OP },
 	{ '~', AAToken::OP },
 	{ '^', AAToken::OP },
 	{ '#', AAToken::OP },
@@ -429,6 +430,10 @@ bool AALexer::IsValidJointOperator(std::wstring ws) {
 	} else if (ws == L">>") {
 		return true;
 	} else if (ws == L"=>") {
+		return true;
+	} else if (ws == L"||") {
+		return true;
+	} else if (ws == L"&&") {
 		return true;
 	} else {
 		return false;

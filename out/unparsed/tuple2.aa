@@ -3,7 +3,10 @@
 }
 (int, int) fib_seq((int, int) sequence, int n) {
 	if ((n == 0)) {
-		sequence
+		{
+			sequence;
+		}
+
 	} else {
 		fib_seq((sequence._2, (sequence._1 + sequence._2)), (n - 1))
 	};

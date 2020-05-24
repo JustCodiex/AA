@@ -103,6 +103,8 @@ private:
 	std::vector<AA_PT_NODE*> CreatePatternCases(AA_PT_NODE* pBlockNode);
 
 	std::vector<AA_PT_NODE*> CreateArgumentTree(AA_PT_NODE* pExpNode);
+
+	std::vector<AA_PT_NODE*> HandleBlock(std::vector<AA_PT_NODE*> nodes);
 	
 	inline void HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& index);
 	inline void HandleKeywordCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex);

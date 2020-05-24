@@ -1,0 +1,69 @@
+BYTECODE PROCEDURES:
+	START PROCEDURE 0 (<GlobalScope>):
+	OPERATIONS:
+		[0000]  CALL, 1, 0                                                      ;; Calls: main
+	END PROCEDURE;
+
+	START PROCEDURE 1 (main):
+	CONSTANTS:	[B, T][I32, 0][I32, 8][I32, 29][B, F][I32, 10][I32, 11]
+	IDENTIFIERS:
+		0$[a];		1$[b];		2$[r];
+	OPERATIONS:
+		[0000]  PUSHC, 0                                                        
+		[0001]  SETVAR, 0, 3                                                    ;; primitive: bool [1 bytes]
+		[0002]  PUSHC, 0                                                        
+		[0003]  SETVAR, 1, 3                                                    ;; primitive: bool [1 bytes]
+		[0004]  PUSHC, 1                                                        
+		[0005]  SETVAR, 2, 6                                                    ;; primitive: int32 [4 bytes]
+		[0006]  GETVAR, 0                                                       
+		[0007]  LOR, 2                                                          
+		[0008]  GETVAR, 1                                                       
+		[0009]  BINOR, 3                                                        
+		[0010]  JMPF, 5                                                         
+		[0011]  GETVAR, 2                                                       
+		[0012]  PUSHC, 2                                                        
+		[0013]  ADD, 6                                                          ;; primitive: int32 [4 bytes]
+		[0014]  SETVAR, 2, 6                                                    ;; primitive: int32 [4 bytes]
+		[0015]  GETVAR, 0                                                       
+		[0016]  GETVAR, 1                                                       
+		[0017]  BINOR, 3                                                        
+		[0018]  JMPF, 5                                                         
+		[0019]  GETVAR, 2                                                       
+		[0020]  PUSHC, 3                                                        
+		[0021]  ADD, 6                                                          ;; primitive: int32 [4 bytes]
+		[0022]  SETVAR, 2, 6                                                    ;; primitive: int32 [4 bytes]
+		[0023]  PUSHC, 4                                                        
+		[0024]  SETVAR, 1, 3                                                    ;; primitive: bool [1 bytes]
+		[0025]  GETVAR, 0                                                       
+		[0026]  LOR, 2                                                          
+		[0027]  GETVAR, 1                                                       
+		[0028]  BINOR, 3                                                        
+		[0029]  JMPF, 5                                                         
+		[0030]  GETVAR, 2                                                       
+		[0031]  PUSHC, 5                                                        
+		[0032]  ADD, 6                                                          ;; primitive: int32 [4 bytes]
+		[0033]  SETVAR, 2, 6                                                    ;; primitive: int32 [4 bytes]
+		[0034]  GETVAR, 0                                                       
+		[0035]  GETVAR, 1                                                       
+		[0036]  BINOR, 3                                                        
+		[0037]  JMPF, 5                                                         
+		[0038]  GETVAR, 2                                                       
+		[0039]  PUSHC, 2                                                        
+		[0040]  ADD, 6                                                          ;; primitive: int32 [4 bytes]
+		[0041]  SETVAR, 2, 6                                                    ;; primitive: int32 [4 bytes]
+		[0042]  PUSHC, 4                                                        
+		[0043]  SETVAR, 0, 3                                                    ;; primitive: bool [1 bytes]
+		[0044]  PUSHC, 0                                                        
+		[0045]  SETVAR, 1, 3                                                    ;; primitive: bool [1 bytes]
+		[0046]  GETVAR, 0                                                       
+		[0047]  GETVAR, 1                                                       
+		[0048]  BINOR, 3                                                        
+		[0049]  JMPF, 5                                                         
+		[0050]  GETVAR, 2                                                       
+		[0051]  PUSHC, 6                                                        
+		[0052]  ADD, 6                                                          ;; primitive: int32 [4 bytes]
+		[0053]  SETVAR, 2, 6                                                    ;; primitive: int32 [4 bytes]
+		[0054]  GETVAR, 2                                                       
+		[0055]  RET                                                             
+	END PROCEDURE;
+END BYTECODE PROCEDURES

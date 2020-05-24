@@ -183,6 +183,15 @@ namespace aa {
 		case AAByteCode::TAGTUPLECMPORSET:
 			output = L"TAGTUPLECMPORSET";
 			break;
+		case AAByteCode::BINAND:
+			output = L"BINAND";
+			break;
+		case AAByteCode::BINOR:
+			output = L"BINOR";
+			break;
+		case AAByteCode::ANDTRUE:
+			output = L"ANDTRUE";
+			break;
 		default:
 			output = L"_undefined_(" + std::to_wstring((int)CAE.bc) + L")";
 			break;

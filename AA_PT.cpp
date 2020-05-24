@@ -612,6 +612,24 @@ AA_PT_NODE* AA_PT::HandleVariableDecleration(std::vector<AA_PT_NODE*>& nodes, si
 	return this->CreateVariableDecl(nodes, from);
 }
 
+std::vector<AA_PT_NODE*> AA_PT::HandleBlock(std::vector<AA_PT_NODE*> nodes) {
+
+	// Apply syntax rules
+	AA_PT_Unflatten::ApplySyntaxRules(nodes);
+
+	// Container for result
+	std::vector<AA_PT_NODE*> result;
+
+	// Loop through all subelements
+	for (size_t i = 0; i < nodes.size(); i++) {
+		result.push_back(this->CreateTree(nodes[i]->childNodes, 0));
+	}
+
+	// Return result
+	return result;
+
+}
+
 AA_PT_NODE* AA_PT::CreateExpressionTree(std::vector<AA_PT_NODE*>& nodes, size_t from) {
 	if (nodes[from]->nodeType == AA_PT_NODE_TYPE::expression && nodes[from]->childNodes.size() > 0) {
 
@@ -1259,18 +1277,41 @@ AA_PT_NODE* AA_PT::CreateIfStatement(std::vector<AA_PT_NODE*>& nodes, size_t fro
 		nodes.erase(nodes.begin() + from + 1);
 
 	} else {
-		printf("if-keyword not followed by a condition - NOT allowed");
+		SetError(AA_PT::Error("Condition expected after if-keyword", 0, nodes[from+1]->position));
 	}
 
-	if (from + 1 < nodes.size() && (nodes[from + 1]->nodeType == AA_PT_NODE_TYPE::expression || nodes[from + 1]->nodeType == AA_PT_NODE_TYPE::block)) {
+	if (from + 1 < nodes.size()) {
 
-		nodes[from + 1] = this->CreateTree(nodes[from + 1]->childNodes, 0);
-		nodes[from]->childNodes.push_back(nodes[from + 1]);
+		if (nodes[from + 1]->nodeType == AA_PT_NODE_TYPE::expression) {
 
-		nodes.erase(nodes.begin() + from + 1);
+			nodes[from + 1] = this->CreateTree(nodes[from + 1]->childNodes, 0);
+			nodes[from]->childNodes.push_back(nodes[from + 1]);
+
+			nodes.erase(nodes.begin() + from + 1);
+
+		} else if (nodes[from + 1]->nodeType == AA_PT_NODE_TYPE::block) {
+
+			// Handle the block
+			AA_PT_NODE* pBlock = new AA_PT_NODE(nodes[from + 1]->position);
+			pBlock->nodeType = AA_PT_NODE_TYPE::block;
+			pBlock->childNodes = this->HandleBlock(nodes[from + 1]->childNodes);
+
+			// Add to if-statement
+			nodes[from]->childNodes.push_back(pBlock);
+
+			// Remove the node block
+			nodes.erase(nodes.begin() + from + 1);
+
+		} else {
+
+			SetError(AA_PT::Error("Expected expression on block following if-statement", 0, nodes[from + 1]->position));
+
+		}
 
 	} else {
-		printf("if-statement not followed by an expression or block");
+
+		SetError(AA_PT::Error("Expected if-body", 0, nodes[from + 1]->position));
+
 	}
 
 	nodes[from]->nodeType = AA_PT_NODE_TYPE::ifstatement;

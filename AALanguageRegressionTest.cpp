@@ -404,6 +404,23 @@ void RunIfStatementTests(AAVM* pAAVM, int& s, int& f) {
 
 }
 
+void RunLogicTests(AAVM* pAAVM, int& s, int& f) {
+
+	// Test logical and
+	if (!RunFileTest(pAAVM, L"examples\\logic\\and1.aa", L"and1", 10)) {
+		f++;
+	} else {
+		s++;
+	}
+
+	// Test logical or
+	if (!RunFileTest(pAAVM, L"examples\\logic\\or1.aa", L"or1", 10)) {
+		f++;
+	} else {
+		s++;
+	}
+
+}
 
 void RunLoopTests(AAVM* pAAVM, int& s, int& f) {
 
@@ -658,6 +675,9 @@ bool RunRegressionTests(AAVM* pAAVM) {
 
 	// Run function tests
 	RunFunctionTests(pAAVM, successes, fails);
+
+	// Run logic tests
+	RunLogicTests(pAAVM, successes, fails);
 
 	// Run if-statement tests
 	RunIfStatementTests(pAAVM, successes, fails);

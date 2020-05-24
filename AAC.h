@@ -130,6 +130,8 @@ private:
 	Instructions HandleIndexPush(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData);
 	Instructions HandleTuplePush(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode, AAStaticEnvironment staticData);
 
+	Instructions HandlePop(AA_AST_NODE* pNode);
+
 	Instruction HandleVarPush(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode);
 	Instruction HandleFieldPush(AA_AST_NODE* pNode, AAStaticEnvironment staticData);
 	Instruction HandleConstPush(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode);

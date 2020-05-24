@@ -1,0 +1,34 @@
+int main() {
+
+    bool a = true;
+    bool b = true;
+
+    int r = 0;
+
+    if (a && b) { // true
+        r = r + 8;
+        println("t1");
+    };
+
+    if (a & b) { // true
+        r = r + 29;
+        println("t2");
+    };
+
+    a = false;
+
+    if (a && b) { // false
+        r = r + 10;
+        println("t3");
+    };
+
+    if (a & b) { // false
+        r = r + 8;
+        println("t4");
+    };
+
+    r;
+
+};
+
+main();

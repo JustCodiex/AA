@@ -340,73 +340,98 @@ Instructions AAC::CompileBinaryOperation(AA_AST_NODE* pNode, CompiledEnviornment
 
 	Instructions opList;
 
-	CompiledAbstractExpression binopCAE;
-	binopCAE.argCount = 0;
-	binopCAE.bc = GetBytecodeFromBinaryOperator(pNode->content, pNode->expressions[0]->type);
+	Instruction binInstruction;
+	binInstruction.argCount = 0;
+	binInstruction.bc = GetBytecodeFromBinaryOperator(pNode->content, pNode->expressions[0]->type);
 
-	if (binopCAE.bc == AAByteCode::SETVAR) {
+	if (binInstruction.bc == AAByteCode::SETVAR) {
 		
-		binopCAE.argCount = 2;
-		binopCAE.argValues[0] = HandleDecl(cTable, pNode->expressions[0]);
-		binopCAE.argValues[1] = pNode->tags["primitive"];
+		binInstruction.argCount = 2;
+		binInstruction.argValues[0] = HandleDecl(cTable, pNode->expressions[0]);
+		binInstruction.argValues[1] = pNode->tags["primitive"];
 		opList.Add(HandleStackPush(cTable, pNode->expressions[1], staticData));
 
-	} else if (binopCAE.bc == AAByteCode::SETFIELD) {
+	} else if (binInstruction.bc == AAByteCode::SETFIELD) {
 	
 		opList.Add(HandleVarPush(cTable, pNode->expressions[0]->expressions[0]));
 		opList.Add(HandleStackPush(cTable, pNode->expressions[1], staticData));
 
-		binopCAE.argCount = 2;
-		binopCAE.argValues[0] = pNode->expressions[0]->expressions[1]->tags["fieldid"];
-		binopCAE.argValues[1] = pNode->expressions[0]->expressions[1]->tags["primitive"];
+		binInstruction.argCount = 2;
+		binInstruction.argValues[0] = pNode->expressions[0]->expressions[1]->tags["fieldid"];
+		binInstruction.argValues[1] = pNode->expressions[0]->expressions[1]->tags["primitive"];
 
-	} else if (binopCAE.bc == AAByteCode::SETELEM) {
+	} else if (binInstruction.bc == AAByteCode::SETELEM) {
 	
 		opList.Add(HandleStackPush(cTable, pNode->expressions[1], staticData));
 		opList.Add(HandleStackPush(cTable, pNode->expressions[0]->expressions[1], staticData));
 		opList.Add(HandleVarPush(cTable, pNode->expressions[0]->expressions[0]));
 		
-		binopCAE.argCount = 1;
-		binopCAE.argValues[0] = 0; // TODO: Add support for multi-dimensions
+		binInstruction.argCount = 1;
+		binInstruction.argValues[0] = 0; // TODO: Add support for multi-dimensions
 
 	} else {
 
-		if (pNode->tags["useCall"]) {
+		if (binInstruction.bc == AAByteCode::LAND || binInstruction.bc == AAByteCode::LOR) {
 
-			binopCAE.bc = (pNode->tags["operatorIsVM"]) ? AAByteCode::XCALL : AAByteCode::CALL;
-			binopCAE.argCount = 2;
-			binopCAE.argValues[0] = pNode->tags["operatorProcID"];
-			binopCAE.argValues[1] = 2;
+			Instructions lhs = HandleStackPush(cTable, pNode->expressions[0], staticData);
+			Instructions rhs = HandleStackPush(cTable, pNode->expressions[1], staticData);
+
+			opList.Add(lhs);
+
+			binInstruction.argCount = 1;
+			binInstruction.argValues[0] = rhs.Size() + 1;
+
+			opList.Add(binInstruction);
+
+			opList.Add(rhs);
+
+			binInstruction.bc = (binInstruction.bc == AAByteCode::LAND) ? AAByteCode::BINAND : AAByteCode::BINOR;
+			binInstruction.argCount = 1;
+			binInstruction.argValues[0] = (int)AAPrimitiveType::boolean;
+
+			opList.Add(binInstruction);
+
+			// Pop if told to
+			opList.Add(HandlePop(pNode));
+
+			// Return the list of commands now
+			return opList;
 
 		} else {
 
-			if (pNode->tags["primitive"] == (int)AAPrimitiveType::string) {
-				binopCAE.bc = AAByteCode::CONCAT;
+
+			if (pNode->tags["useCall"]) {
+
+				binInstruction.bc = (pNode->tags["operatorIsVM"]) ? AAByteCode::XCALL : AAByteCode::CALL;
+				binInstruction.argCount = 2;
+				binInstruction.argValues[0] = pNode->tags["operatorProcID"];
+				binInstruction.argValues[1] = 2;
+
 			} else {
-				binopCAE.argCount = 1;
-				binopCAE.argValues[0] = pNode->tags["primitive"];
+
+				if (pNode->tags["primitive"] == (int)AAPrimitiveType::string) {
+					binInstruction.bc = AAByteCode::CONCAT;
+				} else {
+					binInstruction.argCount = 1;
+					binInstruction.argValues[0] = pNode->tags["primitive"];
+				}
+
 			}
+
+			opList.Add(HandleStackPush(cTable, pNode->expressions[0], staticData));
+			opList.Add(HandleStackPush(cTable, pNode->expressions[1], staticData));
 
 		}
 
-		opList.Add(HandleStackPush(cTable, pNode->expressions[0], staticData));
-		opList.Add(HandleStackPush(cTable, pNode->expressions[1], staticData));
-
 	}
 
-	opList.Add(binopCAE);
+	// Add final instruction
+	opList.Add(binInstruction);
 
-	if (pNode->HasTag("pop_size")) {
+	// Pop if told to
+	opList.Add(HandlePop(pNode));
 
-		CompiledAbstractExpression popCAE;
-		popCAE.argCount = 1;
-		popCAE.bc = AAByteCode::POP;
-		popCAE.argValues[0] = pNode->tags["pop_size"];
-
-		opList.Add(popCAE);
-
-	}
-
+	// Return final list
 	return opList;
 
 }
@@ -1035,11 +1060,11 @@ AAByteCode AAC::GetBytecodeFromBinaryOperator(std::wstring ws, AA_AST_NODE_TYPE 
 	} else if (ws.compare(L"&&") == 0) {
 		return AAByteCode::LAND;
 	} else if (ws.compare(L"&") == 0) {
-		return AAByteCode::BAND;
+		return AAByteCode::BINAND;
 	} else if (ws.compare(L"||") == 0) {
 		return AAByteCode::LOR;
 	} else if (ws.compare(L"|") == 0) {
-		return AAByteCode::BOR;
+		return AAByteCode::BINOR;
 	} else {
 		return AAByteCode::NOP;
 	}
@@ -1353,6 +1378,25 @@ Instructions AAC::HandleIndexPush(AA_AST_NODE* pNode, CompiledEnviornmentTable& 
 	opList.Add(getElemCAE);
 
 	// Return the op list
+	return opList;
+
+}
+
+Instructions AAC::HandlePop(AA_AST_NODE* pNode) {
+
+	Instructions opList;
+
+	if (pNode->HasTag("pop_size")) {
+
+		Instruction popCAE;
+		popCAE.argCount = 1;
+		popCAE.bc = AAByteCode::POP;
+		popCAE.argValues[0] = pNode->tags["pop_size"];
+
+		opList.Add(popCAE);
+
+	}
+
 	return opList;
 
 }

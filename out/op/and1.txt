@@ -1,0 +1,69 @@
+BYTECODE PROCEDURES:
+	START PROCEDURE 0 (<GlobalScope>):
+	OPERATIONS:
+		[0000]  CALL, 1, 0                                                      ;; Calls: main
+	END PROCEDURE;
+
+	START PROCEDURE 1 (main):
+	CONSTANTS:	[B, T][I32, 0][I32, 8][UTF-8, "t1"][I32, 29][UTF-8, "t2"][B, F][I32, 10][UTF-8, "t3"][UTF-8, "t4"]
+	IDENTIFIERS:
+		0$[a];		1$[b];		2$[r];
+	OPERATIONS:
+		[0000]  PUSHC, 0                                                        
+		[0001]  SETVAR, 0, 3                                                    ;; primitive: bool [1 bytes]
+		[0002]  PUSHC, 0                                                        
+		[0003]  SETVAR, 1, 3                                                    ;; primitive: bool [1 bytes]
+		[0004]  PUSHC, 1                                                        
+		[0005]  SETVAR, 2, 6                                                    ;; primitive: int32 [4 bytes]
+		[0006]  GETVAR, 0                                                       
+		[0007]  LAND, 2                                                         
+		[0008]  GETVAR, 1                                                       
+		[0009]  BINAND, 3                                                       
+		[0010]  JMPF, 8                                                         
+		[0011]  GETVAR, 2                                                       
+		[0012]  PUSHC, 2                                                        
+		[0013]  ADD, 6                                                          ;; primitive: int32 [4 bytes]
+		[0014]  SETVAR, 2, 6                                                    ;; primitive: int32 [4 bytes]
+		[0015]  PUSHWS, 3                                                       
+		[0016]  WRAP, 13                                                        
+		[0017]  XCALL, 0, 1                                                     ;; Calls: println
+		[0018]  GETVAR, 0                                                       
+		[0019]  GETVAR, 1                                                       
+		[0020]  BINAND, 3                                                       
+		[0021]  JMPF, 8                                                         
+		[0022]  GETVAR, 2                                                       
+		[0023]  PUSHC, 4                                                        
+		[0024]  ADD, 6                                                          ;; primitive: int32 [4 bytes]
+		[0025]  SETVAR, 2, 6                                                    ;; primitive: int32 [4 bytes]
+		[0026]  PUSHWS, 5                                                       
+		[0027]  WRAP, 13                                                        
+		[0028]  XCALL, 0, 1                                                     ;; Calls: println
+		[0029]  PUSHC, 6                                                        
+		[0030]  SETVAR, 0, 3                                                    ;; primitive: bool [1 bytes]
+		[0031]  GETVAR, 0                                                       
+		[0032]  LAND, 2                                                         
+		[0033]  GETVAR, 1                                                       
+		[0034]  BINAND, 3                                                       
+		[0035]  JMPF, 8                                                         
+		[0036]  GETVAR, 2                                                       
+		[0037]  PUSHC, 7                                                        
+		[0038]  ADD, 6                                                          ;; primitive: int32 [4 bytes]
+		[0039]  SETVAR, 2, 6                                                    ;; primitive: int32 [4 bytes]
+		[0040]  PUSHWS, 8                                                       
+		[0041]  WRAP, 13                                                        
+		[0042]  XCALL, 0, 1                                                     ;; Calls: println
+		[0043]  GETVAR, 0                                                       
+		[0044]  GETVAR, 1                                                       
+		[0045]  BINAND, 3                                                       
+		[0046]  JMPF, 8                                                         
+		[0047]  GETVAR, 2                                                       
+		[0048]  PUSHC, 2                                                        
+		[0049]  ADD, 6                                                          ;; primitive: int32 [4 bytes]
+		[0050]  SETVAR, 2, 6                                                    ;; primitive: int32 [4 bytes]
+		[0051]  PUSHWS, 9                                                       
+		[0052]  WRAP, 13                                                        
+		[0053]  XCALL, 0, 1                                                     ;; Calls: println
+		[0054]  GETVAR, 2                                                       
+		[0055]  RET                                                             
+	END PROCEDURE;
+END BYTECODE PROCEDURES

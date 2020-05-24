@@ -50,11 +50,13 @@ enum class AAByteCode : unsigned char {
 	LEQ, // (Compares numerics and returns true if x>=y, 1 argument [primitive type])
 
 	LNEG, // (Logical Negation !, 0 arguments)
-	LAND, // (Logical And &&, 0 arguments)
-	LOR, // (Logcal Or ||, 0 arguments)
+	LAND, // (Logical (and lazy) And &&, 1 argument[jmp distance if false])
+	LOR, // (Logcal (and lazy) Or ||, 1 argument[jmp distance if true])
 
-	BAND, // (Bitwise And &, 1 argument [primitive type])
-	BOR, // (Bitwise Or |, 1 argument [primitive type])
+	BINAND, // (Bitwise And &, 1 argument [primitive type]) -- Logic operator if primitive type == boolean type
+	BINOR, // (Bitwise Or |, 1 argument [primitive type]) -- Logic operator if primitive type == boolean type
+
+	ANDTRUE, // (True if top of stack is true, 0 arguments) -- Use LNEG before this to check for false
 
 	TUPLECMP, // (Compares two tuples, 0 arguments)
 	TUPLECMPORSET,	// (Compares two tuples, where top-of-stack tuple may assign to variables, 1+n arguments[tuple count, { -1 | varid }^n : n = tuple count])
