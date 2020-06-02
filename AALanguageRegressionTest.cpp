@@ -407,14 +407,14 @@ void RunIfStatementTests(AAVM* pAAVM, int& s, int& f) {
 void RunLogicTests(AAVM* pAAVM, int& s, int& f) {
 
 	// Test logical and
-	if (!RunFileTest(pAAVM, L"examples\\logic\\and1.aa", L"and1", 10)) {
+	if (!RunFileTest(pAAVM, L"examples\\logic\\and1.aa", L"and1", 37)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test logical or
-	if (!RunFileTest(pAAVM, L"examples\\logic\\or1.aa", L"or1", 10)) {
+	if (!RunFileTest(pAAVM, L"examples\\logic\\or1.aa", L"or1", 66)) {
 		f++;
 	} else {
 		s++;

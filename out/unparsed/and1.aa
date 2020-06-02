@@ -8,14 +8,12 @@ int main() {
 	if ((a && b)) {
 		{
 			r = (r + 8);
-			println("t1");
 		}
 
 	};
 	if ((a & b)) {
 		{
 			r = (r + 29);
-			println("t2");
 		}
 
 	};
@@ -23,14 +21,12 @@ int main() {
 	if ((a && b)) {
 		{
 			r = (r + 10);
-			println("t3");
 		}
 
 	};
 	if ((a & b)) {
 		{
 			r = (r + 8);
-			println("t4");
 		}
 
 	};

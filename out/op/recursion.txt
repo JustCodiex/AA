@@ -15,7 +15,7 @@ BYTECODE PROCEDURES:
 		[0001]  GETVAR, 0                                                       
 		[0002]  PUSHC, 0                                                        
 		[0003]  LEQ, 6                                                          ;; primitive: int32 [4 bytes]
-		[0004]  JMPF, 2                                                         
+		[0004]  JMPF, 3                                                         
 		[0005]  PUSHC, 0                                                        
 		[0006]  JMP, 6                                                          
 		[0007]  GETVAR, 0                                                       

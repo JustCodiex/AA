@@ -379,7 +379,7 @@ void AAVM::exec(AAProgram::Procedure* procedure, aa::stack<AARuntimeEnvironment>
 		case AAByteCode::LAND: {
 			if (!stack.Pop<bool>()) {
 				stack.Push<bool>(false);
-				AAVM_OPI += AAVM_GetArgument(0) + 2;
+				AAVM_OPI += AAVM_GetArgument(0);
 			} else {
 				stack.Push<bool>(true);
 				AAVM_OPI++;
@@ -388,10 +388,10 @@ void AAVM::exec(AAProgram::Procedure* procedure, aa::stack<AARuntimeEnvironment>
 		}
 		case AAByteCode::LOR: {
 			if (stack.Pop<bool>()) {
-				stack.Push<bool>(false);
-				AAVM_OPI += AAVM_GetArgument(0) + 2;
-			} else {
 				stack.Push<bool>(true);
+				AAVM_OPI += AAVM_GetArgument(0);
+			} else {
+				stack.Push<bool>(false);
 				AAVM_OPI++;
 			}
 			break;
@@ -400,7 +400,8 @@ void AAVM::exec(AAProgram::Procedure* procedure, aa::stack<AARuntimeEnvironment>
 			if (AAVM_GetArgument(0) == (int)AAPrimitiveType::boolean) {
 				bool rhs = stack.Pop<bool>();
 				bool lhs = stack.Pop<bool>();
-				stack.Push(lhs & rhs);
+				bool r = rhs & lhs;
+				stack.Push(r);
 			} else {
 				printf("");
 			}
@@ -411,7 +412,8 @@ void AAVM::exec(AAProgram::Procedure* procedure, aa::stack<AARuntimeEnvironment>
 			if (AAVM_GetArgument(0) == (int)AAPrimitiveType::boolean) {
 				bool rhs = stack.Pop<bool>();
 				bool lhs = stack.Pop<bool>();
-				stack.Push(lhs | rhs);
+				bool r = lhs | rhs;
+				stack.Push(r);
 			} else {
 				printf("");
 			}
@@ -541,7 +543,7 @@ void AAVM::exec(AAProgram::Procedure* procedure, aa::stack<AARuntimeEnvironment>
 			if (stack.Pop<bool>()) {
 				AAVM_OPI++;
 			} else {
-				AAVM_OPI += 1 + AAVM_GetArgument(0); // jump to next (if-else or else) or next statement after block
+				AAVM_OPI += AAVM_GetArgument(0); // jump to next (if-else or else) or next statement after block
 			}
 			break;
 		}
@@ -549,7 +551,7 @@ void AAVM::exec(AAProgram::Procedure* procedure, aa::stack<AARuntimeEnvironment>
 			if (!stack.Pop<bool>()) {
 				AAVM_OPI++;
 			} else {
-				AAVM_OPI += 1 + AAVM_GetArgument(0); // jump to next (if-else or else) or next statement after block
+				AAVM_OPI += AAVM_GetArgument(0); // jump to next (if-else or else) or next statement after block
 			}
 			break;
 		}
@@ -858,7 +860,7 @@ AAStackValue AAVM::ReportStack(any_stack& stack) {
 
 	if (stack.is_empty()) {
 		stack.Release(false);
-		std::string msg = "Empty stack (Void)";
+		std::string msg = "Empty stack (Void)\n";
 		m_outStream->write(msg.c_str(), msg.length());
 		return AAStackValue::None;
 	} else {

@@ -74,14 +74,14 @@ BYTECODE PROCEDURES:
 		[0004]  GETVAR, 0                                                       
 		[0005]  GETFIELD, 0, 6                                                  ;; primitive: int32 [4 bytes]
 		[0006]  CMPE, 3                                                         ;; primitive: bool [1 bytes]
-		[0007]  LAND, 6                                                         
+		[0007]  LAND, 7                                                         
 		[0008]  GETVAR, 1                                                       
 		[0009]  GETFIELD, 4, 14                                                 ;; primitive: refptr [16 bytes]
 		[0010]  GETVAR, 0                                                       
 		[0011]  GETFIELD, 4, 14                                                 ;; primitive: refptr [16 bytes]
 		[0012]  CMPE, 3                                                         ;; primitive: bool [1 bytes]
 		[0013]  BINAND, 3                                                       
-		[0014]  LAND, 6                                                         
+		[0014]  LAND, 7                                                         
 		[0015]  GETVAR, 1                                                       
 		[0016]  GETFIELD, 20, 14                                                ;; primitive: refptr [16 bytes]
 		[0017]  GETVAR, 0                                                       
@@ -149,18 +149,17 @@ BYTECODE PROCEDURES:
 		[0011]  GETVAR, 0                                                       
 		[0012]  EXTTAG                                                          
 		[0013]  TAGTUPLECMP, 2                                                  
-		[0014]  JMPT, 4                                                         
+		[0014]  JMPT, 5                                                         
 		[0015]  GETVAR, 0                                                       
 		[0016]  EXTTAG                                                          
 		[0017]  TAGTUPLECMPORSET, 3, 3, 1, -1, -1                               
-		[0018]  JMPT, 2                                                         
+		[0018]  JMPT, 3                                                         
 		[0019]  PUSHC, 3                                                        
-		[0020]  JMP, 2                                                          
+		[0020]  JMP, 1                                                          
 		[0021]  GETVAR, 1                                                       
-		[0022]  JMP, 0                                                          
-		[0023]  SETVAR, 1, 6                                                    ;; primitive: int32 [4 bytes]
-		[0024]  GETVAR, 1                                                       
-		[0025]  RET                                                             
+		[0022]  SETVAR, 1, 6                                                    ;; primitive: int32 [4 bytes]
+		[0023]  GETVAR, 1                                                       
+		[0024]  RET                                                             
 	END PROCEDURE;
 END BYTECODE PROCEDURES
 

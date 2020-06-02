@@ -379,7 +379,7 @@ Instructions AAC::CompileBinaryOperation(AA_AST_NODE* pNode, CompiledEnviornment
 			opList.Add(lhs);
 
 			binInstruction.argCount = 1;
-			binInstruction.argValues[0] = rhs.Size() + 1;
+			binInstruction.argValues[0] = rhs.Size() + 2; // Skip rest of condition and go directly to end of statement OR jmpf
 
 			opList.Add(binInstruction);
 
@@ -597,55 +597,77 @@ Instructions AAC::CompileFuncArgs(AA_AST_NODE* pNode, CompiledEnviornmentTable& 
 
 }
 
+Instructions AAC::CompileCondition(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
+
+	// Instruction list
+	Instructions opList;
+
+	// Run through all conditions
+	for (size_t i = 0; i < pNode->expressions.size(); i++) {
+		opList.Add(this->CompileAST(pNode->expressions[i], cTable, staticData));
+	}
+
+	// Return options
+	return opList;
+
+}
+
 Instructions AAC::CompileConditionalBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
 
 	// Operations list
-	aa::list<CompiledAbstractExpression> opList;
+	Instructions opList;
 
-	// Push condition
-	opList.Add(this->CompileBinaryOperation(pNode->expressions[0]->expressions[0], cTable, staticData)); // will throw error when multiple conditions become possible
+	// Compile condition and body
+	Instructions condition = this->CompileCondition(pNode->expressions[0], cTable, staticData);
+	Instructions body = this->CompileAST(pNode->expressions[1], cTable, staticData);
 
-	size_t tOffset = 0;
-	std::vector<aa::list<CompiledAbstractExpression>> allBodies;
+	// Jump if condition false
+	Instruction jmpF = Instruction(AAByteCode::JMPF, 1, NULL);
+	jmpF.argValues[0] = 1 + (int)body.Size();
 
-	for (size_t i = 1; i < pNode->expressions.size(); i++) {
-		aa::list<CompiledAbstractExpression> opLst = this->CompileAST(pNode->expressions[i], cTable, staticData);
-		tOffset += opLst.Size();
-		if (i != pNode->expressions.size() - 1) {
-			tOffset++;
-		}
-		allBodies.push_back(opLst);
+	// Only add jump instruction if there's an else or else if body to skip
+	if (pNode->expressions.size() >= 3) {
+		body.Add(Instruction(AAByteCode::JMP, 0, NULL)); // Add jump instruction to end
+		jmpF.argValues[0]++; // Consider the jmp instruction added
 	}
 
-	// Create jump if false condition
-	CompiledAbstractExpression jmpInstruction;
-	jmpInstruction.bc = AAByteCode::JMPF;
-	jmpInstruction.argCount = 1;
-	jmpInstruction.argValues[0] = (int)allBodies[0].Size() + 1;
+	// Add condition and body
+	opList.Add(condition);
+	opList.Add(jmpF);
+	opList.Add(body);
 
-	// Add jump instruction after condition
-	opList.Add(jmpInstruction);
+	// Run through all the other cases
+	for (size_t i = 2; i < pNode->expressions.size(); i++) {
+		if (pNode->expressions[i]->expressions.size() == 1) { // else case
+			opList.Add(this->CompileAST(pNode->expressions[i]->expressions[0], cTable, staticData));
+		} else { // else if case
 
-	size_t cutJmp = 0;
+			// Compile condition and body
+			Instructions elifcondition = this->CompileCondition(pNode->expressions[i]->expressions[0], cTable, staticData);
+			Instructions elifbody = this->CompileAST(pNode->expressions[i]->expressions[1], cTable, staticData);
 
-	for (size_t i = 0; i < allBodies.size(); i++) {
+			// Jump if condition false
+			Instruction elifjmpF = Instruction(AAByteCode::JMPF, 1, NULL);
+			elifjmpF.argValues[0] = (int)elifbody.Size() + 1;
 
-		if (i != allBodies.size() - 1) {
+			// Add invalid jump instruction (fixed later)
+			elifbody.Add(Instruction(AAByteCode::JMP, 0, NULL)); // Add jump instruction to end
 
-			cutJmp += allBodies[i].Size() + 1;
-
-			CompiledAbstractExpression jmpInstruction;
-			jmpInstruction.bc = AAByteCode::JMP;
-			jmpInstruction.argCount = 1;
-			jmpInstruction.argValues[0] = (int)(tOffset - cutJmp);
-
-			allBodies[i].Add(jmpInstruction);
+			// Add all to oplist
+			opList.Add(elifcondition);
+			opList.Add(elifjmpF);
+			opList.Add(elifbody);
 
 		}
+	}
 
-		// Add body
-		opList.Add(allBodies[i]);
-
+	// Correct jump instructions
+	const size_t totalInstructions = opList.Size();
+	for (size_t i = 0; i < totalInstructions; i++) {
+		if (opList.At(i).bc == AAByteCode::JMP && opList.At(i).argCount == 0) {
+			opList.At(i).argCount = 1;
+			opList.At(i).argValues[0] = totalInstructions - i - 1;
+		}
 	}
 
 	// return oplist
@@ -656,13 +678,13 @@ Instructions AAC::CompileConditionalBlock(AA_AST_NODE* pNode, CompiledEnviornmen
 Instructions AAC::CompileForBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
 
 	// Operations list
-	aa::list<CompiledAbstractExpression> opList;
+	Instructions opList;
 
 	// Compile individual
-	aa::list<CompiledAbstractExpression> init = CompileAST(pNode->expressions[0]->expressions[0], cTable, staticData);
-	aa::list<CompiledAbstractExpression> condition = CompileAST(pNode->expressions[1]->expressions[0], cTable, staticData);
-	aa::list<CompiledAbstractExpression> afterthought = CompileAST(pNode->expressions[2]->expressions[0], cTable, staticData);
-	aa::list<CompiledAbstractExpression> body = CompileAST(pNode->expressions[3], cTable, staticData);
+	Instructions init = CompileAST(pNode->expressions[0]->expressions[0], cTable, staticData);
+	Instructions condition = CompileAST(pNode->expressions[1]->expressions[0], cTable, staticData);
+	Instructions afterthought = CompileAST(pNode->expressions[2]->expressions[0], cTable, staticData);
+	Instructions body = CompileAST(pNode->expressions[3], cTable, staticData);
 
 	// Merge the oplist with the initialisor
 	opList.Add(init);
@@ -680,7 +702,7 @@ Instructions AAC::CompileForBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable& 
 	CompiledAbstractExpression jmpDntLoopIns;
 	jmpDntLoopIns.bc = AAByteCode::JMPF;
 	jmpDntLoopIns.argCount = 1;
-	jmpDntLoopIns.argValues[0] = (int)(body.Size() + 1);
+	jmpDntLoopIns.argValues[0] = (int)(body.Size()) + 2;
 
 	// Add jump instructions
 	condition.Add(jmpDntLoopIns);
@@ -708,7 +730,7 @@ Instructions AAC::CompileWhileBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable
 	CompiledAbstractExpression jmpDntLoopIns;
 	jmpDntLoopIns.bc = AAByteCode::JMPF;
 	jmpDntLoopIns.argCount = 1;
-	jmpDntLoopIns.argValues[0] = (int)(body.Size() + 1);
+	jmpDntLoopIns.argValues[0] = (int)(body.Size()) + 2;
 
 	// Add jump instructions
 	condition.Add(jmpDntLoopIns);
@@ -717,7 +739,7 @@ Instructions AAC::CompileWhileBlock(AA_AST_NODE* pNode, CompiledEnviornmentTable
 	CompiledAbstractExpression jmpBckIns;
 	jmpBckIns.bc = AAByteCode::JMP;
 	jmpBckIns.argCount = 1;
-	jmpBckIns.argValues[0] = -(int)(body.Size() + condition.Size() + 1);
+	jmpBckIns.argValues[0] = -(int)(body.Size() + condition.Size()+1);
 
 	// Push the jmp back
 	body.Add(jmpBckIns);
@@ -744,7 +766,7 @@ Instructions AAC::CompileDoWhileBlock(AA_AST_NODE* pNode, CompiledEnviornmentTab
 	CompiledAbstractExpression jmpDntLoopIns;
 	jmpDntLoopIns.bc = AAByteCode::JMPT;
 	jmpDntLoopIns.argCount = 1;
-	jmpDntLoopIns.argValues[0] = -(int)(body.Size() + condition.Size() + 1);
+	jmpDntLoopIns.argValues[0] = -(int)(body.Size() + condition.Size());
 
 	// Add jump instructions
 	condition.Add(jmpDntLoopIns);
@@ -853,11 +875,18 @@ Instructions AAC::CompilePatternBlock(AA_AST_NODE* pNode, CompiledEnviornmentTab
 		conditions.Add(condition);
 
 		Instructions body = this->CompileAST(cases[i]->expressions[1], cTable, staticData);
-		Instruction jmptoend;
-		jmptoend.bc = AAByteCode::JMP;
-		jmptoend.argCount = 1;
-		jmptoend.argValues[0] = -3;
-		body.Add(jmptoend);
+		
+		// Add jump instruction if NOT the last case (because the last case can just continue
+		if (i < cases.size() - 1) {
+
+			Instruction jmptoend;
+			jmptoend.bc = AAByteCode::JMP;
+			jmptoend.argCount = 1;
+			jmptoend.argValues[0] = -3;
+			body.Add(jmptoend);
+
+		}
+
 		bodies.Add(body);
 
 	}
@@ -874,7 +903,7 @@ Instructions AAC::CompilePatternBlock(AA_AST_NODE* pNode, CompiledEnviornmentTab
 		// Find first jmp and correct it (should correspond to the body we're now adding)
 		for (size_t j = 0; j < opList.Size(); j++) {
 			if (opList.At(j).bc == AAByteCode::JMPT && opList.At(j).argValues[0] == -2) {
-				opList.At(j).argValues[0] = (jmpt - j) - 1;
+				opList.At(j).argValues[0] = (jmpt - j) /*- 1*/;
 				break;
 			}
 		}

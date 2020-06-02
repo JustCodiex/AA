@@ -44,7 +44,7 @@ public:
 	/// <typeparam name="TValue">The type of the value to push</typeparam>
 	/// <param name="element">The value to push</param>
 	template <typename TValue>
-	bool Push(const TValue& element) {
+	bool Push(const TValue element) {
 		if (this->get_allocated() >= this->get_pointer() + sizeof(TValue)) {
 			memcpy(m_bytes + m_top, &element, sizeof(TValue));
 			m_top += sizeof(TValue);

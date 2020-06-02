@@ -3,8 +3,8 @@
 	Pattern matching on tuples ✔
 		set variables
 		set & get variables
+	&& and || operators ✔
 	Pattern matching on tagged classes ✔
-		&& and || operators
 		set & get variables
 	Binary Assignment operators
 		+=, -=, *=, /=, %=;
