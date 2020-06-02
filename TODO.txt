@@ -1,7 +1,7 @@
 ﻿TODO:
 	Virtual functions ✔
 	Pattern matching on tuples ✔
-		set variables
+		set variables ✔
 	&& and || operators ✔
 	Pattern matching on tagged classes ✔
 	Binary Assignment operators

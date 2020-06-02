@@ -753,8 +753,8 @@ void AAVM::exec(AAProgram::Procedure* procedure, aa::stack<AARuntimeEnvironment>
 			if (compareLn == matchwith.Size()) {
 				bool match = true;
 				for (int i = 0; i < compareLn; i++) {
-					int type = AAVM_GetArgument(1 + i);
-					if (type == -1) {
+					int variableId = AAVM_GetArgument(1 + i);
+					if (variableId == -1) {
 						AAPrimitiveType t = matchwith.TypeAt(i);
 						if (t != AAPrimitiveType::__TRUEANY) {
 							AAStackValue val = aa::vm::PopSomething(t, stack);
@@ -766,7 +766,7 @@ void AAVM::exec(AAProgram::Procedure* procedure, aa::stack<AARuntimeEnvironment>
 						}
 					} else {
 						AAStackValue val = AAStackValue(matchwith.TypeAt(i), matchwith.ValueAt(i));
-						AAVM_VENV->SetVariable(AAVM_GetArgument(1 + i), val);
+						AAVM_VENV->SetVariable(variableId, val);
 					}
 				}
 				if (match) {

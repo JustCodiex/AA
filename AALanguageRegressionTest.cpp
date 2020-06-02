@@ -634,6 +634,13 @@ void RunTupleTests(AAVM* pAAVM, int& s, int& f) {
 		s++;
 	}
 
+	// Test tuple pattern matching
+	if (!RunFileTest(pAAVM, L"examples\\tuple\\tuple4.aa", L"tuple4", 66)) {
+		f++;
+	} else {
+		s++;
+	}
+
 }
 
 bool RunRegressionTests(AAVM* pAAVM) {
