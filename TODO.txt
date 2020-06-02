@@ -2,10 +2,8 @@
 	Virtual functions ✔
 	Pattern matching on tuples ✔
 		set variables
-		set & get variables
 	&& and || operators ✔
 	Pattern matching on tagged classes ✔
-		set & get variables
 	Binary Assignment operators
 		+=, -=, *=, /=, %=;
 	Unary operators
@@ -29,16 +27,6 @@
 			Simple syntax ==> "const var add = (int a, int b) => { a + b; }; const var increment = (int n) => add(1); println(increment(6));"		// Gives 7
 	Dynamic type load
 		Make IO stream properly fetch io-stream type during runtime
-	Operator overloading
-		Simple syntax ==> "static bool operator ==(T a, T b) { ... true/false; }"
-						  "static int operator [](int index) { ... }"
-						  "static int operator [](int column, int row) { ... }"
-							use: "const var k = matrix[0,0];"
-	Implicit/explicit conversion/casting
-		Implicit syntax ==> "static implicit operator V(U o) { ... };"			// Allow implicit conversion from U to V
-							use: "V v = new U();"
-		Explicit Syntax ==> "static explicit operator V(U o) { ... };"			// Require a definitive cast
-							use: "V v = (V)(new U());"
 	Arrays in one dimension
 		A correct implementation using the dynamic environment
 	Return/Break
@@ -64,6 +52,16 @@
 	Static Classes
 		Simple syntax ==> "static class something {}"
 		Object syntax ==> "static tagged class something : other {}" // Scala object equivalent (So will fit into pattern matching)
+	Operator overloading
+		Simple syntax ==> "static bool operator ==(T a, T b) { ... true/false; }"
+						  "static int operator [](int index) { ... }"
+						  "static int operator [](int column, int row) { ... }"
+							use: "const var k = matrix[0,0];"
+	Implicit/explicit conversion/casting
+		Implicit syntax ==> "static implicit operator V(U o) { ... };"			// Allow implicit conversion from U to V
+							use: "V v = new U();"
+		Explicit Syntax ==> "static explicit operator V(U o) { ... };"			// Require a definitive cast
+							use: "V v = (V)(new U());"
 	Interfaces
 		Simple syntax ==> "interface IInterface { <field>, <property>, <method>, <method<() { <...> }; }"	// Allow fields, properties and methods. Methods may have default implementation.
 	Access modifiers
@@ -73,6 +71,8 @@
 	Upper-Lower bound inheritance
 		Lower-bound syntax	==> "class example<U> where U <: V {}"		// U can only inherit from subtypes of V
 		Upper-bound syntax	==> "class example<U> where U >: V {}"		// U can only inherit from the types V is subtyping
+	Pattern-Match guards
+		simple syntax		==> "(5,6) match { case (l,r) when l > r => println("l>r"), case (l,r) when l < r => println("l<r"), case _ => println("l=r"); };"
 	Any keyword
 	Optional
 		Simple syntax ==> "void input(Optional<T> i) { i match { Some(t) => /* Do stuff with t */, None => println("No input") }; }"	// With pattern match

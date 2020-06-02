@@ -748,6 +748,36 @@ void AAVM::exec(AAProgram::Procedure* procedure, aa::stack<AARuntimeEnvironment>
 			break;
 		}
 		case AAByteCode::TUPLECMPORSET: {
+			AATuple matchwith = aa::vm::PopSomething(AAPrimitiveType::tuple, stack).to_cpp<AATuple>();
+			int compareLn = AAVM_GetArgument(0);
+			if (compareLn == matchwith.Size()) {
+				bool match = true;
+				for (int i = 0; i < compareLn; i++) {
+					int type = AAVM_GetArgument(1 + i);
+					if (type == -1) {
+						AAPrimitiveType t = matchwith.TypeAt(i);
+						if (t != AAPrimitiveType::__TRUEANY) {
+							AAStackValue val = aa::vm::PopSomething(t, stack);
+							if (!val.as_val().Equals(matchwith.ValueAt(i), aa::runtime::size_of_type(val.get_type()))) {
+								// TODO: Implement method that cleans the stack from the values pushed
+								match = false;
+								break;
+							}
+						}
+					} else {
+						AAStackValue val = AAStackValue(matchwith.TypeAt(i), matchwith.ValueAt(i));
+						AAVM_VENV->SetVariable(AAVM_GetArgument(1 + i), val);
+					}
+				}
+				if (match) {
+					stack.Push(true);
+				} else {
+					stack.Push(false);
+				}
+			} else {
+				// TODO: Implement method that cleans the stack from the values pushed
+				stack.Push(false);
+			}
 			AAVM_OPI++;
 			break;
 		}

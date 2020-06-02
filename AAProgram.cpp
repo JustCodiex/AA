@@ -178,14 +178,6 @@ void AAProgram::LoadOperations(Procedure& proc, aa::bwalker& bw) {
 			bw >> proc.opSequence[i].args[1];
 			bw >> proc.opSequence[i].args[2];
 			break;
-		/*case AAByteCode::BCKM:
-			proc.opSequence[i].args = new int[4];
-			bw >> proc.opSequence[i].args[0];
-			bw >> proc.opSequence[i].args[1];
-			bw >> proc.opSequence[i].args[2];
-			bw >> proc.opSequence[i].args[3];
-			break;*/
-		
 		case AAByteCode::TUPLECMPORSET:
 		case AAByteCode::TUPLENEW: { // Read arguments of the form (n, arg_0, ..., arg_n)
 			int sz = 0;

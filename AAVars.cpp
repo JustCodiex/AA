@@ -235,6 +235,10 @@ bool AAVars::VarsMatchCondition(aa::VarsEnviornment& venv, AA_AST_NODE* pScope) 
 		for (size_t i = 0; i < pScope->expressions.size(); i++) {
 			this->VarsMatchCondition(venv, pScope->expressions[i]);
 		}
+	} else if (pScope->type == AA_AST_NODE_TYPE::tupleval) {
+		for (size_t i = 0; i < pScope->expressions.size(); i++) {
+			this->VarsMatchCondition(venv, pScope->expressions[i]);
+		}
 	}
 
 	return true;

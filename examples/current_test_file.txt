@@ -1,181 +1,29 @@
 BYTECODE PROCEDURES:
 	START PROCEDURE 0 (<GlobalScope>):
 	OPERATIONS:
-		[0000]  CALL, 9, 0                                                      ;; Calls: main
+		[0000]  CALL, 1, 0                                                      ;; Calls: main
 	END PROCEDURE;
 
-	START PROCEDURE 1 (Leaf::Leaf):
+	START PROCEDURE 1 (main):
+	CONSTANTS:	[I32, 5][I32, 6][I32, 11][B, T][I32, 0]
 	IDENTIFIERS:
-		this;
-	OPERATIONS:
-		[0000]  SETVAR, 0, 14                                                   ;; primitive: refptr [16 bytes]
-		[0001]  GETVAR, 0                                                       
-		[0002]  RET                                                             
-	END PROCEDURE;
-
-	START PROCEDURE 2 (Leaf::Equals):
-	CONSTANTS:	[B, T]
-	IDENTIFIERS:
-		_other;		this;
-	OPERATIONS:
-		[0000]  SETVAR, 0, 14                                                   ;; primitive: refptr [16 bytes]
-		[0001]  SETVAR, 1, 14                                                   ;; primitive: refptr [16 bytes]
-		[0002]  PUSHC, 0                                                        
-		[0003]  RET                                                             
-	END PROCEDURE;
-
-	START PROCEDURE 3 (Leaf::ToString):
-	CONSTANTS:	[UTF-8, "Leaf("][UTF-8, ")"]
-	IDENTIFIERS:
-		this;
-	OPERATIONS:
-		[0000]  SETVAR, 0, 14                                                   ;; primitive: refptr [16 bytes]
-		[0001]  PUSHWS, 0                                                       
-		[0002]  PUSHWS, 1                                                       
-		[0003]  CONCAT                                                          
-		[0004]  RET                                                             
-	END PROCEDURE;
-
-	START PROCEDURE 4 (Leaf):
-	OPERATIONS:
-		[0000]  CTOR, 2, 1, 0                                                   
-		[0001]  RET                                                             
-	END PROCEDURE;
-
-	START PROCEDURE 5 (Node::Node):
-	IDENTIFIERS:
-		this;		right;		left;		value;
-	OPERATIONS:
-		[0000]  SETVAR, 0, 14                                                   ;; primitive: refptr [16 bytes]
-		[0001]  SETVAR, 1, 14                                                   ;; primitive: refptr [16 bytes]
-		[0002]  SETVAR, 2, 14                                                   ;; primitive: refptr [16 bytes]
-		[0003]  SETVAR, 3, 6                                                    ;; primitive: int32 [4 bytes]
-		[0004]  GETVAR, 0                                                       
-		[0005]  GETVAR, 3                                                       
-		[0006]  SETFIELD, 0, 6                                                  ;; primitive: int32 [4 bytes]
-		[0007]  GETVAR, 0                                                       
-		[0008]  GETVAR, 2                                                       
-		[0009]  SETFIELD, 4, 14                                                 ;; primitive: refptr [16 bytes]
-		[0010]  GETVAR, 0                                                       
-		[0011]  GETVAR, 1                                                       
-		[0012]  SETFIELD, 20, 14                                                ;; primitive: refptr [16 bytes]
-		[0013]  GETVAR, 0                                                       
-		[0014]  RET                                                             
-	END PROCEDURE;
-
-	START PROCEDURE 6 (Node::Equals):
-	IDENTIFIERS:
-		_other;		this;
-	OPERATIONS:
-		[0000]  SETVAR, 0, 14                                                   ;; primitive: refptr [16 bytes]
-		[0001]  SETVAR, 1, 14                                                   ;; primitive: refptr [16 bytes]
-		[0002]  GETVAR, 1                                                       
-		[0003]  GETFIELD, 0, 6                                                  ;; primitive: int32 [4 bytes]
-		[0004]  GETVAR, 0                                                       
-		[0005]  GETFIELD, 0, 6                                                  ;; primitive: int32 [4 bytes]
-		[0006]  CMPE, 3                                                         ;; primitive: bool [1 bytes]
-		[0007]  GETVAR, 1                                                       
-		[0008]  GETFIELD, 4, 14                                                 ;; primitive: refptr [16 bytes]
-		[0009]  GETVAR, 0                                                       
-		[0010]  GETFIELD, 4, 14                                                 ;; primitive: refptr [16 bytes]
-		[0011]  CMPE, 3                                                         ;; primitive: bool [1 bytes]
-		[0012]  LAND, 3                                                         
-		[0013]  GETVAR, 1                                                       
-		[0014]  GETFIELD, 20, 14                                                ;; primitive: refptr [16 bytes]
-		[0015]  GETVAR, 0                                                       
-		[0016]  GETFIELD, 20, 14                                                ;; primitive: refptr [16 bytes]
-		[0017]  CMPE, 3                                                         ;; primitive: bool [1 bytes]
-		[0018]  LAND, 3                                                         
-		[0019]  RET                                                             
-	END PROCEDURE;
-
-	START PROCEDURE 7 (Node::ToString):
-	CONSTANTS:	[UTF-8, "Node("][UTF-8, ", "][UTF-8, ", "][UTF-8, ")"]
-	IDENTIFIERS:
-		this;
-	OPERATIONS:
-		[0000]  SETVAR, 0, 14                                                   ;; primitive: refptr [16 bytes]
-		[0001]  PUSHWS, 0                                                       
-		[0002]  PUSHWS, 1                                                       
-		[0003]  GETVAR, 0                                                       
-		[0004]  GETFIELD, 20, 14                                                ;; primitive: refptr [16 bytes]
-		[0005]  CONCAT                                                          
-		[0006]  PUSHWS, 2                                                       
-		[0007]  GETVAR, 0                                                       
-		[0008]  GETFIELD, 4, 14                                                 ;; primitive: refptr [16 bytes]
-		[0009]  CONCAT                                                          
-		[0010]  GETVAR, 0                                                       
-		[0011]  GETFIELD, 0, 6                                                  ;; primitive: int32 [4 bytes]
-		[0012]  PUSHWS, 3                                                       
-		[0013]  ADD, 6                                                          ;; primitive: int32 [4 bytes]
-		[0014]  CONCAT                                                          
-		[0015]  CONCAT                                                          
-		[0016]  CONCAT                                                          
-		[0017]  RET                                                             
-	END PROCEDURE;
-
-	START PROCEDURE 8 (Node):
-	IDENTIFIERS:
-		right;		left;		value;
-	OPERATIONS:
-		[0000]  SETVAR, 0, 14                                                   ;; primitive: refptr [16 bytes]
-		[0001]  SETVAR, 1, 14                                                   ;; primitive: refptr [16 bytes]
-		[0002]  SETVAR, 2, 6                                                    ;; primitive: int32 [4 bytes]
-		[0003]  GETVAR, 2                                                       
-		[0004]  GETVAR, 1                                                       
-		[0005]  GETVAR, 0                                                       
-		[0006]  CTOR, 3, 5, 0                                                   
-		[0007]  RET                                                             
-	END PROCEDURE;
-
-	START PROCEDURE 9 (main):
-	CONSTANTS:	[I32, 10][I32, 5][I32, 2][I32, 0]
-	IDENTIFIERS:
-		0$[tree];		1$[topValue];		1$[v];
+		0$[k];		1$[v];
 	OPERATIONS:
 		[0000]  PUSHC, 0                                                        
 		[0001]  PUSHC, 1                                                        
-		[0002]  PUSHC, 2                                                        
-		[0003]  CALL, 4, 0                                                      ;; Calls: Leaf
-		[0004]  CALL, 4, 0                                                      ;; Calls: Leaf
-		[0005]  CALL, 8, 3                                                      ;; Calls: Node
-		[0006]  CALL, 4, 0                                                      ;; Calls: Leaf
-		[0007]  CALL, 8, 3                                                      ;; Calls: Node
-		[0008]  CALL, 4, 0                                                      ;; Calls: Leaf
-		[0009]  CALL, 8, 3                                                      ;; Calls: Node
-		[0010]  SETVAR, 0, 14                                                   ;; primitive: refptr [16 bytes]
-		[0011]  GETVAR, 0                                                       
-		[0012]  EXTTAG                                                          
-		[0013]  TAGTUPLECMP, 2                                                  
-		[0014]  JMPT, 4                                                         
-		[0015]  GETVAR, 0                                                       
-		[0016]  EXTTAG                                                          
-		[0017]  TAGTUPLECMPORSET, 3, 3, 1, -1, -1                               
-		[0018]  JMPT, 2                                                         
-		[0019]  PUSHC, 3                                                        
-		[0020]  JMP, 2                                                          
-		[0021]  GETVAR, 1                                                       
-		[0022]  JMP, 0                                                          
-		[0023]  SETVAR, 1, 6                                                    ;; primitive: int32 [4 bytes]
-		[0024]  GETVAR, 1                                                       
-		[0025]  RET                                                             
+		[0002]  TUPLENEW, 2, 6, 6                                               
+		[0003]  SETVAR, 0, 16                                                   ;; primitive: tuple [8 bytes]
+		[0004]  PUSHC, 0                                                        
+		[0005]  GETVAR, 0                                                       
+		[0006]  TUPLECMPORSET, 2, -1, 1                                         
+		[0007]  JMPT, 3                                                         
+		[0008]  PUSHC, 3                                                        
+		[0009]  JMPT, 5                                                         
+		[0010]  GETVAR, 1                                                       
+		[0011]  PUSHC, 2                                                        
+		[0012]  MUL, 6                                                          ;; primitive: int32 [4 bytes]
+		[0013]  JMP, 1                                                          
+		[0014]  PUSHC, 4                                                        
+		[0015]  RET                                                             
 	END PROCEDURE;
 END BYTECODE PROCEDURES
-
-BEGIN EXPORT TYPES:
-	BEGIN TYPE (UID: 1):
-		[ReferenceType] BinaryTree
-		Unmanaged size: 0
-	END TYPE;
-
-	BEGIN TYPE (UID: 2):
-		[ReferenceType] Leaf
-		Unmanaged size: 0
-	END TYPE;
-
-	BEGIN TYPE (UID: 3):
-		[ReferenceType] Node
-		Unmanaged size: 36
-	END TYPE;
-END EXPORT TYPES;
-

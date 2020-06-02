@@ -199,6 +199,7 @@
     <ClCompile Include="AA_PT.cpp" />
     <ClCompile Include="AA_PT_Unflatten.cpp" />
     <ClCompile Include="astring.cpp" />
+    <ClCompile Include="goedel_encoding.cpp" />
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -264,6 +265,7 @@
     <ClInclude Include="astring.h" />
     <ClInclude Include="bstream.h" />
     <ClInclude Include="bwalker.h" />
+    <ClInclude Include="goedel_encoding.h" />
     <ClInclude Include="list.h" />
     <ClInclude Include="pairedarray.h" />
     <ClInclude Include="set.h" />

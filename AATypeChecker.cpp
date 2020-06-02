@@ -1108,9 +1108,13 @@ AACType* AATypeChecker::TypeCheckPatternMatchCase(AA_AST_NODE* pCaseNode, AACTyp
 		// Instruct the compiler to use tuple comparrison operator instead
 		pCaseNode->tags["compareTuples"] = 1;
 
+		if (pCaseNode->expressions[0]->expressions[0]->HasTag("has_vars")) {
+			pCaseNode->tags["compareTupleWithVariables"] = 1;
+		}
+
 	} else if (isDeconstructCase) { // Is deconstruct case?
 		
-		// Tell the compiler the condition compilation itself will handle the comparrison method
+		// Tell the compiler the condition compilation itself will handle the comparison method
 		pCaseNode->tags["compare_handled"] = 1;
 
 	} else if (isAnyCase) {
@@ -1225,7 +1229,7 @@ AACType* AATypeChecker::TypeCheckPatternMatchCaseCondition(AA_AST_NODE* pConditi
 			// Set to any ... in case we see it
 			m_vtenv[L"_"] = AACType::Any;
 
-			AACType* foundType = this->TypeCheckNode(pConditionNode->expressions[i]);
+			AACType* foundType = this->TypeCheckPatternMatchCaseConditionTuple(pConditionNode->expressions[i], _conditionType);
 			if (foundType == AACType::ErrorType) {
 				// throw error
 			}
@@ -1238,6 +1242,60 @@ AACType* AATypeChecker::TypeCheckPatternMatchCaseCondition(AA_AST_NODE* pConditi
 	}
 
 	return conditionType;
+
+}
+
+AACType* AATypeChecker::TypeCheckPatternMatchCaseConditionTuple(AA_AST_NODE* pTupleNode, AACType* conditionType) {
+
+	// All found types
+	aa::list<AACType*> alltypes;
+
+	// Make sure the tuples have the same lengths (otherwise it's for sure an invalid pattern)
+	if (conditionType->encapsulatedTypes.Size() != pTupleNode->expressions.size()) {
+		AATC_W_ERROR(
+			"Tuple length mismatch, expected tuple of length " + std::to_string(conditionType->encapsulatedTypes.Size()) + 
+			" but found tuple of length " + std::to_string(pTupleNode->expressions.size()), 
+			pTupleNode->position, 
+			aa::compiler_err::C_Mismatching_Types
+		);
+	}
+
+	// For all types
+	for (size_t i = 0; i < pTupleNode->expressions.size(); i++) {
+
+		AACType* pTupleValType = this->TypeCheckNode(pTupleNode->expressions[i]);
+		if (pTupleValType && pTupleValType != AACType::ErrorType) {
+			if (this->IsMatchingTypes(pTupleValType, conditionType->encapsulatedTypes.At(i)) || (pTupleValType == AACType::Any && pTupleNode->expressions[i]->content.compare(L"_") == 0)) {
+				pTupleNode->expressions[i]->tags["primitive"] = (int)aa::runtime::runtimetype_from_statictype(pTupleValType);
+				alltypes.Add(pTupleValType);
+			} else {
+				AATC_W_ERROR(
+					"Mismatching type in tuple at position " + std::to_string(i+1) + ", expected '" + string_cast(conditionType->encapsulatedTypes.At(i)->GetFullname()) + 
+					"' but found '" + string_cast(pTupleValType->GetFullname()) + "'",
+					pTupleNode->position,
+					aa::compiler_err::C_Mismatching_Types
+				);
+			}
+		} else {
+			if (pTupleValType == NULL && pTupleNode->expressions[i]->type == AA_AST_NODE_TYPE::variable) {
+
+				// Mark the tuple as cmpset and not a simple comparison
+				pTupleNode->tags["has_vars"] = 1;
+
+				// Introduce variable and set type
+				m_vtenv[pTupleNode->expressions[i]->content] = conditionType->encapsulatedTypes.At(i);
+				pTupleNode->expressions[i]->tags["primitive"] = (int)aa::runtime::runtimetype_from_statictype(conditionType->encapsulatedTypes.At(i));
+				
+				// Add to type list
+				alltypes.Add(conditionType->encapsulatedTypes.At(i));
+
+			}
+			// TODO: Error
+		}
+
+	}
+
+	return this->m_dynamicTypeEnvironment->FindOrAddTypeIfNotFound(aa::type::FormalizeTuple(alltypes), m_typeMappingLambda);
 
 }
 

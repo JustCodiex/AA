@@ -843,6 +843,36 @@ Instructions AAC::CompilePatternBlock(AA_AST_NODE* pNode, CompiledEnviornmentTab
 			// Push true constant on top of stack ==> Because this branch will always be true
 			condition.Add(this->HandleConstPush(cTable, true));
 
+		} else if (cases[i]->HasTag("compareTupleWithVariables")) { // It's a comparison with variables
+
+			// Compile the condition (We cannot compile it as usual)
+			condition = this->CompilePatternCondition(matchon, cases[i]->tags["scope_to_now"], cases[i]->expressions[0]->expressions[0], cTable, staticData);
+
+			// Prepare compare or set
+			Instruction tcmpset;
+			tcmpset.bc = AAByteCode::TUPLECMPORSET;
+			tcmpset.argCount = (int)cases[i]->expressions[0]->expressions[0]->expressions.size() + 1;
+			tcmpset.argValues[0] = tcmpset.argCount - 1;
+
+			// Run through all the expressions
+			for (size_t j = 0; j < cases[i]->expressions[0]->expressions[0]->expressions.size(); j++) {
+
+				// Is not a constant?
+				if (!this->IsConstant(cases[i]->expressions[0]->expressions[0]->expressions[j]->type)) {
+
+					// Enter scope
+					this->EnterScope(cTable, cases[i]->expressions[0]->expressions[0]->expressions[j]);
+
+					// Add var ID
+					tcmpset.argValues[j + 1] = cases[i]->expressions[0]->expressions[0]->expressions[j]->tags["varsi"];
+
+				}
+
+			}
+
+			// Add last command
+			condition.Add(tcmpset);
+
 		} else { // We have to do a value check...
 
 			// Compile the condition (We cannot compile it as usual)
@@ -854,7 +884,7 @@ Instructions AAC::CompilePatternBlock(AA_AST_NODE* pNode, CompiledEnviornmentTab
 				// Add tuple comparrison opcode
 				condition.Add(Instruction(AAByteCode::TUPLECMP, 0, NULL));
 
-			} else if (!cases[i]->HasTag("compare_handled")) { // Is we dont have this tag
+			} else if (!cases[i]->HasTag("compare_handled")) { // If we dont have this tag (the comparison is not handled in the 'CompilePatternCondition'
 			
 				// Simple comparrison instruction
 				Instruction eq;
@@ -1008,11 +1038,34 @@ Instructions AAC::CompilePatternCondition(aa::list<CompiledAbstractExpression> m
 
 	} else if (pNode->type == AA_AST_NODE_TYPE::tupleval) {
 
-		// Push object to match with
-		opList.Add(match);
+		// Compile var check
+		if (pNode->HasTag("has_vars")) {
 
-		// Push tuple
-		opList.Add(this->HandleTuplePush(cTable, pNode, staticData));
+			// Loop through all values in tuple
+			for (size_t i = 0; i < pNode->expressions.size(); i++) {
+
+				// If constant, push it
+				if (this->IsConstant(pNode->expressions[pNode->expressions.size() - i - 1]->type)) {
+
+					// Add const
+					opList.Add(this->HandleConstPush(cTable, pNode->expressions[pNode->expressions.size() - i - 1]));
+
+				}
+
+			}
+
+			// Push the object to match with (We have to push last - such that types can be read when needed)
+			opList.Add(match);
+
+		} else { // Simple tuple comparison
+
+			// Push the object to match with
+			opList.Add(match);
+
+			// Push tuple
+			opList.Add(this->HandleTuplePush(cTable, pNode, staticData));
+
+		}
 
 	}
 

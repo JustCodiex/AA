@@ -118,6 +118,30 @@
     <Filter Include="Source Files\VM\meta">
       <UniqueIdentifier>{cedf0097-6f8b-4dc3-aed4-7174b636cc45}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\util\collections">
+      <UniqueIdentifier>{e4063d06-0d31-412c-a3a7-2f6d55706f7c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\util\stream">
+      <UniqueIdentifier>{91043fd7-0d8f-436d-a30a-c016039a8a0f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\util\string">
+      <UniqueIdentifier>{18ed1f3d-9f45-49ef-91cf-1c87555eb85e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\util\algorithm">
+      <UniqueIdentifier>{81b782f6-fe60-454e-bdcb-4325e553426d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\util\algorithm\encoding">
+      <UniqueIdentifier>{f1b86c59-8bf2-4971-92df-c36bee8320ff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\util\string">
+      <UniqueIdentifier>{3fb976ab-c346-4666-9b1a-f1897c1c6821}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\util\algorithm">
+      <UniqueIdentifier>{4c62d68e-a5ed-4c74-8360-214ae99cc13d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\util\algorithm\encoding">
+      <UniqueIdentifier>{38a0b56e-defd-4c61-9a60-967eabd52123}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -149,9 +173,6 @@
     </ClCompile>
     <ClCompile Include="AAClassCompiler.cpp">
       <Filter>Source Files\compiler</Filter>
-    </ClCompile>
-    <ClCompile Include="astring.cpp">
-      <Filter>Source Files\util</Filter>
     </ClCompile>
     <ClCompile Include="AACFunction.cpp">
       <Filter>Source Files\VM\builtin</Filter>
@@ -267,17 +288,14 @@
     <ClCompile Include="AAVTable.cpp">
       <Filter>Source Files\VM\meta</Filter>
     </ClCompile>
+    <ClCompile Include="astring.cpp">
+      <Filter>Source Files\util\string</Filter>
+    </ClCompile>
+    <ClCompile Include="goedel_encoding.cpp">
+      <Filter>Source Files\util\algorithm\encoding</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="list.h">
-      <Filter>Header Files\util</Filter>
-    </ClInclude>
-    <ClInclude Include="bstream.h">
-      <Filter>Header Files\util</Filter>
-    </ClInclude>
-    <ClInclude Include="stack.h">
-      <Filter>Header Files\util</Filter>
-    </ClInclude>
     <ClInclude Include="AAB2F.h">
       <Filter>Header Files\aautil</Filter>
     </ClInclude>
@@ -305,9 +323,6 @@
     <ClInclude Include="AACodePosition.h">
       <Filter>Header Files\parser</Filter>
     </ClInclude>
-    <ClInclude Include="bwalker.h">
-      <Filter>Header Files\util</Filter>
-    </ClInclude>
     <ClInclude Include="AALanguageRegressionTest.h">
       <Filter>Header Files\aatesting</Filter>
     </ClInclude>
@@ -319,9 +334,6 @@
     </ClInclude>
     <ClInclude Include="AAC_Structs.h">
       <Filter>Header Files\compiler</Filter>
-    </ClInclude>
-    <ClInclude Include="astring.h">
-      <Filter>Header Files\util</Filter>
     </ClInclude>
     <ClInclude Include="AA_literals.h">
       <Filter>Header Files\VM\builtin</Filter>
@@ -340,9 +352,6 @@
     </ClInclude>
     <ClInclude Include="AA_AST_NODE.h">
       <Filter>Header Files\parser</Filter>
-    </ClInclude>
-    <ClInclude Include="set.h">
-      <Filter>Header Files\util</Filter>
     </ClInclude>
     <ClInclude Include="AAstdiolib.h">
       <Filter>Header Files\VM\builtin</Filter>
@@ -373,9 +382,6 @@
     </ClInclude>
     <ClInclude Include="AAPrimitiveType.h">
       <Filter>Header Files\VM</Filter>
-    </ClInclude>
-    <ClInclude Include="any_stack.h">
-      <Filter>Header Files\util</Filter>
     </ClInclude>
     <ClInclude Include="AAArray.h">
       <Filter>Header Files\VM\builtin</Filter>
@@ -443,9 +449,6 @@
     <ClInclude Include="AATuple.h">
       <Filter>Header Files\VM</Filter>
     </ClInclude>
-    <ClInclude Include="array.h">
-      <Filter>Header Files\util</Filter>
-    </ClInclude>
     <ClInclude Include="AATypeChecker.h">
       <Filter>Header Files\analysis\type</Filter>
     </ClInclude>
@@ -464,8 +467,35 @@
     <ClInclude Include="AAVTable.h">
       <Filter>Header Files\VM\meta</Filter>
     </ClInclude>
+    <ClInclude Include="any_stack.h">
+      <Filter>Header Files\util\collections</Filter>
+    </ClInclude>
+    <ClInclude Include="array.h">
+      <Filter>Header Files\util\collections</Filter>
+    </ClInclude>
+    <ClInclude Include="list.h">
+      <Filter>Header Files\util\collections</Filter>
+    </ClInclude>
     <ClInclude Include="pairedarray.h">
-      <Filter>Header Files\util</Filter>
+      <Filter>Header Files\util\collections</Filter>
+    </ClInclude>
+    <ClInclude Include="set.h">
+      <Filter>Header Files\util\collections</Filter>
+    </ClInclude>
+    <ClInclude Include="stack.h">
+      <Filter>Header Files\util\collections</Filter>
+    </ClInclude>
+    <ClInclude Include="bwalker.h">
+      <Filter>Header Files\util\stream</Filter>
+    </ClInclude>
+    <ClInclude Include="bstream.h">
+      <Filter>Header Files\util\stream</Filter>
+    </ClInclude>
+    <ClInclude Include="astring.h">
+      <Filter>Header Files\util\string</Filter>
+    </ClInclude>
+    <ClInclude Include="goedel_encoding.h">
+      <Filter>Header Files\util\algorithm\encoding</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

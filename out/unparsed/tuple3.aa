@@ -5,14 +5,11 @@ int main() {
 	int accum = 0;
 	(int, int, int) t1 = (0, 0, 0);
 	accum = (accum + t1 match {
-		case (0, 0) => {
-			2;
+		case (0, 0, 1) => {
+			4;
 		},
 		case (0, 0, 0) => {
 			3;
-		},
-		case (0, 0, 1) => {
-			4;
 		},
 		case _ => {
 			25;
