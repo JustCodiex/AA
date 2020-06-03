@@ -195,6 +195,7 @@
     <ClCompile Include="AAVM.cpp" />
     <ClCompile Include="AAVTable.cpp" />
     <ClCompile Include="AA_AST.cpp" />
+    <ClCompile Include="AA_AST_Expander.cpp" />
     <ClCompile Include="AA_Node_Consts.cpp" />
     <ClCompile Include="AA_PT.cpp" />
     <ClCompile Include="AA_PT_Unflatten.cpp" />
@@ -254,6 +255,7 @@
     <ClInclude Include="AAVM.h" />
     <ClInclude Include="AAVTable.h" />
     <ClInclude Include="AA_AST.h" />
+    <ClInclude Include="AA_AST_Expander.h" />
     <ClInclude Include="AA_AST_NODE.h" />
     <ClInclude Include="AA_literals.h" />
     <ClInclude Include="AA_Node_Consts.h" />

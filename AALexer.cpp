@@ -435,6 +435,16 @@ bool AALexer::IsValidJointOperator(std::wstring ws) {
 		return true;
 	} else if (ws == L"&&") {
 		return true;
+	} else if (ws == L"+=") {
+		return true;
+	} else if (ws == L"-=") {
+		return true;
+	} else if (ws == L"/=") {
+		return true;
+	} else if (ws == L"*=") {
+		return true;
+	} else if (ws == L"%=") {
+		return true;
 	} else {
 		return false;
 	}

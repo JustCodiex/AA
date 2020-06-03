@@ -294,6 +294,9 @@
     <ClCompile Include="goedel_encoding.cpp">
       <Filter>Source Files\util\algorithm\encoding</Filter>
     </ClCompile>
+    <ClCompile Include="AA_AST_Expander.cpp">
+      <Filter>Source Files\parser</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AAB2F.h">
@@ -496,6 +499,9 @@
     </ClInclude>
     <ClInclude Include="goedel_encoding.h">
       <Filter>Header Files\util\algorithm\encoding</Filter>
+    </ClInclude>
+    <ClInclude Include="AA_AST_Expander.h">
+      <Filter>Header Files\parser</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1,0 +1,20 @@
+{
+	main();
+}
+int main() {
+	(int, bool, int) k = (256, false, 2);
+	k match {
+		case (5, _, v) => {
+			(v * 5);
+		},
+		case (256, true, v) => {
+			(v / 256);
+		},
+		case (_, false, v) => {
+			(v * 72);
+		},
+		case _ => {
+			0;
+		}
+	};
+}

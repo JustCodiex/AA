@@ -59,6 +59,15 @@ bool AA_PT_Unflatten::IsIdentifier(AA_PT_NODE* node, bool checkKeyword) {
 	}
 }
 
+bool AA_PT_Unflatten::IsAssignmentOperator(AA_PT_NODE* node) {
+	if (node->nodeType == AA_PT_NODE_TYPE::binary_operation) {
+		return node->content.compare(L"=") == 0 || node->content.compare(L"+=") == 0 || node->content.compare(L"-=") == 0 ||
+			  node->content.compare(L"*=") == 0 || node->content.compare(L"/=") == 0 || node->content.compare(L"%=") == 0;
+	} else {
+		return false;
+	}
+}
+
 void AA_PT_Unflatten::ApplyAccessorBindings(std::vector<AA_PT_NODE*>& nodes) {
 
 	int i = 0;
@@ -246,28 +255,24 @@ void AA_PT_Unflatten::ApplyAssignmentOrder(std::vector<AA_PT_NODE*>& nodes) {
 			// Apply the assignment order recursively
 			ApplyAssignmentOrder(nodes[index]->childNodes);
 
-		} else if (nodes[index]->nodeType == AA_PT_NODE_TYPE::binary_operation) {
+		} else if (IsAssignmentOperator(nodes[index])) {
 
-			if (nodes[index]->content == L"=") {
+			size_t index2 = index;
 
-				size_t index2 = index;
-
-				while (index2 < nodes.size()) {
-					if (nodes[index2]->nodeType == AA_PT_NODE_TYPE::seperator) {
-						break;
-					} else {
-						index2++;
-					}
+			while (index2 < nodes.size()) {
+				if (nodes[index2]->nodeType == AA_PT_NODE_TYPE::seperator) {
+					break;
+				} else {
+					index2++;
 				}
-
-				AA_PT_NODE* rhs = new AA_PT_NODE(nodes[index]->position);
-				rhs->nodeType = AA_PT_NODE_TYPE::expression;
-				rhs->childNodes = std::vector<AA_PT_NODE*>(nodes.begin() + index + 1, nodes.begin() + index2);
-
-				nodes.erase(nodes.begin() + index + 1, nodes.begin() + index2);
-				nodes.insert(nodes.begin() + index + 1, rhs);
-
 			}
+
+			AA_PT_NODE* rhs = new AA_PT_NODE(nodes[index]->position);
+			rhs->nodeType = AA_PT_NODE_TYPE::expression;
+			rhs->childNodes = std::vector<AA_PT_NODE*>(nodes.begin() + index + 1, nodes.begin() + index2);
+
+			nodes.erase(nodes.begin() + index + 1, nodes.begin() + index2);
+			nodes.insert(nodes.begin() + index + 1, rhs);
 
 		}
 

@@ -193,6 +193,13 @@ void RunArithmeticTests(AAVM* pAAVM, int& s, int& f) {
 		s++;
 	}
 
+	// Test compund assignment operators
+	if (!RunFileTest(pAAVM, L"examples\\arithmetic\\binary_assignment1.aa", L"binary_assignment1", 0)) {
+		f++;
+	} else {
+		s++;
+	}
+
 }
 
 void RunVariableDeclerationTests(AAVM* pAAVM, int& s, int& f) {
@@ -634,8 +641,15 @@ void RunTupleTests(AAVM* pAAVM, int& s, int& f) {
 		s++;
 	}
 
-	// Test tuple pattern matching
+	// Test tuple pattern matching (with variables)
 	if (!RunFileTest(pAAVM, L"examples\\tuple\\tuple4.aa", L"tuple4", 66)) {
+		f++;
+	} else {
+		s++;
+	}
+
+	// Test tuple pattern matching (with variables and more cases
+	if (!RunFileTest(pAAVM, L"examples\\tuple\\tuple5.aa", L"tuple5", 144)) {
 		f++;
 	} else {
 		s++;

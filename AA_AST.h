@@ -52,6 +52,11 @@ public:
 	void Simplify(); // Eg. pre-compute operations involving constants
 
 	/// <summary>
+	/// Expands the AST (Removes syntactic sugar)
+	/// </summary>
+	void Expand();
+
+	/// <summary>
 	/// Clears (and deletes) all nodes used by the tree
 	/// </summary>
 	void Clear();

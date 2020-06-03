@@ -4,8 +4,8 @@
 		set variables ✔
 	&& and || operators ✔
 	Pattern matching on tagged classes ✔
-	Binary Assignment operators
-		+=, -=, *=, /=, %=;
+	Binary Assignment operators ✔
+		+=, -=, *=, /=, %=; ✔
 	Unary operators
 		--, ++;
 	Abstract Classes

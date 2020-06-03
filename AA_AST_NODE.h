@@ -106,4 +106,7 @@ struct AA_AST_NODE {
 		this->position = pos;
 	}
 	bool HasTag(const char* tag) { return tags.find(tag) != tags.end(); }
+	AA_AST_NODE* Clone() const {
+		return new AA_AST_NODE(*this);
+	}
 };

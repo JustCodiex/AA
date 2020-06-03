@@ -58,6 +58,14 @@ AAC_CompileResult AAC::CompileFromAbstractSyntaxTrees(std::vector<AA_AST*> trees
 	// Reset the internals of the compiler
 	this->ResetCompilerInternals();
 
+	// Expand ASTs
+	for (size_t i = 0; i < trees.size(); i++) {
+		
+		// Expand the tree
+		trees[i]->Expand();
+
+	}
+
 	// Run the static checkers
 	if (COMPILE_ERROR(err = this->RunStaticOperations(trees, senv))) {
 		result.firstMsg = err;

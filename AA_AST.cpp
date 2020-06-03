@@ -1,4 +1,5 @@
 #include "AA_AST.h"
+#include "AA_AST_Expander.h"
 
 AA_AST::AA_AST(AA_PT* parseTree) {
 	m_root = this->AbstractNode(parseTree->GetRoot());
@@ -475,6 +476,18 @@ AA_AST_NODE* AA_AST::SimplifyBinaryNode(AA_AST_NODE* pBinaryNode) {
 }
 
 #pragma endregion
+
+void AA_AST::Expand() {
+
+	// Expand tool
+	AA_AST_Expander expander;
+
+	// Expand ourselves
+	expander.ExpandTree(this);
+
+	// TODO: Solve errors (if any)
+
+}
 
 void AA_AST::SetError(std::string msg, int type, AACodePosition src) {
 	m_anyLastErr = true;

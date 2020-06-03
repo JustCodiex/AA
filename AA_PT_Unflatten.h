@@ -3,7 +3,9 @@
 
 const int AA_PT_NODE_OUT_OF_BOUNDS_INDEX = 9999;
 
-
+/// <summary>
+/// Utility class for unflattening a vector containing parse tree nodes
+/// </summary>
 class AA_PT_Unflatten {
 
 public:
@@ -34,6 +36,7 @@ public:
 
 	static bool CanTreatKeywordAsIdentifier(AA_PT_NODE* node);
 	static bool IsIdentifier(AA_PT_NODE* node, bool checkKeyword);
+	static bool IsAssignmentOperator(AA_PT_NODE* node);
 
 	/*
 	** Flow control parsing

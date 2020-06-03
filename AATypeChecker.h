@@ -10,6 +10,9 @@ typedef std::map<AAId, AACType*> AAVarTypeEnv;
 struct AAStaticEnvironment;
 struct AACNamespace;
 
+/// <summary>
+/// Class for type-checking a given Abstract Syntax Tree - given a preset type environment
+/// </summary>
 class AATypeChecker {
 
 public:
@@ -120,6 +123,8 @@ private:
 
 	bool IsValidType(AACType* t);
 	bool IsNumericType(AACType* t);
+
+	bool IsAssignmentOperator(std::wstring ws);
 
 	bool IsTypeMatchingFunction(AAFuncSignature* sig, AA_AST_NODE* pCallNode);
 	bool IsMatchingTypes(AACType* tCompare, AACType* tExpected);

@@ -26,6 +26,7 @@ bool logExecuteTime = false; // Should execute time be logged
 bool logTrace = false; // Should trace be logged when running the VM
 bool printOutput = true; // Should execution output be logged
 bool pauseOnComplete = false; // Should we pause execution when VM is released?
+bool verifyInput = false; // Should the given bytecode (input) be verified before executed?
 
 ///////////////////
 // Global Strings
@@ -127,8 +128,11 @@ int wmain(int argc, wchar_t** argv) {
                 inputFile = argv[i + 1];
                 i++;
             } else {
-                wprintf(L"Invalid or missing command argument '-c'");
+                wprintf(L"Invalid or missing command argument '-c'\n");
             }
+        } else if (wcscmp(argv[i], L"-verify") == 0) {
+            verifyInput = true;
+            wprintf(L"'-verify' command found but not implemented (Either not implemented or outdated VM version)\n");
         } else if (wcscmp(argv[i], L"-oae") == 0) {
             if (isCompileInput) {
                 if (i + 1 < argc && argv[i + 1][0] != '-') {
@@ -136,10 +140,10 @@ int wmain(int argc, wchar_t** argv) {
                     executeOutput = true;
                     i++;
                 } else {
-                    wprintf(L"Invalid or missing command argument '-oae'");
+                    wprintf(L"Invalid or missing command argument '-oae'\n");
                 }
             } else {
-                wprintf(L"Unable to execute non-binary output");
+                wprintf(L"Unable to execute non-binary output\n");
             }
         } else {
             wprintf(L"!- Unknown or invalid argument '%s'\n", argv[i]);
@@ -180,8 +184,6 @@ int wmain(int argc, wchar_t** argv) {
     if (enableRegTests) {
         if (!RunRegressionTests(VM)) {
             wprintf(L"One or more regression tests failed!\n");
-            system("pause");
-            return -1;
         }
     }
 

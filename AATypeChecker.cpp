@@ -289,8 +289,9 @@ AACType* AATypeChecker::TypeCheckBinaryOperation(AA_AST_NODE* pOpNode, AA_AST_NO
 		AACType* typeLeft = this->TypeCheckNode(left);
 		AACType* typeRight = this->TypeCheckNode(right);
 		
-		if (pOpNode->content.compare(L"=") == 0) { // Assignment (Not overloadable)
+		if (IsAssignmentOperator(pOpNode->content)) { // Assignment (Not overloadable)
 
+			// Assignment typecheck
 			return this->TypeCheckBinaryAssignment(pOpNode, left, right, typeLeft, typeRight);
 
 		} else {
@@ -329,6 +330,7 @@ AACType* AATypeChecker::TypeCheckBinaryAssignment(AA_AST_NODE* pOpNode, AA_AST_N
 		// Set the primitive type
 		pOpNode->tags["primitive"] = (int)aa::runtime::runtimetype_from_statictype(typeLeft);
 
+		// Return the found type
 		return typeLeft;
 
 	} else {
@@ -1409,6 +1411,10 @@ bool AATypeChecker::IsMatchingTuples(AACType* tCompare, AACType* tExpected) {
 
 	return false; // TODO: Implement
 
+}
+
+bool AATypeChecker::IsAssignmentOperator(std::wstring ws) {
+	return ws.compare(L"=") == 0 || ws.compare(L"+=") == 0 || ws.compare(L"-=") == 0 || ws.compare(L"*=") == 0 || ws.compare(L"/=") == 0 || ws.compare(L"%=") == 0;
 }
 
 AACType* AATypeChecker::FindType(std::wstring t) {
