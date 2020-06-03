@@ -51,7 +51,7 @@ std::vector<AA_PT_NODE*> AA_PT::ToNodes(std::vector<AALexicalResult> lexResult) 
 			if (!IsUnaryOperator(aa_pt_nodes)) {
 				node->nodeType = AA_PT_NODE_TYPE::binary_operation;
 			} else {
-				node->nodeType = AA_PT_NODE_TYPE::unary_operation;
+				node->nodeType = AA_PT_NODE_TYPE::unary_operation_pre;
 			}
 			break;
 		case AAToken::seperator:
@@ -205,7 +205,7 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 		nodes.erase(nodes.begin() + nodeIndex - 1);
 
 		break;
-	case AA_PT_NODE_TYPE::unary_operation:
+	case AA_PT_NODE_TYPE::unary_operation_pre:
 
 		nodes[nodeIndex]->childNodes.push_back(this->CreateExpressionTree(nodes, nodeIndex + 1));
 		nodes.erase(nodes.begin() + nodeIndex + 1);
@@ -1546,11 +1546,11 @@ bool AA_PT::IsLiteral(AA_PT_NODE* pNode) {
 
 bool AA_PT::IsOperator(AA_PT_NODE* pNode, std::wstring op, bool isBinary, bool isUnary) {
 	if (isBinary && isUnary) {
-		return (pNode->nodeType == AA_PT_NODE_TYPE::binary_operation || pNode->nodeType == AA_PT_NODE_TYPE::unary_operation) && pNode->content.compare(op) == 0;
+		return (pNode->nodeType == AA_PT_NODE_TYPE::binary_operation || pNode->nodeType == AA_PT_NODE_TYPE::unary_operation_pre) && pNode->content.compare(op) == 0;
 	} else if (isBinary && !isUnary) {
-		return (pNode->nodeType == AA_PT_NODE_TYPE::binary_operation && pNode->nodeType != AA_PT_NODE_TYPE::unary_operation) && pNode->content.compare(op) == 0;
+		return (pNode->nodeType == AA_PT_NODE_TYPE::binary_operation && pNode->nodeType != AA_PT_NODE_TYPE::unary_operation_pre) && pNode->content.compare(op) == 0;
 	} else {
-		return (pNode->nodeType != AA_PT_NODE_TYPE::binary_operation && pNode->nodeType == AA_PT_NODE_TYPE::unary_operation) && pNode->content.compare(op) == 0;
+		return (pNode->nodeType != AA_PT_NODE_TYPE::binary_operation && pNode->nodeType == AA_PT_NODE_TYPE::unary_operation_pre) && pNode->content.compare(op) == 0;
 	}
 }
 

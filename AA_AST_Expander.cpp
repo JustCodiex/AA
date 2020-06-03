@@ -25,7 +25,7 @@ void AA_AST_Expander::ExpandNode(AA_AST_NODE* pNode) {
 	case AA_AST_NODE_TYPE::binop:
 		this->ExpandBinaryOperation(pNode);
 		break;
-	case AA_AST_NODE_TYPE::unop:
+	case AA_AST_NODE_TYPE::unop_pre:
 		this->ExpandUnaryOperation(pNode);
 		break;
 	case AA_AST_NODE_TYPE::fundecl:

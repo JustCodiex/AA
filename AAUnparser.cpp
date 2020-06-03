@@ -74,7 +74,7 @@ std::wstring AAUnparser::Unparse(AA_AST_NODE* pNode) {
 		}
 		break;
 	}
-	case AA_AST_NODE_TYPE::unop: {
+	case AA_AST_NODE_TYPE::unop_pre: {
 		std::wstring right = this->Unparse(pNode->expressions[0]);
 		if (pNode->content.compare(L"!") == 0) {
 			out = this->WriteToString(L"(!§s)", right);

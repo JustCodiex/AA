@@ -47,7 +47,8 @@ enum class AA_AST_NODE_TYPE {
 	usingspecificstatement,
 
 	binop,
-	unop,
+	unop_pre,
+	unop_post,
 
 	fundecl,
 

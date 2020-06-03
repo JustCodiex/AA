@@ -111,7 +111,7 @@ void AAClassCompiler::CorrectFuncFieldReferences(aa::list<std::wstring> fields, 
 		this->CorrectFuncFieldReferences(fields, args, pNode->expressions[0]);
 		this->CorrectFuncFieldReferences(fields, args, pNode->expressions[1]);
 		break;
-	case AA_AST_NODE_TYPE::unop:
+	case AA_AST_NODE_TYPE::unop_pre:
 		this->CorrectFuncFieldReferences(fields, args, pNode->expressions[0]);
 		break;
 	case AA_AST_NODE_TYPE::variable: {

@@ -60,7 +60,8 @@ enum class AA_PT_NODE_TYPE {
 	indexat,
 
 	binary_operation,
-	unary_operation,
+	unary_operation_pre,
+	unary_operation_post,
 
 	keyword,
 	identifier,

@@ -172,7 +172,7 @@ void AA_PT_Unflatten::ApplyUnaryBindings(std::vector<AA_PT_NODE*>& nodes) {
 
 			index++;
 
-		} else if (nodes[index]->nodeType == AA_PT_NODE_TYPE::unary_operation) {
+		} else if (nodes[index]->nodeType == AA_PT_NODE_TYPE::unary_operation_pre) {
 
 			AA_PT_NODE* unaryExp = new AA_PT_NODE(nodes[index]->position);
 			unaryExp->nodeType = AA_PT_NODE_TYPE::expression;

@@ -1170,7 +1170,7 @@ int AAStaticAnalysis::VerifyFunctionControlPath(AA_AST_NODE* pNode, AAStaticEnvi
 		return j;
 	}
 	case AA_AST_NODE_TYPE::binop:
-	case AA_AST_NODE_TYPE::unop:
+	case AA_AST_NODE_TYPE::unop_pre:
 	case AA_AST_NODE_TYPE::intliteral:
 	case AA_AST_NODE_TYPE::floatliteral:
 	case AA_AST_NODE_TYPE::stringliteral:

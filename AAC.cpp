@@ -224,7 +224,7 @@ Instructions AAC::CompileAST(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTabl
 		executionStack.Add(CompileBinaryOperation(pNode, cTable, staticData));
 		break;
 	}
-	case AA_AST_NODE_TYPE::unop: {
+	case AA_AST_NODE_TYPE::unop_pre: {
 		executionStack.Add(CompileUnaryOperation(pNode, cTable, staticData));
 		break;
 	}

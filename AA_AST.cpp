@@ -52,9 +52,9 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 		return binaryNode;
 
 	}
-	case AA_PT_NODE_TYPE::unary_operation: {
+	case AA_PT_NODE_TYPE::unary_operation_pre: {
 
-		AA_AST_NODE* unaryNode = new AA_AST_NODE(pNode->content, AA_AST_NODE_TYPE::unop, pNode->position);
+		AA_AST_NODE* unaryNode = new AA_AST_NODE(pNode->content, AA_AST_NODE_TYPE::unop_pre, pNode->position);
 		unaryNode->expressions.push_back(this->AbstractNode(pNode->childNodes[0]));
 
 		return unaryNode;
