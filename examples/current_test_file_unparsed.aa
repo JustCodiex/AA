@@ -2,11 +2,10 @@
 	main();
 }
 int main() {
-	var v = 1;
-	v = (v + 3);
-	v = (v - 2);
-	v = (v * 4);
-	v = (v / 3);
-	v = (v % 2);
-	v;
+	var v = 0;
+	int i = (v++);
+	int j = (++v);
+	println(i);
+	println(j);
+	((++i) - (j++));
 }

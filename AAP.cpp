@@ -53,6 +53,15 @@ AAP_ParseResult AAP::CreateParseTrees(std::vector<AALexicalResult> lexResult) {
 	// Convert lexical analysis to AA_PT_NODEs
 	std::vector<AA_PT_NODE*> aa_pt_nodes = AA_PT::ToNodes(lexResult);
 
+	// If any error, abort now
+	if (AA_PT::HasLastErrorMessage()) {
+		result.success = false;
+		result.firstMsg.errorMsg = AA_PT::GetLastErrorMessage().errMsg;
+		result.firstMsg.errorSource = AA_PT::GetLastErrorMessage().errSrc;
+		result.firstMsg.errorType = AA_PT::GetLastErrorMessage().errType;
+		return result;
+	}
+
 	// Use unflattening tool to apply syntax rules
 	AA_PT_Unflatten::ApplySyntaxRules(aa_pt_nodes);
 

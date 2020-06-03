@@ -67,6 +67,7 @@ AACType* AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 	case AA_AST_NODE_TYPE::binop:
 		return this->TypeCheckBinaryOperation(node, node->expressions[0], node->expressions[1]);
 	case AA_AST_NODE_TYPE::unop_pre:
+	case AA_AST_NODE_TYPE::unop_post:
 		return this->TypeCheckUnaryOperation(node, node->expressions[0]);
 	case AA_AST_NODE_TYPE::callaccess:
 		if (node->content == L".") {

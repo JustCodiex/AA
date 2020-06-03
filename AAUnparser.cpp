@@ -75,12 +75,11 @@ std::wstring AAUnparser::Unparse(AA_AST_NODE* pNode) {
 		break;
 	}
 	case AA_AST_NODE_TYPE::unop_pre: {
-		std::wstring right = this->Unparse(pNode->expressions[0]);
-		if (pNode->content.compare(L"!") == 0) {
-			out = this->WriteToString(L"(!§s)", right);
-		} else if (pNode->content.compare(L"-") == 0) {
-			out = this->WriteToString(L"(-§s)", right);
-		}
+		out = this->WriteToString(L"(§s§s)", pNode->content, this->Unparse(pNode->expressions[0]));
+		break;
+	}
+	case AA_AST_NODE_TYPE::unop_post: {
+		out = this->WriteToString(L"(§s§s)", this->Unparse(pNode->expressions[0]), pNode->content);
 		break;
 	}
 	case AA_AST_NODE_TYPE::vardecl: {

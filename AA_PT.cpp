@@ -1,4 +1,5 @@
 #include "AA_PT.h"
+#include "astring.h"
 #include <map>
 
 bool AA_PT::g_hasEnyErr = false;
@@ -48,10 +49,9 @@ std::vector<AA_PT_NODE*> AA_PT::ToNodes(std::vector<AALexicalResult> lexResult) 
 			node->nodeType = AA_PT_NODE_TYPE::charliteral;
 			break;
 		case AAToken::OP:
-			if (!IsUnaryOperator(aa_pt_nodes)) {
-				node->nodeType = AA_PT_NODE_TYPE::binary_operation;
-			} else {
-				node->nodeType = AA_PT_NODE_TYPE::unary_operation_pre;
+			node->nodeType = DetermineOperatorType(aa_pt_nodes, lexResult, i);
+			if (node->nodeType == AA_PT_NODE_TYPE::undefined) {
+				return std::vector<AA_PT_NODE*>();
 			}
 			break;
 		case AAToken::seperator:
@@ -104,9 +104,25 @@ AA_PT_NODE_TYPE AA_PT::GetSeperatorType(std::wstring val) {
 	}
 }
 
-bool AA_PT::IsUnaryOperator(std::vector<AA_PT_NODE*> nodes) {
+AA_PT_NODE_TYPE AA_PT::DetermineOperatorType(std::vector<AA_PT_NODE*> nodes, std::vector<AALexicalResult> lexResult, size_t index) {
 
-	std::vector<AA_PT_NODE_TYPE> binop = {
+	// If no other nodes have been added (very special case) it can only be a unary prefix operation (eg: !v)
+	if (nodes.size() == 0) {
+		return AA_PT_NODE_TYPE::unary_operation_pre;
+	}
+
+	// Fetch the type of the previous node added
+	AA_PT_NODE_TYPE prevNodeType = nodes[nodes.size() - 1]->nodeType;
+
+	// If the previous node is an identifier, ending parenthesis or ending indexer and the operator in question is '++' or '--', it can only be a post unary operator
+	// This means (5--5) is ((5--)5 --> Not legal
+	if ((prevNodeType == AA_PT_NODE_TYPE::identifier || prevNodeType == AA_PT_NODE_TYPE::parenthesis_end || prevNodeType == AA_PT_NODE_TYPE::indexer_end) 
+		&& IsIncrementOrDecrement(lexResult[index].content)) {
+		return AA_PT_NODE_TYPE::unary_operation_post;
+	}
+
+	// Node types marking the operator a binary operation
+	static std::vector<AA_PT_NODE_TYPE> binop = {
 		AA_PT_NODE_TYPE::intliteral,
 		AA_PT_NODE_TYPE::floatliteral,
 		AA_PT_NODE_TYPE::charliteral,
@@ -116,12 +132,44 @@ bool AA_PT::IsUnaryOperator(std::vector<AA_PT_NODE*> nodes) {
 		AA_PT_NODE_TYPE::indexer_end,
 	};
 
-	if (nodes.size() > 0) {
-		return std::find(binop.begin(), binop.end(), nodes[nodes.size() - 1]->nodeType) == binop.end();
+	// If any of the above types are matching the previous node type, it's a binary operation (std::find != binop.end())
+	// Otherwise it's a pre-unary operation (because post-unary has already been checked for)
+	AA_PT_NODE_TYPE type = (std::find(binop.begin(), binop.end(), prevNodeType) == binop.end()) ? AA_PT_NODE_TYPE::unary_operation_pre : AA_PT_NODE_TYPE::binary_operation;
+
+	// Make sure it's not an invalid binary operation
+	if (type == AA_PT_NODE_TYPE::binary_operation && IsIncrementOrDecrement(lexResult[index].content)) {
+
+		// Report error
+		SetError(AA_PT::Error("Operator '" + string_cast(lexResult[index].content) + "' cannot be used as a binary operator", 0, lexResult[index].position));
+
+		// Return undefined
+		return AA_PT_NODE_TYPE::undefined;
+
 	}
 
-	return true;
+	// Return type	
+	return type;
 
+}
+
+AAToken AA_PT::FindNextNonWhitespaceLexicalResult(std::vector<AALexicalResult> lexResult, size_t index) {
+
+	while (index < lexResult.size()) {
+
+		if (lexResult[index].token != AAToken::whitespace) {
+			return lexResult[index].token;
+		}
+
+		index++;
+
+	}
+
+	return AAToken::invalid;
+
+}
+
+bool AA_PT::IsIncrementOrDecrement(std::wstring op) {
+	return op.compare(L"++") == 0 || op.compare(L"--") == 0;
 }
 
 bool AA_PT::IsBoolKeyword(std::wstring keyword) {
@@ -207,10 +255,16 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 		break;
 	case AA_PT_NODE_TYPE::unary_operation_pre:
 
-		nodes[nodeIndex]->childNodes.push_back(this->CreateExpressionTree(nodes, nodeIndex + 1));
+		nodes[nodeIndex]->childNodes.push_back(this->CreateExpressionTree(nodes, nodeIndex + 1)); // TODO: Extract variable if '++' or '--' --> Otherwise throw parse error
 		nodes.erase(nodes.begin() + nodeIndex + 1);
 
 		nodeIndex++;
+
+		break;
+	case AA_PT_NODE_TYPE::unary_operation_post:
+
+		nodes[nodeIndex]->childNodes.push_back(nodes[nodeIndex - 1]); // TODO: Extract variable if '++' or '--' --> Otherwise throw parse error
+		nodes.erase(nodes.begin() + nodeIndex - 1);
 
 		break;
 	case AA_PT_NODE_TYPE::seperator:

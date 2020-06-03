@@ -21,8 +21,8 @@ enum class AAByteCode : unsigned char {
 	CONCAT, // (Concatenation on two strings, 0 arguments)
 	LEN, // (Length of a string or array, '#' unary operator, 2 arguments [object type, dimension])
 
-	INC, // (Increments top element on stack, 2 argument, [primitive type, order {0 = increment and return, 1=return and increment}])
-	DEC, // (Decrements top element on stack, 2 argument, [primitive type, order {0 = decrement and return, 1=return and decrement}])
+	INC, // (Increments variable, 2 arguments, [varid, order {0 = increment and return, 1=return and increment}])
+	DEC, // (Decrements variable, 2 arguments, [varid, order {0 = decrement and return, 1=return and decrement}])
 
 	SETVAR, // (Set var, 2 arguments[identifier ID, primitive type])
 	GETVAR, // (Get var - pushes value of variable on top of stack, 1 argument[identifier ID])

@@ -109,8 +109,8 @@ void RunArithmeticTests(AAVM* pAAVM, int& s, int& f) {
 		s++;
 	}
 
-	// Test division operator
-	if (!RunExpressionTest(pAAVM, L"5--5;", L"math_negate4", 10)) {
+	// Test '--' as a binary operation is not legal
+	if (!RunExpressionTest(pAAVM, L"5--5;", L"math_negate4", AAStackValue::None, true)) {
 		f++;
 	} else {
 		s++;

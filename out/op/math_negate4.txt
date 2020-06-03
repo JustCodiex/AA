@@ -4,7 +4,6 @@ BYTECODE PROCEDURES:
 	OPERATIONS:
 		[0000]  PUSHC, 0                                                        
 		[0001]  PUSHC, 0                                                        
-		[0002]  NNEG, 6                                                         ;; primitive: int32 [4 bytes]
-		[0003]  SUB, 6                                                          ;; primitive: int32 [4 bytes]
+		[0002]  NOP, 6                                                          
 	END PROCEDURE;
 END BYTECODE PROCEDURES

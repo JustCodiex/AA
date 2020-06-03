@@ -261,6 +261,7 @@ bool AAVars::VarsNode(VarsEnviornment& venv, AA_AST_NODE* pScope) {
 		case AA_AST_NODE_TYPE::binop: // Because of free/bound variables we have to evaluate RHS before LHS
 			return this->VarsNode(venv, pScope->expressions[1]) & this->VarsNode(venv, pScope->expressions[0]);
 		case AA_AST_NODE_TYPE::unop_pre:
+		case AA_AST_NODE_TYPE::unop_post:
 			return this->VarsNode(venv, pScope->expressions[0]);
 		case AA_AST_NODE_TYPE::boolliteral:
 		case AA_AST_NODE_TYPE::charliteral:

@@ -74,8 +74,11 @@ private:
 	*/
 
 	static AA_PT_NODE_TYPE GetSeperatorType(std::wstring val);
-	static bool IsUnaryOperator(std::vector<AA_PT_NODE*> nodes);
+	static AA_PT_NODE_TYPE DetermineOperatorType(std::vector<AA_PT_NODE*> nodes, std::vector<AALexicalResult> lexResult, size_t index);
 	static bool IsBoolKeyword(std::wstring keyword);
+	static bool IsIncrementOrDecrement(std::wstring op);
+
+	static AAToken FindNextNonWhitespaceLexicalResult(std::vector<AALexicalResult> lexResult, size_t index);
 
 	/*
 	** To tree functions

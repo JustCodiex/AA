@@ -254,6 +254,9 @@ AAStackValue AAVM::Run(AAProgram* pProg) {
 
 #define AAVM_ThrowRuntimeErr(exc, msg) this->WriteRuntimeError(AAVM_RuntimeError(exc, (msg).c_str(), execp, callstack)); return;
 
+#define AAVM_INC_VARIABLE(t) AAVM_VENV->SetVariable(AAVM_GetArgument(0), AAStackValue((t)(val.to_cpp<t>() + (t)1)))
+#define AAVM_DEC_VARIABLE(t) AAVM_VENV->SetVariable(AAVM_GetArgument(0), AAStackValue((t)(val.to_cpp<t>() - (t)1)))
+
 AAStackValue AAVM::Run(AAProgram::Procedure* procedure, AAStaticTypeEnvironment* staticProgramTypeEnvironment, int entry) {
 
 	any_stack stack = any_stack(1024); // Stack with 1 Kb storage --> Will have to be modular
@@ -307,6 +310,68 @@ void AAVM::exec(AAProgram::Procedure* procedure, aa::stack<AARuntimeEnvironment>
 			} else if (pt == AAPrimitiveType::real64) {
 				stack.Push<double_t>(aa::vm::Arithmetic_BinaryOperation(AAVM_CURRENTOP, stack.Pop<double_t>(), stack.Pop<double_t>()));
 			}
+			AAVM_OPI++;
+			break;
+		}
+		case AAByteCode::INC: {
+			
+			// Get val
+			AAStackValue val = AAVM_VENV->GetVariable(AAVM_GetArgument(0));
+			
+			// Push unchanged if desired
+			if ((bool)AAVM_GetArgument(1)) {
+				aa::vm::PushSomething(val, stack);
+			}
+
+			// Increment
+			if (val.get_type() == AAPrimitiveType::int16) {
+				AAVM_INC_VARIABLE(int16_t);
+			} else if (val.get_type() == AAPrimitiveType::int32) {
+				AAVM_INC_VARIABLE(int32_t);
+			} else if (val.get_type() == AAPrimitiveType::int64) {
+				AAVM_INC_VARIABLE(int64_t);
+			} else if (val.get_type() == AAPrimitiveType::real32) {
+				AAVM_INC_VARIABLE(float_t);
+			} else if (val.get_type() == AAPrimitiveType::real64) {
+				AAVM_INC_VARIABLE(double_t);
+			}
+			
+			// Push if desired
+			if (!(bool)AAVM_GetArgument(1)) {
+				aa::vm::PushSomething(AAVM_VENV->GetVariable(AAVM_GetArgument(0)), stack);
+			}
+
+			AAVM_OPI++;
+			break;
+		}
+		case AAByteCode::DEC: {
+
+			// Get val
+			AAStackValue val = AAVM_VENV->GetVariable(AAVM_GetArgument(0));
+
+			// Push unchanged if desired
+			if ((bool)AAVM_GetArgument(1)) {
+				aa::vm::PushSomething(val, stack);
+			}
+
+			// Increment
+			if (val.get_type() == AAPrimitiveType::int16) {
+				AAVM_DEC_VARIABLE(int16_t);
+			} else if (val.get_type() == AAPrimitiveType::int32) {
+				AAVM_DEC_VARIABLE(int32_t);
+			} else if (val.get_type() == AAPrimitiveType::int64) {
+				AAVM_DEC_VARIABLE(int64_t);
+			} else if (val.get_type() == AAPrimitiveType::real32) {
+				AAVM_DEC_VARIABLE(float_t);
+			} else if (val.get_type() == AAPrimitiveType::real64) {
+				AAVM_DEC_VARIABLE(double_t);
+			}
+
+			// Push if desired
+			if (!(bool)AAVM_GetArgument(1)) {
+				aa::vm::PushSomething(AAVM_VENV->GetVariable(AAVM_GetArgument(0)), stack);
+			}
+
 			AAVM_OPI++;
 			break;
 		}

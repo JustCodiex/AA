@@ -224,7 +224,8 @@ Instructions AAC::CompileAST(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTabl
 		executionStack.Add(CompileBinaryOperation(pNode, cTable, staticData));
 		break;
 	}
-	case AA_AST_NODE_TYPE::unop_pre: {
+	case AA_AST_NODE_TYPE::unop_pre:
+	case AA_AST_NODE_TYPE::unop_post: {
 		executionStack.Add(CompileUnaryOperation(pNode, cTable, staticData));
 		break;
 	}
@@ -449,11 +450,23 @@ Instructions AAC::CompileUnaryOperation(AA_AST_NODE* pNode, CompiledEnviornmentT
 	Instructions opList;
 
 	CompiledAbstractExpression unopCAE;
-	unopCAE.argCount = 1;
-	unopCAE.argValues[0] = pNode->tags["primitive"];
 	unopCAE.bc = GetBytecodeFromUnaryOperator(pNode->content);
 
-	opList.Add(HandleStackPush(cTable, pNode->expressions[0], staticData));
+	if (unopCAE.bc == AAByteCode::INC || unopCAE.bc == AAByteCode::DEC) {
+
+		unopCAE.argCount = 2;
+		unopCAE.argValues[0] = pNode->expressions[0]->tags["varsi"];
+		unopCAE.argValues[1] = (pNode->type == AA_AST_NODE_TYPE::unop_post) ? 1 : 0;
+
+	} else {
+
+		unopCAE.argCount = 1;
+		unopCAE.argValues[0] = pNode->tags["primitive"];
+
+		opList.Add(HandleStackPush(cTable, pNode->expressions[0], staticData));
+
+	}
+
 	opList.Add(unopCAE);
 
 	return opList;
@@ -1167,6 +1180,10 @@ AAByteCode AAC::GetBytecodeFromUnaryOperator(std::wstring ws) {
 		return AAByteCode::LNEG;
 	} else if (ws == L"-") {
 		return AAByteCode::NNEG;
+	} else if (ws == L"++") {
+		return AAByteCode::INC;
+	} else if (ws == L"--") {
+		return AAByteCode::DEC;
 	} else {
 		return AAByteCode::NOP;
 	}

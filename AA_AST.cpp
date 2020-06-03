@@ -60,6 +60,14 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 		return unaryNode;
 
 	}
+	case AA_PT_NODE_TYPE::unary_operation_post: {
+		
+		AA_AST_NODE* unaryNode = new AA_AST_NODE(pNode->content, AA_AST_NODE_TYPE::unop_post, pNode->position);
+		unaryNode->expressions.push_back(this->AbstractNode(pNode->childNodes[0]));
+
+		return unaryNode;
+	
+	}
 	case AA_PT_NODE_TYPE::vardecleration: {
 		if (pNode->childNodes[0]->content.compare(L"var") == 0) {
 			
