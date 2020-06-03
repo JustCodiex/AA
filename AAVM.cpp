@@ -139,6 +139,9 @@ AAStackValue AAVM::CompileAndRunFile(std::wstring sourcefile) {
 
 AAStackValue AAVM::CompileAndRun(AAP_ParseResult result, std::wstring binaryoutputfile, std::wstring formattedoutputfile, std::wstring unparsefile) {
 
+	// Reset parse error
+	m_lastSyntaxError.errorType = -1;
+
 	// The the parser succeed?
 	if (result.success) {
 
@@ -183,6 +186,9 @@ AAStackValue AAVM::CompileAndRun(AAP_ParseResult result, std::wstring binaryoutp
 		}
 
 	} else {
+
+		// Save parse error if any
+		m_lastSyntaxError = result.firstMsg;
 
 		// Write syntax error
 		this->WriteSyntaxError(result.firstMsg);

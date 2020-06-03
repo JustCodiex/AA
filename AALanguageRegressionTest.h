@@ -15,12 +15,13 @@ bool RunRegressionTests(AAVM* pAAVM);
 /// <param name="fileinput">The innput</param>
 /// <param name="fileoutputBinary">Binary output file</param>
 /// <param name="expectedoutput">The expected output</param>
+/// <param name="expectParseError">Expects a parse error (Parser testing)</param>
 /// <param name="expectCompileError">Expects a compile error (Compiler test)</param>
 /// <param name="expectRuntimeError">Expects a runtime error (VM error testing)</param>
 /// <returns></returns>
 bool RunFileTest(
 	AAVM* pAAVM, std::wstring fileinput, std::wstring fileoutput, AAStackValue expectedoutput, 
-	bool expectCompileError = false, bool expectRuntimeError = false
+	bool expectParseError = false, bool expectCompileError = false, bool expectRuntimeError = false
 );
 
 /// <summary>
@@ -30,10 +31,11 @@ bool RunFileTest(
 /// <param name="expression">The input</param>
 /// <param name="fileoutputBinary">Binary output file</param>
 /// <param name="expectedoutput">The expected output</param>
+/// <param name="expectParseError">Expects a parse error (Parser testing)</param>
 /// <param name="expectCompileError">Expects a compile error (Compiler test)</param>
 /// <param name="expectRuntimeError">Expects a runtime error (VM error testing)</param>
 /// <returns></returns>
 bool RunExpressionTest(
 	AAVM* pAAVM, std::wstring expression, std::wstring fileoutput, AAStackValue expectedoutput,
-	bool expectCompileError = false, bool expectRuntimeError = false
+	bool expectParseError = false, bool expectCompileError = false, bool expectRuntimeError = false
 );

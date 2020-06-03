@@ -6,8 +6,8 @@
 	Pattern matching on tagged classes ✔
 	Binary Assignment operators ✔
 		+=, -=, *=, /=, %=; ✔
-	Unary operators
-		--, ++;
+	Unary operators ✔
+		--, ++; ✔
 	Abstract Classes
 		Simple Declaration syntax	==> "abstract class k;"								// Merely declares it
 									==> "abstract class(int iField) k;"					// Declares an abstract class with public field

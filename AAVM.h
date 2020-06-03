@@ -91,6 +91,7 @@ public:
 	int RegisterFunction(AACSingleFunction funcPtr, AACNamespace* domain);
 	AAClassSignature* RegisterClass(std::wstring typeName, AACClass cClass);
 
+	bool HasSyntaxError() { return m_lastSyntaxError.errorType != -1; }
 	bool HasCompileError() { return !m_lastCompileResult.success; }
 	bool HasRuntimeError() { return m_hasRuntimeError; }
 
@@ -162,6 +163,7 @@ private:
 	AAVM_RuntimeError m_lastRuntimeError;
 
 	AAC_CompileResult m_lastCompileResult;
+	AAP_SyntaxErrorMessage m_lastSyntaxError;
 
 	clock_t m_startCompile;
 

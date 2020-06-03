@@ -1,13 +1,23 @@
 #include "AALanguageRegressionTest.h"
 #include <iostream>
 
-bool VerifyTestResult(AAVM* pAAVM, AAStackValue result, AAStackValue expected, bool compile, bool runtime) {
+bool VerifyTestResult(AAVM* pAAVM, AAStackValue result, AAStackValue expected, bool parse, bool compile, bool runtime) {
 	
 	// Did any error occur?
+	bool anyParseError = pAAVM->HasSyntaxError();
 	bool anyCompileError = pAAVM->HasCompileError();
 	bool anyRuntimeError = pAAVM->HasRuntimeError();
 
-	if (anyCompileError || anyRuntimeError) {
+	if (anyParseError || anyCompileError || anyRuntimeError) {
+
+		// Check parse error
+		if (anyParseError && parse) {
+			std::wcout << L"Test Succeeded (Succesfully detected parse error)" << L"\n\n";
+			return true;
+		} else if (anyParseError && !parse) {
+			std::wcout << L"Test Failed, unexpected parse error." << L"\n\n";
+			return false;
+		}
 
 		// Check compile error
 		if (anyCompileError && compile) {
@@ -77,7 +87,7 @@ bool VerifyTestResult(AAVM* pAAVM, AAStackValue result, AAStackValue expected, b
 
 }
 
-bool RunFileTest(AAVM* pAAVM, std::wstring fileinput, std::wstring fileoutput, AAStackValue expectedoutput, bool compile, bool runtime) {
+bool RunFileTest(AAVM* pAAVM, std::wstring fileinput, std::wstring fileoutput, AAStackValue expectedoutput, bool parse, bool compile, bool runtime) {
 
 	std::wcout << L"Testing file: " << fileinput << L"\n";
 	return VerifyTestResult(pAAVM, 
@@ -86,17 +96,22 @@ bool RunFileTest(AAVM* pAAVM, std::wstring fileinput, std::wstring fileoutput, A
 			L"out\\op\\" + fileoutput + L".txt", 
 			L"out\\unparsed\\" + fileoutput + L".aa"
 		), 
-		expectedoutput, compile, runtime
+		expectedoutput, parse, compile, runtime
 	);
 
 }
 
-bool RunExpressionTest(AAVM* pAAVM, std::wstring expression, std::wstring fileoutput, AAStackValue expectedoutput, bool compile, bool runtime) {
+bool RunExpressionTest(AAVM* pAAVM, std::wstring expression, std::wstring fileoutput, AAStackValue expectedoutput, bool parse, bool compile, bool runtime) {
 
 	std::wstring fileOutputOpCodes = L"out\\op\\" + fileoutput + L".txt";
 	std::wstring fileOutputUnparsed = L"out\\unparsed\\" + fileoutput + L".aa";
 	std::wcout << L"Testing expression: '" << expression << L"';" << L" OpCodeFile: \"" << fileOutputOpCodes << L"\"; UnparseFile: '" << fileOutputUnparsed << L"'" << L"\n";
-	return VerifyTestResult(pAAVM, pAAVM->CompileAndRunExpression(expression, L"out\\bin\\" + fileoutput + L".aab", fileOutputOpCodes, fileOutputUnparsed), expectedoutput, compile, runtime);
+	return VerifyTestResult(pAAVM, 
+		pAAVM->CompileAndRunExpression(expression, 
+			L"out\\bin\\" + fileoutput + L".aab", 
+			fileOutputOpCodes, fileOutputUnparsed), 
+		expectedoutput, parse, compile, runtime
+	);
 
 }
 
@@ -200,6 +215,13 @@ void RunArithmeticTests(AAVM* pAAVM, int& s, int& f) {
 		s++;
 	}
 
+	// Test increment operator
+	if (!RunFileTest(pAAVM, L"examples\\arithmetic\\increment1.aa", L"increment1", -1)) {
+		f++;
+	} else {
+		s++;
+	}
+
 }
 
 void RunVariableDeclerationTests(AAVM* pAAVM, int& s, int& f) {
@@ -236,7 +258,7 @@ void RunBlockTests(AAVM* pAAVM, int& s, int& f) {
 		s++;
 	}
 
-	// Test modulo operator
+	// Test negated boolean
 	if (!RunExpressionTest(pAAVM, L"{ bool x = true; !x; }", L"block_with_type4", false)) {
 		f++;
 	} else {
@@ -250,7 +272,7 @@ void RunBlockTests(AAVM* pAAVM, int& s, int& f) {
 		s++;
 	}
 
-	// Test modulo operator
+	// Test boolean type
 	if (!RunExpressionTest(pAAVM, L"{ bool x = true; x; }", L"block_with_type2", true)) {
 		f++;
 	} else {
@@ -350,14 +372,14 @@ void RunFunctionTests(AAVM* pAAVM, int& s, int& f) {
 	}
 
 	// Test for compile error (a void function returning something)
-	if (!RunExpressionTest(pAAVM, L"void test() { 5; }", L"func_decl_test2", AAStackValue::None, true)) {
+	if (!RunExpressionTest(pAAVM, L"void test() { 5; }", L"func_decl_test2", AAStackValue::None, false, true)) {
 		f++;
 	} else {
 		s++;
 	}
 
 	// Test runtime callstack (Expectes some output from code)
-	if (!RunExpressionTest(pAAVM, L"void test() {  } void testb() {}", L"func_decl_test1", AAStackValue::None, false, true)) {
+	if (!RunExpressionTest(pAAVM, L"void test() {  } void testb() {}", L"func_decl_test1", AAStackValue::None, false, false, true)) {
 		f++;
 	} else {
 		s++;
@@ -373,6 +395,20 @@ void RunFunctionTests(AAVM* pAAVM, int& s, int& f) {
 }
 
 void RunIfStatementTests(AAVM* pAAVM, int& s, int& f) {
+
+	// Test less than or equal to operator
+	if (!RunExpressionTest(pAAVM, L"5 <= 10;", L"cmp_leq1", true)) {
+		f++;
+	} else {
+		s++;
+	}
+
+	// Test less than or equal to operator with binary expression on LHS
+	if (!RunExpressionTest(pAAVM, L"5 + 15 <= 10;", L"cmp_leq2", false)) {
+		f++;
+	} else {
+		s++;
+	}
 
 	// Test modulo operator
 	if (!RunExpressionTest(pAAVM, L"if (6 < 5) { 25; } else if (4 < 5) { 27; } else { 30; }", L"if3", 27)) {
@@ -390,20 +426,6 @@ void RunIfStatementTests(AAVM* pAAVM, int& s, int& f) {
 
 	// Test modulo operator
 	if (!RunExpressionTest(pAAVM, L"if (5 < 6) { 25; }", L"if1", 25)) {
-		f++;
-	} else {
-		s++;
-	}
-
-	// Test modulo operator
-	if (!RunExpressionTest(pAAVM, L"5 + 15 <= 10;", L"cmp_leq2", false)) {
-		f++;
-	} else {
-		s++;
-	}
-
-	// Test modulo operator
-	if (!RunExpressionTest(pAAVM, L"5 <= 10;", L"cmp_leq1", true)) {
 		f++;
 	} else {
 		s++;

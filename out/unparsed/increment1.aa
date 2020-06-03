@@ -1,0 +1,11 @@
+{
+	main();
+}
+int main() {
+	var v = 0;
+	int i = (v++);
+	int j = (++v);
+	println(i);
+	println(j);
+	((++i) - (j++));
+}
