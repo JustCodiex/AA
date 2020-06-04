@@ -49,6 +49,7 @@ bool AATypeChecker::TypeCheck() {
 AACType* AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 
 	switch (node->type) {
+	case AA_AST_NODE_TYPE::compile_unit:
 	case AA_AST_NODE_TYPE::forafterthought:
 	case AA_AST_NODE_TYPE::forinit:
 	case AA_AST_NODE_TYPE::funcbody:

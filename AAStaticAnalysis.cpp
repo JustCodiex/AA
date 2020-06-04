@@ -77,7 +77,7 @@ AAC_CompileErrorMessage AAStaticAnalysis::RunStaticAnalysis(std::vector<AA_AST*>
 	AAC_CompileErrorMessage err;
 
 	// Extract the global scope
-	this->ExtractGlobalScope(trees);
+	//this->ExtractGlobalScope(trees);
 
 	// Set to point to the working trees
 	this->m_workTrees = &trees;
@@ -357,8 +357,17 @@ AAC_CompileErrorMessage AAStaticAnalysis::PreregisterTypes(AA_AST_NODE* pNode, A
 	// Get the node type
 	AA_AST_NODE_TYPE rootType = pNode->type;
 
-	// Is it a namespace
-	if (rootType == AA_AST_NODE_TYPE::name_space) {
+	if (rootType == AA_AST_NODE_TYPE::compile_unit) {
+
+		// For all sub-elements of domain
+		for (size_t i = 0; i < pNode->expressions.size(); i++) {
+			// Fetch static decleration from node and put it into the global domain. Return compile error if any
+			if (COMPILE_ERROR(err = this->PreregisterTypes(pNode->expressions[i], domain, senv))) {
+				return err;
+			}
+		}
+
+	} else if (rootType == AA_AST_NODE_TYPE::name_space) { // Is it a namespace
 
 		// Create domain
 		AACNamespace* subDomain = new AACNamespace(pNode->content, domain);
@@ -445,12 +454,22 @@ AAC_CompileErrorMessage AAStaticAnalysis::FetchStaticDeclerationsFromASTNode(AA_
 	// Get the node type
 	AA_AST_NODE_TYPE rootType = pNode->type;
 
-	// Is it a namespace
-	if (rootType == AA_AST_NODE_TYPE::name_space) {
+	// Is it a compile unit (top level)
+	if (rootType == AA_AST_NODE_TYPE::compile_unit) {
+
+		// For all sub-elements of domain
+		for (size_t i = 0; i < pNode->expressions.size(); i++) {
+			// Fetch static decleration from node and put it into the global domain. Return compile error if any
+			if (COMPILE_ERROR(err = this->FetchStaticDeclerationsFromASTNode(pNode->expressions[i], domain, senv))) {
+				return err;
+			}
+		}
+
+	} else if (rootType == AA_AST_NODE_TYPE::name_space) { // Is it a namespace
 
 		// Create domain
 		AACNamespace* subDomain = domain->childspaces.FindFirst([pNode](AACNamespace*& d) { return d->name.compare(pNode->content) == 0; });
-		
+
 		// For all sub-elements of domain
 		for (size_t i = 0; i < pNode->expressions.size(); i++) {
 			// Fetch static decleration from node and put it into the global domain. Return compile error if any

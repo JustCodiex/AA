@@ -47,6 +47,11 @@ std::wstring AAUnparser::Unparse(AA_AST_NODE* pNode) {
 	std::wstring out = L"";
 
 	switch (pNode->type) {
+	case AA_AST_NODE_TYPE::compile_unit: 
+		for (size_t i = 0; i < pNode->expressions.size(); i++) {
+			out += this->Unparse(pNode->expressions[i]);
+		}
+		break;
 	case AA_AST_NODE_TYPE::funcbody:
 	case AA_AST_NODE_TYPE::classbody:
 	case AA_AST_NODE_TYPE::block: {

@@ -246,7 +246,7 @@ bool AAVars::VarsMatchCondition(aa::VarsEnviornment& venv, AA_AST_NODE* pScope) 
 }
 
 bool AAVars::VarsNode(VarsEnviornment& venv, AA_AST_NODE* pScope) {
-	if (pScope->type == AA_AST_NODE_TYPE::block || pScope->type == AA_AST_NODE_TYPE::funcbody) {
+	if (pScope->type == AA_AST_NODE_TYPE::compile_unit ||  pScope->type == AA_AST_NODE_TYPE::block || pScope->type == AA_AST_NODE_TYPE::funcbody) {
 		return this->VarsScope(venv, pScope);
 	} else if (pScope->type == AA_AST_NODE_TYPE::fundecl) {
 		return this->VarsFunction(venv, pScope);

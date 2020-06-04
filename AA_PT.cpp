@@ -176,27 +176,37 @@ bool AA_PT::IsBoolKeyword(std::wstring keyword) {
 	return keyword == L"true" || keyword == L"false";
 }
 
-std::vector<AA_PT*> AA_PT::CreateTrees(std::vector<AA_PT_NODE*>& nodes) {
+AA_PT* AA_PT::CreateParseTree(std::vector<AA_PT_NODE*>& nodes) {
 
-	size_t nodeIndex = 0;
-	std::vector<AA_PT*> parseTrees;
-	
-	AA_PT pt = AA_PT(NULL);
-	AA_PT_NODE* root = pt.CreateTree(nodes, 0);
+	// Create compile unit node
+	AA_PT_NODE* pCompileUnitNode = new AA_PT_NODE(AA_PT_NODE_TYPE::compile_unit, L"compile_unit", AACodePosition(0, 0));
 
-	if (nodes.at(0) == root) {
-		for (size_t i = 0; i < nodes.size(); i++) {
-			parseTrees.push_back(new AA_PT(nodes.at(i)));
-		}
-	} else {
-		if (nodes.at(0)->nodeType == AA_PT_NODE_TYPE::expression) {
-			for (size_t i = 0; i < nodes.at(0)->childNodes.size(); i++) {
-				parseTrees.push_back(new AA_PT(nodes.at(0)->childNodes.at(i)));
+	// Make sure we have something to work with
+	if (nodes.size() > 0) {
+
+		// Create PT to call create tree on (Should really be a static method...)
+		AA_PT pt = AA_PT(nullptr);
+
+		// Get the root
+		AA_PT_NODE* root = pt.CreateTree(nodes, 0);
+
+		// If first element is root
+		if (nodes.at(0) == root) {
+			for (size_t i = 0; i < nodes.size(); i++) {
+				pCompileUnitNode->childNodes.push_back(nodes.at(i));
+			}
+		} else {
+			if (nodes.at(0)->nodeType == AA_PT_NODE_TYPE::expression) {
+				for (size_t i = 0; i < nodes.at(0)->childNodes.size(); i++) {
+					pCompileUnitNode->childNodes.push_back(nodes.at(0)->childNodes.at(i));
+				}
 			}
 		}
+
 	}
 
-	return parseTrees;
+	// Return result
+	return new AA_PT(pCompileUnitNode);
 
 }
 

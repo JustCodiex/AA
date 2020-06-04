@@ -143,8 +143,17 @@ aa::list<AAC::CompiledProcedure> AAC::CompileProcedureFromASTRootNode(AA_AST_NOD
 	// Get the node type
 	AA_AST_NODE_TYPE tp = pAstRootNode->type;
 
-	// If it's a class, we'll have to compile it just a bit differently
-	if (tp == AA_AST_NODE_TYPE::classdecl) {
+	if (tp == AA_AST_NODE_TYPE::compile_unit) {
+
+		// Loop through all the contents of the compile unit
+		for (size_t i = 0; i < pAstRootNode->expressions.size(); i++) {
+
+			// Add compile result
+			compileResults.Add(this->CompileProcedureFromASTRootNode(pAstRootNode->expressions[i], senv));
+
+		}
+
+	} else if (tp == AA_AST_NODE_TYPE::classdecl) { // If it's a class, we'll have to compile it just a bit differently
 
 		// Does the declaration contain a body to compile?
 		if (AA_NODE_CLASSNODE_BODY < pAstRootNode->expressions.size()) {

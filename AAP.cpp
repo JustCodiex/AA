@@ -65,8 +65,8 @@ AAP_ParseResult AAP::CreateParseTrees(std::vector<AALexicalResult> lexResult) {
 	// Use unflattening tool to apply syntax rules
 	AA_PT_Unflatten::ApplySyntaxRules(aa_pt_nodes);
 
-	// Create parse trees
-	std::vector<AA_PT*> parseTrees = AA_PT::CreateTrees(aa_pt_nodes);
+	// Create parse tree
+	AA_PT* pParseTree = AA_PT::CreateParseTree(aa_pt_nodes);
 	
 	// Instead of continuing with a flawed parse tree we'll just report the error
 	if (AA_PT::HasLastErrorMessage()) {
@@ -80,34 +80,27 @@ AAP_ParseResult AAP::CreateParseTrees(std::vector<AALexicalResult> lexResult) {
 		// Do we succeed?
 		bool isSucces = true;
 
-		// Go through all the parse trees we received
-		for (size_t i = 0; i < parseTrees.size(); i++) {
+		// Get the parse tree
+		AA_AST* AST = new AA_AST(pParseTree);
 
-			// Create AST
-			AA_AST* abstractSyntaxTree = new AA_AST(parseTrees[i]);
+		// If no error
+		if (!AST->HasError()) {
 
-			// If no error
-			if (!abstractSyntaxTree->HasError()) {
+			// Add AST to result
+			result.result.Add(AST);
 
-				// Add AST to result
-				result.result.Add(abstractSyntaxTree);
+			// Clear the parse tree (No longer need it)
+			pParseTree->Clear();
 
-				// Clear the parse tree (No longer need it)
-				parseTrees[i]->Clear();
+		} else {
 
-			} else {
+			// Set error message
+			AA_AST::Error err = AST->GetError();
+			result.firstMsg = AAP_SyntaxErrorMessage(err.errType, err.errMsg, err.errSrc);
+			result.success = false;
 
-				// Set error message
-				AA_AST::Error err = abstractSyntaxTree->GetError();
-				result.firstMsg = AAP_SyntaxErrorMessage(err.errType, err.errMsg, err.errSrc);
-				result.success = false;
-
-				// Not a success
-				isSucces = false;
-
-				break;
-
-			}
+			// Not a success
+			isSucces = false;
 
 		}
 

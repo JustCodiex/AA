@@ -40,7 +40,7 @@ public:
 
 	void Clear();
 
-	static std::vector<AA_PT*> CreateTrees(std::vector<AA_PT_NODE*>& nodes);
+	static AA_PT* CreateParseTree(std::vector<AA_PT_NODE*>& nodes);
 
 	/*
 	** To node converter functions

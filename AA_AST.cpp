@@ -22,6 +22,17 @@ void AA_AST::ClearNode(AA_AST_NODE* pNode) {
 AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 
 	switch (pNode->nodeType) {
+	case AA_PT_NODE_TYPE::compile_unit: {
+
+		AA_AST_NODE* pCompileUnitNode = new AA_AST_NODE(L"compile_unit", AA_AST_NODE_TYPE::compile_unit, pNode->position);
+
+		for (size_t i = 0; i < pNode->childNodes.size(); i++) {
+			pCompileUnitNode->expressions.push_back(this->AbstractNode(pNode->childNodes[i]));
+		}
+
+		return pCompileUnitNode;
+
+	}
 	case AA_PT_NODE_TYPE::funcbody:
 	case AA_PT_NODE_TYPE::classbody:
 	case AA_PT_NODE_TYPE::enumbody:
@@ -434,6 +445,11 @@ void AA_AST::Simplify() {
 AA_AST_NODE* AA_AST::SimplifyNode(AA_AST_NODE* pNode) {
 
 	switch (pNode->type) {
+	case AA_AST_NODE_TYPE::compile_unit: 
+		for (size_t i = 0; i < pNode->expressions.size(); i++) {
+			this->SimplifyNode(pNode->expressions[i]);
+		}
+		return pNode;
 	case AA_AST_NODE_TYPE::fundecl:
 		if (pNode->expressions.size() >= 3) {
 			size_t i = 0;

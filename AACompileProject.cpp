@@ -3,6 +3,7 @@
 #include "AAVM.h"
 #include "AAB2F.h"
 
+// STL imports
 #include <fstream>
 #include <sstream>
 
@@ -32,8 +33,10 @@ void AACompileProject::LoadProjectFile(std::wstring projectFilePath) {
 	this->m_paths[_PROJECT_FILEPATH] = projectFilePath;
 	this->m_paths[_PROJECT_RELATIVEPATH] = projectFilePath.substr(0, projectFilePath.find_last_of(L"\\") + 1);
 
+	// Open the project file
 	std::wifstream wfs = std::wifstream(this->m_paths[_PROJECT_FILEPATH]);
 
+	// Make sure it's open
 	if (!wfs.is_open()) {
 		// ERROR
 	} else {
@@ -41,6 +44,7 @@ void AACompileProject::LoadProjectFile(std::wstring projectFilePath) {
 		std::wstring ln;
 		int state = 1;
 		
+		// As long as there's a line - read it
 		while (std::getline(wfs, ln)) {
 
 			if (aa::aastring::begins_with<std::wstring>(ln, L"compile")) { // path input
@@ -96,6 +100,7 @@ void AACompileProject::LoadProjectFile(std::wstring projectFilePath) {
 
 		}
 
+		// Always close files...
 		wfs.close();
 
 	}
@@ -114,13 +119,18 @@ std::wstring AACompileProject::GetPathArgument(std::wstring ln) {
 
 bool AACompileProject::ExecuteProjectFile() {
 
+	// Get the compiler instance
 	AAC* pCompilerInstance = this->m_pVMTarget->GetCompiler();
 
 	// 1st: Push SDL
 
+	// TODO:
+
 	// 2nd: Push library
 
-	// 3rd: Compile project
+	// TODO:
+
+	// 3rd: Compile project:
 
 	auto parser = this->m_pVMTarget->GetParser();
 	aa::list<AAP_ParseResult> parseResults;

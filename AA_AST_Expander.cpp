@@ -13,6 +13,7 @@ void AA_AST_Expander::ExpandTree(AA_AST* pTree) {
 void AA_AST_Expander::ExpandNode(AA_AST_NODE* pNode) {
 
 	switch (pNode->type) {
+	case AA_AST_NODE_TYPE::compile_unit:
 	case AA_AST_NODE_TYPE::block:
 	case AA_AST_NODE_TYPE::classbody:
 	case AA_AST_NODE_TYPE::funcbody:

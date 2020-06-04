@@ -13,11 +13,19 @@ public:
 
 	AACompileProject(AAVM* pAAVM);
 
+	/// <summary>
+	/// Load and read a project file
+	/// </summary>
+	/// <param name="projectFilePath">Filepath to the project file to read</param>
 	void LoadProjectFile(std::wstring projectFilePath);
 
 	void SetUnparsePath(std::wstring unparseToPath);
 	void SetGeneratedAssemblishPath(std::wstring assemblishToPath);
 
+	/// <summary>
+	/// Execute (compile) the the project (file)
+	/// </summary>
+	/// <returns>True if project was compiled without complications</returns>
 	bool ExecuteProjectFile();
 
 private:
