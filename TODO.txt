@@ -8,13 +8,16 @@
 		+=, -=, *=, /=, %=; ✔
 	Unary operators ✔
 		--, ++; ✔
+	Multiple files (Compile Units)
+		Make it so a file is a single Compile Unit	==> Can no longer generate multiple trees
+		Project files								==> Will compile to a single binary file
+		Extern keyword
+			Simple syntax	==> "extern class Example { extern void func(); };"		// Declares a class Example to be defined somewhere else with a method func declared somewhere else
 	Abstract Classes
 		Simple Declaration syntax	==> "abstract class k;"								// Merely declares it
 									==> "abstract class(int iField) k;"					// Declares an abstract class with public field
 		Simple Definition syntax	==> "abstract class k { int iField; }";				// Same as above
 									==> "abstract class k { int method(); }"			// Defines abstract class k, with (implicit) virtual method called 'method' 
-	Multiple files (Compile Units)
-		Make it so a file is a single Compile Unit ==> Can no longer generate multiple trees
 	Constant keyword
 		Simple syntax ==> "const int k = 42;"
 						  "const var k = 42;"

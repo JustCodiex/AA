@@ -53,6 +53,11 @@ public:
 	*/
 	AAC_Out CompileFileToFile(std::wstring fileIn, std::wstring fileOut);
 
+	/*
+	** Compiles the input project but does not execute it
+	*/
+	bool CompileProject(std::wstring projectfile, std::wstring formattedoutfile, std::wstring unparsefile);
+
 	AAStackValue Execute(AAC_Out bytecode);
 	AAStackValue Execute(unsigned char* bytes, unsigned long long len);
 

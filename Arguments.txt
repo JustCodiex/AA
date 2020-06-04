@@ -1,0 +1,5 @@
+# Running a test file:
+-test_regressive -unparse -ga -c "examples\current_test_file.aa" -oae "examples\current_test_file.aab" -lc -le -pause
+
+# Compiling a probject:
+-test_projects -unparse -ga -lc -le -pause

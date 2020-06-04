@@ -56,7 +56,7 @@ public:
 	/// </summary>
 	void SetupCompiler();
 
-	AAC_CompileResult CompileFromAbstractSyntaxTrees(std::vector<AA_AST*> trees);
+	AAC_CompileResult CompileFromAbstractSyntaxTrees(aa::list<AA_AST*> trees);
 
 	void SetOpListFile(std::wstring outFile) {
 		m_outfile = outFile;
@@ -95,7 +95,7 @@ private:
 	** Static checkers
 	*/
 
-	AAC_CompileErrorMessage RunStaticOperations(std::vector<AA_AST*>& trees, AAStaticEnvironment& staicData);
+	AAC_CompileErrorMessage RunStaticOperations(aa::list<AA_AST*>& trees, AAStaticEnvironment& staicData);
 	
 	/*
 	** AST_NODE -> Bytecode functions

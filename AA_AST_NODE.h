@@ -8,6 +8,8 @@ enum class AA_AST_NODE_TYPE {
 
 	undefined,
 
+	compile_unit,
+
 	seperator,
 	//accessor,
 	callaccess, // Call method on object

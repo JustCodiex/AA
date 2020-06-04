@@ -9,6 +9,8 @@ enum class AA_PT_NODE_TYPE {
 
 	undefined,
 
+	compile_unit,
+
 	seperator,
 	accessor,
 

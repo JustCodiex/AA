@@ -90,7 +90,7 @@ AAP_ParseResult AAP::CreateParseTrees(std::vector<AALexicalResult> lexResult) {
 			if (!abstractSyntaxTree->HasError()) {
 
 				// Add AST to result
-				result.result.push_back(abstractSyntaxTree);
+				result.result.Add(abstractSyntaxTree);
 
 				// Clear the parse tree (No longer need it)
 				parseTrees[i]->Clear();
@@ -121,11 +121,14 @@ AAP_ParseResult AAP::CreateParseTrees(std::vector<AALexicalResult> lexResult) {
 
 }
 
-void AAP::ClearTrees(std::vector<AA_AST*> trees) {
+void AAP::ClearTrees(aa::list<AA_AST*> trees) {
 
-	for (AA_AST* pTree : trees) {
-		pTree->Clear();
-	}
+	// Clear all trees
+	trees.ForEach(
+		[](AA_AST*& tree) {
+			tree->Clear();
+		}
+	);
 
 }
 

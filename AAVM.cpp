@@ -6,6 +6,7 @@
 #include "AAstdiolib.h"
 #include "AAMemoryStore.h"
 #include "AAExecute.h"
+#include "AACompileProject.h"
 #include "pairedarray.h"
 
 AAVM* AAVM::CreateNewVM(bool logExecuteTime, bool logCompiler, bool logTopStack) {
@@ -111,6 +112,23 @@ AAC_Out AAVM::CompileFileToFile(std::wstring fileIn, std::wstring fileOut) { // 
 	AAC_Out bytecode; //= m_compiler->CompileFromAST(0);
 
 	return bytecode;
+
+}
+
+bool AAVM::CompileProject(std::wstring projectfile, std::wstring formattedoutfile, std::wstring unparsefile) {
+
+	// Project to work with
+	AACompileProject project = AACompileProject(this);
+
+	// Set additional output files
+	project.SetUnparsePath(unparsefile);
+	project.SetGeneratedAssemblishPath(formattedoutfile);
+
+	// Load project
+	project.LoadProjectFile(projectfile);
+
+	// Return whatever the result of the project execution is
+	return project.ExecuteProjectFile();
 
 }
 

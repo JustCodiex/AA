@@ -35,7 +35,7 @@ namespace aa {
 	private:
 
 		std::vector<T> m_stack;
-		size_t m_len;
+		size_t m_len = 0;
 
 	};
 

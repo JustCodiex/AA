@@ -5,22 +5,25 @@
 #include "AAVM.h"
 #ifdef _DEBUG
 #include "AALanguageRegressionTest.h"
+#include "AAProjectRegressionTest.h"
 #endif
 
 ///////////////////
 // Global Versions
 ///////////////////
-const char* VM_Version = "0.4.0"; // VM version
+const char* VM_Version = "0.5.0"; // VM version
 
 ///////////////////
 // Global Flags
 ///////////////////
 
 bool enableRegTests = false; // Run regression tests
+bool enableProTests = false; // Run project compile tests
 bool outputAssembly = false; // Output an assembly file as well as a binary file
 bool outputUnparsed = false; // Output an unparsed variant of the file
 bool isCompileInput = false; // The input is a compile target
 bool executeOutput = false; // Should we execute our output
+bool executeInput = false; // Should we execute the input
 bool logCompileTime = false; // Should compile time be logged
 bool logExecuteTime = false; // Should execute time be logged
 bool logTrace = false; // Should trace be logged when running the VM
@@ -77,6 +80,14 @@ void compileoutput(AAVM* pAAVM) {
 
 }
 
+bool readArgumentToArgument(int i, int argc, wchar_t** argv, std::wstring& out) {
+    if (i + 1 < argc && argv[i + 1][0] != '-') {
+        out = argv[i + 1];
+        return true;
+    }
+    return false;
+}
+
 int wmain(int argc, wchar_t** argv) {
 
     // Set runtime environment
@@ -118,11 +129,17 @@ int wmain(int argc, wchar_t** argv) {
 #if _DEBUG
             enableRegTests = true;
 #else
-            wprintf(L"Reggression tests not available");
+            wprintf(L"Language reggression tests not available");
+#endif
+        } else if (wcscmp(argv[i], L"-test_projects") == 0) {
+#if _DEBUG
+            enableProTests = true;
+#else
+            wprintf(L"Project reggression tests not available");
 #endif
         } else if (wcscmp(argv[i], L"-unparse") == 0) {
             outputUnparsed = true;
-        } else if (wcscmp(argv[i], L"-c") == 0) {
+        } else if (wcscmp(argv[i], L"-c") == 0) { // Compile <input>
             isCompileInput = true;
             if (i + 1 < argc && argv[i+1][0] != '-') {
                 inputFile = argv[i + 1];
@@ -130,10 +147,23 @@ int wmain(int argc, wchar_t** argv) {
             } else {
                 wprintf(L"Invalid or missing command argument '-c'\n");
             }
-        } else if (wcscmp(argv[i], L"-verify") == 0) {
+        } else if (wcscmp(argv[i], L"-verify") == 0) { // Verify before executing
             verifyInput = true;
             wprintf(L"'-verify' command found but not implemented (Either not implemented or outdated VM version)\n");
-        } else if (wcscmp(argv[i], L"-oae") == 0) {
+        } else if (wcscmp(argv[i], L"-r") == 0) { // Run <input>
+            if (isCompileInput) {
+                wprintf(L"Cannot execute non-binary input '-r' (-r and -o or -oae possibly given, which is not valid)\n");
+            } else {
+                executeInput = true;
+                if (!readArgumentToArgument(i, argc, argv, inputFile)) {
+                    wprintf(L"Invalid or missing command argument '-c'\n");
+                } else {
+                    i++;
+                }
+            }
+        } else if (wcscmp(argv[i], L"-o") == 0) { // Output <output>
+
+        } else if (wcscmp(argv[i], L"-oae") == 0) { // Output and run <output>
             if (isCompileInput) {
                 if (i + 1 < argc && argv[i + 1][0] != '-') {
                     outputFile = argv[i + 1];
@@ -183,7 +213,14 @@ int wmain(int argc, wchar_t** argv) {
     // Run regression tests
     if (enableRegTests) {
         if (!RunRegressionTests(VM)) {
-            wprintf(L"One or more regression tests failed!\n");
+            wprintf(L"One or more language regression tests failed!\n");
+        }
+    }
+
+    // Run project regression tests
+    if (enableProTests) {
+        if (!RunProjectTests(VM)) {
+            wprintf(L"One or more project regression tests failed!\n");
         }
     }
 

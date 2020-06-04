@@ -48,7 +48,7 @@ void AAC::ResetCompilerInternals() {
 
 }
 
-AAC_CompileResult AAC::CompileFromAbstractSyntaxTrees(std::vector<AA_AST*> trees) {
+AAC_CompileResult AAC::CompileFromAbstractSyntaxTrees(aa::list<AA_AST*> trees) {
 
 	// Compile Result container
 	AAC_CompileResult result;
@@ -59,10 +59,10 @@ AAC_CompileResult AAC::CompileFromAbstractSyntaxTrees(std::vector<AA_AST*> trees
 	this->ResetCompilerInternals();
 
 	// Expand ASTs
-	for (size_t i = 0; i < trees.size(); i++) {
+	for (size_t i = 0; i < trees.Size(); i++) {
 		
 		// Expand the tree
-		trees[i]->Expand();
+		trees.At(i)->Expand();
 
 	}
 
@@ -84,13 +84,13 @@ AAC_CompileResult AAC::CompileFromAbstractSyntaxTrees(std::vector<AA_AST*> trees
 	unparser.Open(m_unparsefile);
 
 	// Compile all the trees into individual procedures
-	for (size_t i = 0; i < trees.size(); i++) {
+	for (size_t i = 0; i < trees.Size(); i++) {
 
 		// Unparse
-		unparser.Unparse(trees[i]);
+		unparser.Unparse(trees.At(i));
 
 		// Get the node type
-		AA_AST_NODE_TYPE tp = trees[i]->GetRoot()->type;
+		AA_AST_NODE_TYPE tp = trees.At(i)->GetRoot()->type;
 
 		// Escape clause (For stuff we dont compile)
 		if (tp == AA_AST_NODE_TYPE::usingspecificstatement || tp == AA_AST_NODE_TYPE::usingstatement) {
@@ -98,7 +98,7 @@ AAC_CompileResult AAC::CompileFromAbstractSyntaxTrees(std::vector<AA_AST*> trees
 		}
 
 		// Compile the procedures and add to result
-		compileResults.Add(this->CompileProcedureFromASTRootNode(trees[i]->GetRoot(), senv));
+		compileResults.Add(this->CompileProcedureFromASTRootNode(trees.At(i)->GetRoot(), senv));
 
 	}
 
@@ -196,13 +196,13 @@ aa::list<AAC::CompiledProcedure> AAC::CompileProcedureFromASTRootNode(AA_AST_NOD
 
 }
 
-AAC_CompileErrorMessage AAC::RunStaticOperations(std::vector<AA_AST*>& trees, AAStaticEnvironment& staticChecks) {
+AAC_CompileErrorMessage AAC::RunStaticOperations(aa::list<AA_AST*>& trees, AAStaticEnvironment& staticChecks) {
 	
 	// Compile error container
 	AAC_CompileErrorMessage err;
 
 	// Run static analysis and check for errors
-	if (COMPILE_ERROR((err = this->m_staticAnalyser->RunStaticAnalysis(trees)))) {
+	if (COMPILE_ERROR((err = this->m_staticAnalyser->RunStaticAnalysis(trees.Vector())))) {
 		return err;
 	}
 

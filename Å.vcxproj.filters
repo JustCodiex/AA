@@ -297,6 +297,12 @@
     <ClCompile Include="AA_AST_Expander.cpp">
       <Filter>Source Files\parser</Filter>
     </ClCompile>
+    <ClCompile Include="AAProjectRegressionTest.cpp">
+      <Filter>Source Files\aatesting</Filter>
+    </ClCompile>
+    <ClCompile Include="AACompileProject.cpp">
+      <Filter>Source Files\compiler</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AAB2F.h">
@@ -503,9 +509,18 @@
     <ClInclude Include="AA_AST_Expander.h">
       <Filter>Header Files\parser</Filter>
     </ClInclude>
+    <ClInclude Include="AAProjectRegressionTest.h">
+      <Filter>Header Files\aatesting</Filter>
+    </ClInclude>
+    <ClInclude Include="AACompileProject.h">
+      <Filter>Header Files\compiler</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="TODO.txt">
+      <Filter>Text Files</Filter>
+    </Text>
+    <Text Include="Arguments.txt">
       <Filter>Text Files</Filter>
     </Text>
   </ItemGroup>

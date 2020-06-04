@@ -1,6 +1,7 @@
 #pragma once
 #include "AALexer.h"
 #include "AA_AST.h"
+#include "list.h"
 
 // Error message
 struct AAP_SyntaxErrorMessage {
@@ -26,7 +27,7 @@ struct AAP_SyntaxErrorMessage {
 
 // The compiler result
 struct AAP_ParseResult {
-	std::vector< AA_AST*> result;
+	aa::list<AA_AST*> result;
 	bool success;
 	AAP_SyntaxErrorMessage firstMsg;
 	AAP_ParseResult() {
@@ -67,7 +68,7 @@ public:
 	/// Clear all trees (Release them)
 	/// </summary>
 	/// <param name="trees"></param>
-	void ClearTrees(std::vector<AA_AST*> trees);
+	void ClearTrees(aa::list<AA_AST*> trees);
 
 	/// <summary>
 	/// Clear errors found (in case a second parsing is reuqested

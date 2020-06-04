@@ -32,4 +32,42 @@ namespace aa {
 
 	unsigned int string_trail(std::string str);
 
+	namespace aastring {
+
+		/// <summary>
+		/// Check if a string s begins with the start string
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="s">String to check if begins with 'start'</param>
+		/// <param name="start">String to see if 's' begins with</param>
+		/// <returns>True if 's' begins with 'start'</returns>
+		template<typename T>
+		bool begins_with(T s, T start) {
+			if (s.length() >= start.length()) {
+				return start.compare(s.substr(0, start.length())) == 0;
+			} else {
+				return false;
+			}
+		}
+
+		// NOT IMPLEMENTED
+		template<typename T>
+		bool ends_with(T s, T end) {
+			return false;
+		}
+
+		/// <summary>
+		/// Check if a string contains another string
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="s">String to check</param>
+		/// <param name="contains">String to check if contained in 's'</param>
+		/// <returns></returns>
+		template<typename T>
+		bool contains(T s, T contains) {
+			return s.find(contains, 0) != T::npos;
+		}
+
+	}
+
 }
