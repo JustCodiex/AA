@@ -13,9 +13,6 @@ tagged class Leaf : BinaryTree {
 		("Leaf(" + ")");
 	}
 };
-Leaf Leaf() {
-	new Leaf();
-}
 tagged class Node : BinaryTree {
 	int value;
 	BinaryTree left;
@@ -33,9 +30,6 @@ tagged class Node : BinaryTree {
 		("Node(" + ((", " + this.right) + ((", " + this.left) + (this.value + ")"))));
 	}
 };
-Node Node(int value, BinaryTree left, BinaryTree right) {
-	new Node(value, left, right);
-}
 int main() {
 	BinaryTree tree = Node(10, Node(5, Node(2, Leaf(), Leaf()), Leaf()), Leaf());
 	int topValue = tree match {
@@ -47,4 +41,10 @@ int main() {
 		}
 	};
 	topValue;
+}
+Node Node(int value, BinaryTree left, BinaryTree right) {
+	new Node(value, left, right);
+}
+Leaf Leaf() {
+	new Leaf();
 }

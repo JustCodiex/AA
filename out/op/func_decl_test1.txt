@@ -1,10 +1,14 @@
 BYTECODE PROCEDURES:
-	START PROCEDURE 0 (test):
+	START PROCEDURE 0 (<GlobalScope>):
+	OPERATIONS:
+	END PROCEDURE;
+
+	START PROCEDURE 1 (test):
 	OPERATIONS:
 		[0000]  RET                                                             
 	END PROCEDURE;
 
-	START PROCEDURE 1 (testb):
+	START PROCEDURE 2 (testb):
 	OPERATIONS:
 		[0000]  RET                                                             
 	END PROCEDURE;

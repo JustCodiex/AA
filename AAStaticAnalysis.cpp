@@ -224,9 +224,15 @@ bool AAStaticAnalysis::FindEntryPoint(std::vector<AA_AST*> trees, AAStaticEnviro
 
 		// TODO: Implement
 
+		return false;
+
 	} else {
 
-		// TODO: Look at global scope
+		// Set as global scope
+		foundEntry = 0;
+
+		// Return true
+		return true;
 
 	}
 

@@ -1,7 +1,7 @@
 BYTECODE PROCEDURES:
 	START PROCEDURE 0 (<GlobalScope>):
 	OPERATIONS:
-		[0000]  CALL, 9, 0                                                      ;; Calls: main
+		[0000]  CALL, 7, 0                                                      ;; Calls: main
 	END PROCEDURE;
 
 	START PROCEDURE 1 (Leaf::Leaf):
@@ -36,13 +36,7 @@ BYTECODE PROCEDURES:
 		[0004]  RET                                                             
 	END PROCEDURE;
 
-	START PROCEDURE 4 (Leaf):
-	OPERATIONS:
-		[0000]  CTOR, 2, 1, 0                                                   
-		[0001]  RET                                                             
-	END PROCEDURE;
-
-	START PROCEDURE 5 (Node::Node):
+	START PROCEDURE 4 (Node::Node):
 	IDENTIFIERS:
 		this;		right;		left;		value;
 	OPERATIONS:
@@ -63,7 +57,7 @@ BYTECODE PROCEDURES:
 		[0014]  RET                                                             
 	END PROCEDURE;
 
-	START PROCEDURE 6 (Node::Equals):
+	START PROCEDURE 5 (Node::Equals):
 	IDENTIFIERS:
 		_other;		this;
 	OPERATIONS:
@@ -91,7 +85,7 @@ BYTECODE PROCEDURES:
 		[0021]  RET                                                             
 	END PROCEDURE;
 
-	START PROCEDURE 7 (Node::ToString):
+	START PROCEDURE 6 (Node::ToString):
 	CONSTANTS:	[UTF-8, "Node("][UTF-8, ", "][UTF-8, ", "][UTF-8, ")"]
 	IDENTIFIERS:
 		this;
@@ -116,21 +110,7 @@ BYTECODE PROCEDURES:
 		[0017]  RET                                                             
 	END PROCEDURE;
 
-	START PROCEDURE 8 (Node):
-	IDENTIFIERS:
-		right;		left;		value;
-	OPERATIONS:
-		[0000]  SETVAR, 0, 14                                                   ;; primitive: refptr [16 bytes]
-		[0001]  SETVAR, 1, 14                                                   ;; primitive: refptr [16 bytes]
-		[0002]  SETVAR, 2, 6                                                    ;; primitive: int32 [4 bytes]
-		[0003]  GETVAR, 2                                                       
-		[0004]  GETVAR, 1                                                       
-		[0005]  GETVAR, 0                                                       
-		[0006]  CTOR, 3, 5, 0                                                   
-		[0007]  RET                                                             
-	END PROCEDURE;
-
-	START PROCEDURE 9 (main):
+	START PROCEDURE 7 (main):
 	CONSTANTS:	[I32, 10][I32, 5][I32, 2][I32, 0]
 	IDENTIFIERS:
 		0$[tree];		1$[topValue];		1$[v];
@@ -138,12 +118,12 @@ BYTECODE PROCEDURES:
 		[0000]  PUSHC, 0                                                        
 		[0001]  PUSHC, 1                                                        
 		[0002]  PUSHC, 2                                                        
-		[0003]  CALL, 4, 0                                                      ;; Calls: Leaf
-		[0004]  CALL, 4, 0                                                      ;; Calls: Leaf
+		[0003]  CALL, 9, 0                                                      ;; Calls: Leaf
+		[0004]  CALL, 9, 0                                                      ;; Calls: Leaf
 		[0005]  CALL, 8, 3                                                      ;; Calls: Node
-		[0006]  CALL, 4, 0                                                      ;; Calls: Leaf
+		[0006]  CALL, 9, 0                                                      ;; Calls: Leaf
 		[0007]  CALL, 8, 3                                                      ;; Calls: Node
-		[0008]  CALL, 4, 0                                                      ;; Calls: Leaf
+		[0008]  CALL, 9, 0                                                      ;; Calls: Leaf
 		[0009]  CALL, 8, 3                                                      ;; Calls: Node
 		[0010]  SETVAR, 0, 14                                                   ;; primitive: refptr [16 bytes]
 		[0011]  GETVAR, 0                                                       
@@ -160,6 +140,26 @@ BYTECODE PROCEDURES:
 		[0022]  SETVAR, 1, 6                                                    ;; primitive: int32 [4 bytes]
 		[0023]  GETVAR, 1                                                       
 		[0024]  RET                                                             
+	END PROCEDURE;
+
+	START PROCEDURE 8 (Node):
+	IDENTIFIERS:
+		right;		left;		value;
+	OPERATIONS:
+		[0000]  SETVAR, 0, 14                                                   ;; primitive: refptr [16 bytes]
+		[0001]  SETVAR, 1, 14                                                   ;; primitive: refptr [16 bytes]
+		[0002]  SETVAR, 2, 6                                                    ;; primitive: int32 [4 bytes]
+		[0003]  GETVAR, 2                                                       
+		[0004]  GETVAR, 1                                                       
+		[0005]  GETVAR, 0                                                       
+		[0006]  CTOR, 3, 4, 0                                                   
+		[0007]  RET                                                             
+	END PROCEDURE;
+
+	START PROCEDURE 9 (Leaf):
+	OPERATIONS:
+		[0000]  CTOR, 2, 1, 0                                                   
+		[0001]  RET                                                             
 	END PROCEDURE;
 END BYTECODE PROCEDURES
 
