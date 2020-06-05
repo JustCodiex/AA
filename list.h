@@ -255,6 +255,14 @@ namespace aa {
 			return m_vector;
 		}
 
+		/// <summary>
+		/// Get the pointer to the first element of the underlying vector object
+		/// </summary>
+		/// <returns></returns>
+		T* Ptr() {
+			return &m_vector[0];
+		}
+
 	private:
 
 		std::vector<T> m_vector;

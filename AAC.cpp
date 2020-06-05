@@ -5,7 +5,7 @@
 #include "AAVM.h"
 #include "AAUnparser.h"
 
-typedef AAC::CompiledAbstractExpression Instruction;
+typedef CompiledAbstractExpression Instruction;
 typedef aa::list<Instruction> Instructions;
 
 AAC::AAC(AAVM* pVM) {
@@ -19,6 +19,9 @@ AAC::AAC(AAVM* pVM) {
 
 	// Set current procID to 0
 	m_currentProcID = 0;
+
+	// The found entry point
+	m_foundEntryPoint = 0;
 
 }
 
@@ -39,6 +42,9 @@ void AAC::ResetCompilerInternals() {
 
 	// Reset current procedure ID
 	m_currentProcID = 0;
+
+	// Reset found entry point
+	m_foundEntryPoint = 0;
 
 	// Reset registered types and other static configurations
 	m_staticAnalyser->Reset(m_preregisteredFunctions, m_preregisteredClasses, m_preregisteredNamespaces);
@@ -76,9 +82,6 @@ AAC_CompileResult AAC::CompileFromAbstractSyntaxTrees(aa::list<AA_AST*> trees) {
 	// Compile types
 	m_byteTypes = this->CompileTypedata(senv);
 
-	// Compiled procedure results
-	aa::list<AAC::CompiledProcedure> compileResults;
-
 	// The unparser
 	AAUnparser unparser;
 	unparser.Open(m_unparsefile);
@@ -98,7 +101,7 @@ AAC_CompileResult AAC::CompileFromAbstractSyntaxTrees(aa::list<AA_AST*> trees) {
 		}
 
 		// Compile the procedures and add to result
-		compileResults.Add(this->CompileProcedureFromASTRootNode(trees.At(i)->GetRoot(), senv));
+		result.compileResults.Add(this->CompileProcedureFromASTRootNode(trees.At(i)->GetRoot(), senv));
 
 	}
 
@@ -106,26 +109,29 @@ AAC_CompileResult AAC::CompileFromAbstractSyntaxTrees(aa::list<AA_AST*> trees) {
 	unparser.Close();
 
 	// Compile all procedures into bytecode
-	result.result = CompileFromProcedures(compileResults, senv, 0);
+	result.result = CompileFromProcedures(result.compileResults, senv, m_foundEntryPoint);
 
 	// Write operations out in a readable format
 	if (m_outfile != L"") {
-		aa::dump_instructions(m_outfile, compileResults.Vector(), m_byteTypes.Vector(), m_pAAVM);
+		aa::dump_instructions(m_outfile, result.compileResults.Vector(), m_byteTypes.Vector(), m_pAAVM);
 	}
 
 	// Set success flag to true
 	result.success = true;
+
+	// Reset override entry point
+	m_overrideEntryPoint = L"";
 
 	// Aslo return bytecode (so we can execute it directly)
 	return result;
 
 }
 
-AAC::CompiledProcedure AAC::CompileProcedureFromASTNode(AA_AST_NODE* pASTNode, AAStaticEnvironment staticData) {
+CompiledProcedure AAC::CompileProcedureFromASTNode(AA_AST_NODE* pASTNode, AAStaticEnvironment staticData) {
 
 	// Procedure for the abstract tree
 	CompiledProcedure proc;
-	proc.node = pASTNode;
+	proc.name = pASTNode->content;
 
 	// Compile the execution stack
 	proc.procOperations = CompileAST(pASTNode, proc.procEnvironment, staticData);
@@ -135,7 +141,7 @@ AAC::CompiledProcedure AAC::CompileProcedureFromASTNode(AA_AST_NODE* pASTNode, A
 
 }
 
-aa::list<AAC::CompiledProcedure> AAC::CompileProcedureFromASTRootNode(AA_AST_NODE* pAstRootNode, AAStaticEnvironment senv) {
+aa::list<CompiledProcedure> AAC::CompileProcedureFromASTRootNode(AA_AST_NODE* pAstRootNode, AAStaticEnvironment senv) {
 
 	// Compile results
 	aa::list<CompiledProcedure> compileResults;
@@ -217,6 +223,19 @@ AAC_CompileErrorMessage AAC::RunStaticOperations(aa::list<AA_AST*>& trees, AASta
 
 	// Set static environment
 	staticChecks = this->m_staticAnalyser->GetResult();
+
+	// Get the entry point
+	if (!this->m_staticAnalyser->FindEntryPoint(trees.Vector(), staticChecks, m_overrideEntryPoint, m_foundEntryPoint)) {
+
+		// Setup error
+		err.errorMsg = "Failed to find an entry point";
+		err.errorSource = AACodePosition::Undetermined;
+		err.errorType = 1;
+
+		// Return error
+		return err;
+
+	}
 
 	// Return result of static function check
 	return NO_COMPILE_ERROR_MESSAGE;
@@ -1211,7 +1230,7 @@ Instruction AAC::HandleConstPush(CompiledEnviornmentTable& cTable, bool bLit) {
 
 }
 
-AAC::CompiledAbstractExpression AAC::HandleConstPush(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode) {
+Instruction AAC::HandleConstPush(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode) {
 
 	AA_AnyLiteral aLit = AA_AnyLiteral();
 	AALiteralType lType = AALiteralType::Int;
@@ -1256,7 +1275,7 @@ AAC::CompiledAbstractExpression AAC::HandleConstPush(CompiledEnviornmentTable& c
 
 }
 
-AAC::CompiledAbstractExpression AAC::HandleConstPush(CompiledEnviornmentTable& cTable, AA_Literal lit) {
+Instruction AAC::HandleConstPush(CompiledEnviornmentTable& cTable, AA_Literal lit) {
 
 	// Get the constant ID to push
 	int i = -1;
@@ -1269,7 +1288,7 @@ AAC::CompiledAbstractExpression AAC::HandleConstPush(CompiledEnviornmentTable& c
 
 	if (lit.tp == AALiteralType::String) { // We treat strings a bit different
 		
-		CompiledAbstractExpression pushStringOp;
+		Instruction pushStringOp;
 		pushStringOp.bc = AAByteCode::PUSHWS;
 		pushStringOp.argCount = 1;
 		pushStringOp.argValues[0] = i;
@@ -1278,7 +1297,7 @@ AAC::CompiledAbstractExpression AAC::HandleConstPush(CompiledEnviornmentTable& c
 
 	} else {
 
-		CompiledAbstractExpression pushOp;
+		Instruction pushOp;
 		pushOp.bc = AAByteCode::PUSHC;
 		pushOp.argCount = 1;
 		pushOp.argValues[0] = i;
@@ -1289,7 +1308,7 @@ AAC::CompiledAbstractExpression AAC::HandleConstPush(CompiledEnviornmentTable& c
 
 }
 
-AAC::CompiledAbstractExpression AAC::HandleVarPush(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode) {
+Instruction AAC::HandleVarPush(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode) {
 
 	CompiledAbstractExpression pushCAE;
 	pushCAE.bc = AAByteCode::GETVAR;
@@ -1306,7 +1325,7 @@ AAC::CompiledAbstractExpression AAC::HandleVarPush(CompiledEnviornmentTable& cTa
 
 }
 
-AAC::CompiledAbstractExpression AAC::HandleFieldPush(AA_AST_NODE* pNode, AAStaticEnvironment staticData) {
+Instruction AAC::HandleFieldPush(AA_AST_NODE* pNode, AAStaticEnvironment staticData) {
 
 	CompiledAbstractExpression pushCAE;
 	pushCAE.bc = AAByteCode::GETFIELD;
@@ -1807,65 +1826,6 @@ AAC_Out AAC::CompileFromProcedures(aa::list<CompiledProcedure> procedures, AASta
 	return compileBytecodeResult;
 
 }
-
-#pragma region Stack Verifier (Not used)
-
-int AAC::CalcStackSzAfterOperation(AAC::CompiledAbstractExpression op, AAStaticEnvironment staticData) {
-	switch (op.bc) {
-	case AAByteCode::PUSHC:
-	case AAByteCode::PUSHV:
-	case AAByteCode::GETVAR:
-	case AAByteCode::ALLOC:
-		return 1; // Increases stack size by one
-	case AAByteCode::ADD:
-	case AAByteCode::SUB:
-	case AAByteCode::MUL:
-	case AAByteCode::MOD:
-	case AAByteCode::SETVAR:
-	case AAByteCode::LEQ:
-	case AAByteCode::GEQ:
-	case AAByteCode::LE:
-	case AAByteCode::GE:
-	case AAByteCode::JMPF:
-	case AAByteCode::JMPT:
-		return -1; // Takes the two elements on top and operates on them, putting the resulting back unto the stack
-	case AAByteCode::SETFIELD:
-		return -2;
-	case AAByteCode::CALL: {
-		int callc = (staticData.availableFunctions.FindFirst([op](AAFuncSignature*& sig) { return sig->isVMFunc == false && sig->procID == op.argValues[0]; })->returnType == AACType::Void) ? 0 : 1;
-		printf("%i", callc);
-		return -op.argValues[1] + callc;
-	}
-	case AAByteCode::XCALL:
-		return -op.argValues[1] + (m_preregisteredFunctions[op.argValues[0]]->returnType == AACType::Void) ? 0 : 1;
-	case AAByteCode::JMP:
-	case AAByteCode::GETFIELD:
-		return 0;
-	default: // seperated for debugging purposes (eg. detecting non-checked operations)
-		return 0;
-	}
-}
-
-// Obsolete, please let the static analyser do this!!!!
-bool AAC::VerifyFunctionCallstack(aa::list<CompiledAbstractExpression> body, int expected, int args, AAStaticEnvironment staticData) {
-
-	// Stack count
-	int stacksz = 0;
-
-	// Run through all operations
-	body.ForEach([&stacksz, this, staticData](AAC::CompiledAbstractExpression& c) { stacksz += this->CalcStackSzAfterOperation(c, staticData); });
-
-	// Return true iff stacksz is count
-	if (stacksz == expected - args) { // The expected amount (minus args, because setvar subtracts from stack)
-		return true;
-	} else {
-		printf("%i", stacksz);
-		return false;
-	}
-
-}
-
-#pragma endregion
 
 #pragma region Preregistering
 

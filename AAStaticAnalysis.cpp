@@ -44,30 +44,36 @@ AAStaticAnalysis::AAStaticAnalysis(AAC* pCompiler) {
 	// Create the dynamic type environment
 	this->m_dynamicTypeEnvironment = new AADynamicTypeEnvironment;
 
+	// No global scope by default
+	this->m_foundGlobalScope = false;
+
 }
 
 void AAStaticAnalysis::Reset(std::vector<AAFuncSignature*> funcs, std::vector<AAClassSignature*> classes, std::vector<AACNamespace*> namespaces) {
 
 	// Copy functions
-	m_preregisteredFunctions.FromVector(funcs);
+	this->m_preregisteredFunctions.FromVector(funcs);
 
 	// Copy classes
-	m_preregisteredClasses.FromVector(classes);
+	this->m_preregisteredClasses.FromVector(classes);
 
 	// Copy namespaces
-	m_preregisteredNamespaces.FromVector(namespaces);
+	this->m_preregisteredNamespaces.FromVector(namespaces);
 
 	// Point to none
-	m_workTrees = 0;
+	this->m_workTrees = 0;
 
 	// Not working on one
-	m_currentTreeIndex = 0;
+	this->m_currentTreeIndex = 0;
 
 	// Reset the type index
-	m_typeIndex = 0;
+	this->m_typeIndex = 0;
 
 	// Resets the dynamic environment
-	m_dynamicTypeEnvironment->WipeClean();
+	this->m_dynamicTypeEnvironment->WipeClean();
+
+	// No global scope yet
+	this->m_foundGlobalScope = false;
 
 }
 
@@ -76,8 +82,8 @@ AAC_CompileErrorMessage AAStaticAnalysis::RunStaticAnalysis(std::vector<AA_AST*>
 	// Compile error container
 	AAC_CompileErrorMessage err;
 
-	// Extract the global scope
-	//this->ExtractGlobalScope(trees);
+	// Extract the global scope (across all files - must be executed first)
+	this->m_foundGlobalScope = this->ExtractGlobalScope(trees);
 
 	// Set to point to the working trees
 	this->m_workTrees = &trees;
@@ -177,6 +183,58 @@ bool AAStaticAnalysis::RunTypecheckAnalysis(AA_AST* pTree, AAStaticEnvironment& 
 
 }
 
+bool AAStaticAnalysis::FindEntryPoint(std::vector<AA_AST*> trees, AAStaticEnvironment senv, std::wstring overrideEntry, int& foundEntry) {
+
+	// Look for class instance
+	std::wstring namespaceDomain = L"";
+	std::wstring classInstance = L"";
+
+	// If no override entry is found
+	if (overrideEntry.compare(L"") == 0) {
+		overrideEntry = L"main";
+	} else {
+		if (aa::aastring::contains<std::wstring>(overrideEntry, L"::")) {
+			// TODO: Look up
+		}
+	}
+
+	// The function pool to look in
+	aa::set<AAFuncSignature*> funcPool; // TODO: Find based on above information
+
+	// TODO: Undo this, so it's done properly
+	funcPool = senv.globalNamespace->functions;
+
+	// Find all candidates
+	aa::set<AAFuncSignature*> funcCandidates = funcPool.FindAll(
+		[overrideEntry](AAFuncSignature*& sig) {
+			return sig->GetName().compare(overrideEntry) == 0;
+		}
+	);
+
+	// If there's only one candidate
+	if (funcCandidates.Size() == 1) {
+
+		// Set the proc ID
+		foundEntry = funcCandidates.Apply(0)->procID;
+
+		// Return true, we found the function we wanted
+		return true;
+
+	} else if (funcCandidates.Size() > 1) {
+
+		// TODO: Implement
+
+	} else {
+
+		// TODO: Look at global scope
+
+	}
+
+	// Default here is false
+	return false;
+
+}
+
 AAStaticEnvironment AAStaticAnalysis::NewStaticEnvironment(AACNamespace*& globalDomain) {
 
 	// Create the global domain
@@ -240,30 +298,39 @@ AAStaticEnvironment AAStaticAnalysis::NewStaticEnvironment(AACNamespace*& global
 
 bool AAStaticAnalysis::ExtractGlobalScope(std::vector<AA_AST*>& trees) {
 
-	size_t i = 0;
+	// Global scope - which in turn is a compile unit for itself...
 	AA_AST_NODE* pGlobalScope = new AA_AST_NODE(L"<GlobalScope>", AA_AST_NODE_TYPE::block, AACodePosition(0, 0));
 
-	while (i < trees.size()) {
+	// Loop through all trees (files)
+	for (size_t i = 0; i < trees.size(); i++) {
 
-		AA_AST_NODE_TYPE nodeType = trees[i]->GetRoot()->type;
+		// Expression index
+		size_t j = 0;
 
-		if (nodeType != AA_AST_NODE_TYPE::fundecl && nodeType != AA_AST_NODE_TYPE::classdecl && nodeType != AA_AST_NODE_TYPE::enumdecleration && // Handle declerations for themselves
-			nodeType != AA_AST_NODE_TYPE::usingspecificstatement && nodeType != AA_AST_NODE_TYPE::usingstatement && // Using statements need to preserve their position in code
-			nodeType != AA_AST_NODE_TYPE::name_space) { // namespaces are per definition not part of the global namespace/scope
+		// While j < expressions in compile unit of tree i
+		while (j < trees[i]->GetRoot()->expressions.size()) {
 
-			pGlobalScope->expressions.push_back(trees[i]->GetRoot());
-			trees.erase(trees.begin() + i);
+			// Get node type
+			AA_AST_NODE_TYPE nodeType = trees[i]->GetRoot()->expressions[j]->type;
 
-		} else {
-			i++;
+			// If not a declaration or otherwise important - non executiable statement
+			if (nodeType != AA_AST_NODE_TYPE::fundecl && nodeType != AA_AST_NODE_TYPE::classdecl && nodeType != AA_AST_NODE_TYPE::enumdecleration && // Handle declerations for themselves
+				nodeType != AA_AST_NODE_TYPE::usingspecificstatement && nodeType != AA_AST_NODE_TYPE::usingstatement && // Using statements need to preserve their position in code
+				nodeType != AA_AST_NODE_TYPE::name_space) { // namespaces are per definition not part of the global namespace/scope
+
+				pGlobalScope->expressions.push_back(trees[i]->GetRoot()->expressions[j]);
+				trees[i]->GetRoot()->expressions.erase(trees[i]->GetRoot()->expressions.begin() + j);
+
+			} else { // Else it is - leave it in
+				j++;
+			}
+
 		}
 
 	}
 
-	// Add global scope iff it's not empty
-	if (pGlobalScope->expressions.size() > 0) {
-		trees.insert(trees.begin(), new AA_AST(pGlobalScope));
-	}
+	// Add global scope
+	trees.insert(trees.begin(), new AA_AST(pGlobalScope));
 
 	// Return true if there were more than one element in the global scope
 	return pGlobalScope->expressions.size() > 0;

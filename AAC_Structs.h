@@ -1,5 +1,7 @@
 #pragma once
 #include "AACodePosition.h"
+#include "AAByteCode.h"
+#include <string>
 
 // Compiled output
 struct AAC_Out {
@@ -117,11 +119,46 @@ struct AAC_CompileErrorMessage {
 	}
 };
 
+namespace aa {
+	const int MAX_ARGUMENT_SIZE = 16;
+}
+
+struct CompiledAbstractExpression {
+	AAByteCode bc;
+	int argCount;
+	int argValues[aa::MAX_ARGUMENT_SIZE];
+	CompiledAbstractExpression() {
+		bc = AAByteCode::NOP;
+		argCount = 0;
+		memset(argValues, -1, sizeof(argValues));
+	}
+	CompiledAbstractExpression(AAByteCode code, int argCount, int* argVals) {
+		this->bc = code;
+		this->argCount = argCount;
+		memset(argValues, -1, sizeof(argValues));
+		memcpy(this->argValues, argValues, sizeof(int) * argCount);
+	}
+};
+
+struct CompiledEnviornmentTable {
+	aa::list<AA_Literal> constValues;
+	aa::list<std::wstring> identifiers;
+};
+
+struct CompiledProcedure {
+	aa::list<CompiledAbstractExpression> procOperations;
+	CompiledEnviornmentTable procEnvironment;
+	std::wstring name;
+	//AA_AST_NODE* node;
+	CompiledProcedure() { name = L"Undefined"; }
+};
+
 // The compiler result
 struct AAC_CompileResult {
 	AAC_Out result;
 	bool success;
 	AAC_CompileErrorMessage firstMsg;
+	aa::list<CompiledProcedure> compileResults;
 	AAC_CompileResult() {
 		success = false;
 		result = AAC_Out();

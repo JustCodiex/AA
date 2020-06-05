@@ -69,7 +69,13 @@ public:
 	/// Get the result of the static analysis in a static environment representation
 	/// </summary>
 	/// <returns></returns>
-	AAStaticEnvironment GetResult() { return m_lastStaticEnv; }
+	AAStaticEnvironment GetResult() const { return m_lastStaticEnv; }
+
+	/// <summary>
+	/// Has a global scope been found in latest analysis
+	/// </summary>
+	/// <returns></returns>
+	bool HasGlobalScope() const { return m_foundGlobalScope; }
 
 	/// <summary>
 	/// Verifies if the function's control path is valid, such that the function returns the correct amount of values
@@ -86,6 +92,16 @@ public:
 	/// <param name="pTree">Pointer to tree to fix</param>
 	/// <returns>True if no variable problems occured - false if any scope error occured</returns>
 	bool Vars(AAVars vars, AA_AST* pTree);
+
+	/// <summary>
+	/// Find the entry point to use when executing the program
+	/// </summary>
+	/// <param name="trees">The trees to find entry point in</param>
+	/// <param name="senv">The static environment to retrieve functions from (Looked for here before running elsewhere)</param>
+	/// <param name="overrideEntry">The name of the entry function to use (none = main)</param>
+	/// <param name="foundEntry">The found entry</param>
+	/// <returns>True if a valid entry point could be found; false if no entry point could be found</returns>
+	bool FindEntryPoint(std::vector<AA_AST*> trees, AAStaticEnvironment senv, std::wstring overrideEntry, int& foundEntry);
 
 private:
 
@@ -157,5 +173,7 @@ private:
 	size_t m_currentTreeIndex;
 
 	uint32_t m_typeIndex;
+
+	bool m_foundGlobalScope;
 
 };

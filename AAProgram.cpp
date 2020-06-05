@@ -1,5 +1,7 @@
 #include "AAProgram.h"
 #include "AAByteType.h"
+#include "list.h"
+#include <fstream>
 
 AAProgram::AAProgram() {
 	m_entryPoint = -1;
@@ -9,8 +11,46 @@ AAProgram::AAProgram() {
 	m_types = 0;
 }
 
+void AAProgram::Release() {
+
+	// Delete self
+	delete this;
+
+}
+
+bool AAProgram::LoadProgram(std::wstring path) {
+
+	// Binary stream
+	std::ifstream bin = std::ifstream(path, std::ios::in | std::ios::ate);
+
+	// If we failed to open
+	if (!bin.is_open()) {
+		return false;
+	}
+
+	// Read file size
+	uint32_t len = (uint32_t)bin.tellg();
+
+	// Allocate memory
+	char* binaryContent = new char[len+1];
+
+	// Seek start
+	bin.seekg(0, std::ios::beg);
+
+	// Read into buffer
+	bin.read(binaryContent, len);
+
+	// Close the file
+	bin.close();
+
+	// Return result of parse
+	return this->LoadProgram(reinterpret_cast<unsigned char*>(binaryContent), len);
+
+}
+
 bool AAProgram::LoadProgram(unsigned char* bytes, unsigned long long length) {
 
+	// Scoped binary walker
 	aa::bwalker bw = aa::bwalker(bytes, length);
 
 	// Read version program was compiled with
@@ -52,6 +92,9 @@ bool AAProgram::LoadProgram(unsigned char* bytes, unsigned long long length) {
 		LoadType(bw);
 
 	}
+
+	// Close binary walker and release resources
+	bw.close_and_release();
 
 	return true;
 

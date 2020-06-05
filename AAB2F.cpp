@@ -24,7 +24,7 @@ namespace aa {
 
 	}
 
-	std::wstring OpToWString(AAC::CompiledAbstractExpression CAE) {
+	std::wstring OpToWString(CompiledAbstractExpression CAE) {
 		std::wstring output = L"";
 		switch (CAE.bc) {
 		case AAByteCode::ADD:
@@ -300,7 +300,7 @@ namespace aa {
 			code == AAByteCode::LEQ || code == AAByteCode::GE || code == AAByteCode::GEQ || code == AAByteCode::NNEG ||	code == AAByteCode::CMPE || code == AAByteCode::CMPNE;
 	}
 
-	void dump_instructions(std::wstring file, std::vector<AAC::CompiledProcedure> procedures, std::vector<AAByteType> types, AAVM* pAAVM) {
+	void dump_instructions(std::wstring file, std::vector<CompiledProcedure> procedures, std::vector<AAByteType> types, AAVM* pAAVM) {
 
 		std::wofstream o = std::wofstream(file);
 
@@ -310,8 +310,8 @@ namespace aa {
 
 			for (size_t i = 0; i < procedures.size(); i++) {
 
-				AAC::CompiledProcedure proc = procedures[i];
-				o << L"\tSTART PROCEDURE " << std::to_wstring(i) << " (" << procedures[i].node->content << L"):\n";
+				CompiledProcedure proc = procedures[i];
+				o << L"\tSTART PROCEDURE " << std::to_wstring(i) << " (" << procedures[i].name << L"):\n";
 				if (proc.procEnvironment.constValues.Size() > 0) {
 					o << "\tCONSTANTS:\t";
 					for (size_t j = 0; j < proc.procEnvironment.constValues.Size(); j++) {
@@ -336,7 +336,7 @@ namespace aa {
 					} else if (proc.procOperations.At(j).bc == AAByteCode::CALL) {
 						size_t target = proc.procOperations.At(j).argValues[0];
 						if (target < procedures.size()) {
-							o << L";; Calls: " << procedures.at(target).node->content;
+							o << L";; Calls: " << procedures.at(target).name;
 						} else {
 							o << L"t;; Calls: Uncompiled function [Uncaught compile error!]";
 						}

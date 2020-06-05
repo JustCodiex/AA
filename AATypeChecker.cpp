@@ -56,7 +56,7 @@ AACType* AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 	case AA_AST_NODE_TYPE::classbody:
 	case AA_AST_NODE_TYPE::enumbody:
 	case AA_AST_NODE_TYPE::block: {
-		AACType* r = AACType::ErrorType;
+		AACType* r = AACType::Void;
 		for (size_t i = 0; i < node->expressions.size(); i++) {
 			r = this->TypeCheckNode(node->expressions[i]);
 			if (r == AACType::ErrorType) {

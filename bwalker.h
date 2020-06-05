@@ -88,6 +88,18 @@ namespace aa{
 			return wif.str();
 		}
 
+		void close_and_release() {
+			
+			// Reset data
+			this->m_length = 0;
+			this->m_position = 0;
+			
+			// Release bytes
+			delete[] this->m_bytes;
+			this->m_bytes = 0;
+			
+		}
+
 	private:
 
 		unsigned char* m_bytes;

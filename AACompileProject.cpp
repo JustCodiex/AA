@@ -1,4 +1,5 @@
 #include "AACompileProject.h"
+#include "AAUnparser.h"
 #include "astring.h"
 #include "AAVM.h"
 #include "AAB2F.h"
@@ -12,6 +13,7 @@ constexpr int _PROJECT_ASSMBLYPATH = 1;
 constexpr int _PROJECT_UNPARSEPATH = 2;
 constexpr int _PROJECT_RELATIVEPATH = 3;
 constexpr int _PROJECT_OUTFILE = 4;
+constexpr int _PROJECT_NAME = 5;
 
 AACompileProject::AACompileProject(AAVM* pAAVM) {
 	this->m_pVMTarget = pAAVM;
@@ -32,6 +34,10 @@ void AACompileProject::LoadProjectFile(std::wstring projectFilePath) {
 	// Set path
 	this->m_paths[_PROJECT_FILEPATH] = projectFilePath;
 	this->m_paths[_PROJECT_RELATIVEPATH] = projectFilePath.substr(0, projectFilePath.find_last_of(L"\\") + 1);
+	this->m_paths[_PROJECT_NAME] = projectFilePath.substr(
+		this->m_paths[_PROJECT_RELATIVEPATH].length()
+	);
+	this->m_paths[_PROJECT_NAME] = this->m_paths[_PROJECT_NAME].substr(0, this->m_paths[_PROJECT_NAME].find_first_of(L"."));
 
 	// Open the project file
 	std::wifstream wfs = std::wifstream(this->m_paths[_PROJECT_FILEPATH]);
@@ -153,9 +159,14 @@ bool AACompileProject::ExecuteProjectFile() {
 		}
 	);
 
-	// Set additional output files
-	pCompilerInstance->SetOpListFile(this->m_paths[_PROJECT_ASSMBLYPATH]);
-	pCompilerInstance->SetUnparseFile(this->m_paths[_PROJECT_UNPARSEPATH]);
+	// The paths for additional output
+	std::wstring additionalPaths[2] = {
+		this->m_paths[_PROJECT_ASSMBLYPATH] + this->m_paths[_PROJECT_NAME] + L".txt",
+		this->m_paths[_PROJECT_UNPARSEPATH] + this->m_paths[_PROJECT_NAME] + L".aa"
+	};
+
+	// Set custom entry point (if any)
+	pCompilerInstance->SetEntrypointFunction(this->m_entrypointname);
 
 	// Compile the whole project
 	auto result = pCompilerInstance->CompileFromAbstractSyntaxTrees(parseResult.result);
@@ -165,8 +176,32 @@ bool AACompileProject::ExecuteProjectFile() {
 		return false;
 	}
 
+	// Unparse if we have a file
+	if (additionalPaths[1].compare(L"") != 0) {
+
+		// The unparser
+		AAUnparser unparser;
+		unparser.Open(additionalPaths[1]);
+
+		// Unparse everything
+		parseResults.ForEach(
+			[additionalPaths, &unparser](AAP_ParseResult& result) {
+				unparser.Unparse(result.result.First());
+			}
+		);
+
+		// Close the unparser
+		unparser.Close();
+
+	}
+
 	// Write bytecode
 	aa::dump_bytecode(this->m_paths[_PROJECT_RELATIVEPATH] + this->m_paths[_PROJECT_OUTFILE], result.result);
+	
+	// Write operations out in a readable format
+	if (additionalPaths[0] != L"") {
+		aa::dump_instructions(additionalPaths[0], result.compileResults.Vector(), pCompilerInstance->GetTypedata().Vector(), this->m_pVMTarget);
+	}
 
 	// Return true
 	return true;

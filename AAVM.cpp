@@ -134,7 +134,20 @@ bool AAVM::CompileProject(std::wstring projectfile, std::wstring formattedoutfil
 
 void AAVM::RunFile(std::wstring file) {
 
+	// Create program container
+	AAProgram* pProgram = new AAProgram;
+	
+	// Load it
+	if (pProgram->LoadProgram(file)) {
 
+		// Run it
+		this->Run(pProgram);
+
+	} else { // Failed to load...
+
+		printf("Failed to run file!");
+
+	}
 
 }
 
@@ -265,6 +278,10 @@ AAStackValue AAVM::Run(AAProgram* pProg) {
 
 	}
 
+	// Release the program resources
+	pProg->Release();
+
+	// Return the resulting value
 	return v;
 
 }
@@ -623,7 +640,7 @@ void AAVM::exec(AAProgram::Procedure* procedure, aa::stack<AARuntimeEnvironment>
 				execp.PopEnvironment(false);
 				execp = callstack.Pop();
 			} else {
-				AAVM_ThrowRuntimeErr("CallstackCorrupted", std::string("The callstack was unexpectedly corrupted"));
+				AAVM_OPI++; // Goto next step and end execution
 			}
 
 			break;

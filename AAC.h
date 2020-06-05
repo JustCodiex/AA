@@ -9,43 +9,11 @@
 
 class AAVM;
 
-namespace aa {
-	const int MAX_ARGUMENT_SIZE = 16;
-}
-
 // Compiler Class
 class AAC {
 
 public:
 
-	struct CompiledAbstractExpression {
-		AAByteCode bc;
-		int argCount;
-		int argValues[aa::MAX_ARGUMENT_SIZE];
-		CompiledAbstractExpression() {
-			bc = AAByteCode::NOP;
-			argCount = 0;
-			memset(argValues, -1, sizeof(argValues));
-		}
-		CompiledAbstractExpression(AAByteCode code, int argCount, int* argVals) {
-			this->bc = code;
-			this->argCount = argCount;
-			memset(argValues, -1, sizeof(argValues));
-			memcpy(this->argValues, argValues, sizeof(int) * argCount);
-		}
-	};
-
-	struct CompiledEnviornmentTable {
-		aa::list<AA_Literal> constValues;
-		aa::list<std::wstring> identifiers;
-	};
-
-	struct CompiledProcedure {
-		aa::list<CompiledAbstractExpression> procOperations;
-		CompiledEnviornmentTable procEnvironment;
-		AA_AST_NODE* node;
-		CompiledProcedure() { node = 0; }
-	};
 
 public:
 
@@ -66,6 +34,10 @@ public:
 		m_unparsefile = outFile;
 	}
 
+	void SetEntrypointFunction(std::wstring func) {
+		m_overrideEntryPoint = func;
+	}
+
 	AAClassCompiler* GetClassCompilerInstance() { return m_classCompiler; }
 
 	int GetNextProcID() { return ++m_currentProcID; }
@@ -73,6 +45,8 @@ public:
 	void AddVMClass(AAClassSignature* cc);
 	void AddVMFunction(AAFuncSignature* sig);
 	void AddVMNamespace(AACNamespace* dom);
+
+	aa::list<AAByteType> GetTypedata() const { return m_byteTypes; }
 
 	const unsigned char* GetCompilerVersion() const { return m_version; }
 
@@ -158,10 +132,6 @@ private:
 
 	AAByteVTable* ConvertClassVTableToBinary(AAClassSignature* pClass);
 
-	// Check if the stack will return as many values as it says it will 
-	bool VerifyFunctionCallstack(aa::list<Instruction> body, int expected, int args, AAStaticEnvironment staticData);
-	int CalcStackSzAfterOperation(CompiledAbstractExpression op, AAStaticEnvironment staticData);
-
 	void EnterScope(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode);
 	void ExitScope(CompiledEnviornmentTable& cTable, AA_AST_NODE* pNode);
 
@@ -180,7 +150,7 @@ private:
 
 private:
 
-	unsigned char m_version[10] = { 'v', '0', '0', '.', '0', '1', '.', '3', '0', '\0' };
+	unsigned char m_version[10] = { 'v', '0', '0', '.', '0', '1', '.', '4', '0', '\0' };
 
 	int m_currentProcID;
 	std::wstring m_outfile;
@@ -196,5 +166,8 @@ private:
 
 	AAClassCompiler* m_classCompiler;
 	AAStaticAnalysis* m_staticAnalyser;
+
+	int m_foundEntryPoint; // Found procedure matching index (if none is found, the global scope is executed)
+	std::wstring m_overrideEntryPoint; // The designated override entry point
 
 };
