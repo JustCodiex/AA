@@ -1,0 +1,73 @@
+class DFA_State {
+    string statename;
+    DFA_Transition[] transitions;
+    DFA_State(string _statename, DFA_Transition[] _transitions) {
+        statename = _statename;
+        transitions = _transitions;
+    };
+    DFA_State Transition(char c) {
+        DFA_State result = null;
+        for (int i = 0; i < #transitions; i++) { // # operator needs implementing!
+            if (transitions[i].transitionTrigger == c) {
+               result = transitions[i].to; // no return or break keyword yet...
+            }
+        }
+        result;
+    };
+};
+
+class DFA_Transition {
+    char transitionTrigger;
+    DFA_State to;
+    DFA_Transition(char trigger, DFA_State _to) {
+        transitionTrigger = trigger;
+        to = _to;
+    };
+}
+
+// Deterministic Finite Automata
+class DFA {
+
+    // The starting state
+    DFA_State startState;
+
+    DFA(DFA_State start_state) {
+        startState = start_state; // Set start date
+    };
+
+    // Determine if machine accepts the given input
+    bool Accept(string input) {
+        
+        // position in input
+        int i = 0;
+        
+        // The current state
+        DFA_State currentState = start_state;
+        
+        // The current result
+        bool result = true;
+
+        // While there's content to be read
+        while (i < input.length()) {
+
+            // Read the current character
+            char c = input[i];
+
+            // Transition state
+            currentState = currentState.Transition(c);
+            
+            // No valid state found?
+            if (currentState == null) {
+                i = input.length(); // No return keyword yet, so we simply break the while condition and set result to false
+                result = false;
+            } else {
+                i++; // We could transition ==> goto next state
+            }
+        }
+        
+        // Return result
+        result;
+
+    };
+
+};

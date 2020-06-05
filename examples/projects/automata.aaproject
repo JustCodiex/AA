@@ -1,0 +1,5 @@
+compile "automata\dfa.aa"
+compile "automata\main.aa"
+stl yes
+entrypoint "main"
+output "binary\automata.aab"
