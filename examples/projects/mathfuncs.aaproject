@@ -1,4 +1,5 @@
 compile "mathfuncs\mathfuncs.aa"
+compile "mathfuncs\mathfuncs_main.aa"
 stl yes
 entrypoint "main"
 output "binary\mathfuncs.aab"

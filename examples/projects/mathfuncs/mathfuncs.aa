@@ -5,9 +5,3 @@ int inc(int v) {
 int dec(int v) {
     v - 1;
 };
-
-int main() {
-    int i = inc(5);
-    int j = dec(5);
-    i * j;
-};

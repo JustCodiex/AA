@@ -80,6 +80,13 @@ void compileoutput(AAVM* pAAVM) {
 
 }
 
+void runinput(AAVM* pAAVM) {
+
+    // Run the input
+    pAAVM->RunFile(inputFile);
+
+}
+
 bool readArgumentToArgument(int i, int argc, wchar_t** argv, std::wstring& out) {
     if (i + 1 < argc && argv[i + 1][0] != '-') {
         out = argv[i + 1];
@@ -154,26 +161,35 @@ int wmain(int argc, wchar_t** argv) {
             if (isCompileInput) {
                 wprintf(L"Cannot execute non-binary input '-r' (-r and -o or -oae possibly given, which is not valid)\n");
             } else {
-                executeInput = true;
                 if (!readArgumentToArgument(i, argc, argv, inputFile)) {
                     wprintf(L"Invalid or missing command argument '-c'\n");
                 } else {
                     i++;
+                    executeInput = true;
                 }
             }
         } else if (wcscmp(argv[i], L"-o") == 0) { // Output <output>
-
-        } else if (wcscmp(argv[i], L"-oae") == 0) { // Output and run <output>
-            if (isCompileInput) {
-                if (i + 1 < argc && argv[i + 1][0] != '-') {
-                    outputFile = argv[i + 1];
-                    executeOutput = true;
-                    i++;
-                } else {
-                    wprintf(L"Invalid or missing command argument '-oae'\n");
-                }
+            if (outputFile.compare(L"") != 0) {
+                wprintf(L"Attempt to override output file ('-oae' might already have been innvoked)\n");
             } else {
+                if (!readArgumentToArgument(i, argc, argv, outputFile)) {
+                    wprintf(L"Invalid or missing command argument '-oae'\n");
+                } else {
+                    i++;
+                }
+            }
+        } else if (wcscmp(argv[i], L"-oae") == 0) { // Output and run <output>
+            if (!isCompileInput) {
                 wprintf(L"Unable to execute non-binary output\n");
+            } else if (outputFile.compare(L"") != 0) {
+                wprintf(L"Attempt to override output file ('-o' might already have been innvoked)\n");
+            } else {
+                if (!readArgumentToArgument(i, argc, argv, outputFile)) {
+                    wprintf(L"Invalid or missing command argument '-oae'\n");
+                } else {
+                    i++;
+                    executeInput = true;
+                }
             }
         } else {
             wprintf(L"!- Unknown or invalid argument '%s'\n", argv[i]);
@@ -204,7 +220,14 @@ int wmain(int argc, wchar_t** argv) {
 
     } else {
 
-        wprintf(L"Functionality not implemented! (Run code without compiling)\n");
+        // Told to execute given input
+        if (executeInput) {
+            runinput(VM);
+        } else {
+
+            wprintf(L"Functionality not implemented! (Run code without compiling)\n");
+
+        }
 
     }
 
