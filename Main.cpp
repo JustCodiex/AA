@@ -52,7 +52,11 @@ void setupenvironment() {
 
 std::wstring getAssemblyOutputFile() {
     if (outputAssembly) {
-        return  outputFile.substr(0, outputFile.find_last_of('.')) + L".txt";
+        if (outputFile.compare(L"") == 0) {
+            return inputFile.substr(0, inputFile.find_last_of('.')) + L".txt";
+        } else {
+            return outputFile.substr(0, outputFile.find_last_of('.')) + L".txt";
+        }
     } else {
         return L"";
     }
@@ -60,7 +64,11 @@ std::wstring getAssemblyOutputFile() {
 
 std::wstring getUnparseOutputFile() {
     if (outputUnparsed) {
-        return outputFile.substr(0, outputFile.find_last_of('.')) + L"_unparsed.aa";
+        if (outputFile.compare(L"") == 0) {
+            return inputFile.substr(0, inputFile.find_last_of('.')) + L"_unparsed.aa";
+        } else {
+            return outputFile.substr(0, outputFile.find_last_of('.')) + L"_unparsed.aa";
+        }
     } else {
         return L"";
     }
@@ -68,15 +76,27 @@ std::wstring getUnparseOutputFile() {
 
 void compileandexecute(AAVM* pAAVM) {
 
+    std::wstring ext = inputFile.substr(inputFile.find_last_of(L'.'));
+
     // Compile and run the file
-    pAAVM->CompileAndRunFile(inputFile, outputFile, getAssemblyOutputFile(), getUnparseOutputFile());
+    if (ext.compare(L".aaproject")) {
+        pAAVM->CompileProject(inputFile, getAssemblyOutputFile(), getUnparseOutputFile());
+        wprintf(L"Unable to execute project - unable to retrieve output file to execute (Compilation may still have succeeded).\n");
+    } else {
+        pAAVM->CompileAndRunFile(inputFile, outputFile, getAssemblyOutputFile(), getUnparseOutputFile());
+    }
 
 }
 
 void compileoutput(AAVM* pAAVM) {
 
-    // Compile to file
-    //pAAVM->CompileFileToFile(ipu)
+    std::wstring ext = inputFile.substr(inputFile.find_last_of(L'.'));
+
+    if (ext.compare(L".aaproject")) {
+        pAAVM->CompileProject(inputFile, getAssemblyOutputFile(), getUnparseOutputFile());
+    } else {
+        pAAVM->CompileFileToFile(inputFile, outputFile);
+    }
 
 }
 
@@ -188,7 +208,7 @@ int wmain(int argc, wchar_t** argv) {
                     wprintf(L"Invalid or missing command argument '-oae'\n");
                 } else {
                     i++;
-                    executeInput = true;
+                    executeOutput = true;
                 }
             }
         } else {
@@ -224,9 +244,7 @@ int wmain(int argc, wchar_t** argv) {
         if (executeInput) {
             runinput(VM);
         } else {
-
-            wprintf(L"Functionality not implemented! (Run code without compiling)\n");
-
+            // TODO: Implement
         }
 
     }
