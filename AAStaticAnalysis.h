@@ -144,6 +144,14 @@ private:
 	bool CanInheritFunction(AAClassSignature* pSubSig, AAClassSignature* pBaseSig, AAFuncSignature* pToInherit, AAC_CompileErrorMessage& compileErr);
 
 	/*
+	* Class method generation
+	*/
+
+	AAC_CompileErrorMessage GenerateTaggedClassMethods(AAClassSignature* pClassSig, AA_AST_NODE* pNode);
+	AAC_CompileErrorMessage GenerateDefaultConstructor(AAClassSignature* pClassSig, AA_AST_NODE* pNode, AACNamespace* domain, AAStaticEnvironment& senv);
+	AAC_CompileErrorMessage AddClassMethod(AAClassSignature* pClassSig, AA_AST_NODE* pNode, AACNamespace* domain, AAStaticEnvironment& senv);
+
+	/*
 	* Type methods
 	*/
 

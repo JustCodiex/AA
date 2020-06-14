@@ -23,6 +23,14 @@ AAFuncSignature* AAClassSignature::FindMethodFromFunctionalSignature(std::wstrin
 
 }
 
+aa::set<AAFuncSignature*> AAClassSignature::GetConstructors() {
+	return this->methods.FindAll(
+		[](AAFuncSignature*& s) {
+			return s->isClassCtor;
+		}
+	);
+}
+
 bool AAClassVirtualTable::AddVirtualFunction(AAFuncSignature* pSignature) {
 	if (aa::modifiers::ContainsFlag(pSignature->storageModifier, AAStorageModifier::VIRTUAL)) {
 		std::wstring func = pSignature->GetFunctionalSignature(true);

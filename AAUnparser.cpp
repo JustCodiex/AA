@@ -97,7 +97,7 @@ std::wstring AAUnparser::Unparse(AA_AST_NODE* pNode) {
 	}
 	case AA_AST_NODE_TYPE::fundecl: {
 		std::wstring rtype = this->Unparse(pNode->expressions[AA_NODE_FUNNODE_RETURNTYPE]);
-		std::wstring body = this->Unparse(pNode->expressions[AA_NODE_FUNNODE_BODY]);
+		std::wstring body = (aa::parsing::Function_HasBody(pNode)) ? this->Unparse(pNode->expressions[AA_NODE_FUNNODE_BODY]) : L"";
 		std::wstring args = this->Unparse(pNode->expressions[AA_NODE_FUNNODE_ARGLIST]);
 		std::wstring mods = this->UnparseModifiers(pNode->expressions[AA_NODE_FUNNODE_MODIFIER]);
 		std::wstring name = pNode->content;
@@ -105,7 +105,11 @@ std::wstring AAUnparser::Unparse(AA_AST_NODE* pNode) {
 		if (k != std::wstring::npos) {
 			name = name.substr(k + 1);
 		}
-		out = this->WriteToString(L"§s§s §s(§s) §s", mods, rtype, name, args, body);
+		if (body.length() == 0) {
+			out = this->WriteToString(L"§s§s §s(§s)", mods, rtype, name, args);
+		} else {
+			out = this->WriteToString(L"§s§s §s(§s) §s", mods, rtype, name, args, body);
+		}
 		break;
 	}
 	case AA_AST_NODE_TYPE::funarglist: 

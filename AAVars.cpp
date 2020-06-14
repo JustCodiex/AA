@@ -52,12 +52,11 @@ bool AAVars::VarsFunction(VarsEnviornment& venv, AA_AST_NODE* pScope) {
 		venv[pScope->expressions[AA_NODE_FUNNODE_ARGLIST]->expressions[argCount - i - 1]->content] = venv.size();
 	}
 
-	if (pScope->expressions.size() >= AA_NODE_FUNNODE_BODY) {
-
+	// Make sure there's a body to work with (it may be an abstract function)
+	if (aa::parsing::Function_HasBody(pScope)) {
 		if (!this->VarsScope(venv, pScope->expressions[AA_NODE_FUNNODE_BODY])) {
 			return false;
 		}
-
 	}
 
 	venv = _venv;

@@ -164,14 +164,17 @@ aa::list<CompiledProcedure> AAC::CompileProcedureFromASTRootNode(AA_AST_NODE* pA
 		// Does the declaration contain a body to compile?
 		if (AA_NODE_CLASSNODE_BODY < pAstRootNode->expressions.size()) {
 
+			// Get compile sources
+			auto compileSource = pAstRootNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions;
+
 			// For all sub-elements of class decl
-			for (size_t i = 0; i < pAstRootNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions.size(); i++) {
+			for (size_t i = 0; i < compileSource.size(); i++) {
 
 				// Make sure it's a function decleration
-				if (pAstRootNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions[i]->type == AA_AST_NODE_TYPE::fundecl) {
+				if (compileSource[i]->type == AA_AST_NODE_TYPE::fundecl && !compileSource[i]->HasTag("do_not_compile_as_procedure")) {
 
 					// Compile the AST
-					compileResults.Add(this->CompileProcedureFromASTNode(pAstRootNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions[i], senv));
+					compileResults.Add(this->CompileProcedureFromASTNode(compileSource[i], senv));
 
 				}
 
@@ -280,7 +283,7 @@ Instructions AAC::CompileAST(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTabl
 		break;
 	}
 	case AA_AST_NODE_TYPE::fundecl: {
-		if (pNode->expressions.size() >= AA_NODE_FUNNODE_BODY) { // We've got the actual function body => compile it
+		if (aa::parsing::Function_HasBody(pNode)) { // We've got the actual function body => compile it
 			aa::list<CompiledAbstractExpression> args = this->CompileFuncArgs(pNode, cTable, staticData);
 			aa::list<CompiledAbstractExpression> body = aa::list<CompiledAbstractExpression>::Merge(args, this->CompileAST(pNode->expressions[AA_NODE_FUNNODE_BODY], cTable, staticData));
 			CompiledAbstractExpression retCAE;

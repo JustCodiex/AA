@@ -86,16 +86,22 @@ size_t AAClassCompiler::CalculateMemoryUse(AAClassSignature* cc) {
 
 void AAClassCompiler::CorrectReferences(aa::list<std::wstring> fields, aa::set<AAFuncSignature*> pFuncSignatures) {
 
-	pFuncSignatures.ForEach(
-		[fields, this](AAFuncSignature*& sig) {
-			// Make sure there's something to verify
-			if (sig->node) {
-				aa::list<std::wstring> params = aa::list<AAFuncParam>(sig->parameters).Map<std::wstring>([](AAFuncParam& param) { return param.identifier; });
-				this->CorrectFuncFieldReferences(fields, params, sig->node->expressions[AA_NODE_FUNNODE_BODY]);
-			}
-		}
-	);
+	if (fields.Size() > 0) { // Early exit if there are no fields
 
+		// For each signature, correct if any self-references
+		pFuncSignatures.ForEach(
+			[fields, this](AAFuncSignature*& sig) {
+				// Make sure there's something to verify
+				if (sig->node) {
+					// Only makes sense to correct references if there's a body
+					if (aa::parsing::Function_HasBody(sig->node)) {
+						aa::list<std::wstring> params = aa::list<AAFuncParam>(sig->parameters).Map<std::wstring>([](AAFuncParam& param) { return param.identifier; });
+						this->CorrectFuncFieldReferences(fields, params, sig->node->expressions[AA_NODE_FUNNODE_BODY]);
+					}
+				}
+			}
+		);
+	}
 }
 
 void AAClassCompiler::CorrectFuncFieldReferences(aa::list<std::wstring> fields, aa::list<std::wstring> args, AA_AST_NODE* pNode) {
@@ -151,7 +157,7 @@ bool AAClassCompiler::AddInheritanceCall(AAClassSignature* cc, AA_AST_NODE* pCto
 					return false;
 				}
 			} else {
-				return false;
+				return true; // This for that simply return true
 			}
 		}
 	);
@@ -311,6 +317,18 @@ std::vector<aa::compiler::generator::__name_type> AAClassCompiler::GetTaggedFiel
 	}
 
 	return result;
+
+}
+
+bool AAClassCompiler::AutoConstructor(AAClassSignature* pClassSignature, AA_AST_NODE*& pOutClassCtor) {
+
+	// Firstly, we create the function
+	pOutClassCtor = aa::compiler::generator::NewFunctionNode(L".ctor", pClassSignature->name, true);
+
+	// Redefine it to fit with the class
+	this->RedefineFunDecl(pClassSignature->name, pOutClassCtor);
+
+	return true;
 
 }
 

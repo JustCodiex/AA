@@ -1,29 +1,113 @@
 BYTECODE PROCEDURES:
 	START PROCEDURE 0 (<GlobalScope>):
 	OPERATIONS:
-		[0000]  CALL, 1, 0                                                      ;; Calls: main
 	END PROCEDURE;
 
-	START PROCEDURE 1 (main):
-	CONSTANTS:	[I32, 0]
-	IDENTIFIERS:
-		0$[v];		1$[i];		2$[j];
+	START PROCEDURE 1 (Animal::SaySomething):
 	OPERATIONS:
-		[0000]  PUSHC, 0                                                        
-		[0001]  SETVAR, 0, 6                                                    ;; primitive: int32 [4 bytes]
-		[0002]  INC, 0, 1                                                       
-		[0003]  SETVAR, 1, 6                                                    ;; primitive: int32 [4 bytes]
-		[0004]  INC, 0, 0                                                       
-		[0005]  SETVAR, 2, 6                                                    ;; primitive: int32 [4 bytes]
+	END PROCEDURE;
+
+	START PROCEDURE 2 (Animal::GetAge):
+	OPERATIONS:
+	END PROCEDURE;
+
+	START PROCEDURE 3 (Dog::SaySomething):
+	CONSTANTS:	[UTF-8, "Woof!"]
+	IDENTIFIERS:
+		this;
+	OPERATIONS:
+		[0000]  SETVAR, 0, 14                                                   ;; primitive: refptr [16 bytes]
+		[0001]  PUSHWS, 0                                                       
+		[0002]  WRAP, 13                                                        
+		[0003]  XCALL, 0, 1                                                     ;; Calls: println
+		[0004]  RET                                                             
+	END PROCEDURE;
+
+	START PROCEDURE 4 (Dog::GetAge):
+	CONSTANTS:	[I32, 7]
+	IDENTIFIERS:
+		this;
+	OPERATIONS:
+		[0000]  SETVAR, 0, 14                                                   ;; primitive: refptr [16 bytes]
+		[0001]  PUSHC, 0                                                        
+		[0002]  RET                                                             
+	END PROCEDURE;
+
+	START PROCEDURE 5 (Dog::Dog):
+	IDENTIFIERS:
+		this;
+	OPERATIONS:
+		[0000]  SETVAR, 0, 14                                                   ;; primitive: refptr [16 bytes]
+		[0001]  GETVAR, 0                                                       
+		[0002]  RET                                                             
+	END PROCEDURE;
+
+	START PROCEDURE 6 (Cat::SaySomething):
+	CONSTANTS:	[UTF-8, "Miaw!"]
+	IDENTIFIERS:
+		this;
+	OPERATIONS:
+		[0000]  SETVAR, 0, 14                                                   ;; primitive: refptr [16 bytes]
+		[0001]  PUSHWS, 0                                                       
+		[0002]  WRAP, 13                                                        
+		[0003]  XCALL, 0, 1                                                     ;; Calls: println
+		[0004]  RET                                                             
+	END PROCEDURE;
+
+	START PROCEDURE 7 (Cat::GetAge):
+	CONSTANTS:	[I32, 3]
+	IDENTIFIERS:
+		this;
+	OPERATIONS:
+		[0000]  SETVAR, 0, 14                                                   ;; primitive: refptr [16 bytes]
+		[0001]  PUSHC, 0                                                        
+		[0002]  RET                                                             
+	END PROCEDURE;
+
+	START PROCEDURE 8 (Cat::Cat):
+	IDENTIFIERS:
+		this;
+	OPERATIONS:
+		[0000]  SETVAR, 0, 14                                                   ;; primitive: refptr [16 bytes]
+		[0001]  GETVAR, 0                                                       
+		[0002]  RET                                                             
+	END PROCEDURE;
+
+	START PROCEDURE 9 (main):
+	IDENTIFIERS:
+		0$[dog];		1$[cat];
+	OPERATIONS:
+		[0000]  CTOR, 2, 5, 0                                                   
+		[0001]  SETVAR, 0, 14                                                   ;; primitive: refptr [16 bytes]
+		[0002]  CTOR, 3, 8, 0                                                   
+		[0003]  SETVAR, 1, 14                                                   ;; primitive: refptr [16 bytes]
+		[0004]  GETVAR, 0                                                       
+		[0005]  VCALL, 1, 1                                                     
 		[0006]  GETVAR, 1                                                       
-		[0007]  WRAP, 6                                                         
-		[0008]  XCALL, 0, 1                                                     ;; Calls: println
-		[0009]  GETVAR, 2                                                       
-		[0010]  WRAP, 6                                                         
-		[0011]  XCALL, 0, 1                                                     ;; Calls: println
-		[0012]  INC, 1, 0                                                       
-		[0013]  INC, 2, 1                                                       
-		[0014]  SUB, 6                                                          ;; primitive: int32 [4 bytes]
-		[0015]  RET                                                             
+		[0007]  VCALL, 1, 1                                                     
+		[0008]  GETVAR, 0                                                       
+		[0009]  VCALL, 2, 1                                                     
+		[0010]  GETVAR, 1                                                       
+		[0011]  VCALL, 2, 1                                                     
+		[0012]  SUB, 6                                                          ;; primitive: int32 [4 bytes]
+		[0013]  RET                                                             
 	END PROCEDURE;
 END BYTECODE PROCEDURES
+
+BEGIN EXPORT TYPES:
+	BEGIN TYPE (UID: 1):
+		[ReferenceType] Animal
+		Unmanaged size: 0
+	END TYPE;
+
+	BEGIN TYPE (UID: 2):
+		[ReferenceType] Dog
+		Unmanaged size: 0
+	END TYPE;
+
+	BEGIN TYPE (UID: 3):
+		[ReferenceType] Cat
+		Unmanaged size: 0
+	END TYPE;
+END EXPORT TYPES;
+

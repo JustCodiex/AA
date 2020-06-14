@@ -749,6 +749,9 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterClass(AA_AST_NODE* pNode, AACl
 	// Potential compiler error container
 	AAC_CompileErrorMessage err;
 
+	// Flag telling if the current class is abstract
+	bool isAbstract = false;
+
 	int classId;
 	if (!domain->classes.FindFirstIndex([pNode](AAClassSignature*& sig) { return sig->name.compare(pNode->content) == 0; }, classId)) {
 		printf("fatal error");
@@ -780,6 +783,7 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterClass(AA_AST_NODE* pNode, AACl
 				mod = AAStorageModifier::SEALED;
 			} else if (pNode->expressions[AA_NODE_CLASSNODE_MODIFIER]->expressions[i]->content.compare(L"abstract") == 0) {
 				mod = AAStorageModifier::ABSTRACT;
+				isAbstract = true;
 			} else if (pNode->expressions[AA_NODE_CLASSNODE_MODIFIER]->expressions[i]->content.compare(L"static") == 0) {
 				mod = AAStorageModifier::STATIC;
 			} else if (pNode->expressions[AA_NODE_CLASSNODE_MODIFIER]->expressions[i]->content.compare(L"tagged") == 0) {
@@ -873,34 +877,9 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterClass(AA_AST_NODE* pNode, AACl
 
 	// If it's a tagged class
 	if (aa::modifiers::ContainsFlag(cc->storageModifier, AAStorageModifier::TAGGED)) {
-
-		// The tagged auto function constructor
-		AA_AST_NODE* pTaggedAutoCtor = 0;
-
-		// Auto-generate some class methods
-		if (!m_compilerPointer->GetClassCompilerInstance()->AutoTaggedClass(cc, pTaggedAutoCtor)) {
-			err.errorMsg = "Failed to generate tagged class elements";
-			err.errorSource = pNode->position;
-			err.errorType = aa::compiler_err::C_Compiler_TaggedClass_Generator_Error;
+		if (COMPILE_ERROR(err = GenerateTaggedClassMethods(cc, pNode))) {
 			return err;
 		}
-
-		// If assigned, register it
-		if (pTaggedAutoCtor) {
-
-			// Insert into next tree (and then let it be handled from there)
-			m_workTrees->insert(m_workTrees->begin() + m_currentTreeIndex + 1, new AA_AST(pTaggedAutoCtor));
-
-		} else {
-
-			// Error out => Compiler should always be able to generate this
-			err.errorMsg = "Failed to generate tagged class elements";
-			err.errorSource = pNode->position;
-			err.errorType = aa::compiler_err::C_Compiler_TaggedClass_Generator_Error;
-			return err;
-
-		}
-
 	}
 
 	// Function bodies to correct
@@ -921,24 +900,8 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterClass(AA_AST_NODE* pNode, AACl
 				// We need to push a "this" into the method params list
 				m_compilerPointer->GetClassCompilerInstance()->RedefineFunDecl(cc->name, pNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions[i]);
 
-				// Register function
-				AAFuncSignature* sig;
-				if (COMPILE_OK(err = this->RegisterFunction(pNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions[i], sig, domain, senv))) {
-
-					// Update signature data
-					sig->isClassMethod = true;
-					sig->node = pNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions[i];
-					sig->isClassCtor = sig->name == (cc->name + L"::" + cc->name);
-
-					// Update return count in case of a constructor
-					if (sig->isClassCtor) {
-						pNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions[i]->tags["returncount"] = 1;
-					}
-
-					// Add method to class definition
-					cc->methods.Add(sig);
-
-				} else {
+				// If we found a compile error
+				if (COMPILE_ERROR(err = this->AddClassMethod(cc, pNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions[i], domain, senv))) {
 					return err;
 				}
 
@@ -980,6 +943,21 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterClass(AA_AST_NODE* pNode, AACl
 
 	}
 
+	// Fetch the set of all constructors
+	auto ctorSet = cc->GetConstructors();
+
+	// Auto-generate constructor if none is found and not an abstract class
+	if (!isAbstract && ctorSet.Size() == 0) {
+		if (COMPILE_ERROR(err = this->GenerateDefaultConstructor(cc, pNode, domain, senv))) {
+			return err;
+		}
+	} else if (isAbstract && ctorSet.Size() > 0) {
+		err.errorMsg = ("Illegal constructor(s) found in abstract class '" + string_cast(cc->name) + "'").c_str();
+		err.errorSource = pNode->position;
+		err.errorType = 0;
+		return err;
+	}
+
 	// Correct incorrect references (eg. field access)
 	m_compilerPointer->GetClassCompilerInstance()->CorrectReferences(cc->fields.ToList().Map<std::wstring>([](AAClassFieldSignature& f) { return f.name; }), cc->methods);
 
@@ -987,6 +965,93 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterClass(AA_AST_NODE* pNode, AACl
 	cc->classByteSz = m_compilerPointer->GetClassCompilerInstance()->CalculateMemoryUse(cc);
 
 	// Return no errors
+	return NO_COMPILE_ERROR_MESSAGE;
+
+}
+
+AAC_CompileErrorMessage AAStaticAnalysis::AddClassMethod(AAClassSignature* pClassSig, AA_AST_NODE* pNode, AACNamespace* domain, AAStaticEnvironment& senv) {
+
+	AAC_CompileErrorMessage err;
+
+	// Register function
+	AAFuncSignature* sig;
+	if (COMPILE_OK(err = this->RegisterFunction(pNode, sig, domain, senv))) {
+
+		// Update signature data
+		sig->isClassMethod = true;
+		sig->node = pNode;
+		sig->isClassCtor = sig->name == (pClassSig->name + L"::" + pClassSig->name);
+
+		// Update return count in case of a constructor
+		if (sig->isClassCtor) {
+			pNode->tags["returncount"] = 1;
+		}
+
+		// Add method to class definition
+		pClassSig->methods.Add(sig);
+
+		return NO_COMPILE_ERROR_MESSAGE;
+
+	} else {
+		return err;
+	}
+
+}
+
+AAC_CompileErrorMessage AAStaticAnalysis::GenerateDefaultConstructor(AAClassSignature* pClassSig, AA_AST_NODE* pNode, AACNamespace* domain, AAStaticEnvironment& senv) {
+
+	AAC_CompileErrorMessage err;
+	AA_AST_NODE* ctorNode = 0;
+
+	if (!this->m_compilerPointer->GetClassCompilerInstance()->AutoConstructor(pClassSig, ctorNode)) {
+		printf("");
+	}
+
+	if (!ctorNode) {
+		printf("");
+	}
+
+	if (COMPILE_ERROR(err = this->AddClassMethod(pClassSig, ctorNode, domain, senv))) {
+		return err;
+	}
+
+	pNode->expressions[AA_NODE_CLASSNODE_BODY]->expressions.push_back(ctorNode);
+
+	return NO_COMPILE_ERROR_MESSAGE;
+
+}
+
+AAC_CompileErrorMessage AAStaticAnalysis::GenerateTaggedClassMethods(AAClassSignature* pClassSig, AA_AST_NODE* pNode) {
+
+	AAC_CompileErrorMessage err;
+
+	// The tagged auto function constructor
+	AA_AST_NODE* pTaggedAutoCtor = 0;
+
+	// Auto-generate some class methods
+	if (!m_compilerPointer->GetClassCompilerInstance()->AutoTaggedClass(pClassSig, pTaggedAutoCtor)) {
+		err.errorMsg = "Failed to generate tagged class elements";
+		err.errorSource = pNode->position;
+		err.errorType = aa::compiler_err::C_Compiler_TaggedClass_Generator_Error;
+		return err;
+	}
+
+	// If assigned, register it
+	if (pTaggedAutoCtor) {
+
+		// Insert into next tree (and then let it be handled from there)
+		m_workTrees->insert(m_workTrees->begin() + m_currentTreeIndex + 1, new AA_AST(pTaggedAutoCtor));
+
+	} else {
+
+		// Error out => Compiler should always be able to generate this
+		err.errorMsg = "Failed to generate tagged class elements";
+		err.errorSource = pNode->position;
+		err.errorType = aa::compiler_err::C_Compiler_TaggedClass_Generator_Error;
+		return err;
+
+	}
+
 	return NO_COMPILE_ERROR_MESSAGE;
 
 }
@@ -1037,7 +1102,6 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterFunction(AA_AST_NODE* pNode, A
 
 	// For all modifiers
 	for (AA_AST_NODE* mod : pNode->expressions[AA_NODE_FUNNODE_MODIFIER]->expressions) {
-
 		if (mod->content.compare(L"virtual") == 0) {
 			if (sig->storageModifier == AAStorageModifier::NONE) {
 				sig->storageModifier = AAStorageModifier::VIRTUAL;
@@ -1056,15 +1120,38 @@ AAC_CompileErrorMessage AAStaticAnalysis::RegisterFunction(AA_AST_NODE* pNode, A
 				err.errorType = 0;
 				return err;
 			}
+		} else if (mod->content.compare(L"abstract") == 0) {
+			if (sig->storageModifier == AAStorageModifier::NONE) {
+				sig->storageModifier = AAStorageModifier::VIRTUAL | AAStorageModifier::ABSTRACT; // Also adding virtual here
+			} else {
+				err.errorMsg = ("Invalid modifier combination 'abstract' and '" + string_cast(aa::NameofStorageModifier(sig->storageModifier)) + "'").c_str();
+				err.errorSource = mod->position;
+				err.errorType = 0;
+				return err;
+			}
+		} else {
+			err.errorMsg = ("Invalid method modifier '" + string_cast(mod->content) + "'").c_str();
+			err.errorSource = mod->position;
+			err.errorType = 0;
+			return err;
 		}
-
 	}
 
 	// Set return count
 	pNode->tags["returncount"] = this->GetReturnCount(sig);
 
-	// Get the next procedure ID
-	sig->procID = this->m_compilerPointer->GetNextProcID();
+	// Make sure it's not marked abstract (abstract ==> no body ==> nothing to execute)
+	//if (!aa::modifiers::ContainsFlag(sig->storageModifier, AAStorageModifier::ABSTRACT)) {
+
+		// Get the next procedure ID
+		sig->procID = this->m_compilerPointer->GetNextProcID();
+
+/*	} else {
+
+		// Tell the compiler to ignore it
+		pNode->tags["do_not_compile_as_procedure"] = 1;
+
+	}*/
 
 	// Verify function control structure
 	return NO_COMPILE_ERROR_MESSAGE;
@@ -1207,6 +1294,11 @@ bool AAStaticAnalysis::VerifyFunctionControlPath(AAFuncSignature* sig, AAStaticE
 	// No node to run test on
 	if (sig->node == 0) {
 		return false;
+	}
+
+	// If the function is marked abstract, we dont check it
+	if (aa::modifiers::ContainsFlag(sig->storageModifier, AAStorageModifier::ABSTRACT)) {
+		return true;
 	}
 
 	// Get the return count the function expects

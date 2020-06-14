@@ -45,12 +45,12 @@ enum class AAStorageModifier : int16_t {
 	NONE = 1 << 0,
 
 	/// <summary>
-	/// Can be overwritten
+	/// Call overrides if such exists (VTable)
 	/// </summary>
 	VIRTUAL = 1 << 1,
 
 	/// <summary>
-	/// Overrides a function (iff maked virtual)
+	/// Overrides a virtual function
 	/// </summary>
 	OVERRIDE = 1 << 2,
 

@@ -1,0 +1,29 @@
+abstract class Animal(int age);
+
+class Dog : Animal {
+
+    Dog(int _age){
+        age = _age;
+    }
+
+};
+
+class Cat : Animal {
+
+    Cat(int _age) {
+        age = _age;
+    }
+
+};
+
+// Entry point and all that to the test...
+int main() {
+
+    // Create two insances and make them do something
+    Animal dog = new Dog(7);
+    Animal cat = new Cat(3);
+
+    // Return the age difference (Less reliance on println when testing)
+    dog.age - cat.age; // 7 - 3 = 4
+
+}

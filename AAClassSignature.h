@@ -140,6 +140,12 @@ struct AAClassSignature {
 	/// <returns></returns>
 	AAFuncSignature* FindMethodFromFunctionalSignature(std::wstring functionalSignature);
 
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <returns></returns>
+	aa::set<AAFuncSignature*> GetConstructors();
+
 	bool operator==(AAClassSignature other) {
 		return other.name.compare(this->name) == 0 && other.domain == this->domain;
 	}

@@ -600,9 +600,10 @@ void AA_PT::HandleKeywordCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex
 
 		// Add modifier to decleration's modifier list
 		if (nodes[n]->nodeType == AA_PT_NODE_TYPE::fundecleration) {
-			nodes[n]->childNodes[2]->childNodes.push_back(new AA_PT_NODE(AA_PT_NODE_TYPE::modifier, content.c_str(), nodes[n]->position));
+			nodes[n]->childNodes[AA_NODE_FUNNODE_MODIFIER]->childNodes.push_back(new AA_PT_NODE(AA_PT_NODE_TYPE::modifier, content.c_str(), nodes[n]->position));
+			nodeIndex--;
 		} else if (nodes[n]->nodeType == AA_PT_NODE_TYPE::classdecleration) {
-			nodes[n]->childNodes[0]->childNodes.push_back(new AA_PT_NODE(AA_PT_NODE_TYPE::modifier, content.c_str(), nodes[n]->position));
+			nodes[n]->childNodes[AA_NODE_CLASSNODE_MODIFIER]->childNodes.push_back(new AA_PT_NODE(AA_PT_NODE_TYPE::modifier, content.c_str(), nodes[n]->position));
 		}
 
 	}
@@ -769,11 +770,30 @@ AA_PT_NODE* AA_PT::HandleFunctionCall(AA_PT_NODE* pIdentifierNode, AA_PT_NODE* p
 
 }
 
-std::vector<AA_PT_NODE*> AA_PT::CreateDeclerativeBody(std::vector<AA_PT_NODE*> nodes) {
+/*
+** This function will parse sub-contents of a body declaring stuff (classes, enums and namespaces
+** Some stuff may go missing in here
+*/
+std::vector<AA_PT_NODE*> AA_PT::CreateDeclerativeBody(std::vector<AA_PT_NODE*> nodes, bool allowComma) {
 
 	size_t i = 0;
 	while (i < nodes.size()) {
 		this->HandleTreeCase(nodes, i);
+	}
+
+	i = 0;
+	while (i < nodes.size()) { // This also allows the parser to accept nested classes and such
+		if (nodes[i]->nodeType == AA_PT_NODE_TYPE::fundecleration || nodes[i]->nodeType == AA_PT_NODE_TYPE::classdecleration
+			|| nodes[i]->nodeType == AA_PT_NODE_TYPE::enumdecleration || nodes[i]->nodeType == AA_PT_NODE_TYPE::namespacedecleration
+			|| nodes[i]->nodeType == AA_PT_NODE_TYPE::vardecleration || nodes[i]->nodeType == AA_PT_NODE_TYPE::identifier) { 
+			i++;
+		} else { // Keep in mind stuff may be accidentally removed here - this will only return declarations
+			if (allowComma && (nodes[i]->nodeType == AA_PT_NODE_TYPE::seperator && nodes[i]->content.compare(L",") == 0)) {
+				i++;
+			} else {
+				nodes.erase(nodes.begin() + i);
+			}
+		}
 	}
 
 	return nodes;
@@ -783,8 +803,6 @@ std::vector<AA_PT_NODE*> AA_PT::CreateDeclerativeBody(std::vector<AA_PT_NODE*> n
 std::vector<AA_PT_NODE*> AA_PT::CreateArgumentTree(AA_PT_NODE* pExpNode) {
 
 	std::vector<AA_PT_NODE*> nodes;
-
-	
 
 	// Apply syntax rules: TODO: Make all functions in unflattener recursive
 	AA_PT_Unflatten::ApplySyntaxRules(pExpNode->childNodes);
@@ -856,7 +874,7 @@ AA_PT_NODE* AA_PT::CreateClassDecl(std::vector<AA_PT_NODE*>& nodes, size_t from)
 		// Create class body
 		AA_PT_NODE* classBody = new AA_PT_NODE(nodes[from + 2]->position);
 		classBody->nodeType = AA_PT_NODE_TYPE::classbody;
-		classBody->childNodes = this->CreateDeclerativeBody(nodes[from + 2]->childNodes);
+		classBody->childNodes = this->CreateDeclerativeBody(nodes[from + 2]->childNodes, false);
 
 		// Add class body
 		classDeclExp->childNodes.push_back(classBody);
@@ -1018,6 +1036,7 @@ AA_PT_NODE* AA_PT::CreateFunctionDecl(std::vector<AA_PT_NODE*>& nodes, size_t fr
 		}
 		
 		nodes.erase(nodes.begin() + from + 3);
+
 	}
 
 	nodes.erase(nodes.begin() + from, nodes.begin() + from + 3);
@@ -1084,7 +1103,7 @@ AA_PT_NODE* AA_PT::CreateNamespaceDecl(std::vector<AA_PT_NODE*>& nodes, size_t f
 
 			nodes[from]->nodeType = AA_PT_NODE_TYPE::namespacedecleration;
 			nodes[from]->content = nodes[from + 1]->content;
-			nodes[from]->childNodes = this->CreateDeclerativeBody(nodes[from + 2]->childNodes);
+			nodes[from]->childNodes = this->CreateDeclerativeBody(nodes[from + 2]->childNodes, false);
 
 			nodes.erase(nodes.begin() + from + 1, nodes.begin() + from + 3);
 
@@ -1150,7 +1169,7 @@ AA_PT_NODE* AA_PT::CreateEnumDecl(std::vector<AA_PT_NODE*>& nodes, size_t from) 
 		// Create enum body
 		AA_PT_NODE* pEnumBodyNode = new AA_PT_NODE(nodes[from + 2]->position);
 		pEnumBodyNode->nodeType = AA_PT_NODE_TYPE::enumbody;
-		pEnumBodyNode->childNodes = this->CreateDeclerativeBody(nodes[from + 2]->childNodes);
+		pEnumBodyNode->childNodes = this->CreateDeclerativeBody(nodes[from + 2]->childNodes, true);
 
 		// Add enum body
 		nodes[from]->childNodes.push_back(pEnumBodyNode);

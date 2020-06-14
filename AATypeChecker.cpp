@@ -60,7 +60,10 @@ AACType* AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 		for (size_t i = 0; i < node->expressions.size(); i++) {
 			r = this->TypeCheckNode(node->expressions[i]);
 			if (r == AACType::ErrorType) {
+#if _DEBUG // Only print the following if running in debug mode (not a useful message for non-language development)
 				printf("Detected error type (Ln %i Column %i)\n", node->expressions[i]->position.line, node->expressions[i]->position.column);
+#endif	
+				return r;
 			}
 		}
 		return r;

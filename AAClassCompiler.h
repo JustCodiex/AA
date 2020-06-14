@@ -31,6 +31,8 @@ public:
 
 	bool AutoTaggedClass(AAClassSignature* taggedClassSignature, AA_AST_NODE*& pOutClassFuncCtor);
 
+	bool AutoConstructor(AAClassSignature* pClassSignature, AA_AST_NODE*& pOutClassCtor);
+
 	static bool HasField(AAClassSignature* cc, std::wstring fieldname, int& fieldID);
 
 private:

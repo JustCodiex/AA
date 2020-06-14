@@ -79,7 +79,7 @@ void compileandexecute(AAVM* pAAVM) {
     std::wstring ext = inputFile.substr(inputFile.find_last_of(L'.'));
 
     // Compile and run the file
-    if (ext.compare(L".aaproject")) {
+    if (ext.compare(L".aaproject") == 0) {
         pAAVM->CompileProject(inputFile, getAssemblyOutputFile(), getUnparseOutputFile());
         wprintf(L"Unable to execute project - unable to retrieve output file to execute (Compilation may still have succeeded).\n");
     } else {
@@ -92,7 +92,7 @@ void compileoutput(AAVM* pAAVM) {
 
     std::wstring ext = inputFile.substr(inputFile.find_last_of(L'.'));
 
-    if (ext.compare(L".aaproject")) {
+    if (ext.compare(L".aaproject") == 0) {
         pAAVM->CompileProject(inputFile, getAssemblyOutputFile(), getUnparseOutputFile());
     } else {
         pAAVM->CompileFileToFile(inputFile, outputFile);

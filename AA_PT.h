@@ -86,7 +86,7 @@ private:
 	
 	AA_PT_NODE* CreateTree(std::vector<AA_PT_NODE*>& nodes, size_t from);
 	AA_PT_NODE* CreateExpressionTree(std::vector<AA_PT_NODE*>& nodes, size_t from);
-	std::vector<AA_PT_NODE*> CreateDeclerativeBody(std::vector<AA_PT_NODE*> nodes);
+	std::vector<AA_PT_NODE*> CreateDeclerativeBody(std::vector<AA_PT_NODE*> nodes, bool allowComma);
 	
 	AA_PT_NODE* CreateVariableDecl(std::vector<AA_PT_NODE*>& nodes, size_t from);
 	AA_PT_NODE* CreateClassDecl(std::vector<AA_PT_NODE*>& nodes, size_t from);
