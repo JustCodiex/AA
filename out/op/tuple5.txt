@@ -7,37 +7,37 @@ BYTECODE PROCEDURES:
 	START PROCEDURE 1 (main):
 	CONSTANTS:	[I32, 256][B, F][I32, 2][I32, 5][B, T][I32, 72][I32, 0]
 	IDENTIFIERS:
-		0$[k];		1$[_];		2$[v];		1$[v];
+		1$[k];		2$[_];		3$[v];		2$[v];
 	OPERATIONS:
 		[0000]  PUSHC, 0                                                        
 		[0001]  PUSHC, 1                                                        
 		[0002]  PUSHC, 2                                                        
 		[0003]  TUPLENEW, 3, 6, 3, 6                                            
-		[0004]  SETVAR, 0, 16                                                   ;; primitive: tuple [8 bytes]
+		[0004]  SETVAR, 1, 16                                                   ;; primitive: tuple [8 bytes]
 		[0005]  PUSHC, 3                                                        
-		[0006]  GETVAR, 0                                                       
-		[0007]  TUPLECMPORSET, 3, -1, 1, 2                                      
+		[0006]  GETVAR, 1                                                       
+		[0007]  TUPLECMPORSET, 3, -1, 2, 3                                      
 		[0008]  JMPT, 12                                                        
 		[0009]  PUSHC, 4                                                        
 		[0010]  PUSHC, 0                                                        
-		[0011]  GETVAR, 0                                                       
-		[0012]  TUPLECMPORSET, 3, -1, -1, 1                                     
+		[0011]  GETVAR, 1                                                       
+		[0012]  TUPLECMPORSET, 3, -1, -1, 2                                     
 		[0013]  JMPT, 11                                                        
 		[0014]  PUSHC, 1                                                        
-		[0015]  GETVAR, 0                                                       
-		[0016]  TUPLECMPORSET, 3, 1, -1, 2                                      
+		[0015]  GETVAR, 1                                                       
+		[0016]  TUPLECMPORSET, 3, 2, -1, 3                                      
 		[0017]  JMPT, 11                                                        
 		[0018]  PUSHC, 4                                                        
 		[0019]  JMPT, 13                                                        
-		[0020]  GETVAR, 2                                                       
+		[0020]  GETVAR, 3                                                       
 		[0021]  PUSHC, 3                                                        
 		[0022]  MUL, 6                                                          ;; primitive: int32 [4 bytes]
 		[0023]  JMP, 9                                                          
-		[0024]  GETVAR, 1                                                       
+		[0024]  GETVAR, 2                                                       
 		[0025]  PUSHC, 0                                                        
 		[0026]  DIV, 6                                                          ;; primitive: int32 [4 bytes]
 		[0027]  JMP, 5                                                          
-		[0028]  GETVAR, 2                                                       
+		[0028]  GETVAR, 3                                                       
 		[0029]  PUSHC, 5                                                        
 		[0030]  MUL, 6                                                          ;; primitive: int32 [4 bytes]
 		[0031]  JMP, 1                                                          

@@ -74,6 +74,11 @@ enum class AAStorageModifier : int16_t {
 	/// </summary>
 	SEALED = 1 << 6,
 
+	/// <summary>
+	/// Constant variable
+	/// </summary>
+	CONSTANT = 1 << 7,
+
 };
 
 namespace aa {

@@ -178,6 +178,7 @@
     <ClCompile Include="AAModifier.cpp" />
     <ClCompile Include="AAObject.cpp" />
     <ClCompile Include="AAObjectType.cpp" />
+    <ClCompile Include="AAOperator.cpp" />
     <ClCompile Include="AAP.cpp" />
     <ClCompile Include="AAPrimitiveType.cpp" />
     <ClCompile Include="AAProgram.cpp" />
@@ -237,6 +238,7 @@
     <ClInclude Include="AAMemoryStore.h" />
     <ClInclude Include="AAObject.h" />
     <ClInclude Include="AAObjectType.h" />
+    <ClInclude Include="AAOperator.h" />
     <ClInclude Include="AAPrimitiveType.h" />
     <ClInclude Include="AAProjectRegressionTest.h" />
     <ClInclude Include="AARuntimeEnvironment.h" />

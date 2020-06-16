@@ -1,8 +1,13 @@
 #include "AAVars.h"
+#include "AAOperator.h"
+#include "astring.h"
 
 using aa::VarsEnviornment;
 
 bool AAVars::Vars(AA_AST* pTree) {
+
+	// Set last error to none
+	m_error = NO_COMPILE_ERROR_MESSAGE;
 
 	// Get the root
 	AA_AST_NODE* pRoot = pTree->GetRoot();
@@ -49,7 +54,7 @@ bool AAVars::VarsFunction(VarsEnviornment& venv, AA_AST_NODE* pScope) {
 	const size_t argCount = pScope->expressions[AA_NODE_FUNNODE_ARGLIST]->expressions.size();
 
 	for (size_t i = 0; i < argCount; i++) {
-		venv[pScope->expressions[AA_NODE_FUNNODE_ARGLIST]->expressions[argCount - i - 1]->content] = venv.size();
+		venv[pScope->expressions[AA_NODE_FUNNODE_ARGLIST]->expressions[argCount - i - 1]->content] = aa::Var(venv.size(), true);
 	}
 
 	// Make sure there's a body to work with (it may be an abstract function)
@@ -226,9 +231,9 @@ bool AAVars::VarsMatchCondition(aa::VarsEnviornment& venv, AA_AST_NODE* pScope) 
 	if (pScope->type == AA_AST_NODE_TYPE::variable) {
 		if (pScope->content.compare(L"_") != 0) { // Make sure it's not the wildcard				
 			// In the condition, it's actually a variable declaration
-			pScope->tags["varsi"] = venv[pScope->content] = venv.size();
+			pScope->tags["varsi"] = venv[pScope->content] = aa::Var(venv.size(), false);
 		} else {
-			pScope->tags["varsi"] = venv[pScope->content] = venv.size();
+			pScope->tags["varsi"] = venv[pScope->content] = aa::Var(venv.size(), false);
 		}
 	} else if (pScope->type == AA_AST_NODE_TYPE::objdeconstruct) {
 		for (size_t i = 0; i < pScope->expressions.size(); i++) {
@@ -237,6 +242,59 @@ bool AAVars::VarsMatchCondition(aa::VarsEnviornment& venv, AA_AST_NODE* pScope) 
 	} else if (pScope->type == AA_AST_NODE_TYPE::tupleval) {
 		for (size_t i = 0; i < pScope->expressions.size(); i++) {
 			this->VarsMatchCondition(venv, pScope->expressions[i]);
+		}
+	}
+
+	return true;
+
+}
+
+bool AAVars::VarsAssignment(aa::VarsEnviornment& venv, AA_AST_NODE* pScope) {
+
+	// First we need to treat it normally
+	bool r = this->VarsNode(venv, pScope->expressions[1]) & this->VarsNode(venv, pScope->expressions[0]);
+
+	// Exit early => don't overwrite error messages
+	if (!r) {
+		return false;
+	}
+
+	// Now we can check if we're doing something to a non-mutable variable
+	if (pScope->expressions[0]->type == AA_AST_NODE_TYPE::variable) {
+		if (!venv[pScope->expressions[0]->content].isMutable) {
+			m_error = AAC_CompileErrorMessage(
+				aa::compiler_err::C_Vars_ConstMutation,
+				("Attempt to reassign value of constant variable '" + string_cast(pScope->expressions[0]->content) + "'").c_str(), 
+				pScope->position				
+			);
+			return false;
+		}
+	}
+
+	return true;
+
+}
+
+bool AAVars::VarsUnary(aa::VarsEnviornment& venv, AA_AST_NODE* pScope) {
+
+	// Run vars on this
+	bool result = this->VarsNode(venv, pScope->expressions[0]);
+
+	// Early exit in case of error
+	if (!result) {
+		return false;
+	}
+
+	bool isIncrement = pScope->content.compare(L"++") == 0;
+	bool isDecrement = pScope->content.compare(L"--") == 0;
+	if (pScope->expressions[0]->type == AA_AST_NODE_TYPE::variable && (isIncrement || isDecrement)) {
+		if (!venv[pScope->expressions[0]->content].isMutable) {
+			m_error = AAC_CompileErrorMessage(
+				aa::compiler_err::C_Vars_ConstMutation,
+				("Attempt to " + std::string((isDecrement) ? "decrement" : "increment") + " value of constant variable '" + string_cast(pScope->expressions[0]->content) + "'").c_str(),
+				pScope->position
+			);
+			return false;
 		}
 	}
 
@@ -258,10 +316,14 @@ bool AAVars::VarsNode(VarsEnviornment& venv, AA_AST_NODE* pScope) {
 	} else {
 		switch (pScope->type) {
 		case AA_AST_NODE_TYPE::binop: // Because of free/bound variables we have to evaluate RHS before LHS
-			return this->VarsNode(venv, pScope->expressions[1]) & this->VarsNode(venv, pScope->expressions[0]);
+			if (aa::op::IsAssignmentOperator(pScope->content)) {
+				return this->VarsAssignment(venv, pScope);
+			} else {
+				return this->VarsNode(venv, pScope->expressions[1]) & this->VarsNode(venv, pScope->expressions[0]);
+			}
 		case AA_AST_NODE_TYPE::unop_pre:
 		case AA_AST_NODE_TYPE::unop_post:
-			return this->VarsNode(venv, pScope->expressions[0]);
+			return VarsUnary(venv, pScope);
 		case AA_AST_NODE_TYPE::boolliteral:
 		case AA_AST_NODE_TYPE::charliteral:
 		case AA_AST_NODE_TYPE::floatliteral:
@@ -283,9 +345,10 @@ bool AAVars::VarsNode(VarsEnviornment& venv, AA_AST_NODE* pScope) {
 			return this->VarsNode(venv, pScope->expressions[0]);
 		}
 		case AA_AST_NODE_TYPE::tuplevardecl:
-		case AA_AST_NODE_TYPE::vardecl:
-			pScope->tags["varsi"] = venv[pScope->content] = venv.size();
+		case AA_AST_NODE_TYPE::vardecl: {
+			pScope->tags["varsi"] = venv[pScope->content] = aa::Var(venv.size(), !pScope->HasTag("modifier_const"));
 			return true;
+		}
 		case AA_AST_NODE_TYPE::callaccess: 
 			return this->VarsNode(venv, pScope->expressions[0]) && this->VarsNode(venv, pScope->expressions[1]);
 		case AA_AST_NODE_TYPE::classctorcall:

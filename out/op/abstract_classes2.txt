@@ -32,17 +32,17 @@ BYTECODE PROCEDURES:
 	START PROCEDURE 3 (main):
 	CONSTANTS:	[I32, 7][I32, 3]
 	IDENTIFIERS:
-		0$[dog];		1$[cat];
+		1$[dog];		2$[cat];
 	OPERATIONS:
 		[0000]  PUSHC, 0                                                        
 		[0001]  CTOR, 2, 1, 0                                                   
-		[0002]  SETVAR, 0, 14                                                   ;; primitive: refptr [16 bytes]
+		[0002]  SETVAR, 1, 14                                                   ;; primitive: refptr [16 bytes]
 		[0003]  PUSHC, 1                                                        
 		[0004]  CTOR, 3, 2, 0                                                   
-		[0005]  SETVAR, 1, 14                                                   ;; primitive: refptr [16 bytes]
-		[0006]  GETVAR, 0                                                       
+		[0005]  SETVAR, 2, 14                                                   ;; primitive: refptr [16 bytes]
+		[0006]  GETVAR, 1                                                       
 		[0007]  GETFIELD, 0, 6                                                  ;; primitive: int32 [4 bytes]
-		[0008]  GETVAR, 1                                                       
+		[0008]  GETVAR, 2                                                       
 		[0009]  GETFIELD, 0, 6                                                  ;; primitive: int32 [4 bytes]
 		[0010]  SUB, 6                                                          ;; primitive: int32 [4 bytes]
 		[0011]  RET                                                             

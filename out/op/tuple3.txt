@@ -7,24 +7,24 @@ BYTECODE PROCEDURES:
 	START PROCEDURE 1 (main):
 	CONSTANTS:	[I32, 0][I32, 1][I32, 4][I32, 3][B, T][I32, 25][B, F][I32, 6][I32, 8][I32, 60][I32, 61]
 	IDENTIFIERS:
-		0$[accum];		1$[t1];		2$[t2];
+		1$[accum];		2$[t1];		3$[t2];
 	OPERATIONS:
 		[0000]  PUSHC, 0                                                        
-		[0001]  SETVAR, 0, 6                                                    ;; primitive: int32 [4 bytes]
+		[0001]  SETVAR, 1, 6                                                    ;; primitive: int32 [4 bytes]
 		[0002]  PUSHC, 0                                                        
 		[0003]  PUSHC, 0                                                        
 		[0004]  PUSHC, 0                                                        
 		[0005]  TUPLENEW, 3, 6, 6, 6                                            
-		[0006]  SETVAR, 1, 16                                                   ;; primitive: tuple [8 bytes]
-		[0007]  GETVAR, 0                                                       
-		[0008]  GETVAR, 1                                                       
+		[0006]  SETVAR, 2, 16                                                   ;; primitive: tuple [8 bytes]
+		[0007]  GETVAR, 1                                                       
+		[0008]  GETVAR, 2                                                       
 		[0009]  PUSHC, 0                                                        
 		[0010]  PUSHC, 0                                                        
 		[0011]  PUSHC, 1                                                        
 		[0012]  TUPLENEW, 3, 6, 6, 6                                            
 		[0013]  TUPLECMP                                                        
 		[0014]  JMPT, 10                                                        
-		[0015]  GETVAR, 1                                                       
+		[0015]  GETVAR, 2                                                       
 		[0016]  PUSHC, 0                                                        
 		[0017]  PUSHC, 0                                                        
 		[0018]  PUSHC, 0                                                        
@@ -39,42 +39,42 @@ BYTECODE PROCEDURES:
 		[0027]  JMP, 1                                                          
 		[0028]  PUSHC, 5                                                        
 		[0029]  ADD, 6                                                          ;; primitive: int32 [4 bytes]
-		[0030]  SETVAR, 0, 6                                                    ;; primitive: int32 [4 bytes]
+		[0030]  SETVAR, 1, 6                                                    ;; primitive: int32 [4 bytes]
 		[0031]  PUSHC, 4                                                        
 		[0032]  PUSHC, 6                                                        
 		[0033]  PUSHC, 5                                                        
 		[0034]  TUPLENEW, 3, 3, 3, 6                                            
-		[0035]  SETVAR, 2, 16                                                   ;; primitive: tuple [8 bytes]
-		[0036]  GETVAR, 0                                                       
-		[0037]  GETVAR, 2                                                       
+		[0035]  SETVAR, 3, 16                                                   ;; primitive: tuple [8 bytes]
+		[0036]  GETVAR, 1                                                       
+		[0037]  GETVAR, 3                                                       
 		[0038]  PUSHC, 6                                                        
 		[0039]  PUSHC, 6                                                        
 		[0040]  ACCEPT                                                          
 		[0041]  TUPLENEW, 3, 3, 3, 17                                           
 		[0042]  TUPLECMP                                                        
 		[0043]  JMPT, 31                                                        
-		[0044]  GETVAR, 2                                                       
+		[0044]  GETVAR, 3                                                       
 		[0045]  PUSHC, 6                                                        
 		[0046]  PUSHC, 4                                                        
 		[0047]  ACCEPT                                                          
 		[0048]  TUPLENEW, 3, 3, 3, 17                                           
 		[0049]  TUPLECMP                                                        
 		[0050]  JMPT, 26                                                        
-		[0051]  GETVAR, 2                                                       
+		[0051]  GETVAR, 3                                                       
 		[0052]  PUSHC, 4                                                        
 		[0053]  PUSHC, 4                                                        
 		[0054]  ACCEPT                                                          
 		[0055]  TUPLENEW, 3, 3, 3, 17                                           
 		[0056]  TUPLECMP                                                        
 		[0057]  JMPT, 21                                                        
-		[0058]  GETVAR, 2                                                       
+		[0058]  GETVAR, 3                                                       
 		[0059]  PUSHC, 4                                                        
 		[0060]  PUSHC, 6                                                        
 		[0061]  ACCEPT                                                          
 		[0062]  TUPLENEW, 3, 3, 3, 17                                           
 		[0063]  TUPLECMP                                                        
 		[0064]  JMPT, 16                                                        
-		[0065]  GETVAR, 2                                                       
+		[0065]  GETVAR, 3                                                       
 		[0066]  PUSHC, 4                                                        
 		[0067]  PUSHC, 6                                                        
 		[0068]  PUSHC, 5                                                        
@@ -95,8 +95,8 @@ BYTECODE PROCEDURES:
 		[0083]  JMP, 1                                                          
 		[0084]  PUSHC, 0                                                        
 		[0085]  SUB, 6                                                          ;; primitive: int32 [4 bytes]
-		[0086]  SETVAR, 0, 6                                                    ;; primitive: int32 [4 bytes]
-		[0087]  GETVAR, 0                                                       
+		[0086]  SETVAR, 1, 6                                                    ;; primitive: int32 [4 bytes]
+		[0087]  GETVAR, 1                                                       
 		[0088]  RET                                                             
 	END PROCEDURE;
 END BYTECODE PROCEDURES

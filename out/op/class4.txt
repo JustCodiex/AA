@@ -47,11 +47,11 @@ BYTECODE PROCEDURES:
 
 	START PROCEDURE 4 (main):
 	IDENTIFIERS:
-		0$[s];
+		1$[s];
 	OPERATIONS:
 		[0000]  CTOR, 2, 2, 0                                                   
-		[0001]  SETVAR, 0, 14                                                   ;; primitive: refptr [16 bytes]
-		[0002]  GETVAR, 0                                                       
+		[0001]  SETVAR, 1, 14                                                   ;; primitive: refptr [16 bytes]
+		[0002]  GETVAR, 1                                                       
 		[0003]  CALL, 3, 1                                                      ;; Calls: SingleClass::GetTeacher
 		[0004]  GETFIELD, 0, 6                                                  ;; primitive: int32 [4 bytes]
 		[0005]  RET                                                             

@@ -109,7 +109,7 @@ struct AA_PT_NODE {
 	std::wstring content;
 	std::vector< AA_PT_NODE*> childNodes;
 	AACodePosition position;
-	std::unordered_map<const char*, int> flags;
+	std::unordered_map<std::string, int> flags;
 	AA_PT_NODE(AACodePosition pos) {
 		this->nodeType = AA_PT_NODE_TYPE::undefined;
 		this->content = L"";

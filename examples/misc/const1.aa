@@ -1,0 +1,10 @@
+int main() {
+
+    // Declare two constants
+    const var a = 10;
+    const int b = 12;
+
+    // Do an operation on them
+    a * b; // 120
+
+}

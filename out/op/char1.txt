@@ -2,10 +2,10 @@ BYTECODE PROCEDURES:
 	START PROCEDURE 0 (<GlobalScope>):
 	CONSTANTS:	[C, A]
 	IDENTIFIERS:
-		0$[c];
+		1$[c];
 	OPERATIONS:
 		[0000]  PUSHC, 0                                                        
-		[0001]  SETVAR, 0, 12                                                   ;; primitive: wide-char [2 bytes]
-		[0002]  GETVAR, 0                                                       
+		[0001]  SETVAR, 1, 12                                                   ;; primitive: wide-char [2 bytes]
+		[0002]  GETVAR, 1                                                       
 	END PROCEDURE;
 END BYTECODE PROCEDURES

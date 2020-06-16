@@ -60,14 +60,6 @@ public:
 	bool VerifyFunctionControlPath(AAFuncSignature* sig, AAStaticEnvironment environment, AAC_CompileErrorMessage& err);
 
 	/// <summary>
-	/// Runs a vars check on the entire tree (Scope rules)
-	/// </summary>
-	/// <param name="vars">Vars object to handle tree vars run</param>
-	/// <param name="pTree">Pointer to tree to fix</param>
-	/// <returns>True if no variable problems occured - false if any scope error occured</returns>
-	bool Vars(AAVars vars, AA_AST* pTree);
-
-	/// <summary>
 	/// Find the entry point to use when executing the program
 	/// </summary>
 	/// <param name="trees">The trees to find entry point in</param>

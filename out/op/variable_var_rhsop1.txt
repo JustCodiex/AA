@@ -2,12 +2,12 @@ BYTECODE PROCEDURES:
 	START PROCEDURE 0 (<GlobalScope>):
 	CONSTANTS:	[I32, 5]
 	IDENTIFIERS:
-		0$[x];
+		1$[x];
 	OPERATIONS:
 		[0000]  PUSHC, 0                                                        
 		[0001]  PUSHC, 0                                                        
 		[0002]  ADD, 6                                                          ;; primitive: int32 [4 bytes]
-		[0003]  SETVAR, 0, 6                                                    ;; primitive: int32 [4 bytes]
-		[0004]  GETVAR, 0                                                       
+		[0003]  SETVAR, 1, 6                                                    ;; primitive: int32 [4 bytes]
+		[0004]  GETVAR, 1                                                       
 	END PROCEDURE;
 END BYTECODE PROCEDURES

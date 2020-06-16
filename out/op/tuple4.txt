@@ -7,19 +7,19 @@ BYTECODE PROCEDURES:
 	START PROCEDURE 1 (main):
 	CONSTANTS:	[I32, 5][I32, 6][I32, 11][B, T][I32, 0]
 	IDENTIFIERS:
-		0$[k];		1$[v];
+		1$[k];		2$[v];
 	OPERATIONS:
 		[0000]  PUSHC, 0                                                        
 		[0001]  PUSHC, 1                                                        
 		[0002]  TUPLENEW, 2, 6, 6                                               
-		[0003]  SETVAR, 0, 16                                                   ;; primitive: tuple [8 bytes]
+		[0003]  SETVAR, 1, 16                                                   ;; primitive: tuple [8 bytes]
 		[0004]  PUSHC, 0                                                        
-		[0005]  GETVAR, 0                                                       
-		[0006]  TUPLECMPORSET, 2, -1, 1                                         
+		[0005]  GETVAR, 1                                                       
+		[0006]  TUPLECMPORSET, 2, -1, 2                                         
 		[0007]  JMPT, 3                                                         
 		[0008]  PUSHC, 3                                                        
 		[0009]  JMPT, 5                                                         
-		[0010]  GETVAR, 1                                                       
+		[0010]  GETVAR, 2                                                       
 		[0011]  PUSHC, 2                                                        
 		[0012]  MUL, 6                                                          ;; primitive: int32 [4 bytes]
 		[0013]  JMP, 1                                                          

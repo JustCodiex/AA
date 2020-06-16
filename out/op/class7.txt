@@ -113,7 +113,7 @@ BYTECODE PROCEDURES:
 	START PROCEDURE 7 (main):
 	CONSTANTS:	[I32, 10][I32, 5][I32, 2][I32, 0]
 	IDENTIFIERS:
-		0$[tree];		1$[topValue];		1$[v];
+		1$[tree];		2$[topValue];		2$[v];
 	OPERATIONS:
 		[0000]  PUSHC, 0                                                        
 		[0001]  PUSHC, 1                                                        
@@ -125,20 +125,20 @@ BYTECODE PROCEDURES:
 		[0007]  CALL, 8, 3                                                      ;; Calls: Node
 		[0008]  CALL, 9, 0                                                      ;; Calls: Leaf
 		[0009]  CALL, 8, 3                                                      ;; Calls: Node
-		[0010]  SETVAR, 0, 14                                                   ;; primitive: refptr [16 bytes]
-		[0011]  GETVAR, 0                                                       
+		[0010]  SETVAR, 1, 14                                                   ;; primitive: refptr [16 bytes]
+		[0011]  GETVAR, 1                                                       
 		[0012]  EXTTAG                                                          
 		[0013]  TAGTUPLECMP, 2                                                  
 		[0014]  JMPT, 5                                                         
-		[0015]  GETVAR, 0                                                       
+		[0015]  GETVAR, 1                                                       
 		[0016]  EXTTAG                                                          
-		[0017]  TAGTUPLECMPORSET, 3, 3, 1, -1, -1                               
+		[0017]  TAGTUPLECMPORSET, 3, 3, 2, -1, -1                               
 		[0018]  JMPT, 3                                                         
 		[0019]  PUSHC, 3                                                        
 		[0020]  JMP, 1                                                          
-		[0021]  GETVAR, 1                                                       
-		[0022]  SETVAR, 1, 6                                                    ;; primitive: int32 [4 bytes]
-		[0023]  GETVAR, 1                                                       
+		[0021]  GETVAR, 2                                                       
+		[0022]  SETVAR, 2, 6                                                    ;; primitive: int32 [4 bytes]
+		[0023]  GETVAR, 2                                                       
 		[0024]  RET                                                             
 	END PROCEDURE;
 

@@ -38,11 +38,11 @@ BYTECODE PROCEDURES:
 	START PROCEDURE 2 (main):
 	CONSTANTS:	[I32, 0]
 	IDENTIFIERS:
-		0$[testDep];
+		1$[testDep];
 	OPERATIONS:
 		[0000]  PUSHC, 0                                                        
-		[0001]  SETVAR, 0, 6                                                    ;; primitive: int32 [4 bytes]
-		[0002]  GETVAR, 0                                                       
+		[0001]  SETVAR, 1, 6                                                    ;; primitive: int32 [4 bytes]
+		[0002]  GETVAR, 1                                                       
 		[0003]  CALL, 1, 1                                                      ;; Calls: UniversityDepartment::GetString
 		[0004]  WRAP, 13                                                        
 		[0005]  XCALL, 0, 1                                                     ;; Calls: println

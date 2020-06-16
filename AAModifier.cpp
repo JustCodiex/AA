@@ -35,6 +35,8 @@ namespace aa {
 			return L"abstract";
 		case AAStorageModifier::SEALED:
 			return L"sealed";
+		case AAStorageModifier::CONSTANT:
+			return L"const";
 		default:
 			return NameofStorageModifier(AAStorageModifier::NONE);
 		}

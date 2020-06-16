@@ -9,16 +9,16 @@ BYTECODE PROCEDURES:
 	START PROCEDURE 1 (par):
 	CONSTANTS:	[I32, 28]
 	IDENTIFIERS:
-		z;		1$[x];
+		z;		2$[x];
 	OPERATIONS:
 		[0000]  SETVAR, 0, 6                                                    ;; primitive: int32 [4 bytes]
 		[0001]  GETVAR, 0                                                       
-		[0002]  SETVAR, 1, 6                                                    ;; primitive: int32 [4 bytes]
-		[0003]  GETVAR, 1                                                       
+		[0002]  SETVAR, 2, 6                                                    ;; primitive: int32 [4 bytes]
+		[0003]  GETVAR, 2                                                       
 		[0004]  PUSHC, 0                                                        
 		[0005]  ADD, 6                                                          ;; primitive: int32 [4 bytes]
-		[0006]  SETVAR, 1, 6                                                    ;; primitive: int32 [4 bytes]
-		[0007]  GETVAR, 1                                                       
+		[0006]  SETVAR, 2, 6                                                    ;; primitive: int32 [4 bytes]
+		[0007]  GETVAR, 2                                                       
 		[0008]  RET                                                             
 	END PROCEDURE;
 END BYTECODE PROCEDURES

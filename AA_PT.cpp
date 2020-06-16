@@ -598,12 +598,18 @@ void AA_PT::HandleKeywordCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex
 		// Remove self
 		REMOVE_NODE(n);
 
+		// Create node with modifier content
+		AA_PT_NODE* modifierNode = new AA_PT_NODE(AA_PT_NODE_TYPE::modifier, content.c_str(), nodes[n]->position);
+
 		// Add modifier to decleration's modifier list
 		if (nodes[n]->nodeType == AA_PT_NODE_TYPE::fundecleration) {
-			nodes[n]->childNodes[AA_NODE_FUNNODE_MODIFIER]->childNodes.push_back(new AA_PT_NODE(AA_PT_NODE_TYPE::modifier, content.c_str(), nodes[n]->position));
+			nodes[n]->childNodes[AA_NODE_FUNNODE_MODIFIER]->childNodes.push_back(modifierNode);
 			nodeIndex--;
 		} else if (nodes[n]->nodeType == AA_PT_NODE_TYPE::classdecleration) {
-			nodes[n]->childNodes[AA_NODE_CLASSNODE_MODIFIER]->childNodes.push_back(new AA_PT_NODE(AA_PT_NODE_TYPE::modifier, content.c_str(), nodes[n]->position));
+			nodes[n]->childNodes[AA_NODE_CLASSNODE_MODIFIER]->childNodes.push_back(modifierNode);
+		} else if (nodes[n]->nodeType == AA_PT_NODE_TYPE::vardecleration) {
+			nodes[n]->childNodes[AA_NODE_VARDECL_MODIFIERLIST]->childNodes.push_back(modifierNode);
+			nodeIndex = n;
 		}
 
 	}
@@ -840,6 +846,7 @@ AA_PT_NODE* AA_PT::CreateVariableDecl(std::vector<AA_PT_NODE*>& nodes, size_t fr
 	varDeclExp->nodeType = AA_PT_NODE_TYPE::vardecleration;
 	varDeclExp->childNodes.push_back(nodes[from]);
 	varDeclExp->childNodes.push_back(nodes[from+1]);
+	varDeclExp->childNodes.push_back(new AA_PT_NODE(AA_PT_NODE_TYPE::modifierlist, L"modifiers", nodes[from]->position));
 
 	nodes.erase(nodes.begin() + from + 1);
 
@@ -1620,7 +1627,7 @@ bool AA_PT::IsDeclarativeIndexer(AA_PT_NODE* pNode) {
 bool AA_PT::IsModifierKeyword(std::wstring ws) {
 	return 
 		ws.compare(L"override") == 0 || ws.compare(L"virtual") == 0 || ws.compare(L"abstract") == 0 ||
-		ws.compare(L"sealed") == 0 || ws.compare(L"tagged") == 0;
+		ws.compare(L"sealed") == 0 || ws.compare(L"tagged") == 0 || ws.compare(L"const") == 0;
 }
 
 bool AA_PT::IsLiteral(AA_PT_NODE* pNode) {

@@ -75,19 +75,19 @@ BYTECODE PROCEDURES:
 
 	START PROCEDURE 9 (main):
 	IDENTIFIERS:
-		0$[dog];		1$[cat];
+		1$[dog];		2$[cat];
 	OPERATIONS:
 		[0000]  CTOR, 2, 5, 0                                                   
-		[0001]  SETVAR, 0, 14                                                   ;; primitive: refptr [16 bytes]
+		[0001]  SETVAR, 1, 14                                                   ;; primitive: refptr [16 bytes]
 		[0002]  CTOR, 3, 8, 0                                                   
-		[0003]  SETVAR, 1, 14                                                   ;; primitive: refptr [16 bytes]
-		[0004]  GETVAR, 0                                                       
+		[0003]  SETVAR, 2, 14                                                   ;; primitive: refptr [16 bytes]
+		[0004]  GETVAR, 1                                                       
 		[0005]  VCALL, 1, 1                                                     
-		[0006]  GETVAR, 1                                                       
+		[0006]  GETVAR, 2                                                       
 		[0007]  VCALL, 1, 1                                                     
-		[0008]  GETVAR, 0                                                       
+		[0008]  GETVAR, 1                                                       
 		[0009]  VCALL, 2, 1                                                     
-		[0010]  GETVAR, 1                                                       
+		[0010]  GETVAR, 2                                                       
 		[0011]  VCALL, 2, 1                                                     
 		[0012]  SUB, 6                                                          ;; primitive: int32 [4 bytes]
 		[0013]  RET                                                             

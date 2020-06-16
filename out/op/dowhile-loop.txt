@@ -7,19 +7,19 @@ BYTECODE PROCEDURES:
 	START PROCEDURE 1 (foo):
 	CONSTANTS:	[I32, 0][I32, 10][I32, 1]
 	IDENTIFIERS:
-		0$[i];
+		1$[i];
 	OPERATIONS:
 		[0000]  PUSHC, 0                                                        
-		[0001]  SETVAR, 0, 6                                                    ;; primitive: int32 [4 bytes]
-		[0002]  GETVAR, 0                                                       
+		[0001]  SETVAR, 1, 6                                                    ;; primitive: int32 [4 bytes]
+		[0002]  GETVAR, 1                                                       
 		[0003]  PUSHC, 2                                                        
 		[0004]  ADD, 6                                                          ;; primitive: int32 [4 bytes]
-		[0005]  SETVAR, 0, 6                                                    ;; primitive: int32 [4 bytes]
-		[0006]  GETVAR, 0                                                       
+		[0005]  SETVAR, 1, 6                                                    ;; primitive: int32 [4 bytes]
+		[0006]  GETVAR, 1                                                       
 		[0007]  PUSHC, 1                                                        
 		[0008]  LE, 6                                                           ;; primitive: int32 [4 bytes]
 		[0009]  JMPT, -7                                                        
-		[0010]  GETVAR, 0                                                       
+		[0010]  GETVAR, 1                                                       
 		[0011]  RET                                                             
 	END PROCEDURE;
 END BYTECODE PROCEDURES

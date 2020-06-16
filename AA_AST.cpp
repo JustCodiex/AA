@@ -1,5 +1,6 @@
 #include "AA_AST.h"
 #include "AA_AST_Expander.h"
+#include "astring.h"
 
 AA_AST::AA_AST(AA_PT* parseTree) {
 	m_root = this->AbstractNode(parseTree->GetRoot());
@@ -80,37 +81,53 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 	
 	}
 	case AA_PT_NODE_TYPE::vardecleration: {
-		if (pNode->childNodes[0]->content.compare(L"var") == 0) {
-			
-			AA_AST_NODE* varDeclVar = new AA_AST_NODE(pNode->childNodes[1]->content, AA_AST_NODE_TYPE::vardecl, pNode->position);
-			varDeclVar->tags = pNode->flags;
-			return varDeclVar;
+		
+		// AST node to create
+		AA_AST_NODE* vDecl = 0;
+
+		if (pNode->childNodes[AA_NODE_VARDECL_TYPE]->content.compare(L"var") == 0) {
+
+			// Create node
+			vDecl = new AA_AST_NODE(pNode->childNodes[AA_NODE_VARDECL_IDENTIFIER]->content, AA_AST_NODE_TYPE::vardecl, pNode->position);
 
 		} else if (pNode->content.compare(L"tupledecl") == 0) {
 			
-			AA_AST_NODE* tupleDecl = new AA_AST_NODE(pNode->childNodes[1]->content, AA_AST_NODE_TYPE::tuplevardecl, pNode->position);
+			// Create tuple node
+			vDecl = new AA_AST_NODE(pNode->childNodes[AA_NODE_VARDECL_IDENTIFIER]->content, AA_AST_NODE_TYPE::tuplevardecl, pNode->position);
 
-			for (auto& type : pNode->childNodes[0]->childNodes) {
-				tupleDecl->expressions.push_back(new AA_AST_NODE(type->content, AA_AST_NODE_TYPE::typeidentifier, type->position));
+			// Add tuple's internal types
+			for (auto& type : pNode->childNodes[AA_NODE_VARDECL_TYPE]->childNodes) {
+				vDecl->expressions.push_back(new AA_AST_NODE(type->content, AA_AST_NODE_TYPE::typeidentifier, type->position));
 			}
-
-			return tupleDecl;
 
 		} else { // When a specific type is specified
 			
-			AA_AST_NODE* varDeclType = new AA_AST_NODE(pNode->childNodes[1]->content, AA_AST_NODE_TYPE::vardecl, pNode->position);
+			// Create node
+			vDecl = new AA_AST_NODE(pNode->childNodes[AA_NODE_VARDECL_IDENTIFIER]->content, AA_AST_NODE_TYPE::vardecl, pNode->position);
 			
-			if (pNode->childNodes[0]->nodeType == AA_PT_NODE_TYPE::accessor) { // However, it could also be a member accessor (ie. we're trying to access a type in a namespace or a class subtype)
-				AA_AST_NODE* accessNode = this->AbstractNode(pNode->childNodes[0]);
-				varDeclType->expressions.push_back(accessNode);
+			// Sort out type
+			if (pNode->childNodes[AA_NODE_VARDECL_TYPE]->nodeType == AA_PT_NODE_TYPE::accessor) { // However, it could also be a member accessor (ie. we're trying to access a type in a namespace or a class subtype)
+				AA_AST_NODE* accessNode = this->AbstractNode(pNode->childNodes[AA_NODE_VARDECL_TYPE]);
+				vDecl->expressions.push_back(accessNode);
 			} else { // default is of course a type identifier
-				varDeclType->expressions.push_back(new AA_AST_NODE(pNode->childNodes[0]->content, AA_AST_NODE_TYPE::typeidentifier, pNode->position));
+				vDecl->expressions.push_back(new AA_AST_NODE(pNode->childNodes[AA_NODE_VARDECL_TYPE]->content, AA_AST_NODE_TYPE::typeidentifier, pNode->position));
 			}
 		
-			varDeclType->tags = pNode->flags;
-			return varDeclType;
-		
 		}
+		
+		// Transfer flags (if any)
+		vDecl->tags = pNode->flags;
+
+		// If any modifiers, add those
+		if (aa::parsing::Var_HasModifiers(pNode)) {
+			for (auto& modNode : pNode->childNodes[AA_NODE_VARDECL_MODIFIERLIST]->childNodes) {
+				vDecl->tags["modifier_" + string_cast(modNode->content)] = 1;
+			}
+		}
+
+		// Return vdecl
+		return vDecl;
+
 	}
 	case AA_PT_NODE_TYPE::fundecleration: {
 		

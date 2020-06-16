@@ -7,15 +7,15 @@ BYTECODE PROCEDURES:
 	START PROCEDURE 1 (test):
 	CONSTANTS:	[I32, 0][I32, 28]
 	IDENTIFIERS:
-		0$[x];
+		1$[x];
 	OPERATIONS:
 		[0000]  PUSHC, 0                                                        
-		[0001]  SETVAR, 0, 6                                                    ;; primitive: int32 [4 bytes]
-		[0002]  GETVAR, 0                                                       
+		[0001]  SETVAR, 1, 6                                                    ;; primitive: int32 [4 bytes]
+		[0002]  GETVAR, 1                                                       
 		[0003]  PUSHC, 1                                                        
 		[0004]  ADD, 6                                                          ;; primitive: int32 [4 bytes]
-		[0005]  SETVAR, 0, 6                                                    ;; primitive: int32 [4 bytes]
-		[0006]  GETVAR, 0                                                       
+		[0005]  SETVAR, 1, 6                                                    ;; primitive: int32 [4 bytes]
+		[0006]  GETVAR, 1                                                       
 		[0007]  RET                                                             
 	END PROCEDURE;
 END BYTECODE PROCEDURES

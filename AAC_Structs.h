@@ -1,6 +1,8 @@
 #pragma once
 #include "AACodePosition.h"
+#include "AA_literals.h"
 #include "AAByteCode.h"
+#include "list.h"
 #include <string>
 
 // Compiled output
@@ -91,6 +93,11 @@ namespace aa {
 		/// Very fatal compiler error, when compiling a tagged class
 		/// </summary>
 		const int C_Compiler_TaggedClass_Generator_Error = -101;
+
+		/// <summary>
+		/// Attempt to mutable a constant variable
+		/// </summary>
+		const int C_Vars_ConstMutation = 400;
 
 	}
 }

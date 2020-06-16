@@ -16,9 +16,10 @@
 									==> "abstract class(int iField) k;"							// Declares an abstract class with public field ✔
 		Simple Definition syntax	==> "abstract class k { int iField; }";						// Same as above ✔
 									==> "abstract class k { abstract int method(); }"			// Defines abstract class k, with (implicit) virtual method called 'method' ✔
-	Constant keyword
-		Simple syntax ==> "const int k = 42;"
-						  "const var k = 42;"
+	Constant keyword ✔
+		Simple syntax ==> "const int k = 42;" ✔
+						  "const var k = 42;" ✔
+		Ensure the value of constants cannot be changed (compile-time check) ✔
 	Closures
 		Required changes to scoping
 		Lambda bodies
@@ -72,8 +73,12 @@
 		simple syntax		==> "public class example {}"												// declares example class public
 							==> "private class example {}"												// declares example class prive (file only)
 		Nested classes, interfaces, methods, functions etc...
-		Extern keyword
-			Simple syntax	==> "extern class Example { extern void func(); };"							// Declares a class Example to be defined somewhere else (like in c++) with a method func declared somewhere else
+		'external' keyword
+			Simple syntax	==> "external class Example { external void func(); };"						// Declares a class Example to be defined somewhere else (like in c++) with a method func declared somewhere else
+		'sealed' keyword enforcement
+			sealed disallows inheritance in other files on abstract classes
+			sealed disallows inheritance everywhere on non-abstract classes
+				Is class, enum, and method modifier
 	Dynamic type load
 		Make IO stream properly fetch io-stream type during runtime
 	Upper-Lower bound inheritance

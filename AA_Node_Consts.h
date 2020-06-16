@@ -104,14 +104,14 @@ namespace aa {
 		/// <summary>
 		/// Check if the node has a body
 		/// </summary>
-		/// <param name="pNode">AA_PT_NODE with type classdecl</param>
+		/// <param name="pNode">AA_PT_NODE with type enumdecl</param>
 		/// <returns></returns>
 		bool Enum_HasBody(const AA_PT_NODE* pNode);
 
 		/// <summary>
 		/// Check if the node has a body
 		/// </summary>
-		/// <param name="pNode">AA_AST_NODE with type classdecl</param>
+		/// <param name="pNode">AA_AST_NODE with type enumdecl</param>
 		/// <returns></returns>
 		bool Enum_HasBody(const AA_AST_NODE* pNode);
 
@@ -119,6 +119,43 @@ namespace aa {
 }
 
 #pragma endregion
+
+#pragma region VARDECL CONSTS
+
+/// <summary>
+/// Fixed index for fetching the type node of a AA_PT_NODE with type vardeclaration
+/// </summary>
+const int AA_NODE_VARDECL_TYPE = 0;
+
+/// <summary>
+/// Fixed index for fetching the identifier node of a AA_PT_NODE with type vardeclaration
+/// </summary>
+const int AA_NODE_VARDECL_IDENTIFIER = 1;
+
+/// <summary>
+/// Fixed index for fetching the modifierlist node of a AA_PT_NODE with type vardeclaration
+/// </summary>
+const int AA_NODE_VARDECL_MODIFIERLIST = 2;
+
+namespace aa {
+	namespace parsing {
+
+		/// <summary>
+		/// Check if the node has modifiers
+		/// </summary>
+		/// <param name="pNode">AA_PT_NODE with type enumdecl</param>
+		/// <returns></returns>
+		bool Var_HasModifiers(const AA_PT_NODE* pNode);
+
+		/// <summary>
+		/// Check if the node has modifiers
+		/// </summary>
+		/// <param name="pNode">AA_AST_NODE with type enumdecl</param>
+		/// <returns></returns>
+		bool Var_HasModifiers(const AA_AST_NODE* pNode);
+
+	}
+}
 
 #pragma region BRANCH CONSTS
 

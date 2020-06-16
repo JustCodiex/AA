@@ -28,14 +28,14 @@ BYTECODE PROCEDURES:
 	START PROCEDURE 3 (main):
 	CONSTANTS:	[I32, 25][I32, 30]
 	IDENTIFIERS:
-		0$[ex];
+		1$[ex];
 	OPERATIONS:
 		[0000]  CTOR, 1, 1, 0                                                   
-		[0001]  SETVAR, 0, 14                                                   ;; primitive: refptr [16 bytes]
-		[0002]  GETVAR, 0                                                       
+		[0001]  SETVAR, 1, 14                                                   ;; primitive: refptr [16 bytes]
+		[0002]  GETVAR, 1                                                       
 		[0003]  PUSHC, 0                                                        
 		[0004]  CALL, 2, 2                                                      ;; Calls: ExampleClass::arg
-		[0005]  GETVAR, 0                                                       
+		[0005]  GETVAR, 1                                                       
 		[0006]  PUSHC, 1                                                        
 		[0007]  CALL, 2, 2                                                      ;; Calls: ExampleClass::arg
 		[0008]  ADD, 6                                                          ;; primitive: int32 [4 bytes]

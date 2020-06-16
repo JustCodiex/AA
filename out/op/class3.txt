@@ -35,11 +35,11 @@ BYTECODE PROCEDURES:
 	START PROCEDURE 3 (main):
 	CONSTANTS:	[I32, 5]
 	IDENTIFIERS:
-		0$[e];
+		1$[e];
 	OPERATIONS:
 		[0000]  CTOR, 1, 1, 0                                                   
-		[0001]  SETVAR, 0, 14                                                   ;; primitive: refptr [16 bytes]
-		[0002]  GETVAR, 0                                                       
+		[0001]  SETVAR, 1, 14                                                   ;; primitive: refptr [16 bytes]
+		[0002]  GETVAR, 1                                                       
 		[0003]  PUSHC, 0                                                        
 		[0004]  CALL, 2, 2                                                      ;; Calls: ExampleClass::ByTen
 		[0005]  RET                                                             

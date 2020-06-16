@@ -36,7 +36,6 @@ public:
 
 	static bool CanTreatKeywordAsIdentifier(AA_PT_NODE* node);
 	static bool IsIdentifier(AA_PT_NODE* node, bool checkKeyword);
-	static bool IsAssignmentOperator(AA_PT_NODE* node);
 
 	/*
 	** Flow control parsing

@@ -43,13 +43,12 @@ std::vector<std::wstring> keywords = {
 	
 	// Inferred value type keyword (var => variable, typechecker will solve this)
 	L"var",
-	//L"val", // <-- contextualise
 	
 	// Boolean values (true and false)
 	L"true",
 	L"false",
 
-	// Void-Types (null, void, Any)
+	// *Void*-Types (null, void, Any)
 	L"null",
 	L"void",
 	L"Any",
@@ -70,6 +69,7 @@ std::vector<std::wstring> keywords = {
 
 	// Conditions and conversions
 	L"when", // <-- contextualise
+	L"where", // <-- contextualise
 	L"as", // <-- contextualise
 	L"is", // <-- contextualise
 	
@@ -82,6 +82,9 @@ std::vector<std::wstring> keywords = {
 	// Enum keyword
 	L"enum",
 
+	// Event keyword
+	L"event", // <-- Contexualise
+
 	// Try-catch keywords
 	L"try",
 	L"catch",
@@ -89,7 +92,7 @@ std::vector<std::wstring> keywords = {
 	
 	// Use statements
 	L"using",
-	L"from", // <-- contextualise
+	L"from", // <-- Contexualise
 	L"namespace",
 
 	// Access modifiers
@@ -103,6 +106,7 @@ std::vector<std::wstring> keywords = {
 	L"interface",
 	L"tagged", // <-- Contextualise
 	L"sealed",
+	L"const",
 
 	// Linkage modifiers
 	L"external",
@@ -112,6 +116,10 @@ std::vector<std::wstring> keywords = {
 	L"virtual",
 	L"override",
 	L"operator", // <-- Contextualise (Must be followed by an operator)
+
+	// Implicity/Explicity modifiers
+	L"explicit",
+	L"implicit",
 
 	// Pre-processing
 	/*L"macro",

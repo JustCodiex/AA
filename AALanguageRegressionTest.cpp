@@ -693,6 +693,24 @@ void RunTupleTests(AAVM* pAAVM, int& s, int& f) {
 
 }
 
+void RunConstTests(AAVM* pAAVM, int& s, int& f) {
+
+	// Test a simple tuple creation
+	if (!RunFileTest(pAAVM, L"examples\\misc\\const1.aa", L"const1", 120)) {
+		f++;
+	} else {
+		s++;
+	}
+
+	// Test compiler properly detects attempt to modify a constant variable
+	if (!RunFileTest(pAAVM, L"examples\\misc\\const2.aa", L"const2", AAStackValue::None, false, true, false)) {
+		f++;
+	} else {
+		s++;
+	}
+
+}
+
 bool RunRegressionTests(AAVM* pAAVM) {
 
 	bool cmplog, execlog, stacklog;
@@ -744,6 +762,9 @@ bool RunRegressionTests(AAVM* pAAVM) {
 
 	// Run array tests
 	RunArrayTests(pAAVM, successes, fails);
+
+	// Run const tests
+	RunConstTests(pAAVM, successes, fails);
 
 	// Run tuple tests
 	RunTupleTests(pAAVM, successes, fails);

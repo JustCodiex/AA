@@ -1,4 +1,5 @@
 #include "AA_PT_Unflatten.h"
+#include "AAOperator.h"
 
 #define REMOVE_NODE(i) delete nodes[i];nodes.erase(nodes.begin() + i)
 
@@ -56,15 +57,6 @@ bool AA_PT_Unflatten::IsIdentifier(AA_PT_NODE* node, bool checkKeyword) {
 		} else {
 			return false;
 		}
-	}
-}
-
-bool AA_PT_Unflatten::IsAssignmentOperator(AA_PT_NODE* node) {
-	if (node->nodeType == AA_PT_NODE_TYPE::binary_operation) {
-		return node->content.compare(L"=") == 0 || node->content.compare(L"+=") == 0 || node->content.compare(L"-=") == 0 ||
-			  node->content.compare(L"*=") == 0 || node->content.compare(L"/=") == 0 || node->content.compare(L"%=") == 0;
-	} else {
-		return false;
 	}
 }
 
@@ -266,7 +258,7 @@ void AA_PT_Unflatten::ApplyAssignmentOrder(std::vector<AA_PT_NODE*>& nodes) {
 			// Apply the assignment order recursively
 			ApplyAssignmentOrder(nodes[index]->childNodes);
 
-		} else if (IsAssignmentOperator(nodes[index])) {
+		} else if (nodes[index]->nodeType == AA_PT_NODE_TYPE::binary_operation && aa::op::IsAssignmentOperator(nodes[index]->content)) {
 
 			size_t index2 = index;
 

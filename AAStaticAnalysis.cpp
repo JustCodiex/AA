@@ -147,9 +147,8 @@ AAC_CompileErrorMessage AAStaticAnalysis::RunStaticAnalysis(std::vector<AA_AST*>
 
 	// Run vars check on each tree
 	for (size_t i = 0; i < trees.size(); i++) {
-		if (!this->Vars(varsObj, trees[i])) {
-			printf("Vars error!");
-			return err;
+		if (!varsObj.Vars(trees[i])) {
+			return varsObj.GetError();
 		}
 	}
 
@@ -1258,6 +1257,7 @@ int AAStaticAnalysis::VerifyFunctionControlPath(AA_AST_NODE* pNode, AAStaticEnvi
 	}
 	case AA_AST_NODE_TYPE::binop:
 	case AA_AST_NODE_TYPE::unop_pre:
+	case AA_AST_NODE_TYPE::unop_post:
 	case AA_AST_NODE_TYPE::intliteral:
 	case AA_AST_NODE_TYPE::floatliteral:
 	case AA_AST_NODE_TYPE::stringliteral:
@@ -1437,8 +1437,4 @@ AAC_CompileErrorMessage AAStaticAnalysis::ApplyInheritance(AAClassSignature* cla
 	// Return no compile error
 	return NO_COMPILE_ERROR_MESSAGE;
 
-}
-
-bool AAStaticAnalysis::Vars(AAVars vars, AA_AST* pTree) {
-	return vars.Vars(pTree);
 }

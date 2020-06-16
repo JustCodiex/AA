@@ -7,22 +7,22 @@ BYTECODE PROCEDURES:
 	START PROCEDURE 1 (main):
 	CONSTANTS:	[I32, 0]
 	IDENTIFIERS:
-		0$[v];		1$[i];		2$[j];
+		1$[v];		2$[i];		3$[j];
 	OPERATIONS:
 		[0000]  PUSHC, 0                                                        
-		[0001]  SETVAR, 0, 6                                                    ;; primitive: int32 [4 bytes]
-		[0002]  INC, 0, 1                                                       
-		[0003]  SETVAR, 1, 6                                                    ;; primitive: int32 [4 bytes]
-		[0004]  INC, 0, 0                                                       
-		[0005]  SETVAR, 2, 6                                                    ;; primitive: int32 [4 bytes]
-		[0006]  GETVAR, 1                                                       
+		[0001]  SETVAR, 1, 6                                                    ;; primitive: int32 [4 bytes]
+		[0002]  INC, 1, 1                                                       
+		[0003]  SETVAR, 2, 6                                                    ;; primitive: int32 [4 bytes]
+		[0004]  INC, 1, 0                                                       
+		[0005]  SETVAR, 3, 6                                                    ;; primitive: int32 [4 bytes]
+		[0006]  GETVAR, 2                                                       
 		[0007]  WRAP, 6                                                         
 		[0008]  XCALL, 0, 1                                                     ;; Calls: println
-		[0009]  GETVAR, 2                                                       
+		[0009]  GETVAR, 3                                                       
 		[0010]  WRAP, 6                                                         
 		[0011]  XCALL, 0, 1                                                     ;; Calls: println
-		[0012]  INC, 1, 0                                                       
-		[0013]  INC, 2, 1                                                       
+		[0012]  INC, 2, 0                                                       
+		[0013]  INC, 3, 1                                                       
 		[0014]  SUB, 6                                                          ;; primitive: int32 [4 bytes]
 		[0015]  RET                                                             
 	END PROCEDURE;

@@ -7,31 +7,31 @@ BYTECODE PROCEDURES:
 	START PROCEDURE 1 (main):
 	CONSTANTS:	[I32, 1][I32, 3][I32, 2][I32, 4]
 	IDENTIFIERS:
-		0$[v];
+		1$[v];
 	OPERATIONS:
 		[0000]  PUSHC, 0                                                        
-		[0001]  SETVAR, 0, 6                                                    ;; primitive: int32 [4 bytes]
-		[0002]  GETVAR, 0                                                       
+		[0001]  SETVAR, 1, 6                                                    ;; primitive: int32 [4 bytes]
+		[0002]  GETVAR, 1                                                       
 		[0003]  PUSHC, 1                                                        
 		[0004]  ADD, 6                                                          ;; primitive: int32 [4 bytes]
-		[0005]  SETVAR, 0, 6                                                    ;; primitive: int32 [4 bytes]
-		[0006]  GETVAR, 0                                                       
+		[0005]  SETVAR, 1, 6                                                    ;; primitive: int32 [4 bytes]
+		[0006]  GETVAR, 1                                                       
 		[0007]  PUSHC, 2                                                        
 		[0008]  SUB, 6                                                          ;; primitive: int32 [4 bytes]
-		[0009]  SETVAR, 0, 6                                                    ;; primitive: int32 [4 bytes]
-		[0010]  GETVAR, 0                                                       
+		[0009]  SETVAR, 1, 6                                                    ;; primitive: int32 [4 bytes]
+		[0010]  GETVAR, 1                                                       
 		[0011]  PUSHC, 3                                                        
 		[0012]  MUL, 6                                                          ;; primitive: int32 [4 bytes]
-		[0013]  SETVAR, 0, 6                                                    ;; primitive: int32 [4 bytes]
-		[0014]  GETVAR, 0                                                       
+		[0013]  SETVAR, 1, 6                                                    ;; primitive: int32 [4 bytes]
+		[0014]  GETVAR, 1                                                       
 		[0015]  PUSHC, 1                                                        
 		[0016]  DIV, 6                                                          ;; primitive: int32 [4 bytes]
-		[0017]  SETVAR, 0, 6                                                    ;; primitive: int32 [4 bytes]
-		[0018]  GETVAR, 0                                                       
+		[0017]  SETVAR, 1, 6                                                    ;; primitive: int32 [4 bytes]
+		[0018]  GETVAR, 1                                                       
 		[0019]  PUSHC, 2                                                        
 		[0020]  MOD, 6                                                          ;; primitive: int32 [4 bytes]
-		[0021]  SETVAR, 0, 6                                                    ;; primitive: int32 [4 bytes]
-		[0022]  GETVAR, 0                                                       
+		[0021]  SETVAR, 1, 6                                                    ;; primitive: int32 [4 bytes]
+		[0022]  GETVAR, 1                                                       
 		[0023]  RET                                                             
 	END PROCEDURE;
 END BYTECODE PROCEDURES

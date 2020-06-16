@@ -2,16 +2,16 @@ BYTECODE PROCEDURES:
 	START PROCEDURE 0 (<GlobalScope>):
 	CONSTANTS:	[UTF-8, "Hello"][UTF-8, "World"][UTF-8, " "]
 	IDENTIFIERS:
-		0$[a];		1$[b];
+		1$[a];		2$[b];
 	OPERATIONS:
 		[0000]  PUSHWS, 0                                                       
-		[0001]  SETVAR, 0, 13                                                   ;; primitive: string [16 bytes]
+		[0001]  SETVAR, 1, 13                                                   ;; primitive: string [16 bytes]
 		[0002]  PUSHWS, 1                                                       
-		[0003]  SETVAR, 1, 13                                                   ;; primitive: string [16 bytes]
-		[0004]  GETVAR, 0                                                       
+		[0003]  SETVAR, 2, 13                                                   ;; primitive: string [16 bytes]
+		[0004]  GETVAR, 1                                                       
 		[0005]  PUSHWS, 2                                                       
 		[0006]  CONCAT                                                          
-		[0007]  GETVAR, 1                                                       
+		[0007]  GETVAR, 2                                                       
 		[0008]  CONCAT                                                          
 	END PROCEDURE;
 END BYTECODE PROCEDURES
