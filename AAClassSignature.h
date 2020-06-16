@@ -3,6 +3,9 @@
 #include "set.h"
 #include <unordered_map>
 
+// Forward declaration such that members may reference it
+struct AAClassSignature;
+
 /// <summary>
 /// Class operator signature (Maps the operator to a function)
 /// </summary>
@@ -32,6 +35,7 @@ struct AAClassFieldSignature {
 	size_t fieldOffset;
 	bool tagged;
 	AAAccessModifier accessModifier;
+	AAClassSignature* fieldOwnerClass; // For when fields are inherited
 	AAClassFieldSignature() {
 		this->name = L"";
 		this->type = AACType::ErrorType;
@@ -39,6 +43,7 @@ struct AAClassFieldSignature {
 		this->accessModifier = AAAccessModifier::PUBLIC;
 		this->tagged = false;
 		this->fieldOffset = 0;
+		this->fieldOwnerClass = 0;
 	}
 	bool operator==(AAClassFieldSignature other) const {
 		return other.name.compare(this->name) == 0;
@@ -75,6 +80,8 @@ struct AAClassVirtualTable; // Forward declaration
 /// </summary>
 struct AAClassSignature {
 	
+public:
+
 	std::wstring name;
 	aa::set<AAFuncSignature*> methods;
 	aa::set<AAClassOperatorSignature> operators;
@@ -104,6 +111,7 @@ struct AAClassSignature {
 		this->pSourceNode = 0;
 		this->basePtr = 0;
 		this->classVTable = 0;
+		this->m_isArranged = false;
 	}
 	
 	AAClassSignature(std::wstring name) {
@@ -116,6 +124,7 @@ struct AAClassSignature {
 		this->pSourceNode = 0;
 		this->basePtr = 0;
 		this->classVTable = 0;
+		this->m_isArranged = false;
 	}
 
 	void CreateVTable();
@@ -134,14 +143,14 @@ struct AAClassSignature {
 	bool DerivesFrom(AAClassSignature* other);
 
 	/// <summary>
-	/// 
+	/// Find a method from a functional signature in string format
 	/// </summary>
-	/// <param name="functionalSignature"></param>
+	/// <param name="functionalSignature">The functional signature to find</param>
 	/// <returns></returns>
 	AAFuncSignature* FindMethodFromFunctionalSignature(std::wstring functionalSignature);
 
 	/// <summary>
-	/// 
+	/// Find all function signatures marked as a constructor
 	/// </summary>
 	/// <returns></returns>
 	aa::set<AAFuncSignature*> GetConstructors();
@@ -149,6 +158,10 @@ struct AAClassSignature {
 	bool operator==(AAClassSignature other) {
 		return other.name.compare(this->name) == 0 && other.domain == this->domain;
 	}
+
+private:
+
+	bool m_isArranged;
 
 };
 

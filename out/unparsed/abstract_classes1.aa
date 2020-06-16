@@ -1,0 +1,35 @@
+{
+}
+abstract class Animal {
+	abstract void SaySomething(Animal this);
+	abstract int GetAge(Animal this);
+};
+class Dog : Animal {
+	override void SaySomething(Dog this) {
+		println("Woof!");
+	}
+	override int GetAge(Dog this) {
+		7;
+	}
+	Dog Dog(Dog this) {
+		this;
+	}
+};
+class Cat : Animal {
+	override void SaySomething(Cat this) {
+		println("Miaw!");
+	}
+	override int GetAge(Cat this) {
+		3;
+	}
+	Cat Cat(Cat this) {
+		this;
+	}
+};
+int main() {
+	Animal dog = new Dog();
+	Animal cat = new Cat();
+	Animal::SaySomething(dog);
+	Animal::SaySomething(cat);
+	(Animal::GetAge(dog) - Animal::GetAge(cat));
+}

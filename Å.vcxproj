@@ -170,6 +170,7 @@
     <ClCompile Include="AAFileStream.cpp" />
     <ClCompile Include="AAFuncSignature.cpp" />
     <ClCompile Include="AAGarbageCollector.cpp" />
+    <ClCompile Include="AAInheritanceTree.cpp" />
     <ClCompile Include="AALanguageRegressionTest.cpp" />
     <ClCompile Include="AALexer.cpp" />
     <ClCompile Include="AAMemory.cpp" />
@@ -214,6 +215,7 @@
     <ClInclude Include="AADecompiler.h" />
     <ClInclude Include="AADynamicTypeEnviornment.h" />
     <ClInclude Include="AAExecute.h" />
+    <ClInclude Include="AAInheritanceTree.h" />
     <ClInclude Include="AAIntrPtr.h" />
     <ClInclude Include="AAModifier.h" />
     <ClInclude Include="AAB2F.h" />
@@ -247,6 +249,7 @@
     <ClInclude Include="AARuntimeTypeEnv.h" />
     <ClInclude Include="AAStackValue.h" />
     <ClInclude Include="AAStaticAnalysis.h" />
+    <ClInclude Include="AAStaticEnvironment.h" />
     <ClInclude Include="AAstdiolib.h" />
     <ClInclude Include="AAString.h" />
     <ClInclude Include="AATuple.h" />

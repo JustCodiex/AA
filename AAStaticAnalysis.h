@@ -1,37 +1,11 @@
 #pragma once
-#include "AAClassCompiler.h"
+#include "AAStaticEnvironment.h"
 #include "AAC_Structs.h"
 #include "AATypeChecker.h"
 #include "AAVars.h"
 
 // Forward declare compiler
 class AAC;
-
-/// <summary>
-/// A static environment for static data
-/// </summary>
-struct AAStaticEnvironment {
-
-	AACNamespace* globalNamespace;
-	aa::set<AAFuncSignature*> availableFunctions;
-	aa::set<AAClassSignature*> availableClasses;
-	aa::set<AACType*> availableTypes;
-	aa::set<AACEnumSignature*> availableEnums;
-
-	AAStaticEnvironment() {
-		globalNamespace = 0;
-	}
-
-	AAStaticEnvironment Union(AACNamespace*& space) const {
-		AAStaticEnvironment senv = AAStaticEnvironment(*this);
-		senv.availableClasses.UnionWith(space->classes);
-		senv.availableFunctions.UnionWith(space->functions);
-		senv.availableTypes.UnionWith(space->types);
-		senv.availableEnums.UnionWith(space->enums);
-		return senv;
-	}
-
-};
 
 /// <summary>
 /// Class for performaing static analysis on code
@@ -133,15 +107,9 @@ private:
 	AAC_CompileErrorMessage ApplyInheritance(AACNamespace* domain, AAStaticEnvironment& senv);
 	AAC_CompileErrorMessage ApplyInheritance(AAClassSignature* classSig, AAStaticEnvironment& senv);
 
-	AAC_CompileErrorMessage RegisterVirtualFunctions(AAClassSignature* classSig, AAFuncSignature* funcSig) const;
-
-	AAC_CompileErrorMessage HandleObjectInheritance(AAClassSignature* sig, AAStaticEnvironment& senv);
 	AAC_CompileErrorMessage HandleObjectInheritance(AACEnumSignature* sig, AAStaticEnvironment& senv);
 
-	AAC_CompileErrorMessage HandleInheritanceFrom(AAClassSignature* child, AAClassSignature* super, AAStaticEnvironment& senv);
 	AAC_CompileErrorMessage HandleInheritanceFrom(AACEnumSignature* child, AAClassSignature* super, AAStaticEnvironment& senv);
-
-	bool CanInheritFunction(AAClassSignature* pSubSig, AAClassSignature* pBaseSig, AAFuncSignature* pToInherit, AAC_CompileErrorMessage& compileErr);
 
 	/*
 	* Class method generation

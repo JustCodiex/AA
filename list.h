@@ -13,6 +13,18 @@ namespace aa {
 
 	public:
 
+		struct LCompare {
+			std::function<bool(const T&, const T&)> cmpf;
+			LCompare(std::function<bool(const T&, const T&)> f) {
+				this->cmpf = f;
+			}
+			bool operator()(const T& lhs, const T& rhs) {
+				return this->cmpf(lhs, rhs);
+			}
+		};
+
+	public:
+
 		list() {}
 
 		list(const std::vector<T>& v) {
@@ -122,10 +134,11 @@ namespace aa {
 		/// For each element in list
 		/// </summary>
 		/// <param name="f">Function to apply to all elements in list</param>
-		void ForEach(std::function<void(T&)> f) {
+		list<T> ForEach(std::function<void(T&)> f) {
 			for (auto& v : m_vector) {
 				f(v);
 			}
+			return *this; // Return self - such that this can be used in sequence
 		}
 
 		/// <summary>
@@ -224,8 +237,79 @@ namespace aa {
 		/// <summary>
 		/// Reverse the order of the internal vector
 		/// </summary>
-		void Reverse() {
+		list<T>& Reverse() {
 			std::reverse(m_vector.begin(), m_vector.end());
+			return *this;
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="f"></param>
+		/// <returns></returns>
+		int Max(std::function<int(T)> f) {
+			int max = INT32_MIN;
+			for (size_t i = 0; i < m_vector.size(); i++) {
+				int v = f(m_vector[i]);
+				if (v > max) {
+					max = v;
+				}
+			}
+			return max;
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="f"></param>
+		/// <returns></returns>
+		int Min(std::function<int(T)> f) {
+			int min = INT32_MAX;
+			for (size_t i = 0; i < m_vector.size(); i++) {
+				int v = f(m_vector[i]);
+				if (v < min) {
+					min = v;
+				}
+			}
+			return min;
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="f"></param>
+		/// <returns></returns>
+		list<T>& Sort(std::function<bool(const T&, const T&)> f) {
+			std::sort(m_vector.begin(), m_vector.end(), LCompare(f));
+			return *this;
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <typeparam name="U"></typeparam>
+		/// <param name="f"></param>
+		/// <returns></returns>
+		template<typename U>
+		list<T>& SortBy(std::function<U(const T&)> f) {
+			auto l = [f](const T& l, const T& r) -> bool { return f(l) < f(r); };
+			return this->Sort(l);
+		}
+
+		/// <summary>
+		/// Get the underlying vector object (The actual list)
+		/// </summary>
+		/// <returns><see cref="std::vector"/> containing all elements from list</returns>
+		std::vector<T>& Vector() {
+			return m_vector;
+		}
+
+		/// <summary>
+		/// Get the pointer to the first element of the underlying vector object
+		/// </summary>
+		/// <returns></returns>
+		T* Ptr() {
+			return &m_vector[0];
 		}
 
 		/// <summary>
@@ -245,22 +329,6 @@ namespace aa {
 
 			return merged;
 
-		}
-
-		/// <summary>
-		/// Get the underlying vector object (The actual list)
-		/// </summary>
-		/// <returns><see cref="std::vector"/> containing all elements from list</returns>
-		std::vector<T>& Vector() {
-			return m_vector;
-		}
-
-		/// <summary>
-		/// Get the pointer to the first element of the underlying vector object
-		/// </summary>
-		/// <returns></returns>
-		T* Ptr() {
-			return &m_vector[0];
 		}
 
 	private:

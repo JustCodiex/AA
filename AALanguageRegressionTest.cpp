@@ -527,6 +527,20 @@ void RunClassTests(AAVM* pAAVM, int& s, int& f) {
 		s++;
 	}
 
+	// Test abstract classes
+	if (!RunFileTest(pAAVM, L"examples\\classes\\abstract_classes1.aa", L"abstract_classes1", 4)) {
+		f++;
+	} else {
+		s++;
+	}
+
+	// Test abstract classes with fields (+ ordinary field inheritance)
+	if (!RunFileTest(pAAVM, L"examples\\classes\\abstract_classes2.aa", L"abstract_classes2", 4)) {
+		f++;
+	} else {
+		s++;
+	}
+
 }
 
 void RunArrayTests(AAVM* pAAVM, int& s, int& f) {

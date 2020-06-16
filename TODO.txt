@@ -13,8 +13,8 @@
 		Project files								==> Will compile to a single binary file ✔
 	Abstract Classes
 		Simple Declaration syntax	==> "abstract class k;"										// Merely declares it ✔
-									==> "abstract class(int iField) k;"							// Declares an abstract class with public field
-		Simple Definition syntax	==> "abstract class k { int iField; }";						// Same as above
+									==> "abstract class(int iField) k;"							// Declares an abstract class with public field ✔
+		Simple Definition syntax	==> "abstract class k { int iField; }";						// Same as above ✔
 									==> "abstract class k { abstract int method(); }"			// Defines abstract class k, with (implicit) virtual method called 'method' ✔
 	Constant keyword
 		Simple syntax ==> "const int k = 42;"

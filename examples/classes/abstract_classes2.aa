@@ -2,7 +2,7 @@ abstract class Animal(int age);
 
 class Dog : Animal {
 
-    Dog(int _age){
+    Dog(int _age) {
         age = _age;
     }
 

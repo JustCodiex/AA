@@ -303,6 +303,9 @@
     <ClCompile Include="AACompileProject.cpp">
       <Filter>Source Files\compiler</Filter>
     </ClCompile>
+    <ClCompile Include="AAInheritanceTree.cpp">
+      <Filter>Source Files\analysis</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AAB2F.h">
@@ -514,6 +517,12 @@
     </ClInclude>
     <ClInclude Include="AACompileProject.h">
       <Filter>Header Files\compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="AAInheritanceTree.h">
+      <Filter>Header Files\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="AAStaticEnvironment.h">
+      <Filter>Header Files\analysis</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

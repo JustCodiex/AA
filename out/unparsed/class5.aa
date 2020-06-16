@@ -4,6 +4,7 @@
 class Super {
 	Super Super(Super this) {
 		object::object(this);
+		object::object(this);
 		println("Super .ctor called");
 		this;
 	}

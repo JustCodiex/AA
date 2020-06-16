@@ -1,32 +1,18 @@
-abstract class Animal {
-
-    abstract void SaySomething(); // Implicit virtual
-
-    abstract int GetAge(); // Implicit virtual
-
-};
+abstract class Animal(int age);
 
 class Dog : Animal {
 
-    override void SaySomething() {
-        println("Woof!");
-    };
-
-    override int GetAge() {
-        7;
-    };
+    Dog(int _age) {
+        age = _age;
+    }
 
 };
 
 class Cat : Animal {
 
-    override void SaySomething() {
-        println("Miaw!");
-    };
-
-    override int GetAge() {
-        3;
-    };
+    Cat(int _age) {
+        age = _age;
+    }
 
 };
 
@@ -34,14 +20,10 @@ class Cat : Animal {
 int main() {
 
     // Create two insances and make them do something
-    Animal dog = new Dog();
-    Animal cat = new Cat();
-
-    // Make the animals do something
-    dog.SaySomething();
-    cat.SaySomething();
+    Animal dog = new Dog(7);
+    Animal cat = new Cat(3);
 
     // Return the age difference (Less reliance on println when testing)
-    dog.GetAge() - cat.GetAge(); // 7 - 3 = 4
+    dog.age - cat.age; // 7 - 3 = 4
 
 }
