@@ -11,7 +11,7 @@
 	Multiple files (Compile Units) ✔
 		Make it so a file is a single Compile Unit	==> Can no longer generate multiple trees ✔
 		Project files								==> Will compile to a single binary file ✔
-	Abstract Classes
+	Abstract Classes ✔
 		Simple Declaration syntax	==> "abstract class k;"										// Merely declares it ✔
 									==> "abstract class(int iField) k;"							// Declares an abstract class with public field ✔
 		Simple Definition syntax	==> "abstract class k { int iField; }";						// Same as above ✔
@@ -39,6 +39,10 @@
 		Getter syntax ==> "class example { int k { get => 0; } }"						// Implicit readonly getter
 						  "class example { int v; int k { get => this.v; } }"			// Getter of other class member
 		Setter syntax ==> "class example { int v; int k { set => this.v = value; } }"
+		Inheritance
+		Abstract Inheritance
+	Interfaces
+		Simple syntax ==> "interface IInterface { <field>, <property>, <method>, <method<() { <...> }; }"	// Allow fields, properties and methods. Methods may have default implementation.
 	Generics
 		Simple syntax		==>	"class example<T> {}"
 		Conditional syntax	==>	"class example<T> where T : U {}""
@@ -49,6 +53,8 @@
 		Absolute syntax		==> "class example[I] where I = int { int compileTimeFixed = new int[I]; }" // Here I takes an absolute value at compile time 
 																										// and example[I] will have its own type! (think of fixed-size vectors)
 																										// example[5] != example[6]
+							==> "class example<T>[I] { T[] arr = new T[I]; }"		// Generic + Absolute
+							==> "class example<T>[I] { T arr[I]; }"					// Alternative definition (Possible compiler optimisations here)
 	Static Classes
 		Simple syntax ==> "static class something {}"
 		Object syntax ==> "static tagged class something : other {}" // Scala object equivalent (So will fit into pattern matching)
@@ -62,8 +68,6 @@
 							use: "V v = new U();"
 		Explicit Syntax ==> "static explicit operator V(U o) { ... };"			// Require a definitive cast
 							use: "V v = (V)(new U());"
-	Interfaces
-		Simple syntax ==> "interface IInterface { <field>, <property>, <method>, <method<() { <...> }; }"	// Allow fields, properties and methods. Methods may have default implementation.
 	Access modifiers
 		simple syntax		==> "public class example {}"												// declares example class public
 							==> "private class example {}"												// declares example class prive (file only)
@@ -124,11 +128,14 @@
 		Vector syntax ==> "int[] x = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, ... };"
 		Tuple syntax  ==> "(string, bool)[] d = { ("Hello", false), ("World", true), ... };"
 		Map syntax	  ==> "(int, float)[] m = { (5 -> 5.0f), (8 -> 8.0f), ... }"
-	Optional parameters
+	Optional Parameters
 		Simple syntax ==> "void print(string message, bool debug = false) { ... };"		// Here the print function will assume debug is false if not specified
 							use: "print("message");"										// Expands to: "print(message = "message", debug = false)"
 							use: "print("message", false);"									// Expands to: "print(message = "message", debug = false)"
 							use: "print("message", true);"									// Expands to: "print(message = "message", debug = true)"
+	Variadic Parameters
+		Simple syntax ==> "void printf(string message, params Any[] args) { ... };"		// Print formatted message with arguments
+							use: "printf("%s + %s = %i", "5", "5", (5+5));"
 	Foreach loop
 	Attributes
 		Simple syntax		==> "[Serialize] class data { ... }"
