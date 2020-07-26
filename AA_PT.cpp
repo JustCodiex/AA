@@ -802,7 +802,23 @@ AA_PT_NODE* AA_PT::HandleLambdaExpression(AA_PT_NODE* pExpressionNode) {
 	pExpressionNode->childNodes[1]->childNodes.clear();
 	pExpressionNode->childNodes[1]->childNodes.push_back(subTree);
 
-	// Handle lambda params?
+	// Handle lambda params
+	std::vector<std::vector<AA_PT_NODE*>> params = this->CommaSeparate(pExpressionNode->childNodes[0]);
+	pExpressionNode->childNodes[0]->childNodes.clear();
+
+	for (size_t i = 0; i < params.size(); i++) {
+		if (params[i].size() == 1) {
+			params[i][0]->nodeType = AA_PT_NODE_TYPE::vardecleration;
+			pExpressionNode->childNodes[0]->childNodes.push_back(params[i][0]);
+		} else if (params[i].size() == 2) {
+			AA_PT_NODE* pNode = params[i][1];
+			pNode->nodeType = AA_PT_NODE_TYPE::vardecleration;
+			pNode->childNodes.push_back(params[i][0]);
+			pExpressionNode->childNodes[0]->childNodes.push_back(pNode);
+		} else {
+			this->SetError(Error("Unexpected argument count", 0, pExpressionNode->position));
+		}
+	}
 
 	// Return parsed lambda expression
 	return pExpressionNode;
@@ -1687,4 +1703,21 @@ bool AA_PT::ContainsSeperator(AA_PT_NODE* pNode, std::wstring seperator) {
 
 	return false;
 
+}
+
+std::vector<std::vector<AA_PT_NODE*>> AA_PT::CommaSeparate(AA_PT_NODE* pNode) {
+	std::vector<std::vector<AA_PT_NODE*>> split;
+	std::vector<AA_PT_NODE*> current;
+	for (size_t i = 0; i < pNode->childNodes.size(); i++) {
+		if (pNode->childNodes[i]->nodeType == AA_PT_NODE_TYPE::seperator && pNode->childNodes[i]->content.compare(L",") == 0) {
+			split.push_back(current);
+			current = std::vector<AA_PT_NODE*>(); // new vector
+		} else {
+			current.push_back(pNode->childNodes[i]);
+		}
+	}
+	if (current.size() > 0) {
+		split.push_back(current);
+	}
+	return split;
 }

@@ -406,7 +406,11 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 		// Create params
 		AA_AST_NODE* lambdaParams = new AA_AST_NODE(L"", AA_AST_NODE_TYPE::lambdaparams, pNode->childNodes[0]->position);
 		for (size_t i = 0; i < pNode->childNodes[0]->childNodes.size(); i++) {
-			lambdaParams->expressions.push_back(this->AbstractNode(pNode->childNodes[0]->childNodes[i]));
+			AA_AST_NODE* var = new AA_AST_NODE(pNode->childNodes[0]->childNodes[i]->content, AA_AST_NODE_TYPE::vardecl, pNode->childNodes[0]->childNodes[i]->position);
+			if (pNode->childNodes[0]->childNodes[i]->childNodes.size() > 0) {
+				var->expressions.push_back(new AA_AST_NODE(pNode->childNodes[0]->childNodes[i]->childNodes[0]->content, AA_AST_NODE_TYPE::typeidentifier, pNode->childNodes[0]->childNodes[i]->position));
+			}
+			lambdaParams->expressions.push_back(var);
 		}
 
 		lambdaExpr->expressions.push_back(lambdaParams);

@@ -137,6 +137,8 @@ private:
 
 	bool ContainsSeperator(AA_PT_NODE* pNode, std::wstring seperator);
 
+	std::vector<std::vector<AA_PT_NODE*>> CommaSeparate(AA_PT_NODE* pNode);
+
 	std::wstring FindClassDeclName(std::vector<AA_PT_NODE*>& nodes, const size_t from, AA_PT_NODE* pClassDeclNode);
 
 	// Sets the last error if not set

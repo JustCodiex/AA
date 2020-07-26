@@ -7,7 +7,13 @@
     // Declare the lambda with var (param type will then have to be supplied)
     var z = (int a) => 2/a;
 
-    // Invoke (and return) it
-    z(x(30) + y(40));
+    // Declare lambda with multiple params
+    (int, int => int) u = (a,b) => (a*b)/2;
+
+    // Invoke z using x and y
+    var v = z(x(30) + y(40));
+
+    // Invoke u using v
+    u(v, v);
 
 }
