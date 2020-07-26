@@ -37,6 +37,7 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 	case AA_PT_NODE_TYPE::funcbody:
 	case AA_PT_NODE_TYPE::classbody:
 	case AA_PT_NODE_TYPE::enumbody:
+	case AA_PT_NODE_TYPE::lambdabody:
 	case AA_PT_NODE_TYPE::block: {
 
 		AA_AST_NODE* blockNode = new AA_AST_NODE(L"{<block>}", this->GetASTBlockType(pNode->nodeType), pNode->position);
@@ -89,6 +90,12 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 
 			// Create node
 			vDecl = new AA_AST_NODE(pNode->childNodes[AA_NODE_VARDECL_IDENTIFIER]->content, AA_AST_NODE_TYPE::vardecl, pNode->position);
+
+		} else if (pNode->childNodes[AA_NODE_VARDECL_TYPE]->nodeType == AA_PT_NODE_TYPE::lambdatype) {
+		
+			// Create node
+			vDecl = new AA_AST_NODE(pNode->childNodes[AA_NODE_VARDECL_IDENTIFIER]->content, AA_AST_NODE_TYPE::lambdadecl, pNode->position);
+			vDecl->expressions.push_back(this->AbstractNode(pNode->childNodes[AA_NODE_VARDECL_TYPE]));
 
 		} else if (pNode->content.compare(L"tupledecl") == 0) {
 			
@@ -380,6 +387,37 @@ AA_AST_NODE* AA_AST::AbstractNode(AA_PT_NODE* pNode) {
 			pTupleValNode->expressions.push_back(this->AbstractNode(pNode->childNodes[i]));
 		}
 		return pTupleValNode;
+	}
+	case AA_PT_NODE_TYPE::lambdatype: {
+
+		AA_AST_NODE* lambdaType = new AA_AST_NODE(L"", AA_AST_NODE_TYPE::lambdatype, pNode->position);
+		for (size_t i = 0; i < pNode->childNodes.size(); i++) {
+			lambdaType->expressions.push_back(new AA_AST_NODE(pNode->childNodes[i]->content, AA_AST_NODE_TYPE::typeidentifier, pNode->childNodes[i]->position));
+		}
+
+		return lambdaType;
+
+	}
+	case AA_PT_NODE_TYPE::lambdaexpression: {
+
+		// Create expression node
+		AA_AST_NODE* lambdaExpr = new AA_AST_NODE(L"=>", AA_AST_NODE_TYPE::lambdaexpression, pNode->position);
+
+		// Create params
+		AA_AST_NODE* lambdaParams = new AA_AST_NODE(L"", AA_AST_NODE_TYPE::lambdaparams, pNode->childNodes[0]->position);
+		for (size_t i = 0; i < pNode->childNodes[0]->childNodes.size(); i++) {
+			lambdaParams->expressions.push_back(this->AbstractNode(pNode->childNodes[0]->childNodes[i]));
+		}
+
+		lambdaExpr->expressions.push_back(lambdaParams);
+
+		// Abstract body and add it
+		AA_AST_NODE* lambdaBody = this->AbstractNode(pNode->childNodes[1]);
+		lambdaBody->type = AA_AST_NODE_TYPE::lambdabody;
+		lambdaExpr->expressions.push_back(lambdaBody);
+
+		return lambdaExpr;
+
 	}
 	case AA_PT_NODE_TYPE::intliteral:
 	case AA_PT_NODE_TYPE::charliteral:

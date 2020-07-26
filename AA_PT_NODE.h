@@ -24,6 +24,8 @@ enum class AA_PT_NODE_TYPE {
 
 	lambdabody,
 	lambdaparams,
+	lambdaexpression,
+	lambdatype,
 
 	expression,
 	parameterlist,

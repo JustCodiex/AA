@@ -530,6 +530,12 @@
     <ClInclude Include="AAOperator.h">
       <Filter>Header Files\parser</Filter>
     </ClInclude>
+    <ClInclude Include="AALower.h">
+      <Filter>Header Files\compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="AAOptimiser.h">
+      <Filter>Header Files\compiler</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="TODO.txt">

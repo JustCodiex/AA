@@ -116,6 +116,7 @@ private:
 	inline void HandleIndexDecl(std::vector<AA_PT_NODE*>& nodes, size_t nodeIndex);
 
 	inline AA_PT_NODE* HandleFunctionCall(AA_PT_NODE* pIdentifierNode, AA_PT_NODE* pParamList);
+	inline AA_PT_NODE* HandleLambdaExpression(AA_PT_NODE* pExpressionNode);
 
 	inline AA_PT_NODE* HandleFunctionDecleration(std::vector<AA_PT_NODE*>& nodes, size_t& from);
 	inline AA_PT_NODE* HandleVariableDecleration(std::vector<AA_PT_NODE*>& nodes, size_t& from);

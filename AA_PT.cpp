@@ -392,6 +392,7 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 		}
 		break;
 	}
+	case AA_PT_NODE_TYPE::lambdabody:
 	case AA_PT_NODE_TYPE::block: {
 		for (size_t i = 0; i < nodes[nodeIndex]->childNodes.size(); i++) {
 			if (nodes[nodeIndex]->childNodes[i]->nodeType == AA_PT_NODE_TYPE::expression) {
@@ -405,6 +406,20 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 			}
 		}
 		nodeIndex++;
+		break;
+	}
+	case AA_PT_NODE_TYPE::lambdatype: {
+		if (nodeIndex + 1 < nodes.size() && nodes[nodeIndex + 1]->nodeType == AA_PT_NODE_TYPE::identifier) {
+			nodes[nodeIndex] = this->HandleVariableDecleration(nodes, nodeIndex);
+			nodeIndex++;
+		} else {
+			SetError(AA_PT::Error("Expected identifier after lambda type", 0, nodes[nodeIndex]->position));
+			return;
+		}
+		break;
+	}
+	case AA_PT_NODE_TYPE::lambdaexpression: {
+		nodes[nodeIndex] = this->HandleLambdaExpression(nodes[nodeIndex]);
 		break;
 	}
 	default:
@@ -716,6 +731,8 @@ AA_PT_NODE* AA_PT::CreateExpressionTree(std::vector<AA_PT_NODE*>& nodes, size_t 
 
 			if (exp->childNodes.size() > 0 && exp->childNodes[0]->nodeType == AA_PT_NODE_TYPE::parameterlist) {
 				return this->HandleFunctionCall(exp, exp->childNodes[0]);
+			} else if (exp->nodeType == AA_PT_NODE_TYPE::lambdaexpression) {
+				return this->HandleLambdaExpression(exp);
 			} else {
 				return exp;
 			}
@@ -757,6 +774,8 @@ AA_PT_NODE* AA_PT::CreateExpressionTree(std::vector<AA_PT_NODE*>& nodes, size_t 
 
 		return exp;
 
+	} else if (nodes[from]->nodeType == AA_PT_NODE_TYPE::lambdaexpression) {
+		return HandleLambdaExpression(nodes[from]);
 	} else {
 
 		return nodes[from];
@@ -773,6 +792,20 @@ AA_PT_NODE* AA_PT::HandleFunctionCall(AA_PT_NODE* pIdentifierNode, AA_PT_NODE* p
 	funcallNode->childNodes = this->CreateArgumentTree(pParamList);
 
 	return funcallNode;
+
+}
+
+AA_PT_NODE* AA_PT::HandleLambdaExpression(AA_PT_NODE* pExpressionNode) {
+
+	// Handle the lambda body
+	AA_PT_NODE* subTree = this->CreateTree(pExpressionNode->childNodes[1]->childNodes, 0);
+	pExpressionNode->childNodes[1]->childNodes.clear();
+	pExpressionNode->childNodes[1]->childNodes.push_back(subTree);
+
+	// Handle lambda params?
+
+	// Return parsed lambda expression
+	return pExpressionNode;
 
 }
 

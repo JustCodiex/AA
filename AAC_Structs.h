@@ -124,6 +124,13 @@ struct AAC_CompileErrorMessage {
 		errorType = eType;
 		errorSource = eSrc;
 	}
+	AAC_CompileErrorMessage(int eType, std::string eMsg, AACodePosition eSrc) {
+		char* str = new char[eMsg.length() + 1];
+		strcpy(str, eMsg.c_str());
+		errorMsg = str;
+		errorType = eType;
+		errorSource = eSrc;
+	}
 };
 
 namespace aa {

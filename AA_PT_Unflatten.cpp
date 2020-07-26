@@ -14,7 +14,10 @@ void AA_PT_Unflatten::ApplyOrderOfOperationBindings(std::vector<AA_PT_NODE*>& no
 	// Apply mathematic rules So 5+5*5 = 30 and not 50
 	ApplyArithemticRules(nodes);
 
-	// Apply assignment order rule, so var x = 5+5 is treated as 5+5=x and not x=5, + 5
+	// Apply the lambda operations
+	ApplyLambdaBindings(nodes);
+
+	// Apply assignment order rule, so var x = 5+5 is treated as "var 5+5=x" and not "x=5, + 5"
 	ApplyAssignmentOrder(nodes);
 
 	// Apply keyword bindings (so "var k = 5 - j match { ... }" will be parsed correctly)
@@ -242,6 +245,99 @@ void AA_PT_Unflatten::ApplyArithemticRules(std::vector<AA_PT_NODE*>& nodes) {
 		} else {
 			index++;
 		}
+
+	}
+
+}
+
+bool IsLambdaOperator(AA_PT_NODE* node) {
+	return node->nodeType == AA_PT_NODE_TYPE::binary_operation && node->content.compare(L"=>") == 0;
+}
+
+bool CanBeLambdaBody(AA_PT_NODE* node) {
+	return node->nodeType == AA_PT_NODE_TYPE::expression || node->nodeType == AA_PT_NODE_TYPE::block || node->nodeType == AA_PT_NODE_TYPE::identifier;
+}
+
+void AA_PT_Unflatten::ApplyLambdaBindings(std::vector<AA_PT_NODE*>& nodes) {
+
+	size_t index = 0;
+
+	while (index < nodes.size()) {
+
+		if (nodes[index]->nodeType == AA_PT_NODE_TYPE::block) {
+
+			// Apply recursively
+			ApplyLambdaBindings(nodes[index]->childNodes);
+
+		} else if (nodes[index]->nodeType == AA_PT_NODE_TYPE::expression) {
+
+			size_t subSize = nodes[index]->childNodes.size();
+
+			if (subSize >= 3 && nodes[index]->childNodes[subSize - 1]->nodeType == AA_PT_NODE_TYPE::identifier && IsLambdaOperator(nodes[index]->childNodes[subSize - 2])) {
+				delete nodes[index]->childNodes[subSize - 2];
+				nodes[index]->childNodes.erase(nodes[index]->childNodes.begin() + (subSize - 2));
+				nodes[index]->nodeType = AA_PT_NODE_TYPE::lambdatype; // We know for sure it's a lambda type because of the lambda operator in the expression
+			}
+
+		} else if (IsLambdaOperator(nodes[index])) {
+
+			if (index - 1 >= 0 && index + 1 < nodes.size()) {
+
+				if (nodes[index - 1]->nodeType == AA_PT_NODE_TYPE::expression || nodes[index - 1]->nodeType == AA_PT_NODE_TYPE::identifier && CanBeLambdaBody(nodes[index + 1])) {
+
+					if (index + 3 < nodes.size() && nodes[index+3]->nodeType == AA_PT_NODE_TYPE::binary_operation && nodes[index+3]->content.compare(L"=") == 0 
+						&& nodes[index+2]->nodeType == AA_PT_NODE_TYPE::identifier) {
+						
+						// Treat as a simple lambda type (because + 2 is identifier and +3 is assignment operator (So most likely a "T => T x = ..." case)
+						nodes[index]->nodeType = AA_PT_NODE_TYPE::lambdatype;
+						nodes[index]->childNodes.push_back(nodes[index - 1]);
+						nodes[index]->childNodes.push_back(nodes[index + 1]);
+						nodes[index]->content = L"";
+
+						nodes.erase(nodes.begin() + index + 1);
+						nodes.erase(nodes.begin() + index - 1);
+
+						continue;
+
+					} else {
+
+						nodes[index]->nodeType = AA_PT_NODE_TYPE::lambdaexpression;
+
+						// If a single variable we need to put it into a container
+						if (nodes[index - 1]->nodeType == AA_PT_NODE_TYPE::identifier) {
+							AA_PT_NODE* containerNode = new AA_PT_NODE(AA_PT_NODE_TYPE::expression, nodes[index - 1]->position);
+							containerNode->childNodes.push_back(nodes[index - 1]);
+							nodes[index - 1] = containerNode;
+						}
+
+						// Redefince type and add as parameter
+						nodes[index - 1]->nodeType = AA_PT_NODE_TYPE::lambdaparams;
+						nodes[index]->childNodes.push_back(nodes[index - 1]);
+
+						// If the next is an identifier we also have to but it into an container
+						if (nodes[index + 1]->nodeType == AA_PT_NODE_TYPE::identifier) {
+							AA_PT_NODE* containerNode = new AA_PT_NODE(AA_PT_NODE_TYPE::expression, nodes[index + 1]->position);
+							containerNode->childNodes.push_back(nodes[index + 1]);
+							nodes[index + 1] = containerNode;
+						}
+
+						nodes[index + 1]->nodeType = AA_PT_NODE_TYPE::lambdabody;
+						nodes[index]->childNodes.push_back(nodes[index + 1]);
+
+						nodes.erase(nodes.begin() + index + 1);
+						nodes.erase(nodes.begin() + index - 1);
+
+						continue;
+
+					}
+
+				}
+
+			}
+
+		}
+
+		index++;
 
 	}
 

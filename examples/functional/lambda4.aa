@@ -1,0 +1,30 @@
+// Takes an immutable lambda (TODO: Correct this, so it's more functional. Right now this will not even run with current VM version)
+int byfive((int => int) lambda) {
+    lambda(5);
+};
+
+// Setup the lambda and use it
+int main() {
+
+    // Mutable value we'll be modifying
+    int x = 5;
+
+    // Lambda we'll work with (takes n as input and multiplies it by x)
+    const var l = (n) => x * n;
+
+    // print (n = 5) => (x=5)*5
+    println(byfive(l)); // --> 25
+
+    // Update the x-value
+    x = 10;
+
+    // print (n = 5) => (x = 10)*5
+    println(byfive(l)); // 50
+
+    // update x (n=5) => (x=10)*5
+    x = byfive(l); // 50
+
+    // Return (n=5) => (x=50)*5
+    byfive(l); // 250
+
+};

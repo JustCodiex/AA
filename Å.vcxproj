@@ -218,6 +218,7 @@
     <ClInclude Include="AAExecute.h" />
     <ClInclude Include="AAInheritanceTree.h" />
     <ClInclude Include="AAIntrPtr.h" />
+    <ClInclude Include="AALower.h" />
     <ClInclude Include="AAModifier.h" />
     <ClInclude Include="AAB2F.h" />
     <ClInclude Include="AAByteCode.h" />
@@ -239,6 +240,7 @@
     <ClInclude Include="AAObject.h" />
     <ClInclude Include="AAObjectType.h" />
     <ClInclude Include="AAOperator.h" />
+    <ClInclude Include="AAOptimiser.h" />
     <ClInclude Include="AAPrimitiveType.h" />
     <ClInclude Include="AAProjectRegressionTest.h" />
     <ClInclude Include="AARuntimeEnvironment.h" />

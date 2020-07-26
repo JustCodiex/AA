@@ -423,25 +423,25 @@ bool AALexer::IsValidJointKeyword(std::wstring ws) {
 }
 
 bool AALexer::IsValidJointOperator(std::wstring ws) {
-	if (ws == L"<=") {
+	if (ws == L"<=") { // Less or equal to
 		return true;
-	} else if (ws == L">=") {
+	} else if (ws == L">=") { // Greater or equal to
 		return true;
-	} else if (ws == L"==") {
+	} else if (ws == L"==") { // Equals
 		return true;
-	} else if (ws == L"!=") {
+	} else if (ws == L"!=") { // Not equal
 		return true;
-	} else if (ws == L"::") {
+	} else if (ws == L"::") { // Member access
 		return true;
 	} else if (ws == L"<<") {
 		return true;
 	} else if (ws == L">>") {
 		return true;
-	} else if (ws == L"=>") {
+	} else if (ws == L"=>") { // Lambda operator
 		return true;
-	} else if (ws == L"||") {
+	} else if (ws == L"||") { // Lazy or
 		return true;
-	} else if (ws == L"&&") {
+	} else if (ws == L"&&") { // Lazy and
 		return true;
 	} else if (ws == L"+=") {
 		return true;
@@ -453,9 +453,9 @@ bool AALexer::IsValidJointOperator(std::wstring ws) {
 		return true;
 	} else if (ws == L"%=") {
 		return true;
-	} else if (ws == L"++") {
+	} else if (ws == L"++") { // Increment
 		return true;
-	} else if (ws == L"--") {
+	} else if (ws == L"--") { // Decrement
 		return true;
 	} else {
 		return false;

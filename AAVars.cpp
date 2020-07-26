@@ -264,7 +264,7 @@ bool AAVars::VarsAssignment(aa::VarsEnviornment& venv, AA_AST_NODE* pScope) {
 		if (!venv[pScope->expressions[0]->content].isMutable) {
 			m_error = AAC_CompileErrorMessage(
 				aa::compiler_err::C_Vars_ConstMutation,
-				("Attempt to reassign value of constant variable '" + string_cast(pScope->expressions[0]->content) + "'").c_str(), 
+				"Attempt to reassign value of constant variable '" + string_cast(pScope->expressions[0]->content) + "'", 
 				pScope->position				
 			);
 			return false;
@@ -291,7 +291,7 @@ bool AAVars::VarsUnary(aa::VarsEnviornment& venv, AA_AST_NODE* pScope) {
 		if (!venv[pScope->expressions[0]->content].isMutable) {
 			m_error = AAC_CompileErrorMessage(
 				aa::compiler_err::C_Vars_ConstMutation,
-				("Attempt to " + std::string((isDecrement) ? "decrement" : "increment") + " value of constant variable '" + string_cast(pScope->expressions[0]->content) + "'").c_str(),
+				"Attempt to " + std::string((isDecrement) ? "decrement" : "increment") + " value of constant variable '" + string_cast(pScope->expressions[0]->content) + "'",
 				pScope->position
 			);
 			return false;

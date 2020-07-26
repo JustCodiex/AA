@@ -1,3 +1,12 @@
-val lambda = (a) => a*a;
-println(lambda(1));
-println(lambda(2));
+{
+
+    // Declare the lambda without var
+    (int => int) x = (a) => 2*a;
+
+    // Declare the lambda with var (param type will then have to be supplied)
+    var y = (int a) => 2/a;
+
+    // Invoke (and return) it
+    x(37) + y(40);
+
+}

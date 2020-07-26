@@ -1,7 +1,13 @@
-int main() {
+{
 
-    const int j = 11; // Set constant integer j = 11
+    // Declare the lambda without var (in both variations)
+    (int => int) x = (a) => 2*a;
+    int => int y = a => 3*a; // This format is only allowed if there's ONE parameter)
 
-    j++; // ERROR
+    // Declare the lambda with var (param type will then have to be supplied)
+    var z = (int a) => 2/a;
+
+    // Invoke (and return) it
+    z(x(30) + y(40));
 
 }

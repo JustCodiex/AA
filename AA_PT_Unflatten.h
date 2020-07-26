@@ -31,6 +31,7 @@ public:
 	static void ApplyFunctionBindings(std::vector<AA_PT_NODE*>& nodes);
 	static void ApplyUnaryBindings(std::vector<AA_PT_NODE*>& nodes);
 	static void ApplyArithemticRules(std::vector<AA_PT_NODE*>& nodes);
+	static void ApplyLambdaBindings(std::vector<AA_PT_NODE*>& nodes);
 	static void ApplyAssignmentOrder(std::vector<AA_PT_NODE*>& nodes);
 	static void ApplyKeywordBindings(std::vector<AA_PT_NODE*>& nodes);
 

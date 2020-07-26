@@ -21,7 +21,12 @@ enum class AA_AST_NODE_TYPE {
 	funcbody,
 	classbody,
 	enumbody,
+
 	lambdabody,
+	lambdaparams,
+	lambdaexpression,
+	lambdatype,
+	lambdadecl,
 
 	condition,
 	ifstatement,

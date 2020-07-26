@@ -1,5 +1,7 @@
 #pragma once
 #include "AA_AST.h"
+#include "AALower.h"
+#include "AAOptimiser.h"
 #include "AAByteCode.h"
 #include "AAByteType.h"
 #include "AA_literals.h"
