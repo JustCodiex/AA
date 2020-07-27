@@ -55,6 +55,7 @@ AACType* AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 	case AA_AST_NODE_TYPE::funcbody:
 	case AA_AST_NODE_TYPE::classbody:
 	case AA_AST_NODE_TYPE::enumbody:
+	case AA_AST_NODE_TYPE::lambdabody:
 	case AA_AST_NODE_TYPE::block: {
 		AACType* r = AACType::Void;
 		for (size_t i = 0; i < node->expressions.size(); i++) {
@@ -95,7 +96,7 @@ AACType* AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 	case AA_AST_NODE_TYPE::enumdecleration: {
 
 		// Store a copy of our variable type environment
-		AAVarTypeEnv typeEnv = AAVarTypeEnv(m_vtenv);
+		AATypeEnv typeEnv = AATypeEnv(m_tenv);
 
 		// Find our type
 		AACType* enumType = this->FindType(node->content);
@@ -104,13 +105,13 @@ AACType* AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 		AACEnumSignature* enumSig = enumType->enumSignature;
 
 		// For all enums
-		enumSig->values.ForEach([this, enumType](AACEnumValue& enumVal) { m_vtenv[enumVal.name] = enumType; });
+		enumSig->values.ForEach([this, enumType](AACEnumValue& enumVal) { m_tenv.AddVariable(enumVal.name, enumType); });
 
 		// Typecheck enum body (not the values, which is the first expression)
 		AACType* bodyType = this->TypeCheckNode(node->expressions[AA_NODE_ENUMNODE_BODY]);
 
 		// Restore type environment
-		m_vtenv = typeEnv;
+		m_tenv = typeEnv;
 
 		// Did the body throw an error?
 		if (bodyType == AACType::ErrorType) {
@@ -127,16 +128,16 @@ AACType* AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 		if (AA_NODE_CLASSNODE_BODY < node->expressions.size() && node->expressions[AA_NODE_CLASSNODE_BODY]->expressions.size() > 0) {
 			
 			// Copy the variable type environment
-			AAVarTypeEnv vtenv = AAVarTypeEnv(m_vtenv);
+			AATypeEnv vtenv = AATypeEnv(m_tenv);
 			
 			// Save a definition of 'this' to point to the typeof of the class currently edited
-			m_vtenv[L"this"] = FindType(node->content);
+			m_tenv.AddVariable(L"this", FindType(node->content));
 			
 			// Typecheck body
 			AACType* bodyType = this->TypeCheckNode(node->expressions[AA_NODE_CLASSNODE_BODY]);
 			
 			// Restore variable environment
-			m_vtenv = vtenv;
+			m_tenv = vtenv;
 
 			// Return body type
 			return bodyType;
@@ -166,7 +167,7 @@ AACType* AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 	case AA_AST_NODE_TYPE::nullliteral:
 		return AACType::Null;
 	case AA_AST_NODE_TYPE::variable:
-		return m_vtenv[node->content];
+		return m_tenv.Lookup(node->content);
 	case AA_AST_NODE_TYPE::typeidentifier: {
 		AACType* t = this->FindType(node->content);
 		if (t == AACType::ErrorType) {
@@ -263,6 +264,60 @@ AACType* AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 	case AA_AST_NODE_TYPE::whilestatement:
 	case AA_AST_NODE_TYPE::dowhilestatement:
 		return this->TypeCheckWhileStatement(node);
+	case AA_AST_NODE_TYPE::lambdatype:
+		return this->m_dynamicTypeEnvironment->FindOrAddTypeIfNotFound(
+			aa::type::FormalizeLambda(aa::list<AA_AST_NODE*>(node->expressions).Select(0, node->expressions.size() - 1).Map<AACType*>(
+				[this](AA_AST_NODE*& n) { return this->TypeCheckNode(n); }
+			), this->TypeCheckNode(node->expressions[node->expressions.size() - 1])),
+			this->m_typeMappingLambda);
+	case AA_AST_NODE_TYPE::lambdaexpression: {
+
+		AATypeEnv typeEnv = AATypeEnv(m_tenv);
+
+		for (size_t i = 0; i < node->expressions[0]->expressions.size(); i++) {
+
+			if (node->expressions[0]->expressions[i]->expressions.size() > 0) {
+				AACType* fixedType = this->TypeCheckNode(node->expressions[0]->expressions[i]);
+				if (fixedType == 0 || fixedType == AACType::ErrorType) {
+					printf("err");
+				} else {
+					m_tenv.AddVariable(node->expressions[0]->expressions[i]->content, fixedType);
+				}
+			} else {
+				if (m_tenv.Lookup(node->expressions[0]->expressions[i]->content) == AACType::ErrorType) {
+					m_tenv.AddInferVariable(node->expressions[0]->expressions[i]->content); // (Could be anything - must be inferred)
+				} // else it's most likely been defined by context
+			}
+
+		}
+
+		// Typecheck body (for return type)
+		AACType* returnType = this->TypeCheckNode(node->expressions[1]);
+
+		// Now we update the parameters
+		aa::list<AACType*> params;
+
+		for (size_t i = 0; i < node->expressions[0]->expressions.size(); i++) {
+			AACType* foundType = m_tenv.GetInferredVariable(node->expressions[0]->expressions[i]->content);
+			if (foundType == NULL) {
+				foundType = m_tenv.Lookup(node->expressions[0]->expressions[i]->content);
+			}
+			if (foundType != AACType::ErrorType) {
+				params.Add(foundType);
+			} else {
+				printf("Error in lambda param");
+			}
+		}
+
+		// Get or create lambda type
+		AACType* lambdaType = this->m_dynamicTypeEnvironment->FindOrAddTypeIfNotFound(aa::type::FormalizeLambda(params, returnType), this->m_typeMappingLambda);
+
+		// Reset type environment
+		m_tenv = typeEnv;
+
+		// Return found lambda type
+		return lambdaType;
+	}
 	default:
 		break;
 	}
@@ -284,6 +339,11 @@ AACType* AATypeChecker::TypeCheckBinaryOperation(AA_AST_NODE* pOpNode, AA_AST_NO
 		// Invoke the binary tuple decl typecheck
 		return this->TypeCheckBinaryTupleDecl(pOpNode, left, right);
 
+	} else if (left->type == AA_AST_NODE_TYPE::lambdadecl) {
+	
+		// Invoke the binary lambda decl typecheck
+		return this->TypeCheckBinaryLambdaDecl(pOpNode, left, right);
+
 	} else if (left->type == AA_AST_NODE_TYPE::index) {
 
 		// Invoke the binary indexing typecheck
@@ -300,7 +360,12 @@ AACType* AATypeChecker::TypeCheckBinaryOperation(AA_AST_NODE* pOpNode, AA_AST_NO
 			return this->TypeCheckBinaryAssignment(pOpNode, left, right, typeLeft, typeRight);
 
 		} else {
-			
+
+			// Try infer types (if possible)
+			if (!this->TryInfer(typeLeft, typeRight, left, right)) { // TODO: Make this effect the types such that the below piece of code is legal
+				// do something here?
+			}
+
 			// Set the primitive types here
 			left->tags["primitive"] = (int)aa::runtime::runtimetype_from_statictype(typeLeft);
 			right->tags["primitive"] = (int)aa::runtime::runtimetype_from_statictype(typeRight);
@@ -440,10 +505,11 @@ AACType* AATypeChecker::TypeCheckBinaryVarDecl(AA_AST_NODE* pOpNode, AA_AST_NODE
 
 	// Does LHS contain a vardecl with a specific type?
 	if (left->expressions.size() > 0) {
-		typeLeft = m_vtenv[left->content] = this->TypeCheckNode(left->expressions[0]);
+		typeLeft = m_tenv.AddVariable(left->content, this->TypeCheckNode(left->expressions[0]));
 		typeRight = this->TypeCheckNode(right);
-	} else { // Does LHS contain a vardecl without a specific type (eg. var or val)
-		typeRight = typeLeft = m_vtenv[left->content] = this->TypeCheckNode(right);
+	} else { // Does LHS contain a vardecl without a specific type
+		typeRight = this->TypeCheckNode(right);
+		typeLeft = m_tenv.AddVariable(left->content, typeRight);
 	}
 
 	// reset local namespace
@@ -506,7 +572,7 @@ AACType* AATypeChecker::TypeCheckBinaryTupleDecl(AA_AST_NODE* pOpNode, AA_AST_NO
 	}
 
 	// Set the type of the left side
-	m_vtenv[left->content] = leftType;
+	m_tenv.AddVariable(left->content, leftType);
 
 	// Typecheck right side
 	AACType* rightType = this->TypeCheckNode(right);
@@ -520,6 +586,67 @@ AACType* AATypeChecker::TypeCheckBinaryTupleDecl(AA_AST_NODE* pOpNode, AA_AST_NO
 	} else {
 		return AACType::ErrorType;
 	}
+
+}
+
+AACType* AATypeChecker::TypeCheckBinaryLambdaDecl(AA_AST_NODE* pOpNode, AA_AST_NODE* left, AA_AST_NODE* right) {
+
+	// In this lambda case we have the advantage of the left hand side giving us a specific lambda type
+	AACType* lambdaLeft = this->TypeCheckNode(left->expressions[0]);
+
+	if (right->type == AA_AST_NODE_TYPE::lambdaexpression) {
+
+		// The same amount of expected parameters?
+		if (lambdaLeft->encapsulatedTypes.Size() - 1 == right->expressions[0]->expressions.size()) {
+
+			AATypeEnv tenv = AATypeEnv(m_tenv);
+
+			// We now map types
+			for (size_t i = 0; i < right->expressions[0]->expressions.size(); i++) {
+				if (right->expressions[0]->expressions[i]->expressions.size() > 0) {
+					if (!this->IsMatchingTypes(lambdaLeft->encapsulatedTypes.At(i), this->TypeCheckNode(right->expressions[0]->expressions[i]->expressions[0]))) {
+						AATC_W_ERROR(
+							"Lambda parameter #" + std::to_string(i) + " type mismatch.", // TODO: Much better message here...
+							pOpNode->position,
+							aa::compiler_err::C_Mismatching_Types
+						);
+					}
+				} else {
+					m_tenv.AddVariable(right->expressions[0]->expressions[i]->content, lambdaLeft->encapsulatedTypes.At(i));
+				}
+			}
+
+			AACType* lambdaRight = this->TypeCheckNode(right);
+
+			m_tenv = tenv;
+
+			if (!this->IsMatchingTypes(lambdaRight, lambdaLeft)) {
+				AATC_W_ERROR(
+					"Type mismatch; right operand does not not match the left operand.",
+					pOpNode->position,
+					aa::compiler_err::C_Mismatching_Types
+				);
+			}
+
+		} else {
+
+			// Throw an error here (because we can already now determine they're not the same type)
+			AATC_W_ERROR(
+				"right operand lambda expression does not have the same parameters as left operand expects.",
+				pOpNode->position,
+				aa::compiler_err::C_Mismatching_Types
+			);
+
+		}
+
+	} else {
+		// TODO: throw error
+	}
+
+	// Set the variable type
+	m_tenv.AddVariable(left->content, lambdaLeft);
+
+	return AACType::Void;
 
 }
 
@@ -868,7 +995,7 @@ AACType* AATypeChecker::TypeCheckFuncDecl(AA_AST_NODE* pDeclNode) {
 	if (aa::parsing::Function_HasBody(pDeclNode)) {
 		
 		// Make a copy of the current variable environment
-		AAVarTypeEnv vtenv = AAVarTypeEnv(m_vtenv);
+		AATypeEnv vtenv = AATypeEnv(m_tenv);
 
 		// For all arguments
 		for (size_t i = 0; i < pDeclNode->expressions[AA_NODE_FUNNODE_ARGLIST]->expressions.size(); i++) {
@@ -880,7 +1007,7 @@ AACType* AATypeChecker::TypeCheckFuncDecl(AA_AST_NODE* pDeclNode) {
 			if (argType != AACType::ErrorType) {
 				
 				// Set type in variable environment
-				m_vtenv[pDeclNode->expressions[AA_NODE_FUNNODE_ARGLIST]->expressions[i]->content] = argType;
+				m_tenv.AddVariable(pDeclNode->expressions[AA_NODE_FUNNODE_ARGLIST]->expressions[i]->content, argType);
 
 				// Set primittive type
 				pDeclNode->expressions[AA_NODE_FUNNODE_ARGLIST]->expressions[i]->tags["primitive"] = (int)aa::runtime::runtimetype_from_statictype(argType);
@@ -898,7 +1025,7 @@ AACType* AATypeChecker::TypeCheckFuncDecl(AA_AST_NODE* pDeclNode) {
 		AACType* pBodyType = this->TypeCheckNode(pDeclNode->expressions[AA_NODE_FUNNODE_BODY]);
 
 		// Reset variable types
-		m_vtenv = vtenv;
+		m_tenv = vtenv;
 
 	}
 
@@ -1091,7 +1218,7 @@ AACType* AATypeChecker::TypeCheckPatternMatchBlock(AA_AST_NODE* pMatchNode) {
 AACType* AATypeChecker::TypeCheckPatternMatchCase(AA_AST_NODE* pCaseNode, AACType* pConditionType) {
 
 	// Copy the current variable type environment (Incase the condition/body introduce new variables)
-	AAVarTypeEnv vtenv = AAVarTypeEnv(m_vtenv);
+	AATypeEnv vtenv = AATypeEnv(m_tenv);
 	
 	AACType* conditionType = this->TypeCheckPatternMatchCaseCondition(pCaseNode->expressions[0], pConditionType);
 	bool bothTuples = IsTupleTypes(conditionType, pConditionType);
@@ -1135,7 +1262,7 @@ AACType* AATypeChecker::TypeCheckPatternMatchCase(AA_AST_NODE* pCaseNode, AACTyp
 	AACType* bodyType = this->TypeCheckNode(pCaseNode->expressions[1]);
 
 	// Reset variable type environment
-	m_vtenv = vtenv;
+	m_tenv = vtenv;
 
 	// Return found body type
 	return bodyType;
@@ -1172,7 +1299,7 @@ AACType* AATypeChecker::TypeCheckPatternMatchCaseCondition(AA_AST_NODE* pConditi
 
 					if (pConditionNode->expressions[i]->expressions[j]->type == AA_AST_NODE_TYPE::variable) {
 						if (pConditionNode->expressions[i]->expressions[j]->content.compare(L"_") != 0) {
-							m_vtenv[pConditionNode->expressions[i]->expressions[j]->content] = first->parameters[j].type; // Add variable to type environment
+							m_tenv.AddVariable(pConditionNode->expressions[i]->expressions[j]->content, first->parameters[j].type); // Add variable to type environment
 						}
 					} else {
 						AATC_ERROR(
@@ -1233,9 +1360,6 @@ AACType* AATypeChecker::TypeCheckPatternMatchCaseCondition(AA_AST_NODE* pConditi
 
 		} else if (pConditionNode->expressions[i]->type == AA_AST_NODE_TYPE::tupleval) {
 
-			// Set to any ... in case we see it
-			m_vtenv[L"_"] = AACType::Any;
-
 			AACType* foundType = this->TypeCheckPatternMatchCaseConditionTuple(pConditionNode->expressions[i], _conditionType);
 			if (foundType == AACType::ErrorType) {
 				// throw error
@@ -1290,7 +1414,7 @@ AACType* AATypeChecker::TypeCheckPatternMatchCaseConditionTuple(AA_AST_NODE* pTu
 				pTupleNode->tags["has_vars"] = 1;
 
 				// Introduce variable and set type
-				m_vtenv[pTupleNode->expressions[i]->content] = conditionType->encapsulatedTypes.At(i);
+				m_tenv.AddVariable(pTupleNode->expressions[i]->content, conditionType->encapsulatedTypes.At(i));
 				pTupleNode->expressions[i]->tags["primitive"] = (int)aa::runtime::runtimetype_from_statictype(conditionType->encapsulatedTypes.At(i));
 				
 				// Add to type list
@@ -1309,7 +1433,7 @@ AACType* AATypeChecker::TypeCheckPatternMatchCaseConditionTuple(AA_AST_NODE* pTu
 AACType* AATypeChecker::TypeCheckForStatement(AA_AST_NODE* pForStatementNode) {
 
 	// Copy the variable type environment
-	AAVarTypeEnv vtenv = AAVarTypeEnv(m_vtenv);
+	AATypeEnv vtenv = AATypeEnv(m_tenv);
 
 	// Typecheck init
 	if (this->TypeCheckNode(pForStatementNode->expressions[0]) == AACType::ErrorType) {
@@ -1336,7 +1460,7 @@ AACType* AATypeChecker::TypeCheckForStatement(AA_AST_NODE* pForStatementNode) {
 	}
 
 	// Restore variable type environment
-	m_vtenv = vtenv;
+	m_tenv = vtenv;
 
 	// We cannot return anything from a for-statement ==> Void
 	return AACType::Void;
@@ -1365,13 +1489,13 @@ AACType* AATypeChecker::TypeCheckWhileStatement(AA_AST_NODE* pWhileStatementNode
 }
 
 AACType* AATypeChecker::TypeOf(AAId var) {
-
-	if (this->m_vtenv.find(var) != this->m_vtenv.end()) {
-		return this->m_vtenv[var];
+	AACType* foundType = 0;
+	if (this->m_tenv.FindType(var, foundType)){
+		return foundType;
 	} else {
-		return AACType::ErrorType;
+		// TODO: Error
 	}
-
+	return foundType;
 }
 
 bool AATypeChecker::IsValidType(AACType* t) {
@@ -1569,4 +1693,34 @@ AACNamespace* AATypeChecker::FindNamespaceFromFlattenedPath(AACNamespace* root, 
 
 	}
 
+}
+
+bool AATypeChecker::TryInfer(AACType* pLeft, AACType* pRight, AA_AST_NODE* pLeftNode, AA_AST_NODE* pRightNode) {
+	AACType* specific = 0;
+	AA_AST_NODE* specificNode = 0;
+	AACType* nonSpecific = 0;
+	AA_AST_NODE* nonSpecificNode = 0;
+	if (pLeft == AACType::Any && pRight != AACType::Any) {
+		specific = pRight;
+		specificNode = pRightNode;
+		nonSpecific = pLeft;
+		nonSpecificNode = pLeftNode;
+	} else if (pLeft != AACType::Any && pRight == AACType::Any) {
+		specific = pLeft;
+		specificNode = pLeftNode;
+		nonSpecific = pRight;
+		nonSpecificNode = pRightNode;
+	} else { // pLeft == pRight && (pLeft == AACType::Any || pLeft != AACType::Any)
+		return true; // We can't infer types here (or it's not needed)
+	}
+
+	// Do more context stuff here
+
+	if (m_tenv.UpdateInferredVariableType(nonSpecificNode->content, specific)) {
+		return true;
+	} else {
+		return false;
+	}
+
+	return true;
 }

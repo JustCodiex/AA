@@ -242,6 +242,14 @@ namespace aa {
 			return *this;
 		}
 
+		list<T> Select(size_t start, size_t end) const {
+			list<T> subList;
+			for (size_t i = start; i < end; i++) {
+				subList.Add(m_vector[i]);
+			}
+			return subList;
+		}
+
 		/// <summary>
 		/// 
 		/// </summary>

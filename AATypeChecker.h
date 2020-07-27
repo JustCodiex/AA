@@ -1,11 +1,8 @@
 #pragma once
-#include "AADynamicTypeEnviornment.h"
+#include "AATypeEnv.h"
 #include "AAClassCompiler.h"
 #include <vector>
 #include <map>
-
-typedef std::wstring AAId;
-typedef std::map<AAId, AACType*> AAVarTypeEnv;
 
 struct AAStaticEnvironment;
 struct AACNamespace;
@@ -93,6 +90,7 @@ private:
 	inline AACType* TypeCheckBinaryVarDecl(AA_AST_NODE* pOpNode, AA_AST_NODE* left, AA_AST_NODE* right);
 	inline AACType* TypeCheckBinaryIndex(AA_AST_NODE* pOpNode, AA_AST_NODE* left, AA_AST_NODE* right);
 	inline AACType* TypeCheckBinaryTupleDecl(AA_AST_NODE* pOpNode, AA_AST_NODE* left, AA_AST_NODE* right);
+	inline AACType* TypeCheckBinaryLambdaDecl(AA_AST_NODE* pOpNode, AA_AST_NODE* left, AA_AST_NODE* right);
 	inline AACType* TypeCheckBinaryAssignment(AA_AST_NODE* pOpNode, AA_AST_NODE* left, AA_AST_NODE* right, AACType* leftType, AACType* rightType);
 	inline AACType* TypeCheckBinaryOperatorCall(AA_AST_NODE* pOpNode, AA_AST_NODE* left, AA_AST_NODE* right, AACType* leftType, AACType* rightType);
 	inline AACType* TypeCheckBinaryOperatorOp(AA_AST_NODE* pOpNode, AA_AST_NODE* left, AA_AST_NODE* right, AACType* leftType, AACType* rightType);
@@ -137,6 +135,8 @@ private:
 	std::wstring FlattenNamespacePath(AA_AST_NODE* pNode);
 	AACNamespace* FindNamespaceFromFlattenedPath(AACNamespace* root, std::wstring path);
 
+	bool TryInfer(AACType* pLeft, AACType* pRight, AA_AST_NODE* pLeftNode, AA_AST_NODE* pRightNode);
+
 	// Sets the last error if not set
 	void SetError(AATypeChecker::Error err) { if (!m_hasEnyErr) { m_errMsg = err; m_hasEnyErr = true; } }
 
@@ -146,7 +146,7 @@ private:
 	AA_AST* m_currentTree;
 
 	// Variable type environment
-	AAVarTypeEnv m_vtenv;
+	AATypeEnv m_tenv;
 
 	// Do we have any errors flag
 	bool m_hasEnyErr;

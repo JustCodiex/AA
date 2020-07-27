@@ -16,6 +16,7 @@ struct AACType {
 	bool isArrayType;
 	bool isTupleType;
 	bool isEnum;
+	bool isLambdaType;
 	bool isVMType;
 	AAClassSignature* classSignature;
 	AACEnumSignature* enumSignature;
@@ -29,6 +30,8 @@ struct AACType {
 	AACType(AAClassSignature* classSignature);
 	AACType(AACEnumSignature* enumSignature);
 	AACType(std::wstring name, aa::list<AACType*> tupleSignature); // sets isTupleType to true!
+	
+	static AACType* LambdaType(std::wstring name, AACType* returnType, aa::list<AACType*> params);
 
 	/// <summary>
 	/// 

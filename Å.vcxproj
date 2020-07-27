@@ -191,6 +191,7 @@
     <ClCompile Include="AAString.cpp" />
     <ClCompile Include="AATuple.cpp" />
     <ClCompile Include="AATypeChecker.cpp" />
+    <ClCompile Include="AATypeEnv.cpp" />
     <ClCompile Include="AAUnparser.cpp" />
     <ClCompile Include="AAVal.cpp" />
     <ClCompile Include="AAVarEnv.cpp" />
@@ -258,6 +259,7 @@
     <ClInclude Include="AAString.h" />
     <ClInclude Include="AATuple.h" />
     <ClInclude Include="AATypeChecker.h" />
+    <ClInclude Include="AATypeEnv.h" />
     <ClInclude Include="AAUnparser.h" />
     <ClInclude Include="AAVal.h" />
     <ClInclude Include="AAVarEnv.h" />

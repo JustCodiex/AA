@@ -31,6 +31,7 @@ AACType::AACType() {
 	this->isEnum = false;
 	this->isTupleType = false;
 	this->isVMType = false;
+	this->isLambdaType = false;
 	this->classSignature = 0;
 	this->enumSignature = 0;
 	this->constantID = 0;
@@ -43,6 +44,7 @@ AACType::AACType(AAClassSignature* sig) {
 	this->isEnum = false;
 	this->isTupleType = false;
 	this->isVMType = false;
+	this->isLambdaType = false;
 	this->classSignature = sig;
 	this->enumSignature = 0;
 	this->constantID = 0;
@@ -55,6 +57,7 @@ AACType::AACType(std::wstring name) {
 	this->isEnum = false;
 	this->isTupleType = false;
 	this->isVMType = false;
+	this->isLambdaType = false;
 	this->classSignature = 0;
 	this->enumSignature = 0;
 	this->constantID = 0;
@@ -67,6 +70,7 @@ AACType::AACType(AACEnumSignature* enumSignature) {
 	this->isEnum = true;
 	this->isTupleType = false;
 	this->isVMType = false;
+	this->isLambdaType = false;
 	this->classSignature = 0;
 	this->enumSignature = enumSignature;
 	this->constantID = 0;
@@ -79,10 +83,29 @@ AACType::AACType(std::wstring name, aa::list<AACType*> tupleSignature) {
 	this->isEnum = false;
 	this->isTupleType = true;
 	this->isVMType = false;
+	this->isLambdaType = false;
 	this->classSignature = 0;
 	this->enumSignature = 0;
 	this->constantID = 0;
 	this->encapsulatedTypes = tupleSignature;
+}
+
+AACType* AACType::LambdaType(std::wstring name, AACType* returnType, aa::list<AACType*> params) {
+	AACType* type = new AACType();
+	type->name = name;
+	type->isRefType = false;
+	type->isArrayType = false;
+	type->isEnum = false;
+	type->isTupleType = false;
+	type->isVMType = false;
+	type->classSignature = 0;
+	type->enumSignature = 0;
+	type->isLambdaType = true;
+	type->constantID = 0;
+	type->encapsulatedTypes = aa::list<AACType*>();
+	type->encapsulatedTypes.Add(params);
+	type->encapsulatedTypes.Add(returnType);
+	return type;
 }
 
 std::wstring AACType::GetFullname() {

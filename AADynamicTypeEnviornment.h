@@ -67,6 +67,8 @@ public:
 	/// <returns>List of types making up the tuple</returns>
 	aa::list<AACType*> UnpackTuple(std::wstring format, TypeMapFunction typeMapper);
 
+	void UnpackLambda(std::wstring format, AACType*& returntype, aa::list<AACType*>& params, TypeMapFunction typeMapper);
+
 	/// <summary>
 	/// Releases sthe dynamic environment
 	/// </summary>
@@ -100,6 +102,14 @@ namespace aa {
 		/// <param name="types">Tuple list</param>
 		/// <returns>Formalized tuple representation of input list</returns>
 		std::wstring FormalizeTuple(aa::list<AACType*> types);
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="params"></param>
+		/// <param name="out"></param>
+		/// <returns></returns>
+		std::wstring FormalizeLambda(aa::list<AACType*> params, AACType* out);
 
 	}
 }

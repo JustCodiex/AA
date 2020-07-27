@@ -309,6 +309,9 @@
     <ClCompile Include="AAOperator.cpp">
       <Filter>Source Files\parser</Filter>
     </ClCompile>
+    <ClCompile Include="AATypeEnv.cpp">
+      <Filter>Source Files\analysis\type</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AAB2F.h">
@@ -535,6 +538,9 @@
     </ClInclude>
     <ClInclude Include="AAOptimiser.h">
       <Filter>Header Files\compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="AATypeEnv.h">
+      <Filter>Header Files\analysis\type</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1,5 +1,6 @@
 #include "AADynamicTypeEnviornment.h"
 #include "AATypeChecker.h"
+#include "astring.h"
 
 AADynamicTypeEnvironment::AADynamicTypeEnvironment() {
 
@@ -17,8 +18,15 @@ AACType* AADynamicTypeEnvironment::FindType(std::wstring format, TypeMapFunction
 
 AACType* AADynamicTypeEnvironment::AddType(std::wstring format, TypeMapFunction typeMapper) {
 
-	if (format[0] == '(') { // tuple
-		this->m_registeredTypes[format] = new AACType(format, this->UnpackTuple(format, typeMapper));
+	if (format[0] == '(') { // tuple or lambda
+		if (aa::aastring::contains<std::wstring>(format, L"=>")) { // lambda
+			AACType* returnType;
+			aa::list<AACType*> paramTypes;
+			this->UnpackLambda(format, returnType, paramTypes, typeMapper);
+			this->m_registeredTypes[format] = AACType::LambdaType(format, returnType, paramTypes);
+		} else { // tuple
+			this->m_registeredTypes[format] = new AACType(format, this->UnpackTuple(format, typeMapper));
+		}
 		return this->m_registeredTypes[format];
 	} else { // Arrays
 		_ASSERT(false); // Not implemented
@@ -30,12 +38,14 @@ AACType* AADynamicTypeEnvironment::AddType(std::wstring format, TypeMapFunction 
 
 aa::list<AACType*> AADynamicTypeEnvironment::UnpackTuple(std::wstring format, TypeMapFunction typeMapper) {
 
+	// TODO: Get regex on this
+
 	aa::list<AACType*> types;
 
 	format = format.substr(1);
 	while (format.length() > 0) {
 		size_t i = 0;
-		if ((i = format.find_first_of(',')) == std::wstring::npos) {
+		if ((i = format.find_first_of(',')) == std::wstring::npos) { // nested tuples not allowed here...
 			if ((i = format.find_first_of(')')) == std::wstring::npos) {
 				break;
 			}
@@ -51,6 +61,46 @@ aa::list<AACType*> AADynamicTypeEnvironment::UnpackTuple(std::wstring format, Ty
 	}
 
 	return types;
+
+}
+
+void AADynamicTypeEnvironment::UnpackLambda(std::wstring format, AACType*& returntype, aa::list<AACType*>& params, TypeMapFunction typeMapper) {
+
+	// TODO: Get regex on this
+
+	format = format.substr(1);
+	bool isRType = false;
+	while (format.length() > 1) {
+
+		size_t i = 0;
+		if ((i = format.find_first_of(',')) == std::wstring::npos) {
+			if ((i = format.find_first_of(L"=>")) == std::wstring::npos) {
+				if ((i = format.find_first_of(')')) == std::wstring::npos) {
+					break;
+				}
+			} else {
+				if (i == 0) {
+					format = format.substr(1);
+					isRType = true;
+					continue;
+				}
+			}
+		}
+
+		AACType* pType = typeMapper(format.substr(0, i));
+		if (pType != AACType::ErrorType) {
+			if (isRType) {
+				returntype = pType;
+			} else {
+				params.Add(pType);
+			}
+		} else {
+			wprintf(L"Unknown type found at lambda type argument, lambda = ('%s')", format.c_str());
+			return;
+		}
+		format = format.substr(i + 1);
+
+	}
 
 }
 
@@ -177,6 +227,24 @@ namespace aa {
 
 		}
 
+		std::wstring FormalizeLambda(aa::list<AACType*> params, AACType* out) {
+
+			std::wstringstream wss;
+
+			wss << L"(";
+
+			for (size_t i = 0; i < params.Size(); i++) {
+				wss << params.At(i)->GetFullname();
+				if (i < params.Size() - 1) {
+					wss << L",";
+				}
+			}
+
+			wss << L"=>" << out->GetFullname() << L")";
+
+			return wss.str();
+
+		}
 
 	}
 }
