@@ -410,6 +410,23 @@ void AA_PT::HandleTreeCase(std::vector<AA_PT_NODE*>& nodes, size_t& nodeIndex) {
 	}
 	case AA_PT_NODE_TYPE::lambdatype: {
 		if (nodeIndex + 1 < nodes.size() && nodes[nodeIndex + 1]->nodeType == AA_PT_NODE_TYPE::identifier) {
+			std::vector<AA_PT_NODE*> temp;
+			std::vector<AA_PT_NODE*> final;
+			for (size_t i = 0; i < nodes[nodeIndex]->childNodes.size(); i++) {
+				if (nodes[nodeIndex]->childNodes[i]->nodeType == AA_PT_NODE_TYPE::seperator || 
+					(nodes[nodeIndex]->childNodes[i]->nodeType == AA_PT_NODE_TYPE::binary_operation && nodes[nodeIndex]->childNodes[i]->content.compare(L"=>") == 0)) {
+					delete nodes[nodeIndex]->childNodes[i]; // We just delete it here (dont remove it because of for-loop)
+					AA_PT_NODE* pNode = this->CreateExpressionTree(temp, 0);
+					final.push_back(pNode);
+					temp.clear();
+				} else {
+					temp.push_back(nodes[nodeIndex]->childNodes[i]);
+				}
+			}
+			if (temp.size() > 0) {
+				final.push_back(this->CreateExpressionTree(temp, 0));
+			}
+			nodes[nodeIndex]->childNodes = final;
 			nodes[nodeIndex] = this->HandleVariableDecleration(nodes, nodeIndex);
 			nodeIndex++;
 		} else {

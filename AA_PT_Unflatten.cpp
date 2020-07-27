@@ -272,10 +272,10 @@ void AA_PT_Unflatten::ApplyLambdaBindings(std::vector<AA_PT_NODE*>& nodes) {
 		} else if (nodes[index]->nodeType == AA_PT_NODE_TYPE::expression) {
 
 			size_t subSize = nodes[index]->childNodes.size();
-
+			// TODO: Check if containing lambda operator
 			if (subSize >= 3 && nodes[index]->childNodes[subSize - 1]->nodeType == AA_PT_NODE_TYPE::identifier && IsLambdaOperator(nodes[index]->childNodes[subSize - 2])) {
-				delete nodes[index]->childNodes[subSize - 2];
-				nodes[index]->childNodes.erase(nodes[index]->childNodes.begin() + (subSize - 2));
+				//delete nodes[index]->childNodes[subSize - 2];
+				//nodes[index]->childNodes.erase(nodes[index]->childNodes.begin() + (subSize - 2));
 				nodes[index]->nodeType = AA_PT_NODE_TYPE::lambdatype; // We know for sure it's a lambda type because of the lambda operator in the expression
 			}
 
@@ -291,6 +291,7 @@ void AA_PT_Unflatten::ApplyLambdaBindings(std::vector<AA_PT_NODE*>& nodes) {
 						// Treat as a simple lambda type (because + 2 is identifier and +3 is assignment operator (So most likely a "T => T x = ..." case)
 						nodes[index]->nodeType = AA_PT_NODE_TYPE::lambdatype;
 						nodes[index]->childNodes.push_back(nodes[index - 1]);
+						nodes[index]->childNodes.push_back(new AA_PT_NODE(AA_PT_NODE_TYPE::binary_operation, L"=>", nodes[index]->position));
 						nodes[index]->childNodes.push_back(nodes[index + 1]);
 						nodes[index]->content = L"";
 
