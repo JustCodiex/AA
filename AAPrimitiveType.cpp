@@ -4,6 +4,7 @@
 #include "AAIntrPtr.h"
 #include "AACEnum.h"
 #include "AATuple.h"
+#include "AAClosure.h"
 
 namespace aa {
 
@@ -35,6 +36,8 @@ namespace aa {
 				return sizeof(AAMemoryPtr);
 			case AAPrimitiveType::tuple:
 				return sizeof(AATuple);
+			case AAPrimitiveType::closure:
+				return sizeof(AAClosure);
 			default:
 				return 0;
 			}
@@ -81,6 +84,8 @@ namespace aa {
 					}
 				} else if (pStaticType->isTupleType) {
 					return AAPrimitiveType::tuple;
+				} else if (pStaticType->isLambdaType) {
+					return AAPrimitiveType::closure;
 				} else {
 					return AAPrimitiveType::Undefined;
 				}
@@ -89,7 +94,7 @@ namespace aa {
 
 		bool is_primitive_type(AACType* pStaticType) {
 			AAPrimitiveType p = runtimetype_from_statictype(pStaticType);
-			if (p != AAPrimitiveType::refptr && p != AAPrimitiveType::Undefined) {
+			if (p != AAPrimitiveType::closure && p != AAPrimitiveType::refptr && p != AAPrimitiveType::Undefined) {
 				return true;
 			} else {
 				return (p == AAPrimitiveType::Undefined) ? false : (pStaticType->isVMType);
@@ -130,6 +135,8 @@ namespace aa {
 				return L"refptr";
 			case AAPrimitiveType::tuple:
 				return L"tuple";
+			case AAPrimitiveType::closure:
+				return L"closure";
 			default:
 				return L"nil";
 			}

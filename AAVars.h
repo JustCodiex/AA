@@ -70,6 +70,8 @@ private:
 
 	bool VarsUnary(aa::VarsEnviornment& venv, AA_AST_NODE* pScope);
 
+	bool VarsLambdaExpression(aa::VarsEnviornment& venv, AA_AST_NODE* pScope);
+
 	bool VarsNode(aa::VarsEnviornment& venv, AA_AST_NODE* pScope);
 
 private:

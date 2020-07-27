@@ -652,6 +652,9 @@ AACType* AATypeChecker::TypeCheckBinaryLambdaDecl(AA_AST_NODE* pOpNode, AA_AST_N
 	// Set the variable type
 	m_tenv.AddVariable(left->content, lambdaLeft);
 
+	// Set primitive type
+	pOpNode->tags["primitive"] = (int)AAPrimitiveType::closure;
+
 	return AACType::Void;
 
 }

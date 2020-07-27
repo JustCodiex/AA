@@ -267,6 +267,7 @@ Instructions AAC::CompileAST(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTabl
 	}
 	case AA_AST_NODE_TYPE::enumbody:
 	case AA_AST_NODE_TYPE::funcbody:
+	case AA_AST_NODE_TYPE::lambdabody:
 	case AA_AST_NODE_TYPE::block: {
 		for (size_t i = 0; i < pNode->expressions.size(); i++) {
 			executionStack.Add(this->CompileAST(pNode->expressions[i], cTable, staticData));
@@ -360,6 +361,10 @@ Instructions AAC::CompileAST(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTabl
 		executionStack.Add(this->CompileTupleAccessorOperation(pNode, cTable, staticData));
 		break;
 	}
+	case AA_AST_NODE_TYPE::lambdacall: {
+		executionStack.Add(this->CompileLambdaCall(pNode, cTable, staticData));
+		break;
+	}
 	// Implicit return
 	case AA_AST_NODE_TYPE::variable:
 	case AA_AST_NODE_TYPE::intliteral:
@@ -378,6 +383,17 @@ Instructions AAC::CompileAST(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTabl
 	}
 
 	return executionStack;
+
+}
+
+Instructions AAC::CompileLambda(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
+
+	Instructions opList;
+
+	Instructions body = this->CompileAST(pNode->expressions[1], cTable, staticData);
+	body.Add(Instruction(AAByteCode::RET, 0, NULL));
+
+	return opList;
 
 }
 
@@ -626,7 +642,7 @@ Instructions AAC::CompileFuncArgs(AA_AST_NODE* pNode, CompiledEnviornmentTable& 
 	// Get the argument list
 	AA_AST_NODE* pArgList = pNode->expressions[AA_NODE_FUNNODE_ARGLIST];
 
-	aa::list<CompiledAbstractExpression> opList;
+	Instructions opList;
 
 	for (size_t i = 0; i < pArgList->expressions.size(); i++) {
 
@@ -649,6 +665,14 @@ Instructions AAC::CompileFuncArgs(AA_AST_NODE* pNode, CompiledEnviornmentTable& 
 		opList.Add(argCAE);
 
 	}
+
+	return opList;
+
+}
+
+Instructions AAC::CompileLambdaCall(AA_AST_NODE* pNode, CompiledEnviornmentTable& cTable, AAStaticEnvironment staticData) {
+
+	Instructions opList;
 
 	return opList;
 
@@ -1411,6 +1435,8 @@ Instructions AAC::HandleStackPush(CompiledEnviornmentTable& cTable, AA_AST_NODE*
 		}
 	} else if (pNode->type == AA_AST_NODE_TYPE::tupleval) {
 		opList.Add(this->HandleTuplePush(cTable, pNode, staticData));
+	} else if (pNode->type == AA_AST_NODE_TYPE::lambdaexpression) {
+		opList.Add(this->CompileLambda(pNode, cTable, staticData));
 	} else {
 		opList.Add(CompileAST(pNode, cTable, staticData));
 	}

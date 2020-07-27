@@ -3,6 +3,7 @@
 #include <iostream>
 #include <Windows.h>
 #include "AAVM.h"
+#include "checksum.h"
 #ifdef _DEBUG
 #include "AALanguageRegressionTest.h"
 #include "AAProjectRegressionTest.h"
@@ -11,7 +12,8 @@
 ///////////////////
 // Global Versions
 ///////////////////
-const char* VM_Version = "0.5.0"; // VM version
+const char* VM_Version = "0.5.1"; // VM version
+unsigned int VM_VersionChecksum = aa::algorithm::simple_checksum<unsigned int>(VM_Version, strlen(VM_Version));
 
 ///////////////////
 // Global Flags

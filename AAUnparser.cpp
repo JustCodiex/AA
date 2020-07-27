@@ -54,6 +54,7 @@ std::wstring AAUnparser::Unparse(AA_AST_NODE* pNode) {
 		break;
 	case AA_AST_NODE_TYPE::funcbody:
 	case AA_AST_NODE_TYPE::classbody:
+	case AA_AST_NODE_TYPE::lambdabody:
 	case AA_AST_NODE_TYPE::block: {
 		out += this->WriteToString(L"{\n");
 		this->IncreaseIndent();
@@ -122,6 +123,7 @@ std::wstring AAUnparser::Unparse(AA_AST_NODE* pNode) {
 		out = pNode->content;
 		break;
 	case AA_AST_NODE_TYPE::funcall:
+	case AA_AST_NODE_TYPE::lambdacall:
 	case AA_AST_NODE_TYPE::objdeconstruct:
 		out = this->WriteToString(L"§s(§s)", pNode->content, this->UnparseList(pNode));
 		break;
@@ -339,6 +341,49 @@ std::wstring AAUnparser::Unparse(AA_AST_NODE* pNode) {
 	case AA_AST_NODE_TYPE::tupletypeidentifier: 
 		out = this->WriteToString(L"§s", this->UnparseTuple(pNode));
 		break;
+	case AA_AST_NODE_TYPE::lambdaexpression: {
+		std::wstring params = this->Unparse(pNode->expressions[0]);
+		std::wstring body = L"";
+		if (pNode->expressions[1]->expressions.size() > 1) {
+			printf("");
+		} else {
+			body = this->Unparse(pNode->expressions[1]->expressions[0]);
+		}
+		out = this->WriteToString(L"§s => §s", params, body);
+		break;
+	}
+	case AA_AST_NODE_TYPE::lambdaparams: {
+		std::wstringstream wss;
+		wss << L"(";
+		for (size_t i = 0; i < pNode->expressions.size(); i++) {
+			wss << pNode->expressions[i]->content;
+			if (i < pNode->expressions.size() - 1) {
+				wss << L", ";
+			}
+		}
+		wss << L")";
+		out = wss.str();
+		break;
+	}
+	case AA_AST_NODE_TYPE::lambdadecl: {
+		out = this->WriteToString(L"§s §s", this->Unparse(pNode->expressions[0]), pNode->content);
+		break;
+	}
+	case AA_AST_NODE_TYPE::lambdatype: {
+		std::wstringstream wss;
+		wss << L"(";
+		for (size_t i = 0; i < pNode->expressions.size(); i++) {
+			wss << pNode->expressions[i]->content;
+			if (i < pNode->expressions.size() - 2) {
+				wss << L", ";
+			} else if (i < pNode->expressions.size() - 1) {
+				wss << L" => ";
+			}
+		}
+		wss << L")";
+		out = wss.str();
+		break;
+	}
 	case AA_AST_NODE_TYPE::field:
 	case AA_AST_NODE_TYPE::variable:
 	case AA_AST_NODE_TYPE::floatliteral:

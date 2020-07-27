@@ -107,4 +107,9 @@ enum class AAByteCode : unsigned char {
 
 	ACCEPT, // (Push a runtime-only-type onto the stack that will always yield true in accepting comparrisons [match statements], 0 arguments)
 
+	LOADCLOSURE, // Load Closure
+	CALLCLOSURE, // Call Closure
+	PUSHCLOSURE, // Push Closure onto stack
+	POPCLOSURE, // Pop Closure from stack
+
 };

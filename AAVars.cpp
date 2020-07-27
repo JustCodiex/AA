@@ -302,8 +302,29 @@ bool AAVars::VarsUnary(aa::VarsEnviornment& venv, AA_AST_NODE* pScope) {
 
 }
 
+bool AAVars::VarsLambdaExpression(aa::VarsEnviornment& venv, AA_AST_NODE* pScope) {
+
+	VarsEnviornment _venv = VarsEnviornment(venv);
+
+	// Register lambda params
+	for (size_t i = 0; i < pScope->expressions[0]->expressions.size(); i++) { // Note: Capturing variables will have to be handled somewhere else (and correct variable indices)
+		pScope->expressions[0]->expressions[i]->tags["varsi"] = venv[pScope->expressions[0]->expressions[i]->content] = aa::Var(venv.size(), false);
+	}
+
+	// Vars run on nodes
+	if (!this->VarsNode(venv, pScope->expressions[1])) {
+		return false;
+	}
+
+	venv = _venv;
+
+	return true;
+
+}
+
 bool AAVars::VarsNode(VarsEnviornment& venv, AA_AST_NODE* pScope) {
-	if (pScope->type == AA_AST_NODE_TYPE::compile_unit ||  pScope->type == AA_AST_NODE_TYPE::block || pScope->type == AA_AST_NODE_TYPE::funcbody) {
+	if (pScope->type == AA_AST_NODE_TYPE::compile_unit ||  pScope->type == AA_AST_NODE_TYPE::block || 
+		pScope->type == AA_AST_NODE_TYPE::funcbody || pScope->type == AA_AST_NODE_TYPE::lambdabody) {
 		return this->VarsScope(venv, pScope);
 	} else if (pScope->type == AA_AST_NODE_TYPE::fundecl) {
 		return this->VarsFunction(venv, pScope);
@@ -345,6 +366,7 @@ bool AAVars::VarsNode(VarsEnviornment& venv, AA_AST_NODE* pScope) {
 			return this->VarsNode(venv, pScope->expressions[0]);
 		}
 		case AA_AST_NODE_TYPE::tuplevardecl:
+		case AA_AST_NODE_TYPE::lambdadecl:
 		case AA_AST_NODE_TYPE::vardecl: {
 			pScope->tags["varsi"] = venv[pScope->content] = aa::Var(venv.size(), !pScope->HasTag("modifier_const"));
 			return true;
@@ -361,9 +383,24 @@ bool AAVars::VarsNode(VarsEnviornment& venv, AA_AST_NODE* pScope) {
 			}
 			return true;
 		}
-		case AA_AST_NODE_TYPE::ifstatement: {
-			return this->VarsBranch(venv, pScope);
+		case AA_AST_NODE_TYPE::lambdacall: {
+			for (size_t i = 0; i < pScope->expressions.size(); i++) {
+				if (!this->VarsNode(venv, pScope->expressions[i])) {
+					return false;
+				}
+			} // find the variable
+			auto lookup = venv.find(pScope->content);
+			if (lookup != venv.end()) {
+				pScope->tags["varsi"] = (*lookup).second;
+				return true;
+			} else {
+				return false;
+			}
 		}
+		case AA_AST_NODE_TYPE::lambdaexpression:
+			return this->VarsLambdaExpression(venv, pScope);
+		case AA_AST_NODE_TYPE::ifstatement:
+			return this->VarsBranch(venv, pScope);
 		case AA_AST_NODE_TYPE::forinit:
 		case AA_AST_NODE_TYPE::forafterthought:
 		case AA_AST_NODE_TYPE::condition:

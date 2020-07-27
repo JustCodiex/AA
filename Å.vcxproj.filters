@@ -542,6 +542,12 @@
     <ClInclude Include="AATypeEnv.h">
       <Filter>Header Files\analysis\type</Filter>
     </ClInclude>
+    <ClInclude Include="checksum.h">
+      <Filter>Header Files\util\algorithm</Filter>
+    </ClInclude>
+    <ClInclude Include="AAClosure.h">
+      <Filter>Header Files\VM</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="TODO.txt">

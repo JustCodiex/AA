@@ -1,20 +1,12 @@
 BYTECODE PROCEDURES:
 	START PROCEDURE 0 (<GlobalScope>):
-	OPERATIONS:
-	END PROCEDURE;
-
-	START PROCEDURE 1 (main):
-	CONSTANTS:	[I32, 10][I32, 12]
 	IDENTIFIERS:
-		1$[a];		2$[b];
+		1$[x];		2$[y];		3$[z];		4$[u];		5$[v];
 	OPERATIONS:
-		[0000]  PUSHC, 0                                                        
-		[0001]  SETVAR, 1, 6                                                    ;; primitive: int32 [4 bytes]
-		[0002]  PUSHC, 1                                                        
-		[0003]  SETVAR, 2, 6                                                    ;; primitive: int32 [4 bytes]
-		[0004]  GETVAR, 1                                                       
-		[0005]  GETVAR, 2                                                       
-		[0006]  MUL, 6                                                          ;; primitive: int32 [4 bytes]
-		[0007]  RET                                                             
+		[0000]  SETVAR, 1, 17                                                   ;; primitive: closure [16 bytes]
+		[0001]  SETVAR, 2, 17                                                   ;; primitive: closure [16 bytes]
+		[0002]  SETVAR, 3, 17                                                   ;; primitive: closure [16 bytes]
+		[0003]  SETVAR, 4, 17                                                   ;; primitive: closure [16 bytes]
+		[0004]  SETVAR, 5, 6                                                    ;; primitive: int32 [4 bytes]
 	END PROCEDURE;
 END BYTECODE PROCEDURES

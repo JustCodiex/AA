@@ -212,6 +212,7 @@
     <ClInclude Include="AAArray.h" />
     <ClInclude Include="AAAutoCodeGenerator.h" />
     <ClInclude Include="AAByteType.h" />
+    <ClInclude Include="AAClosure.h" />
     <ClInclude Include="AACompileProject.h" />
     <ClInclude Include="AAControlpath.h" />
     <ClInclude Include="AADecompiler.h" />
@@ -280,6 +281,7 @@
     <ClInclude Include="astring.h" />
     <ClInclude Include="bstream.h" />
     <ClInclude Include="bwalker.h" />
+    <ClInclude Include="checksum.h" />
     <ClInclude Include="goedel_encoding.h" />
     <ClInclude Include="list.h" />
     <ClInclude Include="pairedarray.h" />

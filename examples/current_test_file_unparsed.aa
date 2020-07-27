@@ -1,7 +1,0 @@
-{
-}
-int main() {
-	var a = 10;
-	int b = 12;
-	(a * b);
-}
