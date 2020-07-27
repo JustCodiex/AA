@@ -148,8 +148,14 @@ AACType* AATypeChecker::TypeCheckNode(AA_AST_NODE* node) {
 
 	case AA_AST_NODE_TYPE::fundecl: 
 		return this->TypeCheckFuncDecl(node);
-	case AA_AST_NODE_TYPE::funcall:
-		return this->TypeCheckCallOperation(node);
+	case AA_AST_NODE_TYPE::funcall: {
+		AACType* type = this->m_tenv.Lookup(node->content);
+		if (type == AACType::ErrorType) {
+			return this->TypeCheckFirstOrderCallOperation(node);
+		} else {
+			return this->TypeCheckLambdaInvocation(node, type);
+		}
+	}
 	case AA_AST_NODE_TYPE::newstatement:
 		return this->TypeCheckNewStatement(node);
 	case AA_AST_NODE_TYPE::classctorcall:
@@ -824,7 +830,7 @@ AACType* AATypeChecker::TypeCheckTupleAccessorOperation(AA_AST_NODE* pAccessorNo
 
 }
 
-AACType* AATypeChecker::TypeCheckCallOperation(AA_AST_NODE* pCallNode) {
+AACType* AATypeChecker::TypeCheckFirstOrderCallOperation(AA_AST_NODE* pCallNode) {
 
 	// Find the first AAFuncSignature matching our conditions
 	aa::set<AAFuncSignature*> sigs = m_senv->availableFunctions.FindAll([pCallNode](AAFuncSignature*& sig) { return sig->name == pCallNode->content; });
@@ -856,7 +862,7 @@ AACType* AATypeChecker::TypeCheckCallOperation(AA_AST_NODE* pCallNode) {
 
 			// No function overload was found matching argument list
 			AATC_W_ERROR(
-				"No function '" + string_cast(pCallNode->content) + "' overload found matching argument list",
+				"No method '" + string_cast(pCallNode->content) + "' overload found matching argument list",
 				pCallNode->position,
 				aa::compiler_err::C_Undefined_Function_Overload
 			);
@@ -867,12 +873,32 @@ AACType* AATypeChecker::TypeCheckCallOperation(AA_AST_NODE* pCallNode) {
 
 		// The function does not even exist
 		AATC_W_ERROR(
-			"Attempt to call undefined function '" + string_cast(pCallNode->content) + "'",
+			"Attempt to call undefined method '" + string_cast(pCallNode->content) + "'",
 			pCallNode->position,
 			aa::compiler_err::C_Undefined_Function
 		);
 
 	}
+
+}
+
+AACType* AATypeChecker::TypeCheckLambdaInvocation(AA_AST_NODE* pInvokeNode, AACType* pLambdaType) {
+
+	if (pInvokeNode->expressions.size() == pLambdaType->encapsulatedTypes.Size() - 1) {
+		for (size_t i = 0; i < pInvokeNode->expressions.size(); i++) {
+			if (!this->IsMatchingTypes(this->TypeCheckNode(pInvokeNode->expressions[i]), pLambdaType->encapsulatedTypes.At(i))) {
+				printf("type mismatch");
+				return AACType::ErrorType;
+			}
+		}
+	} else {
+		printf("Invalid argument count"); // TODO: Replace with error
+		return AACType::ErrorType;
+	}
+
+	pInvokeNode->type = AA_AST_NODE_TYPE::lambdacall;
+
+	return pLambdaType->encapsulatedTypes.Last();
 
 }
 

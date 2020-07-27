@@ -80,7 +80,8 @@ private:
 	AACType* TypeCheckIndexOperation(AA_AST_NODE* pIndexNode);
 
 	AACType* TypeCheckUnaryOperation(AA_AST_NODE* pOpNode, AA_AST_NODE* right);	
-	AACType* TypeCheckCallOperation(AA_AST_NODE* pCallNode);
+	AACType* TypeCheckFirstOrderCallOperation(AA_AST_NODE* pCallNode); // first-order
+	AACType* TypeCheckLambdaInvocation(AA_AST_NODE* pInvokeNode, AACType* pLambdaType); // higher-order
 	
 	AACType* TypeCheckConditionalBlock(AA_AST_NODE* pConditionalNode);
 

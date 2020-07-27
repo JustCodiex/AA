@@ -27,6 +27,7 @@ enum class AA_AST_NODE_TYPE {
 	lambdaexpression,
 	lambdatype,
 	lambdadecl,
+	lambdacall,
 
 	condition,
 	ifstatement,
