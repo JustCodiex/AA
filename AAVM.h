@@ -4,7 +4,6 @@
 #include "AAO.h"
 #include "AAVarEnv.h"
 #include "AAProgram.h"
-#include "AARuntimeEnvironment.h"
 #include "AACClass.h"
 #include "AAStackValue.h"
 #include "stack.h"
@@ -15,19 +14,19 @@
 struct AAVM_RuntimeError {
 	const char* errMsg;
 	const char* errName;
-	AARuntimeEnvironment errEnv;
-	aa::stack<AARuntimeEnvironment> callStack;
+	AAStackFrame errEnv;
+	aa::stack<AAStackFrame> callStack;
 	AAVM_RuntimeError() {
 		this->errMsg = 0;
 		this->errName = 0;
-		this->errEnv = AARuntimeEnvironment();
+		this->errEnv = AAStackFrame();
 	}
 	AAVM_RuntimeError(const char* eType, const char* eMsg) {
 		this->errName = eType;
 		this->errMsg = eMsg;
-		this->errEnv = AARuntimeEnvironment();
+		this->errEnv = AAStackFrame();
 	}
-	AAVM_RuntimeError(const char* eType, const char* eMsg, AARuntimeEnvironment env, aa::stack<AARuntimeEnvironment> cstack) {
+	AAVM_RuntimeError(const char* eType, const char* eMsg, AAStackFrame env, aa::stack<AAStackFrame> cstack) {
 		this->errName = eType;
 		this->errMsg = eMsg;
 		this->errEnv = env;
@@ -119,9 +118,9 @@ private:
 
 	AAStackValue CompileAndRun(AAP_ParseResult input, std::wstring binaryoutputfile, std::wstring formattedoutputfile, std::wstring unparsefile);
 
-	AAStackValue Run(AAProgram::Procedure* procedures, AAStaticTypeEnvironment* staticProgramTypeEnvironment, int entry);
+	AAStackValue Run(AAStackFrame* procedures, AAStaticTypeEnvironment* staticProgramTypeEnvironment, int entry);
 
-	void exec(AAProgram::Procedure* procedures, aa::stack<AARuntimeEnvironment>& callstack, any_stack& opstack, AARuntimeEnvironment& execp);
+	void exec(AAStackFrame* procedures, aa::stack<AAStackFrame>& callstack, any_stack& opstack, AAStackFrame& execp);
 
 	AAStackValue Run(AAProgram* pProg);
 

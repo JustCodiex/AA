@@ -268,7 +268,7 @@ AAStackValue AAVM::Run(AAProgram* pProg) {
 	clock_t s = clock();
 
 	// Run the program from entry point
-	AAStackValue v = this->Run(pProg->m_procedures, pProg->GetTypeEnvironment(), entryPoint);
+	AAStackValue v = this->Run(pProg->m_stackframes, pProg->GetTypeEnvironment(), entryPoint);
 
 	// Should we log execution?
 	if (m_logExecTime) {
@@ -287,21 +287,20 @@ AAStackValue AAVM::Run(AAProgram* pProg) {
 }
 
 #define AAVM_VENV execp.venv
-#define AAVM_OPI execp.opPointer
-#define AAVM_PROC execp.procPointer
+#define AAVM_OPI execp.opPtr
 
-#define AAVM_CURRENTOP procedure[AAVM_PROC].opSequence[AAVM_OPI].op
-#define AAVM_GetArgument(i) procedure[AAVM_PROC].opSequence[AAVM_OPI].args[i]
+#define AAVM_CURRENTOP execp.operations[AAVM_OPI].op
+#define AAVM_GetArgument(i) execp.operations[AAVM_OPI].args[i]
 
 #define AAVM_ThrowRuntimeErr(exc, msg) this->WriteRuntimeError(AAVM_RuntimeError(exc, (msg).c_str(), execp, callstack)); return;
 
 #define AAVM_INC_VARIABLE(t) AAVM_VENV->SetVariable(AAVM_GetArgument(0), AAStackValue((t)(val.to_cpp<t>() + (t)1)))
 #define AAVM_DEC_VARIABLE(t) AAVM_VENV->SetVariable(AAVM_GetArgument(0), AAStackValue((t)(val.to_cpp<t>() - (t)1)))
 
-AAStackValue AAVM::Run(AAProgram::Procedure* procedure, AAStaticTypeEnvironment* staticProgramTypeEnvironment, int entry) {
+AAStackValue AAVM::Run(AAStackFrame* procedure, AAStaticTypeEnvironment* staticProgramTypeEnvironment, int entry) {
 
 	any_stack stack = any_stack(1024); // Stack with 1 Kb storage --> Will have to be modular
-	aa::stack<AARuntimeEnvironment> callstack;
+	aa::stack<AAStackFrame> callstack;
 
 	// Set static type environment
 	m_staticTypeEnvironment = staticProgramTypeEnvironment;
@@ -311,13 +310,11 @@ AAStackValue AAVM::Run(AAProgram::Procedure* procedure, AAStaticTypeEnvironment*
 	m_heapMemory->SetStaticTypeEnvironment(m_staticTypeEnvironment);
 
 	// Create reuntime environment from entry point
-	AARuntimeEnvironment execp;
-	execp.opPointer = 0;
-	execp.procPointer = entry;
-	execp.venv = procedure[entry].venv->CloneSelf();
+	AAStackFrame frame = procedure[entry];
+	frame.Load();
 
 	// Execute code
-	this->exec(procedure, callstack, stack, execp);
+	this->exec(procedure, callstack, stack, frame);
 
 	// Report the stack
 	AAStackValue val = this->ReportStack(stack);
@@ -330,9 +327,9 @@ AAStackValue AAVM::Run(AAProgram::Procedure* procedure, AAStaticTypeEnvironment*
 
 }
 
-void AAVM::exec(AAProgram::Procedure* procedure, aa::stack<AARuntimeEnvironment>& callstack, any_stack& stack, AARuntimeEnvironment& execp) {
+void AAVM::exec(AAStackFrame* procedures, aa::stack<AAStackFrame>& callstack, any_stack& stack, AAStackFrame& execp) {
 
-	while (AAVM_OPI < procedure[AAVM_PROC].opCount) {
+	while (AAVM_OPI < execp.opCount) {
 		switch (AAVM_CURRENTOP) {
 		case AAByteCode::ADD:
 		case AAByteCode::DIV:
@@ -527,7 +524,7 @@ void AAVM::exec(AAProgram::Procedure* procedure, aa::stack<AARuntimeEnvironment>
 			break;
 		}
 		case AAByteCode::PUSHC: {
-			aa::vm::PushConstant(procedure[AAVM_PROC].constTable[AAVM_GetArgument(0)], stack);
+			aa::vm::PushConstant(execp.constTable[AAVM_GetArgument(0)], stack);
 			AAVM_OPI++;
 			break;
 		}
@@ -537,7 +534,7 @@ void AAVM::exec(AAProgram::Procedure* procedure, aa::stack<AARuntimeEnvironment>
 			break;
 		}
 		case AAByteCode::PUSHWS: {
-			AA_Literal sLit = procedure[AAVM_PROC].constTable[AAVM_GetArgument(0)];
+			AA_Literal sLit = execp.constTable[AAVM_GetArgument(0)];
 			std::wstring wcs = sLit.lit.s.val;
 			aa::vm::PushSomething(AAStackValue(m_heapMemory->AllocString(wcs)), stack);
 			AAVM_OPI++;
@@ -566,9 +563,8 @@ void AAVM::exec(AAProgram::Procedure* procedure, aa::stack<AARuntimeEnvironment>
 			AAVM_OPI++;
 			callstack.Push(execp);
 
-			AAVM_VENV = procedure[callProc].venv->CloneSelf();
-			AAVM_PROC = callProc;
-			AAVM_OPI = 0;
+			execp = procedures[callProc];
+			execp.Load();
 
 			break;
 		}
@@ -592,9 +588,8 @@ void AAVM::exec(AAProgram::Procedure* procedure, aa::stack<AARuntimeEnvironment>
 			AAVM_OPI++;
 			callstack.Push(execp);
 
-			AAVM_VENV = procedure[callProc].venv->CloneSelf();
-			AAVM_PROC = callProc;
-			AAVM_OPI = 0;
+			execp = procedures[callProc];
+			execp.Load();
 
 			break;
 		}
@@ -616,10 +611,10 @@ void AAVM::exec(AAProgram::Procedure* procedure, aa::stack<AARuntimeEnvironment>
 			if (this->m_hasRuntimeError) {
 
 				// Update runtime environment
-				m_lastRuntimeError.errEnv = execp;
+				//m_lastRuntimeError.errEnv = execp;
 
 				// Update callstack
-				m_lastRuntimeError.callStack = callstack;
+				//m_lastRuntimeError.callStack = callstack;
 
 				// Write error
 				this->WriteRuntimeError(m_lastRuntimeError);
@@ -637,7 +632,8 @@ void AAVM::exec(AAProgram::Procedure* procedure, aa::stack<AARuntimeEnvironment>
 		case AAByteCode::RET: {
 
 			if (callstack.Size() > 0) {
-				execp.PopEnvironment(false);
+				//execp.PopEnvironment(false);
+				execp.Exit();
 				execp = callstack.Pop();
 			} else {
 				AAVM_OPI++; // Goto next step and end execution
@@ -707,10 +703,10 @@ void AAVM::exec(AAProgram::Procedure* procedure, aa::stack<AARuntimeEnvironment>
 				if (this->m_hasRuntimeError) {
 
 					// Update runtime environment
-					m_lastRuntimeError.errEnv = execp;
+					//m_lastRuntimeError.errEnv = execp;
 
 					// Update callstack
-					m_lastRuntimeError.callStack = callstack;
+					//m_lastRuntimeError.callStack = callstack;
 
 					// Write error
 					this->WriteRuntimeError(m_lastRuntimeError);
@@ -731,9 +727,8 @@ void AAVM::exec(AAProgram::Procedure* procedure, aa::stack<AARuntimeEnvironment>
 				AAVM_OPI++; // Goto next step in current execution context
 				callstack.Push(execp);
 
-				AAVM_VENV = procedure[callProc].venv->CloneSelf();
-				AAVM_PROC = callProc;
-				AAVM_OPI = 0;
+				execp = procedures[callProc];
+				execp.Load();
 
 			}
 

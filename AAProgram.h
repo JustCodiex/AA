@@ -3,22 +3,13 @@
 #include "AAO.h"
 #include "AAVarEnv.h"
 #include "AARuntimeTypeEnv.h"
+#include "AAStackFrame.h"
 
 /// <summary>
 /// Represents a Å program containing all the information needed to be executed by the Virtual Machine
 /// </summary>
 class AAProgram {
 	friend class AAVM; // Allow the virtual machine to access private parts of class
-
-private:
-
-	// Internal procedure
-	struct Procedure {
-		AA_Literal* constTable;
-		AAVarEnv* venv;
-		AAO* opSequence;
-		int opCount;
-	};
 
 public:
 
@@ -58,8 +49,8 @@ public:
 
 private:
 
-	void LoadConstants(Procedure& proc, aa::bwalker& bw);
-	void LoadOperations(Procedure& proc, aa::bwalker& bw);
+	void LoadConstants(AAStackFrame& proc, aa::bwalker& bw);
+	void LoadOperations(AAStackFrame& proc, aa::bwalker& bw);
 	void LoadType(aa::bwalker& bw);
 
 private:
@@ -70,7 +61,7 @@ private:
 	int m_procedureCount;
 	int m_signatureCount;
 
-	Procedure* m_procedures;
+	AAStackFrame* m_stackframes;
 	AAStaticTypeEnvironment* m_types;
 
 };

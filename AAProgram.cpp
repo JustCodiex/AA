@@ -6,7 +6,7 @@
 AAProgram::AAProgram() {
 	m_entryPoint = -1;
 	m_procedureCount = -1;
-	m_procedures = 0;
+	this->m_stackframes = 0;
 	m_signatureCount = -1;
 	m_types = 0;
 }
@@ -63,16 +63,16 @@ bool AAProgram::LoadProgram(unsigned char* bytes, unsigned long long length) {
 	bw >> m_entryPoint;
 
 	// Allocate procedure array
-	m_procedures = new Procedure[m_procedureCount];
+	this->m_stackframes = new AAStackFrame[m_procedureCount];
 
 	// Load procedures
 	for (int i = 0; i < m_procedureCount; i++) {
 
 		// Load constants for procedure
-		LoadConstants(m_procedures[i], bw);
+		LoadConstants(this->m_stackframes[i], bw);
 
 		// Load operations for procedure
-		LoadOperations(m_procedures[i], bw);
+		LoadOperations(this->m_stackframes[i], bw);
 
 	}
 
@@ -100,7 +100,7 @@ bool AAProgram::LoadProgram(unsigned char* bytes, unsigned long long length) {
 
 }
 
-void AAProgram::LoadConstants(Procedure& proc, aa::bwalker& bw) {
+void AAProgram::LoadConstants(AAStackFrame& proc, aa::bwalker& bw) {
 
 	int litCount;
 	bw >> litCount;
@@ -144,33 +144,33 @@ void AAProgram::LoadConstants(Procedure& proc, aa::bwalker& bw) {
 	int varCount;
 	bw >> varCount;
 
-	proc.venv = new AAVarEnv;
+	proc.varEnv = new AAVarEnv;
 
 	for (int i = 0; i < varCount; i++) {
 
 		int varID;
 		bw >> varID;
 
-		proc.venv->DeclareVariable(varID);
+		proc.varEnv->DeclareVariable(varID);
 
 	}
 
 }
 
-void AAProgram::LoadOperations(Procedure& proc, aa::bwalker& bw) {
+void AAProgram::LoadOperations(AAStackFrame& proc, aa::bwalker& bw) {
 
 	bw >> proc.opCount;
 
-	proc.opSequence = new AAO[proc.opCount];
+	proc.operations = new AAO[proc.opCount];
 
 	for (int i = 0; i < proc.opCount; i++) {
 
 		unsigned char opCode;
 		bw >> opCode;
 
-		proc.opSequence[i].op = (AAByteCode)opCode;
+		proc.operations[i].op = (AAByteCode)opCode;
 
-		switch (proc.opSequence[i].op) {
+		switch (proc.operations[i].op) {
 		case AAByteCode::PUSHC:
 		case AAByteCode::PUSHWS:
 		case AAByteCode::GETVAR:
@@ -201,8 +201,8 @@ void AAProgram::LoadOperations(Procedure& proc, aa::bwalker& bw) {
 		case AAByteCode::LOR:
 		case AAByteCode::BINAND:
 		case AAByteCode::BINOR:
-			proc.opSequence[i].args = new int[1];
-			bw >> proc.opSequence[i].args[0];
+			proc.operations[i].args = new int[1];
+			bw >> proc.operations[i].args[0];
 			break;
 		case AAByteCode::GETFIELD:
 		case AAByteCode::SETFIELD:
@@ -213,40 +213,40 @@ void AAProgram::LoadOperations(Procedure& proc, aa::bwalker& bw) {
 		case AAByteCode::ALLOCARRAY:
 		case AAByteCode::INC:
 		case AAByteCode::DEC:
-			proc.opSequence[i].args = new int[2];
-			bw >> proc.opSequence[i].args[0];
-			bw >> proc.opSequence[i].args[1];
+			proc.operations[i].args = new int[2];
+			bw >> proc.operations[i].args[0];
+			bw >> proc.operations[i].args[1];
 			break;
 		case AAByteCode::CTOR:
-			proc.opSequence[i].args = new int[3];
-			bw >> proc.opSequence[i].args[0];
-			bw >> proc.opSequence[i].args[1];
-			bw >> proc.opSequence[i].args[2];
+			proc.operations[i].args = new int[3];
+			bw >> proc.operations[i].args[0];
+			bw >> proc.operations[i].args[1];
+			bw >> proc.operations[i].args[2];
 			break;
 		case AAByteCode::TUPLECMPORSET:
 		case AAByteCode::TUPLENEW: { // Read arguments of the form (n, arg_0, ..., arg_n)
 			int sz = 0;
 			bw >> sz;
-			proc.opSequence[i].args = new int[sz + 1];
-			proc.opSequence[i].args[0] = sz;
+			proc.operations[i].args = new int[sz + 1];
+			proc.operations[i].args[0] = sz;
 			for (int j = 0; j < sz; j++) {
-				bw >> proc.opSequence[i].args[j + 1];
+				bw >> proc.operations[i].args[j + 1];
 			}
 			break;
 		}
 		case AAByteCode::TAGTUPLECMPORSET: { // Read arguments of the form (n, q, arg_0, ..., arg_n)
 			int sz = 0;
 			bw >> sz;
-			proc.opSequence[i].args = new int[sz + 2];
-			proc.opSequence[i].args[0] = sz;
-			bw >> proc.opSequence[i].args[1];
+			proc.operations[i].args = new int[sz + 2];
+			proc.operations[i].args[0] = sz;
+			bw >> proc.operations[i].args[1];
 			for (int j = 0; j < sz; j++) {
-				bw >> proc.opSequence[i].args[j + 2];
+				bw >> proc.operations[i].args[j + 2];
 			}
 			break;
 		}
 		default:
-			proc.opSequence[i].args = 0;
+			proc.operations[i].args = 0;
 			break;
 		}
 

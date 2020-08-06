@@ -1,8 +1,6 @@
 #pragma once
-#include "AAO.h"
-#include "list.h"
+#include "AAVarEnv.h"
 
 struct AAClosure {
-	aa::list<AAO> ops;
-	// capture
+	AAVarEnv* pVariables;
 };

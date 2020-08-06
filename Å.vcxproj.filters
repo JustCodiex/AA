@@ -231,9 +231,6 @@
     <ClCompile Include="AARuntimeTypeEnv.cpp">
       <Filter>Source Files\VM\runtime</Filter>
     </ClCompile>
-    <ClCompile Include="AARuntimeEnvironment.cpp">
-      <Filter>Source Files\VM\runtime</Filter>
-    </ClCompile>
     <ClCompile Include="AADecompiler.cpp">
       <Filter>Source Files\compiler</Filter>
     </ClCompile>
@@ -311,6 +308,9 @@
     </ClCompile>
     <ClCompile Include="AATypeEnv.cpp">
       <Filter>Source Files\analysis\type</Filter>
+    </ClCompile>
+    <ClCompile Include="AAStackFrame.cpp">
+      <Filter>Source Files\VM\runtime</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -412,9 +412,6 @@
     </ClInclude>
     <ClInclude Include="AAByteType.h">
       <Filter>Header Files\bytecode</Filter>
-    </ClInclude>
-    <ClInclude Include="AARuntimeEnvironment.h">
-      <Filter>Header Files\VM\runtime</Filter>
     </ClInclude>
     <ClInclude Include="AAExecute.h">
       <Filter>Header Files\VM\runtime</Filter>
@@ -547,6 +544,9 @@
     </ClInclude>
     <ClInclude Include="AAClosure.h">
       <Filter>Header Files\VM</Filter>
+    </ClInclude>
+    <ClInclude Include="AAStackFrame.h">
+      <Filter>Header Files\VM\runtime</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

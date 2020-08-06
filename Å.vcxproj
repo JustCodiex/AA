@@ -183,8 +183,8 @@
     <ClCompile Include="AAPrimitiveType.cpp" />
     <ClCompile Include="AAProgram.cpp" />
     <ClCompile Include="AAProjectRegressionTest.cpp" />
-    <ClCompile Include="AARuntimeEnvironment.cpp" />
     <ClCompile Include="AARuntimeTypeEnv.cpp" />
+    <ClCompile Include="AAStackFrame.cpp" />
     <ClCompile Include="AAStackValue.cpp" />
     <ClCompile Include="AAStaticAnalysis.cpp" />
     <ClCompile Include="AAstdiolib.cpp" />
@@ -245,7 +245,6 @@
     <ClInclude Include="AAOptimiser.h" />
     <ClInclude Include="AAPrimitiveType.h" />
     <ClInclude Include="AAProjectRegressionTest.h" />
-    <ClInclude Include="AARuntimeEnvironment.h" />
     <ClInclude Include="AACodePosition.h" />
     <ClInclude Include="AAFuncSignature.h" />
     <ClInclude Include="AALexer.h" />
@@ -253,6 +252,7 @@
     <ClInclude Include="AAP.h" />
     <ClInclude Include="AAProgram.h" />
     <ClInclude Include="AARuntimeTypeEnv.h" />
+    <ClInclude Include="AAStackFrame.h" />
     <ClInclude Include="AAStackValue.h" />
     <ClInclude Include="AAStaticAnalysis.h" />
     <ClInclude Include="AAStaticEnvironment.h" />
